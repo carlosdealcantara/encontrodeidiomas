@@ -53,6 +53,8 @@
             line-height: 1.6;
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
+            width: 100%;
         }
         
         .container {
@@ -60,10 +62,13 @@
             margin: 0 auto;
             padding: 40px 20px;
             text-align: center;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .profile {
             margin-bottom: 40px;
+            width: 100%;
         }
         
         .profile-image {
@@ -101,6 +106,7 @@
             font-size: 2.2rem;
             margin: 20px 0 5px;
             font-weight: 700;
+            word-break: break-word;
         }
         
         h2 {
@@ -114,6 +120,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            width: 100%;
         }
         
         .link {
@@ -130,6 +137,9 @@
             box-shadow: 0 4px 8px var(--shadow-color);
             position: relative;
             overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
+            word-break: break-word;
         }
         
         .link::before {
@@ -233,6 +243,40 @@
         }
         .icon-fallback-discord::before {
             content: "💻";
+        }
+        
+        /* Media queries para dispositivos móveis */
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1rem;
+            }
+            
+            .link {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+            
+            .link i {
+                font-size: 1.2rem;
+            }
+            
+            .social-icons a {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
