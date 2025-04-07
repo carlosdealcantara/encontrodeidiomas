@@ -24,9 +24,17 @@
     
     <link rel="canonical" href="https://encontrodeidiomas.com.br">
     <title>Encontro de Idiomas - Aprenda se divertindo!</title>
+    
+    <!-- Preload Font Awesome -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <style>
         :root {
             --primary-gradient-start: #667eea;
@@ -44,6 +52,12 @@
             box-sizing: border-box;
         }
         
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
@@ -51,8 +65,6 @@
             line-height: 1.6;
             min-height: 100vh;
             padding: 20px;
-            overflow-x: hidden;
-            width: 100%;
         }
         
         .container {
@@ -61,6 +73,7 @@
             padding: 40px 20px;
             text-align: center;
             width: 100%;
+            overflow-x: hidden;
         }
         
         .profile {
@@ -116,6 +129,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            width: 100%;
         }
         
         .link {
@@ -221,32 +235,6 @@
         .floating-logo {
             animation: float 3s ease-in-out infinite;
         }
-        
-        /* Adiciona ícones de fallback para caso o Font Awesome falhe */
-        .icon-fallback-whatsapp::before {
-            content: "📱";
-        }
-        .icon-fallback-calendar::before {
-            content: "📅";
-        }
-        .icon-fallback-chat::before {
-            content: "💬";
-        }
-        .icon-fallback-globe::before {
-            content: "🌎";
-        }
-        .icon-fallback-video::before {
-            content: "📹";
-        }
-        .icon-fallback-map::before {
-            content: "📍";
-        }
-        .icon-fallback-instagram::before {
-            content: "📷";
-        }
-        .icon-fallback-discord::before {
-            content: "💻";
-        }
     </style>
 </head>
 <body>
@@ -263,42 +251,42 @@
         
         <div class="links">
             <a href="https://chat.whatsapp.com/FULPUAQquHJ3dpv4lBuKEO" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fa-brands fa-whatsapp icon-fallback-whatsapp"></i>
+                <i class="fab fa-whatsapp"></i>
                 <span>Online - Grupo com os Encontros de Todos os Idiomas</span>
             </a>
             
             <a href="https://www.instagram.com/p/C1Z0ReQM-ss/" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fa-regular fa-calendar icon-fallback-calendar"></i>
+                <i class="far fa-calendar-alt"></i>
                 <span>Online - Agenda dos Encontros</span>
             </a>
             
             <a href="https://chat.whatsapp.com/DhpWkWlgiaR9sSkttIAHQf" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fa-solid fa-comments icon-fallback-chat"></i>
+                <i class="fas fa-comment-dots"></i>
                 <span>Inglês - Comunidade</span>
             </a>
             
             <a href="https://chat.whatsapp.com/K17FiWrOdRBCYMgpOmCq7R" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fa-solid fa-earth-americas icon-fallback-globe"></i>
+                <i class="fas fa-globe-americas"></i>
                 <span>Todos os Outros Idiomas - Comunidade</span>
             </a>
             
             <a href="https://www.instagram.com/p/Crl2SMSgn8y/" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fa-solid fa-video icon-fallback-video"></i>
+                <i class="fas fa-video"></i>
                 <span>Presencial - Vídeo de Apresentação</span>
             </a>
             
             <a href="https://chat.whatsapp.com/LeANTKw6u7GHbmTs2bbCn8" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fa-solid fa-location-dot icon-fallback-map"></i>
+                <i class="fas fa-map-marker-alt"></i>
                 <span>Presencial na Sua Cidade - Comunidade</span>
             </a>
         </div>
         
         <div class="social-icons">
             <a href="http://instagram.com/encontrodeidiomas" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                <i class="fa-brands fa-instagram icon-fallback-instagram"></i>
+                <i class="fab fa-instagram"></i>
             </a>
             <a href="https://discord.com/invite/STHkrEhMpP" target="_blank" rel="noopener noreferrer" aria-label="Discord">
-                <i class="fa-brands fa-discord icon-fallback-discord"></i>
+                <i class="fab fa-discord"></i>
             </a>
         </div>
         
