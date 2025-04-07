@@ -116,15 +116,20 @@
             font-size: 2.2rem;
             margin: 20px 0 5px;
             font-weight: 700;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             width: 100%;
             padding: 0 10px;
         }
         
         @media (max-width: 480px) {
             h1 {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
+            }
+            
+            .container {
+                padding: 40px 10px;
             }
         }
         
