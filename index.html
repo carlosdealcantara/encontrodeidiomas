@@ -25,10 +25,7 @@
     <link rel="canonical" href="https://encontrodeidiomas.com.br">
     <title>Encontro de Idiomas - Aprenda se divertindo!</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Adicional Font Awesome Kit (backup) -->
-    <script src="https://kit.fontawesome.com/1234567890.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-gradient-start: #667eea;
@@ -165,25 +162,18 @@
             display: flex;
             justify-content: center;
             margin-top: 40px;
-            gap: 30px;
+            gap: 20px;
         }
         
         .social-icons a {
             color: white;
             font-size: 1.8rem;
             transition: all 0.3s ease;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.1);
         }
         
         .social-icons a:hover {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.2);
+            opacity: 0.9;
         }
         
         footer {
@@ -209,30 +199,32 @@
             animation: float 3s ease-in-out infinite;
         }
         
-        /* Adiciona ícones de fallback para caso o Font Awesome falhe */
-        .icon-fallback-whatsapp::before {
-            content: "📱";
+        /* Cookie consent banner */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
         }
-        .icon-fallback-calendar::before {
-            content: "📅";
+
+        .cookie-banner.show {
+            display: block;
         }
-        .icon-fallback-chat::before {
-            content: "💬";
-        }
-        .icon-fallback-globe::before {
-            content: "🌎";
-        }
-        .icon-fallback-video::before {
-            content: "📹";
-        }
-        .icon-fallback-map::before {
-            content: "📍";
-        }
-        .icon-fallback-instagram::before {
-            content: "📷";
-        }
-        .icon-fallback-discord::before {
-            content: "💻";
+
+        .cookie-banner button {
+            background: white;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            border-radius: 4px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -250,48 +242,67 @@
         
         <div class="links">
             <a href="https://chat.whatsapp.com/FULPUAQquHJ3dpv4lBuKEO" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fab fa-whatsapp icon-fallback-whatsapp"></i>
+                <i class="fab fa-whatsapp"></i>
                 <span>Online - Grupo com os Encontros de Todos os Idiomas</span>
             </a>
             
             <a href="https://www.instagram.com/p/C1Z0ReQM-ss/" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="far fa-calendar-alt icon-fallback-calendar"></i>
+                <i class="far fa-calendar-alt"></i>
                 <span>Online - Agenda dos Encontros</span>
             </a>
             
             <a href="https://chat.whatsapp.com/DhpWkWlgiaR9sSkttIAHQf" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-comment-dots icon-fallback-chat"></i>
+                <i class="fas fa-comment-dots"></i>
                 <span>Inglês - Comunidade</span>
             </a>
             
             <a href="https://chat.whatsapp.com/K17FiWrOdRBCYMgpOmCq7R" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-globe-americas icon-fallback-globe"></i>
+                <i class="fas fa-globe-americas"></i>
                 <span>Todos os Outros Idiomas - Comunidade</span>
             </a>
             
             <a href="https://www.instagram.com/p/Crl2SMSgn8y/" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-video icon-fallback-video"></i>
+                <i class="fas fa-video"></i>
                 <span>Presencial - Vídeo de Apresentação</span>
             </a>
             
             <a href="https://chat.whatsapp.com/LeANTKw6u7GHbmTs2bbCn8" class="link" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-map-marker-alt icon-fallback-map"></i>
+                <i class="fas fa-map-marker-alt"></i>
                 <span>Presencial na Sua Cidade - Comunidade</span>
             </a>
         </div>
         
         <div class="social-icons">
             <a href="http://instagram.com/encontrodeidiomas" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                <i class="fab fa-instagram icon-fallback-instagram"></i>
+                <i class="fab fa-instagram"></i>
             </a>
             <a href="https://discord.com/invite/STHkrEhMpP" target="_blank" rel="noopener noreferrer" aria-label="Discord">
-                <i class="fab fa-discord icon-fallback-discord"></i>
+                <i class="fab fa-discord"></i>
             </a>
         </div>
         
         <footer>
             &copy; <script>document.write(new Date().getFullYear())</script> Encontro de Idiomas. Todos os direitos reservados.
         </footer>
+    </div>   
+    
+    <div class="cookie-banner" id="cookie-banner">
+        <p>Usamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com nosso uso de cookies.</p>
+        <button id="accept-cookies">Aceitar</button>
     </div>
+    
+    <script>
+        // Check if user has already accepted cookies
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                document.getElementById('cookie-banner').classList.add('show');
+            }
+            
+            document.getElementById('accept-cookies').addEventListener('click', () => {
+                localStorage.setItem('cookiesAccepted', 'true');
+                document.getElementById('cookie-banner').classList.remove('show');
+            });
+        });
+    </script>
 </body>
 </html> 
