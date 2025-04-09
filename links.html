@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Links - Encontro de Idiomas</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-red: #e31d1c;
+            --accent-blue: #002654;
+            --accent-yellow: #ffd700;
+            --text-color: #333;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --link-bg: rgba(0, 0, 0, 0.05);
+            --link-hover-bg: rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--white);
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            width: 100%;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--white);
+        }
+        
+        .site-title {
+            color: var(--white);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .site-description {
+            color: var(--white);
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background: var(--accent-red);
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .profile {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: bold;
+            font-size: 42px;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            background-color: var(--white);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .link {
+            background: var(--link-bg);
+            padding: 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .link:hover {
+            transform: translateY(-3px);
+            background: var(--link-hover-bg);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .link i {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            width: 24px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .social-icons a {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--link-bg);
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            transform: scale(1.1);
+            background: var(--link-hover-bg);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .nav-links {
+                margin-top: 20px;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="assets/images/logo.png" alt="Encontro de Idiomas Logo" class="logo">
+                <div>
+                    <div class="site-title">Encontro de Idiomas</div>
+                    <div class="site-description">Conectando pessoas através da linguagem</div>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Início</a>
+                <a href="links.html">Links</a>
+                <a href="https://www.instagram.com/encontrodeidiomas" target="_blank">Instagram</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="profile">
+            <div class="profile-image">
+                <div class="logo-text">EI</div>
+            </div>
+            <h1>@encontrodeidiomas</h1>
+            <h2>Aprenda se divertindo!</h2>
+        </div>
+        
+        <div class="links">
+            <a href="https://chat.whatsapp.com/FULPUAQquHJ3dpv4lBuKEO" class="link" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-whatsapp"></i>
+                <span>Online - Grupo com os Encontros de Todos os Idiomas</span>
+            </a>
+            
+            <a href="https://www.instagram.com/p/DBXWzhEMtat/" class="link" target="_blank" rel="noopener noreferrer">
+                <i class="far fa-calendar-alt"></i>
+                <span>Online - Agenda dos Encontros</span>
+            </a>
+            
+            <a href="https://chat.whatsapp.com/DhpWkWlgiaR9sSkttIAHQf" class="link" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-comment-dots"></i>
+                <span>Inglês - Comunidade</span>
+            </a>
+            
+            <a href="https://chat.whatsapp.com/K17FiWrOdRBCYMgpOmCq7R" class="link" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-globe-americas"></i>
+                <span>Todos os Outros Idiomas - Comunidade</span>
+            </a>
+            
+            <a href="https://www.instagram.com/p/Crl2SMSgn8y/" class="link" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-video"></i>
+                <span>Presencial - Vídeo de Apresentação</span>
+            </a>
+            
+            <a href="https://chat.whatsapp.com/LeANTKw6u7GHbmTs2bbCn8" class="link" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Presencial na Sua Cidade - Comunidade</span>
+            </a>
+        </div>
+        
+        <div class="social-icons">
+            <a href="https://www.instagram.com/encontrodeidiomas/" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://discord.gg/STHkrEhMpP" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-discord"></i>
+            </a>
+        </div>
+        
+        <footer>
+            &copy; <script>document.write(new Date().getFullYear())</script> Encontro de Idiomas. Todos os direitos reservados.
+        </footer>
+    </div>
+</body>
+</html> 
