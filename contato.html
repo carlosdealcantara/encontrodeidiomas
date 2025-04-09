@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Entre em contato com o Encontro de Idiomas - Envie uma mensagem para nossa equipe ou participe de nossos grupos.">
+    <meta name="keywords" content="encontro de idiomas, contato, mensagem, falar conosco, idiomas, praticar idiomas">
+    <meta name="author" content="Encontro de Idiomas">
+    <meta name="robots" content="index, follow">
+
+    <!-- Essential Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Contato - Encontro de Idiomas">
+    <meta property="og:description" content="Entre em contato com o Encontro de Idiomas - Envie uma mensagem para nossa equipe ou participe de nossos grupos.">
+    <meta property="og:image" content="https://encontrodeidiomas.com.br/assets/images/og_image.png">
+    <meta property="og:url" content="https://encontrodeidiomas.com.br/contato.html">
+    
+    <!-- WhatsApp specific -->
+    <meta property="og:site_name" content="Encontro de Idiomas">
+    <meta property="og:locale" content="pt_BR">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://encontrodeidiomas.com.br/contato.html">
+    <meta property="twitter:title" content="Contato - Encontro de Idiomas">
+    <meta property="twitter:description" content="Entre em contato com o Encontro de Idiomas - Envie uma mensagem para nossa equipe ou participe de nossos grupos.">
+    <meta property="twitter:image" content="https://encontrodeidiomas.com.br/assets/images/logo.png">
+
+    <link rel="canonical" href="https://encontrodeidiomas.com.br/contato.html">
+    <title>Contato - Encontro de Idiomas</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-red: #e31d1c;
+            --accent-blue: #002654;
+            --accent-yellow: #ffd700;
+            --text-color: #333;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --link-bg: rgba(0, 0, 0, 0.05);
+            --link-hover-bg: rgba(0, 0, 0, 0.1);
+            --error-color: #e31d1c;
+            --success-color: #28a745;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--white);
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            width: 100%;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--white);
+        }
+        
+        .site-title {
+            color: var(--white);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .site-description {
+            color: var(--white);
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background: var(--accent-red);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .profile {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: bold;
+            font-size: 42px;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            background-color: var(--white);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .contact-intro {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .contact-form {
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 38, 84, 0.1);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: var(--accent-red);
+            color: var(--white);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .submit-btn:hover {
+            background: #c41a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn i {
+            margin-right: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .alert-error {
+            background-color: rgba(227, 29, 28, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .social-icons a {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--link-bg);
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            transform: scale(1.1);
+            background: var(--link-hover-bg);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            opacity: 0.7;
+            padding-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .nav-links {
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="assets/images/logo.png" alt="Encontro de Idiomas Logo" class="logo">
+                <div>
+                    <h1 class="site-title">Encontro de Idiomas</h1>
+                    <p class="site-description">Aprenda se divertindo!</p>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Início</a>
+                <a href="links.html">Links</a>
+                <a href="contato.html" style="background-color: var(--accent-red);">Contato</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="profile">
+            <div class="profile-image">
+                <div class="logo-text">EI</div>
+            </div>
+            <h1>Fale Conosco</h1>
+            <h2>Estamos aqui para ajudar! Envie sua mensagem.</h2>
+        </div>
+
+        <div class="contact-intro">
+            <p>Tem alguma dúvida sobre o Encontro de Idiomas? Quer sugerir um novo idioma para os encontros? Ou talvez queira compartilhar sua experiência? Entre em contato conosco!</p>
+        </div>
+
+        <div class="alert alert-success" id="success-message">
+            Sua mensagem foi enviada com sucesso! Entraremos em contato em breve.
+        </div>
+
+        <div class="alert alert-error" id="error-message">
+            Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente.
+        </div>
+
+        <form class="contact-form" id="contact-form">
+            <div class="form-group">
+                <label for="name">Nome</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Mensagem</label>
+                <textarea id="message" name="message" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i> Enviar
+            </button>
+        </form>
+
+        <div class="social-icons">
+            <a href="https://instagram.com/encontrodeidiomas" target="_blank" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://discord.gg/encontrodeidiomas" target="_blank" aria-label="Discord">
+                <i class="fab fa-discord"></i>
+            </a>
+        </div>
+
+        <footer>
+            &copy; <span id="current-year"></span> Encontro de Idiomas
+        </footer>
+    </div>
+
+    <script>
+        // Atualiza o ano do copyright
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Formulário de contato
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+            
+            // Configuração para o serviço de e-mail (usando formspree como exemplo)
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('message', message);
+            formData.append('_subject', 'Nova mensagem do Encontro de Idiomas');
+            
+            fetch('https://formspree.io/f/xyzelebl', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Mostra mensagem de sucesso
+                    document.getElementById('success-message').style.display = 'block';
+                    document.getElementById('error-message').style.display = 'none';
+                    // Limpa o formulário
+                    document.getElementById('contact-form').reset();
+                } else {
+                    // Mostra mensagem de erro
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('success-message').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                // Mostra mensagem de erro
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('success-message').style.display = 'none';
+                console.error('Erro:', error);
+            });
+        });
+    </script>
+</body>
+</html> 
