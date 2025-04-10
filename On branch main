@@ -1,0 +1,8 @@
+[33mcommit ff426663b794fa3476b4e8a2d9972de89962b9eb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: carlosdealcantara <carlosdealcantarajr@gmail.com>
+Date:   Wed Apr 9 22:36:43 2025 -0300
+
+    Correção dos tooltips com implementação CSS/JS personalizada
+
+ online.html | 1008 [32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ 1 file changed, 1008 insertions(+)
