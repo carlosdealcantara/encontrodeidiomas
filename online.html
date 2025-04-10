@@ -265,14 +265,16 @@
         .calendar-days {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 10px;
             margin-bottom: 2rem;
         }
         
         .day-button {
-            flex: 1;
-            min-width: 100px;
-            padding: 15px;
+            flex: 0 1 auto;
+            min-width: 80px;
+            max-width: 150px;
+            padding: 12px 15px;
             text-align: center;
             border: none;
             background-color: var(--bg-light);
@@ -280,6 +282,7 @@
             cursor: pointer;
             transition: var(--transition);
             font-weight: 600;
+            margin: 5px;
         }
         
         .day-button.active {
@@ -459,9 +462,15 @@
                 right: auto !important;
             }
             
+            .calendar-days {
+                justify-content: space-around;
+            }
+            
             .day-button {
-                min-width: auto;
+                flex: 0 1 auto;
+                min-width: 75px;
                 padding: 10px;
+                font-size: 0.9rem;
             }
             
             .header-content {
@@ -542,13 +551,15 @@
             }
             
             .calendar-days {
-                flex-wrap: wrap;
-                justify-content: center;
+                justify-content: space-evenly;
             }
             
             .day-button {
-                margin: 5px;
-                font-size: 0.9rem;
+                flex: 0 1 auto;
+                min-width: 70px;
+                padding: 8px 12px;
+                margin: 3px;
+                font-size: 0.85rem;
             }
             
             .event-title {
