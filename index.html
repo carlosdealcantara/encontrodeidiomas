@@ -56,11 +56,21 @@
             box-sizing: border-box;
         }
         
+        /* Impede qualquer overflow horizontal em qualquer elemento */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
         body {
             font-family: 'Poppins', sans-serif;
+            color: #333;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
             line-height: 1.6;
-            color: var(--text-color);
-            overflow-x: hidden;
+            width: 100%;
         }
         
         .header {
@@ -73,9 +83,10 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 0 20px;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            flex-wrap: wrap; /* Permite que o menu quebre para a linha de baixo em telas pequenas */
         }
 
         .logo-container {
@@ -108,11 +119,12 @@
         }
 
         .nav-links a {
-            color: var(--white);
+            color: #fff;
             text-decoration: none;
             padding: 8px 16px;
             border-radius: 20px;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Impede que o texto quebre dentro do link */
         }
 
         .nav-links a:hover {
@@ -123,6 +135,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            width: 100%;
         }
         
         /* Swiper Styles */
@@ -285,30 +298,74 @@
         }
 
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-
-            .logo-container {
-                flex-direction: column;
-            }
-
-            .nav-links {
-                margin-top: 15px;
-            }
-
-            .site-title {
-                font-size: 1.5rem;
-            }
-
-            .swiper {
-                height: 400px;
+            .features-grid {
+                grid-template-columns: 1fr 1fr;
             }
             
-            .slide-caption h3 {
+            .logo {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .site-title {
                 font-size: 1.2rem;
+            }
+            
+            .site-description {
+                font-size: 0.8rem;
+            }
+            
+            .nav-links {
+                gap: 10px;
+            }
+            
+            .nav-links a {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Mobile devices específica para telas muito pequenas */
+        @media (max-width: 480px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                justify-content: center;
+                padding: 10px;
+            }
+            
+            .logo-container {
+                margin-bottom: 10px;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            .nav-links a {
+                padding: 5px 10px;
+                font-size: 0.85rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .cta-button {
+                width: 100%;
+            }
+            
+            .swiper-button-prev,
+            .swiper-button-next {
+                display: none;
             }
         }
     </style>

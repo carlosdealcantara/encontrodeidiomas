@@ -57,11 +57,21 @@
             box-sizing: border-box;
         }
         
+        /* Impede qualquer overflow horizontal em qualquer elemento */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
         body {
             font-family: 'Poppins', sans-serif;
+            color: #333;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
             line-height: 1.6;
-            color: var(--text-color);
-            background: var(--white);
+            width: 100%;
         }
         
         .header {
@@ -72,12 +82,13 @@
         }
         
         .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1rem 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 0 20px;
+            flex-wrap: wrap; /* Permite que o menu quebre para a linha de baixo em telas pequenas */
         }
         
         .logo-container {
@@ -113,11 +124,12 @@
         }
         
         .nav-links a {
-            color: var(--white);
+            color: #fff;
             text-decoration: none;
             padding: 8px 16px;
             border-radius: 20px;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Impede que o texto quebre dentro do link */
         }
         
         .nav-links a:hover {
@@ -125,9 +137,10 @@
         }
         
         .container {
-            max-width: 800px;
-            margin: 40px auto;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 0 20px;
+            width: 100%;
         }
         
         .profile {
@@ -297,14 +310,81 @@
         }
         
         @media (max-width: 768px) {
-            .header-content {
+            .form-container, .info-container {
+                width: 100%;
+                padding: 20px;
+            }
+            
+            .contact-form-container {
                 flex-direction: column;
-                text-align: center;
-                gap: 20px;
+            }
+            
+            .logo {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .site-title {
+                font-size: 1.2rem;
+            }
+            
+            .site-description {
+                font-size: 0.8rem;
             }
             
             .nav-links {
-                margin-top: 20px;
+                gap: 10px;
+            }
+            
+            .nav-links a {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Mobile devices específico para telas muito pequenas */
+        @media (max-width: 480px) {
+            .header-content {
+                justify-content: center;
+                padding: 10px;
+            }
+            
+            .logo-container {
+                margin-bottom: 10px;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            .nav-links a {
+                padding: 5px 10px;
+                font-size: 0.85rem;
+            }
+            
+            .main-container {
+                margin-top: 120px; /* Ajustado para o cabeçalho maior em mobile */
+            }
+            
+            .contact-section h2 {
+                font-size: 1.5rem;
+            }
+            
+            .form-container, .info-container {
+                padding: 15px;
+            }
+            
+            .social-links {
+                gap: 15px;
+            }
+            
+            .social-link {
+                font-size: 1.8rem;
             }
         }
     </style>
