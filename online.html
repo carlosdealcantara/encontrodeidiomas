@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência">
+    <meta name="keywords" content="encontro de idiomas, clube poliglota, praticar idiomas, online, videoconferência">
+    <meta name="author" content="Encontro de Idiomas">
+    <title>Encontros Online - Encontro de Idiomas</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-red: #e31d1c;
+            --accent-blue: #002654;
+            --accent-yellow: #ffd700;
+            --text-color: #333;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --card-bg: #ffffff;
+            --border-radius: 16px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --highlight-bg: rgba(255, 215, 0, 0.1);
+            --highlight-border: #ffd700;
+            --now-badge-bg: #e31d1c;
+            --disabled-bg: #e0e0e0;
+            --disabled-color: #888;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            color: var(--text-color);
+            background-color: #f7f7f7;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--white);
+        }
+        
+        .site-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .site-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background: var(--accent-red);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #000428, #004e92);
+            color: var(--white);
+            position: relative;
+            padding: 2rem 0;
+            overflow: hidden;
+            margin-top: 80px; /* account for fixed header */
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('assets/images/encontrodeidiomas-20250407-0002.jpg') no-repeat center center/cover;
+            opacity: 0.2;
+            z-index: 0;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            animation: fadeUp 1s ease;
+        }
+        
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            background: linear-gradient(to right, var(--accent-red), var(--accent-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+        
+        .hero-button {
+            display: inline-block;
+            padding: 12px 32px;
+            background: var(--accent-red);
+            color: var(--white);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(227, 29, 28, 0.4);
+        }
+        
+        .hero-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(227, 29, 28, 0.5);
+        }
+        
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            cursor: pointer;
+            color: var(--white);
+            font-size: 2rem;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-20px) translateX(-50%); }
+            60% { transform: translateY(-10px) translateX(-50%); }
+        }
+        
+        /* Calendar Section */
+        .calendar-section {
+            padding: 5rem 0;
+            background-color: var(--white);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--accent-red), var(--accent-blue));
+            border-radius: 2px;
+        }
+        
+        /* Calendar Component */
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .calendar-nav-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .calendar-days {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .day-button {
+            flex: 1;
+            min-width: 100px;
+            padding: 15px;
+            text-align: center;
+            border: none;
+            background-color: var(--bg-light);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+        
+        .day-button.active {
+            background: linear-gradient(to right, var(--accent-red), var(--accent-blue));
+            color: var(--white);
+            transform: scale(1.05);
+            box-shadow: var(--shadow);
+        }
+        
+        .day-button:hover:not(.active) {
+            background-color: #e9ecef;
+            transform: translateY(-3px);
+        }
+        
+        /* Events Section */
+        .day-events {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .day-events.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-red), var(--accent-blue));
+            border-radius: 2px;
+        }
+        
+        .timeline-event {
+            position: relative;
+            margin-bottom: 2rem;
+            width: 45%;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .timeline-event:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timeline-event:nth-child(odd) {
+            margin-left: auto;
+        }
+        
+        .timeline-event::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 20px;
+            height: 20px;
+            background-color: var(--white);
+            border: 4px solid var(--accent-red);
+            border-radius: 50%;
+        }
+        
+        .timeline-event:nth-child(odd)::before {
+            left: -60px;
+        }
+        
+        .timeline-event:nth-child(even)::before {
+            right: -60px;
+        }
+        
+        .event-time {
+            display: inline-block;
+            background-color: var(--accent-blue);
+            color: var(--white);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .event-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .event-flag {
+            font-size: 1.8rem;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .flag-icon {
+            width: 24px;
+            height: 16px;
+            vertical-align: middle;
+            margin-right: 5px;
+            border-radius: 2px;
+            object-fit: cover;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .event-description {
+            margin: 10px 0 15px;
+            opacity: 0.8;
+        }
+        
+        .event-actions {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+        
+        .event-button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .join-button {
+            background: linear-gradient(to right, var(--accent-red), var(--accent-blue));
+            color: var(--white);
+        }
+        
+        .replay-button {
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            border: 1px solid #ddd;
+        }
+        
+        .event-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-event {
+                width: 90%;
+                margin-left: 50px !important;
+            }
+            
+            .timeline-event::before {
+                left: -30px !important;
+                right: auto !important;
+            }
+            
+            .day-button {
+                min-width: auto;
+                padding: 10px;
+            }
+        }
+        
+        footer {
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .now-badge {
+            display: inline-block;
+            background-color: var(--now-badge-bg);
+            color: var(--white);
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        .happening-now {
+            border: 2px solid var(--highlight-border);
+            background-color: var(--highlight-bg);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15);
+        }
+        
+        .join-button.disabled {
+            background: var(--disabled-bg);
+            color: var(--disabled-color);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .join-button.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .wait-icon {
+            margin-right: 5px;
+            animation: rotate 2s linear infinite;
+        }
+        
+        .check-icon {
+            margin-right: 5px;
+            color: #4caf50;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .tooltip {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            z-index: 100;
+            pointer-events: none;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo">
+                <div>
+                    <div class="site-title">Encontro de Idiomas</div>
+                    <div class="site-description">Aprenda se divertindo!</div>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="online.html" style="background-color: var(--accent-red);">Online</a>
+                <a href="links.html">Links</a>
+                <a href="contato.html">Contato</a>
+            </nav>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="hero-content container">
+            <h1>Encontro de Idiomas Online</h1>
+            <p>Comunidade gratuita para praticar idiomas via videoconferência</p>
+            <a href="#calendar" class="hero-button">Ver Programação</a>
+        </div>
+        <a href="#calendar" class="scroll-down">
+            <i class="fas fa-chevron-down"></i>
+        </a>
+    </section>
+    
+    <!-- Calendar Section -->
+    <section id="calendar" class="calendar-section">
+        <div class="container">
+            <h2 class="section-title">Programação Semanal</h2>
+            <p style="text-align: center; margin-bottom: 2rem;">Fuso horário: GMT-3 (Horário de Brasília)<br>As chamadas são gravadas e disponibilizadas no YouTube.</p>
+            
+            <div class="calendar-nav">
+                <div class="calendar-nav-title">Selecione o dia da semana</div>
+            </div>
+            
+            <div class="calendar-days">
+                <button class="day-button" data-day="1" onclick="showDayEvents(1)">Segunda</button>
+                <button class="day-button" data-day="2" onclick="showDayEvents(2)">Terça</button>
+                <button class="day-button" data-day="3" onclick="showDayEvents(3)">Quarta</button>
+                <button class="day-button" data-day="4" onclick="showDayEvents(4)">Quinta</button>
+                <button class="day-button" data-day="5" onclick="showDayEvents(5)">Sexta</button>
+            </div>
+            
+            <!-- Day Events -->
+            <div id="day-1" class="day-events">
+                <div class="timeline">
+                    <div class="timeline-event" data-time="19">
+                        <span class="event-time">19h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
+                            <span>Francês</span>
+                        </div>
+                        <p class="event-description">Venha praticar francês com nossos professores e outros participantes. Todos os níveis são bem-vindos!</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/yxy-vkzd-hxx" target="_blank" class="event-button join-button" data-day="1" data-time="19">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasfrances2" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event" data-time="20">
+                        <span class="event-time">20h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
+                            <span>Japonês</span>
+                        </div>
+                        <p class="event-description">Pratique japonês com falantes de diferentes níveis. Conversação e cultura japonesa.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/hjt-eyny-sqm" target="_blank" class="event-button join-button" data-day="1" data-time="20">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasjapones" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event" data-time="21">
+                        <span class="event-time">21h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
+                            <span>Italiano</span>
+                        </div>
+                        <p class="event-description">Aprenda e pratique italiano em um ambiente descontraído. Todos os níveis são bem-vindos!</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/epp-bhcj-mam" target="_blank" class="event-button join-button" data-day="1" data-time="21">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasitaliano2" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="day-2" class="day-events">
+                <div class="timeline">
+                    <div class="timeline-event" data-time="19">
+                        <span class="event-time">19h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
+                            <span>Espanhol</span>
+                        </div>
+                        <p class="event-description">Pratique espanhol com outros entusiastas. Conversação e temas culturais.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/zwn-eaja-fbf" target="_blank" class="event-button join-button" data-day="2" data-time="19">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasespanhol" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event" data-time="20">
+                        <span class="event-time">20h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
+                            <span>Inglês</span>
+                        </div>
+                        <p class="event-description">Melhore seu inglês com conversação prática. Para todos os níveis.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/ptc-rqdc-cvj" target="_blank" class="event-button join-button" data-day="2" data-time="20">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasingles" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event" data-time="21">
+                        <span class="event-time">21h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
+                            <span>Coreano</span>
+                        </div>
+                        <p class="event-description">Aprenda elementos da língua e cultura coreana em um encontro dinâmico.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/xsf-frdr-qms" target="_blank" class="event-button join-button" data-day="2" data-time="21">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomascoreano" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="day-3" class="day-events">
+                <div class="timeline">
+                    <div class="timeline-event" data-time="19">
+                        <span class="event-time">19h</span>
+                        <div class="event-title">
+                            <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
+                            <span>Libras</span>
+                        </div>
+                        <p class="event-description">Aprenda e pratique a Língua Brasileira de Sinais com nossos instrutores.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/kte-dpst-ycn" target="_blank" class="event-button join-button" data-day="3" data-time="19">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomaslibras" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="day-4" class="day-events">
+                <div class="timeline">
+                    <div class="timeline-event" data-time="20">
+                        <span class="event-time">20h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
+                            <span>Chinês</span>
+                        </div>
+                        <p class="event-description">Venha aprender e praticar mandarim. Abordagem comunicativa e cultural.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/iyq-uddf-qyw" target="_blank" class="event-button join-button" data-day="4" data-time="20">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomaschines" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event" data-time="21">
+                        <span class="event-time">21h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
+                            <span>Alemão</span>
+                        </div>
+                        <p class="event-description">Pratique alemão com nossos encontros online. Ideal para iniciantes e intermediários.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/csd-vmvs-sfo" target="_blank" class="event-button join-button" data-day="4" data-time="21">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasalemao" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="day-5" class="day-events">
+                <div class="timeline">
+                    <div class="timeline-event" data-time="19">
+                        <span class="event-time">19h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
+                            <span>Russo</span>
+                        </div>
+                        <p class="event-description">Aprenda o básico da língua russa e aspectos culturais interessantes.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/rjb-ojrm-wci" target="_blank" class="event-button join-button" data-day="5" data-time="19">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasrusso" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event" data-time="20">
+                        <span class="event-time">20h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/pl.png" class="flag-icon" alt="Polônia">
+                            <span>Polonês</span>
+                        </div>
+                        <p class="event-description">Descubra a língua e cultura polonesa com nossos encontros semanais.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/qys-pnux-iyn" target="_blank" class="event-button join-button" data-day="5" data-time="20">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomaspolones" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event" data-time="21">
+                        <span class="event-time">21h</span>
+                        <div class="event-title">
+                            <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
+                            <span>Português</span>
+                        </div>
+                        <p class="event-description">Ajude estrangeiros a praticarem português brasileiro e compartilhe nossa cultura.</p>
+                        <div class="event-actions">
+                            <a href="https://meet.google.com/boa-owry-wkh" target="_blank" class="event-button join-button" data-day="5" data-time="21">Participar</a>
+                            <a href="https://youtube.com/@encontrodeidiomasportugues" target="_blank" class="event-button replay-button">Replays</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="current-year"></span> Encontro de Idiomas. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Set current year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Smooth scroll to anchor
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Get current day and time
+        function getCurrentDayAndTime() {
+            const now = new Date();
+            const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const currentHour = now.getHours();
+            return { day: currentDay, hour: currentHour };
+        }
+        
+        // Find the next day with events
+        function findNextDay(currentDay) {
+            // Days with events (1=Monday, 2=Tuesday, etc.)
+            const daysWithEvents = [1, 2, 3, 4, 5]; // Monday to Friday
+            
+            // If current day has events, return it
+            if (daysWithEvents.includes(currentDay)) {
+                return currentDay;
+            }
+            
+            // Find the next day with events
+            let nextDay = currentDay;
+            for (let i = 1; i <= 7; i++) {
+                nextDay = (nextDay + 1) % 7;
+                if (daysWithEvents.includes(nextDay)) {
+                    return nextDay;
+                }
+            }
+            
+            return 1; // Default to Monday if nothing found (shouldn't happen)
+        }
+        
+        // Check if a specific event is happening now or has passed
+        function getEventStatus(eventDay, eventHour) {
+            const { day, hour } = getCurrentDayAndTime();
+            
+            // Mesmo dia
+            if (day === parseInt(eventDay)) {
+                // Hora atual
+                if (hour === parseInt(eventHour)) {
+                    return "now"; // Acontecendo agora
+                }
+                // Já passou
+                else if (hour > parseInt(eventHour)) {
+                    return "past"; // Já aconteceu hoje
+                }
+                // Ainda vai acontecer
+                else {
+                    return "future"; // Vai acontecer hoje
+                }
+            }
+            // Dia passado
+            else if ((day > parseInt(eventDay) && !(day === 0 && parseInt(eventDay) === 5)) || 
+                     (day === 0 && parseInt(eventDay) < 5) || 
+                     (day === 1 && parseInt(eventDay) === 5)) {
+                return "past"; // Dia já passou
+            }
+            // Dia futuro
+            else {
+                return "future"; // Dia ainda vai chegar
+            }
+        }
+        
+        // Update join buttons state
+        function updateJoinButtons() {
+            const joinButtons = document.querySelectorAll('.join-button');
+            
+            joinButtons.forEach(button => {
+                const eventDay = button.getAttribute('data-day');
+                const eventHour = button.getAttribute('data-time');
+                const status = getEventStatus(eventDay, eventHour);
+                const buttonContainer = button.parentElement;
+                
+                // Remove any existing tooltips
+                const existingTooltip = buttonContainer.querySelector('.tooltip');
+                if (existingTooltip) existingTooltip.remove();
+                
+                if (status === "now") {
+                    // Acontecendo agora
+                    button.classList.remove('disabled');
+                    button.removeAttribute('disabled');
+                    button.style.pointerEvents = 'auto';
+                    button.innerHTML = 'Participar';
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro está acontecendo agora. Clique para participar.';
+                    buttonContainer.appendChild(tooltip);
+                } 
+                else if (status === "past") {
+                    // Já aconteceu
+                    button.classList.add('disabled');
+                    button.setAttribute('disabled', 'disabled');
+                    button.style.pointerEvents = 'none';
+                    button.innerHTML = '<i class="fas fa-check check-icon"></i> Finalizado';
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro já ocorreu. Retorne no próximo horário programado.';
+                    buttonContainer.appendChild(tooltip);
+                } 
+                else {
+                    // Ainda vai acontecer
+                    button.classList.add('disabled');
+                    button.setAttribute('disabled', 'disabled');
+                    button.style.pointerEvents = 'none';
+                    button.innerHTML = '<i class="fas fa-clock wait-icon"></i> Aguarde';
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro ainda não começou. Volte no horário programado.';
+                    buttonContainer.appendChild(tooltip);
+                }
+                
+                // Add event listeners for tooltip visibility
+                buttonContainer.addEventListener('mouseenter', () => {
+                    const tooltip = buttonContainer.querySelector('.tooltip');
+                    if (tooltip) tooltip.style.opacity = '1';
+                });
+                
+                buttonContainer.addEventListener('mouseleave', () => {
+                    const tooltip = buttonContainer.querySelector('.tooltip');
+                    if (tooltip) tooltip.style.opacity = '0';
+                });
+            });
+        }
+        
+        // Show events for the specified day
+        function showDayEvents(day) {
+            // Hide all day events
+            document.querySelectorAll('.day-events').forEach(element => {
+                element.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.day-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected day events
+            document.getElementById(`day-${day}`).classList.add('active');
+            
+            // Add active class to clicked button
+            document.querySelector(`.day-button[data-day="${day}"]`).classList.add('active');
+            
+            // Check if any events are happening now
+            checkCurrentEvents(day);
+            
+            // Update join buttons state
+            updateJoinButtons();
+        }
+        
+        // Check if any events are happening now and highlight them
+        function checkCurrentEvents(day) {
+            const { day: currentDay, hour: currentHour } = getCurrentDayAndTime();
+            
+            // Only check if the displayed day is today
+            if (day === currentDay) {
+                const events = document.querySelectorAll(`#day-${day} .timeline-event`);
+                
+                events.forEach(event => {
+                    const eventHour = parseInt(event.getAttribute('data-time'));
+                    
+                    // Check if event is happening now (within the hour)
+                    if (eventHour === currentHour) {
+                        event.classList.add('happening-now');
+                        
+                        // Add "AGORA" badge if not already there
+                        const eventTitle = event.querySelector('.event-title');
+                        if (!eventTitle.querySelector('.now-badge')) {
+                            const nowBadge = document.createElement('span');
+                            nowBadge.className = 'now-badge';
+                            nowBadge.textContent = 'AGORA';
+                            eventTitle.appendChild(nowBadge);
+                        }
+                    } else {
+                        event.classList.remove('happening-now');
+                        
+                        // Remove "AGORA" badge if exists
+                        const nowBadge = event.querySelector('.now-badge');
+                        if (nowBadge) {
+                            nowBadge.remove();
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize the calendar
+        function initCalendar() {
+            const { day: currentDay } = getCurrentDayAndTime();
+            const nextEventDay = findNextDay(currentDay);
+            
+            // Show events for the next day with events (or today if it has events)
+            showDayEvents(nextEventDay);
+            
+            // Set up an interval to check for current events every minute
+            setInterval(() => {
+                const { day: updatedCurrentDay } = getCurrentDayAndTime();
+                const activeDay = parseInt(document.querySelector('.day-button.active').getAttribute('data-day'));
+                
+                checkCurrentEvents(activeDay);
+                updateJoinButtons();
+                
+                // If it's a new day and the currently displayed day was yesterday, update to today
+                if (updatedCurrentDay !== currentDay && activeDay === (updatedCurrentDay - 1 + 7) % 7) {
+                    showDayEvents(updatedCurrentDay);
+                }
+            }, 60000); // Check every minute
+        }
+        
+        // Run when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initCalendar();
+            updateJoinButtons();
+        });
+    </script>
+</body>
+</html> 
