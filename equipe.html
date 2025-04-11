@@ -1341,145 +1341,214 @@
                 if (tab === 'online') {
                     const idioma = urlParams.get('idioma');
                     if (idioma) {
-                        // Abordagem alternativa - ID direto
-                        const idCandidato = `idioma-${idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                        console.log(`Processando URL com idioma: "${idioma}"`);
                         
-                        // Atribuir IDs aos botões
+                        // Forçar a ativação direta do botão pelo dataset
+                        let buttonFound = false;
+                        
+                        // Primeiro, tenta uma correspondência exata (case insensitive)
                         languageFilterButtons.forEach(btn => {
-                            if (!btn.id) {
-                                const language = btn.dataset.language;
-                                const btnId = `idioma-${language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
-                                btn.id = btnId;
+                            if (buttonFound) return;
+                            
+                            if (btn.dataset.language.toLowerCase() === idioma.toLowerCase()) {
+                                console.log(`Correspondência exata encontrada para: ${idioma}`);
+                                // Atualizar classes visualmente
+                                languageFilterButtons.forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+                                
+                                // Forçar filtro
+                                filterByLanguage(btn.dataset.language, false);
+                                buttonFound = true;
                             }
                         });
                         
-                        // Tentar encontrar o botão diretamente pelo ID
-                        const buttonDirect = document.getElementById(idCandidato);
-                        if (buttonDirect) {
-                            buttonDirect.click();
-                            return;
+                        // Se não encontrou, tenta sem acentos
+                        if (!buttonFound) {
+                            const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            
+                            languageFilterButtons.forEach(btn => {
+                                if (buttonFound) return;
+                                
+                                const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                if (btnLanguageNorm === normalizedIdioma) {
+                                    console.log(`Correspondência normalizada encontrada para: ${idioma}`);
+                                    // Atualizar classes visualmente
+                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    
+                                    // Forçar filtro
+                                    filterByLanguage(btn.dataset.language, false);
+                                    buttonFound = true;
+                                }
+                            });
                         }
                         
-                        // Abordagem original aprimorada
-                        const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        const idiomaSemEspacos = idioma.toLowerCase().replace(/\s/g, '');
+                        // Se ainda não encontrou, tenta correspondência parcial
+                        if (!buttonFound) {
+                            languageFilterButtons.forEach(btn => {
+                                if (buttonFound) return;
+                                
+                                const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                
+                                if (btnLanguageNorm.includes(normalizedIdioma) || normalizedIdioma.includes(btnLanguageNorm)) {
+                                    console.log(`Correspondência parcial encontrada para: ${idioma}`);
+                                    // Atualizar classes visualmente
+                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    
+                                    // Forçar filtro
+                                    filterByLanguage(btn.dataset.language, false);
+                                    buttonFound = true;
+                                }
+                            });
+                        }
                         
-                        let found = false;
-                        languageFilterButtons.forEach(btn => {
-                            if (found) return;
-                            
-                            const btnLanguage = btn.dataset.language;
-                            const btnLanguageNorm = btnLanguage.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            const btnLanguageSemEspacos = btnLanguage.toLowerCase().replace(/\s/g, '');
-                            
-                            if (btnLanguage.toLowerCase() === idioma.toLowerCase() || 
-                                btnLanguageNorm === normalizedIdioma || 
-                                btnLanguageNorm.includes(normalizedIdioma) || 
-                                normalizedIdioma.includes(btnLanguageNorm) ||
-                                levenshteinDistance(btnLanguageSemEspacos, idiomaSemEspacos) <= 2) {
-                                btn.click();
-                                found = true;
-                            }
-                        });
-                        
-                        if (!found) {
-                            languageFilterButtons[0].click();
+                        // Se não encontrou nenhuma correspondência, não faz nada (mantém a visualização padrão)
+                        if (!buttonFound) {
+                            console.log(`Nenhuma correspondência encontrada para: ${idioma}`);
                         }
                     }
                 } else if (tab === 'presencial') {
                     const cidade = urlParams.get('cidade');
                     if (cidade) {
-                        // Abordagem alternativa - ID direto
-                        const idCandidato = `cidade-${cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                        console.log(`Processando URL com cidade: "${cidade}"`);
                         
-                        // Atribuir IDs aos botões
+                        // Forçar a ativação direta do botão pelo dataset
+                        let buttonFound = false;
+                        
+                        // Primeiro, tenta uma correspondência exata (case insensitive)
                         cityFilterButtons.forEach(btn => {
-                            if (!btn.id) {
-                                const city = btn.dataset.city;
-                                const btnId = `cidade-${city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
-                                btn.id = btnId;
+                            if (buttonFound) return;
+                            
+                            if (btn.dataset.city.toLowerCase() === cidade.toLowerCase()) {
+                                console.log(`Correspondência exata encontrada para cidade: ${cidade}`);
+                                // Atualizar classes visualmente
+                                cityFilterButtons.forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+                                
+                                // Forçar filtro
+                                filterByCity(btn.dataset.city, false);
+                                buttonFound = true;
                             }
                         });
                         
-                        // Tentar encontrar o botão diretamente pelo ID
-                        const buttonDirect = document.getElementById(idCandidato);
-                        if (buttonDirect) {
-                            buttonDirect.click();
-                            return;
+                        // Se não encontrou, tenta sem acentos
+                        if (!buttonFound) {
+                            const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            
+                            cityFilterButtons.forEach(btn => {
+                                if (buttonFound) return;
+                                
+                                const btnCityNorm = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                if (btnCityNorm === normalizedCidade) {
+                                    console.log(`Correspondência normalizada encontrada para cidade: ${cidade}`);
+                                    // Atualizar classes visualmente
+                                    cityFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    
+                                    // Forçar filtro
+                                    filterByCity(btn.dataset.city, false);
+                                    buttonFound = true;
+                                }
+                            });
                         }
                         
-                        // Abordagem original aprimorada
-                        const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        const cidadeSemEspacos = cidade.toLowerCase().replace(/\s/g, '');
+                        // Se ainda não encontrou, tenta correspondência parcial
+                        if (!buttonFound) {
+                            cityFilterButtons.forEach(btn => {
+                                if (buttonFound) return;
+                                
+                                const btnCityNorm = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                
+                                if (btnCityNorm.includes(normalizedCidade) || normalizedCidade.includes(btnCityNorm)) {
+                                    console.log(`Correspondência parcial encontrada para cidade: ${cidade}`);
+                                    // Atualizar classes visualmente
+                                    cityFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    
+                                    // Forçar filtro
+                                    filterByCity(btn.dataset.city, false);
+                                    buttonFound = true;
+                                }
+                            });
+                        }
                         
-                        let found = false;
-                        cityFilterButtons.forEach(btn => {
-                            if (found) return;
-                            
-                            const btnCity = btn.dataset.city;
-                            const btnCityNorm = btnCity.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            const btnCitySemEspacos = btnCity.toLowerCase().replace(/\s/g, '');
-                            
-                            if (btnCity.toLowerCase() === cidade.toLowerCase() || 
-                                btnCityNorm === normalizedCidade || 
-                                btnCityNorm.includes(normalizedCidade) || 
-                                normalizedCidade.includes(btnCityNorm) ||
-                                levenshteinDistance(btnCitySemEspacos, cidadeSemEspacos) <= 2) {
-                                btn.click();
-                                found = true;
-                            }
-                        });
-                        
-                        if (!found) {
-                            cityFilterButtons[0].click();
+                        // Se não encontrou nenhuma correspondência, não faz nada (mantém a visualização padrão)
+                        if (!buttonFound) {
+                            console.log(`Nenhuma correspondência encontrada para cidade: ${cidade}`);
                         }
                     }
                 } else if (tab === 'conteudo') {
                     const papel = urlParams.get('papel');
                     if (papel) {
-                        // Abordagem alternativa - ID direto
-                        const idCandidato = `papel-${papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                        console.log(`Processando URL com papel: "${papel}"`);
                         
-                        // Atribuir IDs aos botões
+                        // Forçar a ativação direta do botão pelo dataset
+                        let buttonFound = false;
+                        
+                        // Primeiro, tenta uma correspondência exata (case insensitive)
                         roleFilterButtons.forEach(btn => {
-                            if (!btn.id) {
-                                const role = btn.dataset.role;
-                                const btnId = `papel-${role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
-                                btn.id = btnId;
+                            if (buttonFound) return;
+                            
+                            if (btn.dataset.role.toLowerCase() === papel.toLowerCase()) {
+                                console.log(`Correspondência exata encontrada para papel: ${papel}`);
+                                // Atualizar classes visualmente
+                                roleFilterButtons.forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+                                
+                                // Forçar filtro
+                                filterByRole(btn.dataset.role, false);
+                                buttonFound = true;
                             }
                         });
                         
-                        // Tentar encontrar o botão diretamente pelo ID
-                        const buttonDirect = document.getElementById(idCandidato);
-                        if (buttonDirect) {
-                            buttonDirect.click();
-                            return;
+                        // Se não encontrou, tenta sem acentos
+                        if (!buttonFound) {
+                            const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            
+                            roleFilterButtons.forEach(btn => {
+                                if (buttonFound) return;
+                                
+                                const btnRoleNorm = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                if (btnRoleNorm === normalizedPapel) {
+                                    console.log(`Correspondência normalizada encontrada para papel: ${papel}`);
+                                    // Atualizar classes visualmente
+                                    roleFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    
+                                    // Forçar filtro
+                                    filterByRole(btn.dataset.role, false);
+                                    buttonFound = true;
+                                }
+                            });
                         }
                         
-                        // Abordagem original aprimorada
-                        const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        const papelSemEspacos = papel.toLowerCase().replace(/\s/g, '');
+                        // Se ainda não encontrou, tenta correspondência parcial
+                        if (!buttonFound) {
+                            roleFilterButtons.forEach(btn => {
+                                if (buttonFound) return;
+                                
+                                const btnRoleNorm = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                
+                                if (btnRoleNorm.includes(normalizedPapel) || normalizedPapel.includes(btnRoleNorm)) {
+                                    console.log(`Correspondência parcial encontrada para papel: ${papel}`);
+                                    // Atualizar classes visualmente
+                                    roleFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    
+                                    // Forçar filtro
+                                    filterByRole(btn.dataset.role, false);
+                                    buttonFound = true;
+                                }
+                            });
+                        }
                         
-                        let found = false;
-                        roleFilterButtons.forEach(btn => {
-                            if (found) return;
-                            
-                            const btnRole = btn.dataset.role;
-                            const btnRoleNorm = btnRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            const btnRoleSemEspacos = btnRole.toLowerCase().replace(/\s/g, '');
-                            
-                            if (btnRole.toLowerCase() === papel.toLowerCase() || 
-                                btnRoleNorm === normalizedPapel || 
-                                btnRoleNorm.includes(normalizedPapel) || 
-                                normalizedPapel.includes(btnRoleNorm) ||
-                                levenshteinDistance(btnRoleSemEspacos, papelSemEspacos) <= 2) {
-                                btn.click();
-                                found = true;
-                            }
-                        });
-                        
-                        if (!found) {
-                            roleFilterButtons[0].click();
+                        // Se não encontrou nenhuma correspondência, não faz nada (mantém a visualização padrão)
+                        if (!buttonFound) {
+                            console.log(`Nenhuma correspondência encontrada para papel: ${papel}`);
                         }
                     }
                 }
@@ -1530,6 +1599,33 @@
         
         // Initial setup
         window.addEventListener('DOMContentLoaded', () => {
+            // Inicializar IDs para todos os botões
+            console.log("Inicializando IDs para botões de filtro");
+            
+            // Inicializar IDs para botões de idioma
+            languageFilterButtons.forEach(btn => {
+                const language = btn.dataset.language;
+                const btnId = `idioma-${language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                btn.id = btnId;
+                console.log(`Botão de idioma: ${language} -> ID: ${btnId}`);
+            });
+            
+            // Inicializar IDs para botões de cidade
+            cityFilterButtons.forEach(btn => {
+                const city = btn.dataset.city;
+                const btnId = `cidade-${city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                btn.id = btnId;
+                console.log(`Botão de cidade: ${city} -> ID: ${btnId}`);
+            });
+            
+            // Inicializar IDs para botões de papel
+            roleFilterButtons.forEach(btn => {
+                const role = btn.dataset.role;
+                const btnId = `papel-${role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                btn.id = btnId;
+                console.log(`Botão de papel: ${role} -> ID: ${btnId}`);
+            });
+            
             // Add debug button to page
             document.body.appendChild(debugButton);
             
