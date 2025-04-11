@@ -489,11 +489,15 @@
         }
         
         .whatsapp-icon {
-            background-color: #25D366;
+            background-color: transparent;
+            color: #25D366;
+            border: 1px solid #25D366;
         }
         
         .instagram-icon {
-            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+            background: transparent;
+            color: #833AB4;
+            border: 1px solid #833AB4;
         }
         
         .event-flag {
@@ -927,8 +931,7 @@
             color: var(--text-color);
             border: 1px dashed var(--accent-red);
             font-weight: 600;
-            transform: scale(1.02);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            box-shadow: none;
         }
         
         .language-button.special:hover, 
@@ -936,7 +939,8 @@
             background: var(--accent-red);
             color: var(--white);
             border: 1px solid var(--accent-red);
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: none;
         }
     </style>
 </head>
@@ -1781,6 +1785,12 @@
         
         // Show events for a specific language
         function showLanguageEvents(language, updateURL = true) {
+            // Caso especial para "O seu!"
+            if (language.toLowerCase() === 'seu') {
+                window.location.href = 'equipe.html?tab=online&language=outros';
+                return;
+            }
+            
             // Track language selection
             trackLanguageFilterEvent(language);
             
