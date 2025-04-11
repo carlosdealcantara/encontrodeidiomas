@@ -914,8 +914,8 @@
                 
                 <!-- Team Card - Carlos - Desenvolvedor -->
                 <div class="host-card" data-role="desenvolvimento,design">
-                    <div class="host-badge design-badge" style="right: auto; left: 20px;">Design</div>
-                    <div class="host-badge dev-badge" style="left: auto; right: 20px;">Desenvolvimento</div>
+                    <div class="host-badge dev-badge" style="right: 20px; top: 20px;">Desenvolvimento</div>
+                    <div class="host-badge design-badge" style="right: 20px; top: 65px;">Design</div>
                     <img src="assets/images/Carlos.jpg" alt="Carlos de Alcântara" class="host-image">
                     <div class="host-info">
                         <h3 class="host-name">Carlos de Alcântara</h3>
@@ -1012,7 +1012,7 @@
         const tabContents = document.querySelectorAll('.tab-content');
         const tabIndicator = document.querySelector('.tab-indicator');
         
-        function setActiveTab(tab) {
+        function setActiveTab(tab, updateURL = true) {
             // Update indicator position
             const activeButton = document.querySelector(`.tab-button[data-tab="${tab}"]`);
             const buttonRect = activeButton.getBoundingClientRect();
@@ -1036,13 +1036,20 @@
                     content.classList.add('active');
                 }
             });
+
+            // Update URL with the current tab
+            if (updateURL) {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tab);
+                history.pushState({}, '', url);
+            }
         }
         
         // Language filter functionality
         const languageFilterButtons = document.querySelectorAll('#online .language-filter-btn');
         const hostCards = document.querySelectorAll('#online .host-card');
         
-        function filterByLanguage(language) {
+        function filterByLanguage(language, updateURL = true) {
             hostCards.forEach(card => {
                 if (language === 'all') {
                     card.classList.remove('hidden');
@@ -1061,13 +1068,21 @@
                     }
                 }
             });
+
+            // Update URL with the language filter
+            if (updateURL) {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', 'online');
+                url.searchParams.set('idioma', language);
+                history.pushState({}, '', url);
+            }
         }
         
         // City filter functionality
         const cityFilterButtons = document.querySelectorAll('.city-filter .language-filter-btn');
         const cityHostCards = document.querySelectorAll('#presencial .host-card');
         
-        function filterByCity(city) {
+        function filterByCity(city, updateURL = true) {
             cityHostCards.forEach(card => {
                 if (city === 'all') {
                     card.classList.remove('hidden');
@@ -1085,13 +1100,21 @@
                     }
                 }
             });
+
+            // Update URL with the city filter
+            if (updateURL) {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', 'presencial');
+                url.searchParams.set('cidade', city);
+                history.pushState({}, '', url);
+            }
         }
         
         // Role filter functionality
         const roleFilterButtons = document.querySelectorAll('#conteudo .language-filter-btn');
         const teamCards = document.querySelectorAll('#conteudo .host-card');
         
-        function filterByRole(role) {
+        function filterByRole(role, updateURL = true) {
             teamCards.forEach(card => {
                 if (role === 'all') {
                     card.classList.remove('hidden');
@@ -1110,11 +1133,66 @@
                     }
                 }
             });
+
+            // Update URL with the role filter
+            if (updateURL) {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', 'conteudo');
+                url.searchParams.set('papel', role);
+                history.pushState({}, '', url);
+            }
+        }
+        
+        // Read URL parameters and set initial state
+        function readURLParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Handle tab parameter
+            const tab = urlParams.get('tab');
+            if (tab && ['online', 'presencial', 'conteudo'].includes(tab)) {
+                setActiveTab(tab, false);
+                
+                // Handle specific filter parameters based on active tab
+                if (tab === 'online') {
+                    const idioma = urlParams.get('idioma');
+                    if (idioma) {
+                        languageFilterButtons.forEach(btn => {
+                            if (btn.dataset.language === idioma) {
+                                btn.click();
+                            }
+                        });
+                    }
+                } else if (tab === 'presencial') {
+                    const cidade = urlParams.get('cidade');
+                    if (cidade) {
+                        cityFilterButtons.forEach(btn => {
+                            if (btn.dataset.city === cidade) {
+                                btn.click();
+                            }
+                        });
+                    }
+                } else if (tab === 'conteudo') {
+                    const papel = urlParams.get('papel');
+                    if (papel) {
+                        roleFilterButtons.forEach(btn => {
+                            if (btn.dataset.role === papel) {
+                                btn.click();
+                            }
+                        });
+                    }
+                }
+            }
         }
         
         // Initial setup
         window.addEventListener('DOMContentLoaded', () => {
-            setActiveTab('online');
+            // Check for URL parameters first
+            readURLParameters();
+            
+            // If no parameters were found, set default tab
+            if (!new URLSearchParams(window.location.search).has('tab')) {
+                setActiveTab('online');
+            }
             
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -1153,6 +1231,11 @@
                     // Filter team members
                     filterByRole(button.dataset.role);
                 });
+            });
+
+            // Handle browser back/forward navigation
+            window.addEventListener('popstate', () => {
+                readURLParameters();
             });
         });
     </script>
