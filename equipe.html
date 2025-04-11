@@ -1106,26 +1106,6 @@
             </a>
         </div>
         
-        <!-- Links de teste para verificação (temporários) -->
-        <div style="margin: 20px 0; padding: 15px; background: #eee; border-radius: 10px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto; font-size: 13px;">
-            <h4 style="text-align: center; margin-bottom: 10px;">Links de teste para validação (temporários)</h4>
-            <ul style="list-style-type: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-                <li><a href="?tab=online&idioma=francês" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Francês (com acento)</a></li>
-                <li><a href="?tab=online&idioma=frances" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Frances (sem acento)</a></li>
-                <li><a href="?tab=online&idioma=FRANCÊS" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">FRANCÊS (maiúsculo)</a></li>
-                <li><a href="?tab=online&idioma=franc" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Franc (parcial)</a></li>
-                <li><a href="?tab=online&idioma=italiano" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Italiano</a></li>
-                <li><a href="?tab=online&idioma=alemão" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Alemão</a></li>
-                <li><a href="?tab=online&idioma=alemao" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Alemao</a></li>
-                <li><a href="?tab=online&idioma=portugues" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Portugues</a></li>
-                <li><a href="?tab=online&idioma=portugês" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Portugês</a></li>
-                <li><a href="?tab=online&idioma=coreano" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Coreano</a></li>
-                <li><a href="?tab=online&idioma=libras" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Libras</a></li>
-                <li><a href="?tab=presencial&cidade=brasilia" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Brasília</a></li>
-                <li><a href="?tab=presencial&cidade=brasilia" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Brasilia</a></li>
-            </ul>
-        </div>
-        
         <div class="footer-bottom">
             <p>&copy; <span id="current-year"></span> Encontro de Idiomas. Todos os direitos reservados.</p>
         </div>
@@ -1134,63 +1114,6 @@
     <script>
         // Set current year in footer
         document.getElementById('current-year').textContent = new Date().getFullYear();
-        
-        // Função de debug para exibir informações detalhadas
-        function debugInfo() {
-            const debugContainer = document.createElement('div');
-            debugContainer.id = 'debug-info';
-            debugContainer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 15px; border-radius: 5px; font-size: 12px; max-width: 400px; max-height: 300px; overflow: auto; z-index: 10000;';
-            
-            // Verificar parâmetros da URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const tab = urlParams.get('tab');
-            const idioma = urlParams.get('idioma');
-            const cidade = urlParams.get('cidade');
-            const papel = urlParams.get('papel');
-            
-            let html = '<h3>Debug Info</h3>';
-            html += '<p><strong>URL Params:</strong><br>';
-            html += `tab: ${tab || 'não definido'}<br>`;
-            html += `idioma: ${idioma || 'não definido'}<br>`;
-            html += `cidade: ${cidade || 'não definido'}<br>`;
-            html += `papel: ${papel || 'não definido'}</p>`;
-            
-            // Informações dos botões de idioma
-            html += '<p><strong>Botões de Idioma:</strong><br>';
-            languageFilterButtons.forEach(btn => {
-                const isActive = btn.classList.contains('active');
-                html += `ID: ${btn.id}, Language: ${btn.dataset.language}, Ativo: ${isActive}<br>`;
-            });
-            html += '</p>';
-            
-            // Informações dos botões de cidade
-            html += '<p><strong>Botões de Cidade:</strong><br>';
-            cityFilterButtons.forEach(btn => {
-                const isActive = btn.classList.contains('active');
-                html += `ID: ${btn.id}, City: ${btn.dataset.city}, Ativo: ${isActive}<br>`;
-            });
-            html += '</p>';
-            
-            // Informações dos botões de papel
-            html += '<p><strong>Botões de Papel:</strong><br>';
-            roleFilterButtons.forEach(btn => {
-                const isActive = btn.classList.contains('active');
-                html += `ID: ${btn.id}, Role: ${btn.dataset.role}, Ativo: ${isActive}<br>`;
-            });
-            html += '</p>';
-            
-            // Botão para fechar
-            html += '<button onclick="this.parentNode.remove()" style="background: #e31d1c; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Fechar</button>';
-            
-            debugContainer.innerHTML = html;
-            document.body.appendChild(debugContainer);
-        }
-        
-        // Adiciona botão de debug
-        const debugButton = document.createElement('button');
-        debugButton.innerHTML = '🔍 Debug';
-        debugButton.style.cssText = 'position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; z-index: 9999;';
-        debugButton.onclick = debugInfo;
         
         // Tab functionality
         const tabButtons = document.querySelectorAll('.tab-button');
@@ -1254,6 +1177,14 @@
                 }
             });
 
+            // Scroll para os cards visíveis
+            setTimeout(() => {
+                const visibleCards = document.querySelectorAll('#online .host-card:not(.hidden)');
+                if (visibleCards.length > 0) {
+                    visibleCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 300);
+
             // Update URL with the language filter
             if (updateURL) {
                 const url = new URL(window.location);
@@ -1285,6 +1216,14 @@
                     }
                 }
             });
+
+            // Scroll para os cards visíveis
+            setTimeout(() => {
+                const visibleCards = document.querySelectorAll('#presencial .host-card:not(.hidden)');
+                if (visibleCards.length > 0) {
+                    visibleCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 300);
 
             // Update URL with the city filter
             if (updateURL) {
@@ -1319,6 +1258,14 @@
                 }
             });
 
+            // Scroll para os cards visíveis
+            setTimeout(() => {
+                const visibleCards = document.querySelectorAll('#conteudo .host-card:not(.hidden)');
+                if (visibleCards.length > 0) {
+                    visibleCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 300);
+
             // Update URL with the role filter
             if (updateURL) {
                 const url = new URL(window.location);
@@ -1341,42 +1288,47 @@
                 if (tab === 'online') {
                     const idioma = urlParams.get('idioma');
                     if (idioma) {
-                        console.log(`Processando URL com idioma: "${idioma}"`);
-                        
                         // Forçar a ativação direta do botão pelo dataset
                         let buttonFound = false;
                         
+                        // Caso especial para "português" com ou sem acento
+                        const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        if (normalizedIdioma === "portugues") {
+                            // Encontrar botão de português
+                            languageFilterButtons.forEach(btn => {
+                                const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                if (btnLanguageNorm === "portugues") {
+                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    filterByLanguage(btn.dataset.language, false);
+                                    buttonFound = true;
+                                }
+                            });
+                        }
+                        
                         // Primeiro, tenta uma correspondência exata (case insensitive)
-                        languageFilterButtons.forEach(btn => {
-                            if (buttonFound) return;
-                            
-                            if (btn.dataset.language.toLowerCase() === idioma.toLowerCase()) {
-                                console.log(`Correspondência exata encontrada para: ${idioma}`);
-                                // Atualizar classes visualmente
-                                languageFilterButtons.forEach(b => b.classList.remove('active'));
-                                btn.classList.add('active');
+                        if (!buttonFound) {
+                            languageFilterButtons.forEach(btn => {
+                                if (buttonFound) return;
                                 
-                                // Forçar filtro
-                                filterByLanguage(btn.dataset.language, false);
-                                buttonFound = true;
-                            }
-                        });
+                                if (btn.dataset.language.toLowerCase() === idioma.toLowerCase()) {
+                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    filterByLanguage(btn.dataset.language, false);
+                                    buttonFound = true;
+                                }
+                            });
+                        }
                         
                         // Se não encontrou, tenta sem acentos
                         if (!buttonFound) {
-                            const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            
                             languageFilterButtons.forEach(btn => {
                                 if (buttonFound) return;
                                 
                                 const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                                 if (btnLanguageNorm === normalizedIdioma) {
-                                    console.log(`Correspondência normalizada encontrada para: ${idioma}`);
-                                    // Atualizar classes visualmente
                                     languageFilterButtons.forEach(b => b.classList.remove('active'));
                                     btn.classList.add('active');
-                                    
-                                    // Forçar filtro
                                     filterByLanguage(btn.dataset.language, false);
                                     buttonFound = true;
                                 }
@@ -1389,45 +1341,31 @@
                                 if (buttonFound) return;
                                 
                                 const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                
                                 if (btnLanguageNorm.includes(normalizedIdioma) || normalizedIdioma.includes(btnLanguageNorm)) {
-                                    console.log(`Correspondência parcial encontrada para: ${idioma}`);
-                                    // Atualizar classes visualmente
                                     languageFilterButtons.forEach(b => b.classList.remove('active'));
                                     btn.classList.add('active');
-                                    
-                                    // Forçar filtro
                                     filterByLanguage(btn.dataset.language, false);
                                     buttonFound = true;
                                 }
                             });
                         }
-                        
-                        // Se não encontrou nenhuma correspondência, não faz nada (mantém a visualização padrão)
-                        if (!buttonFound) {
-                            console.log(`Nenhuma correspondência encontrada para: ${idioma}`);
-                        }
                     }
                 } else if (tab === 'presencial') {
                     const cidade = urlParams.get('cidade');
                     if (cidade) {
-                        console.log(`Processando URL com cidade: "${cidade}"`);
-                        
                         // Forçar a ativação direta do botão pelo dataset
                         let buttonFound = false;
+                        
+                        // Normalizar a cidade da URL
+                        const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                         
                         // Primeiro, tenta uma correspondência exata (case insensitive)
                         cityFilterButtons.forEach(btn => {
                             if (buttonFound) return;
                             
                             if (btn.dataset.city.toLowerCase() === cidade.toLowerCase()) {
-                                console.log(`Correspondência exata encontrada para cidade: ${cidade}`);
-                                // Atualizar classes visualmente
                                 cityFilterButtons.forEach(b => b.classList.remove('active'));
                                 btn.classList.add('active');
-                                
-                                // Forçar filtro
                                 filterByCity(btn.dataset.city, false);
                                 buttonFound = true;
                             }
@@ -1435,19 +1373,13 @@
                         
                         // Se não encontrou, tenta sem acentos
                         if (!buttonFound) {
-                            const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            
                             cityFilterButtons.forEach(btn => {
                                 if (buttonFound) return;
                                 
                                 const btnCityNorm = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                                 if (btnCityNorm === normalizedCidade) {
-                                    console.log(`Correspondência normalizada encontrada para cidade: ${cidade}`);
-                                    // Atualizar classes visualmente
                                     cityFilterButtons.forEach(b => b.classList.remove('active'));
                                     btn.classList.add('active');
-                                    
-                                    // Forçar filtro
                                     filterByCity(btn.dataset.city, false);
                                     buttonFound = true;
                                 }
@@ -1460,45 +1392,31 @@
                                 if (buttonFound) return;
                                 
                                 const btnCityNorm = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                
                                 if (btnCityNorm.includes(normalizedCidade) || normalizedCidade.includes(btnCityNorm)) {
-                                    console.log(`Correspondência parcial encontrada para cidade: ${cidade}`);
-                                    // Atualizar classes visualmente
                                     cityFilterButtons.forEach(b => b.classList.remove('active'));
                                     btn.classList.add('active');
-                                    
-                                    // Forçar filtro
                                     filterByCity(btn.dataset.city, false);
                                     buttonFound = true;
                                 }
                             });
                         }
-                        
-                        // Se não encontrou nenhuma correspondência, não faz nada (mantém a visualização padrão)
-                        if (!buttonFound) {
-                            console.log(`Nenhuma correspondência encontrada para cidade: ${cidade}`);
-                        }
                     }
                 } else if (tab === 'conteudo') {
                     const papel = urlParams.get('papel');
                     if (papel) {
-                        console.log(`Processando URL com papel: "${papel}"`);
-                        
                         // Forçar a ativação direta do botão pelo dataset
                         let buttonFound = false;
+                        
+                        // Normalizar o papel da URL
+                        const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                         
                         // Primeiro, tenta uma correspondência exata (case insensitive)
                         roleFilterButtons.forEach(btn => {
                             if (buttonFound) return;
                             
                             if (btn.dataset.role.toLowerCase() === papel.toLowerCase()) {
-                                console.log(`Correspondência exata encontrada para papel: ${papel}`);
-                                // Atualizar classes visualmente
                                 roleFilterButtons.forEach(b => b.classList.remove('active'));
                                 btn.classList.add('active');
-                                
-                                // Forçar filtro
                                 filterByRole(btn.dataset.role, false);
                                 buttonFound = true;
                             }
@@ -1506,19 +1424,13 @@
                         
                         // Se não encontrou, tenta sem acentos
                         if (!buttonFound) {
-                            const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            
                             roleFilterButtons.forEach(btn => {
                                 if (buttonFound) return;
                                 
                                 const btnRoleNorm = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                                 if (btnRoleNorm === normalizedPapel) {
-                                    console.log(`Correspondência normalizada encontrada para papel: ${papel}`);
-                                    // Atualizar classes visualmente
                                     roleFilterButtons.forEach(b => b.classList.remove('active'));
                                     btn.classList.add('active');
-                                    
-                                    // Forçar filtro
                                     filterByRole(btn.dataset.role, false);
                                     buttonFound = true;
                                 }
@@ -1531,24 +1443,13 @@
                                 if (buttonFound) return;
                                 
                                 const btnRoleNorm = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                
                                 if (btnRoleNorm.includes(normalizedPapel) || normalizedPapel.includes(btnRoleNorm)) {
-                                    console.log(`Correspondência parcial encontrada para papel: ${papel}`);
-                                    // Atualizar classes visualmente
                                     roleFilterButtons.forEach(b => b.classList.remove('active'));
                                     btn.classList.add('active');
-                                    
-                                    // Forçar filtro
                                     filterByRole(btn.dataset.role, false);
                                     buttonFound = true;
                                 }
                             });
-                        }
-                        
-                        // Se não encontrou nenhuma correspondência, não faz nada (mantém a visualização padrão)
-                        if (!buttonFound) {
-                            console.log(`Nenhuma correspondência encontrada para papel: ${papel}`);
                         }
                     }
                 }
@@ -1600,14 +1501,10 @@
         // Initial setup
         window.addEventListener('DOMContentLoaded', () => {
             // Inicializar IDs para todos os botões
-            console.log("Inicializando IDs para botões de filtro");
-            
-            // Inicializar IDs para botões de idioma
             languageFilterButtons.forEach(btn => {
                 const language = btn.dataset.language;
                 const btnId = `idioma-${language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
                 btn.id = btnId;
-                console.log(`Botão de idioma: ${language} -> ID: ${btnId}`);
             });
             
             // Inicializar IDs para botões de cidade
@@ -1615,7 +1512,6 @@
                 const city = btn.dataset.city;
                 const btnId = `cidade-${city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
                 btn.id = btnId;
-                console.log(`Botão de cidade: ${city} -> ID: ${btnId}`);
             });
             
             // Inicializar IDs para botões de papel
@@ -1623,11 +1519,7 @@
                 const role = btn.dataset.role;
                 const btnId = `papel-${role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
                 btn.id = btnId;
-                console.log(`Botão de papel: ${role} -> ID: ${btnId}`);
             });
-            
-            // Add debug button to page
-            document.body.appendChild(debugButton);
             
             // Check for URL parameters first
             readURLParameters();
