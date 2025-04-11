@@ -1668,20 +1668,24 @@
                 button.addEventListener('click', () => {
                     const language = button.getAttribute('data-language');
                     
-                    // Evitar processamento para o botão "O seu!" que já tem navegação direta
-                    if (language.toLowerCase() !== 'seu') {
-                        showLanguageEvents(language);
-                        
-                        // Rolagem adicional após a mudança de conteúdo
-                        setTimeout(() => {
-                            const headerHeight = document.querySelector('.header').offsetHeight;
-                            const calendarNav = document.querySelector('.calendar-nav');
-                            if (calendarNav) {
-                                const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                                window.scrollTo({top: y, behavior: 'smooth'});
-                            }
-                        }, 100);
+                    // Caso especial para "O seu!" - Navegar para outra página imediatamente
+                    if (language.toLowerCase() === 'seu') {
+                        window.location.href = 'equipe.html?tab=online&idioma=outros';
+                        return; // Importante: parar execução aqui para evitar o processamento do restante
                     }
+                    
+                    // Para todos os outros idiomas, processar normalmente
+                    showLanguageEvents(language);
+                    
+                    // Rolagem adicional após a mudança de conteúdo
+                    setTimeout(() => {
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 100);
                 });
             });
             
