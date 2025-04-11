@@ -38,12 +38,12 @@
     <link rel="apple-touch-icon" href="assets/images/favicon.png">
     
     <!-- Google Analytics (GA4) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BZRMQE3XJT"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1BD3DH8TJ"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-BZRMQE3XJT');
+        gtag('config', 'G-C1BD3DH8TJ');
     </script>
     
     <!-- Fonts -->
@@ -1648,8 +1648,10 @@
             // Find all events for this language
             const languageEvents = [];
             document.querySelectorAll('.timeline-event').forEach(event => {
-                const eventTitle = event.querySelector('.event-title span:not(.now-badge)').textContent.trim().toLowerCase();
-                if (eventTitle.toLowerCase() === language.toLowerCase()) {
+                // Obter o texto do idioma, ignorando o emoji/imagem e o badge "AGORA" se estiver presente
+                const eventTitle = event.querySelector('.event-title span:not(.flag-icon):not(.now-badge)');
+                
+                if (eventTitle && eventTitle.textContent.trim().toLowerCase() === language.toLowerCase()) {
                     const day = event.closest('.day-events').id.replace('day-', '');
                     const time = event.getAttribute('data-time');
                     const clone = event.cloneNode(true);
