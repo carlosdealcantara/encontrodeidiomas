@@ -1177,11 +1177,16 @@
                 }
             });
 
-            // Scroll para os cards visíveis
+            // Scroll to position the language filter at the top of the viewport
             setTimeout(() => {
                 const visibleCards = document.querySelectorAll('#online .host-card:not(.hidden)');
                 if (visibleCards.length > 0) {
-                    visibleCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Get the language filter element
+                    const languageFilter = document.querySelector('#online .language-filter');
+                    // Scroll to position the language filter at the top with a small offset
+                    const yOffset = 20; // Small offset from the top
+                    const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                    window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
 
@@ -1217,11 +1222,16 @@
                 }
             });
 
-            // Scroll para os cards visíveis
+            // Scroll to position the city filter at the top of the viewport
             setTimeout(() => {
                 const visibleCards = document.querySelectorAll('#presencial .host-card:not(.hidden)');
                 if (visibleCards.length > 0) {
-                    visibleCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Get the city filter element
+                    const cityFilter = document.querySelector('#presencial .language-filter');
+                    // Scroll to position the city filter at the top with a small offset
+                    const yOffset = 20; // Small offset from the top
+                    const y = cityFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                    window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
 
@@ -1258,11 +1268,16 @@
                 }
             });
 
-            // Scroll para os cards visíveis
+            // Scroll to position the role filter at the top of the viewport
             setTimeout(() => {
                 const visibleCards = document.querySelectorAll('#conteudo .host-card:not(.hidden)');
                 if (visibleCards.length > 0) {
-                    visibleCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Get the role filter element
+                    const roleFilter = document.querySelector('#conteudo .language-filter');
+                    // Scroll to position the role filter at the top with a small offset
+                    const yOffset = 20; // Small offset from the top
+                    const y = roleFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                    window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
 
