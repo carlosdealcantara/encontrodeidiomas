@@ -1786,9 +1786,8 @@
         function showLanguageEvents(language, updateURL = true) {
             // Caso especial para "O seu!"
             if (language.toLowerCase() === 'seu') {
-                // Use window.location.replace em vez de window.location.href para garantir
-                // que a navegação ocorra corretamente sem problemas de cache/histórico
-                window.location.replace('equipe.html?tab=online&language=outros&idioma=outros#torne-se-anfitriao');
+                // Usar href com window.location para navegação completa
+                window.location.href = 'equipe.html?tab=online&language=outros&idioma=outros#torne-se-anfitriao';
                 return;
             }
             
