@@ -1003,9 +1003,9 @@
                 }
             }
             // Dia passado
-            else if ((day > parseInt(eventDay) && !(day === 0 && parseInt(eventDay) === 5)) || 
-                     (day === 0 && parseInt(eventDay) < 5) || 
-                     (day === 1 && parseInt(eventDay) === 5)) {
+            else if ((day > eventDayNum && !(day === 6 && eventDayNum === 5) && !(day === 0 && eventDayNum === 5)) || 
+                     (day === 0 && eventDayNum < 5) || 
+                     (day === 6 && eventDayNum < 5)) {
                 return "past"; // Dia já passou
             }
             // Dia futuro
@@ -1094,30 +1094,36 @@
             });
             
             // Show selected day events
-            document.getElementById(`day-${day}`).classList.add('active');
-            
-            // Add active class to clicked button
-            document.querySelector(`.day-button[data-day="${day}"]`).classList.add('active');
-            
-            // Check if any events are happening now
-            checkCurrentEvents(day);
-            
-            // Update join buttons state
-            updateJoinButtons();
-
-            // Update URL with the day
-            if (updateURL) {
-                const url = new URL(window.location);
-                url.searchParams.set('dia', day);
-                history.pushState({}, '', url);
-            }
-
-            // Scroll to the calendar section if not already visible
-            const calendarSection = document.getElementById('calendar');
-            if (calendarSection) {
-                const rect = calendarSection.getBoundingClientRect();
-                if (rect.top < 0 || rect.bottom > window.innerHeight) {
-                    calendarSection.scrollIntoView({ behavior: 'smooth' });
+            const dayElement = document.getElementById(`day-${day}`);
+            if (dayElement) {
+                dayElement.classList.add('active');
+                
+                // Add active class to clicked button
+                const dayButton = document.querySelector(`.day-button[data-day="${day}"]`);
+                if (dayButton) {
+                    dayButton.classList.add('active');
+                }
+                
+                // Check if any events are happening now
+                checkCurrentEvents(day);
+                
+                // Update join buttons state
+                updateJoinButtons();
+    
+                // Update URL with the day
+                if (updateURL) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('dia', day);
+                    history.pushState({}, '', url);
+                }
+    
+                // Scroll to the calendar section if not already visible
+                const calendarSection = document.getElementById('calendar');
+                if (calendarSection) {
+                    const rect = calendarSection.getBoundingClientRect();
+                    if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                        calendarSection.scrollIntoView({ behavior: 'smooth' });
+                    }
                 }
             }
         }
@@ -1127,7 +1133,7 @@
             const { day: currentDay, hour: currentHour } = getCurrentDayAndTime();
             
             // Only check if the displayed day is today
-            if (day === currentDay) {
+            if (parseInt(day) === currentDay) {
                 const events = document.querySelectorAll(`#day-${day} .timeline-event`);
                 
                 events.forEach(event => {
@@ -1139,7 +1145,7 @@
                         
                         // Add "AGORA" badge if not already there
                         const eventTitle = event.querySelector('.event-title');
-                        if (!eventTitle.querySelector('.now-badge')) {
+                        if (eventTitle && !eventTitle.querySelector('.now-badge')) {
                             const nowBadge = document.createElement('span');
                             nowBadge.className = 'now-badge';
                             nowBadge.textContent = 'AGORA';
@@ -1149,52 +1155,39 @@
                         event.classList.remove('happening-now');
                         
                         // Remove "AGORA" badge if exists
-                        const nowBadge = event.querySelector('.now-badge');
-                        if (nowBadge) {
-                            nowBadge.remove();
+                        const eventTitle = event.querySelector('.event-title');
+                        if (eventTitle) {
+                            const nowBadge = eventTitle.querySelector('.now-badge');
+                            if (nowBadge) nowBadge.remove();
                         }
                     }
                 });
             }
         }
-
+        
         // Read URL parameters
         function readURLParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const dia = urlParams.get('dia');
             
             if (dia && dia >= 1 && dia <= 5) {
-                // Mostrar o dia especificado na URL e rolar para a seção de programação
-                showDayEvents(parseInt(dia), false);
-                
-                // Rolar para a seção de programação automaticamente
-                const calendarSection = document.getElementById('calendar');
-                if (calendarSection) {
-                    setTimeout(() => {
-                        calendarSection.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                }
-                return true;
-            }
-            
-            return false;
-        }
-        
-        // Initialize the calendar
-        function initCalendar() {
-            // Primeiro, verificar se há parâmetros na URL
-            const hasParams = readURLParameters();
-            
-            if (!hasParams) {
-                // Se não houver parâmetros, mostrar o dia atual ou próximo com eventos
+                showDayEvents(dia, false);
+            } else {
+                // Default to current/next day
                 const { day: currentDay } = getCurrentDayAndTime();
                 const nextEventDay = findNextDay(currentDay);
-                
-                // Show events for the next day with events (or today if it has events)
                 showDayEvents(nextEventDay, false);
             }
+        }
+        
+        // Initialize calendar
+        function initCalendar() {
+            const { day: currentDay } = getCurrentDayAndTime();
             
-            // Adicionar evento de clique nos botões de dia
+            // Read URL parameters first
+            readURLParameters();
+            
+            // Set up event listeners for day buttons
             document.querySelectorAll('.day-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const day = parseInt(button.getAttribute('data-day'));
@@ -1205,14 +1198,19 @@
             // Set up an interval to check for current events every minute
             setInterval(() => {
                 const { day: updatedCurrentDay } = getCurrentDayAndTime();
-                const activeDay = parseInt(document.querySelector('.day-button.active').getAttribute('data-day'));
+                const activeButton = document.querySelector('.day-button.active');
                 
-                checkCurrentEvents(activeDay);
-                updateJoinButtons();
-                
-                // If it's a new day and the currently displayed day was yesterday, update to today
-                if (updatedCurrentDay !== currentDay && activeDay === (updatedCurrentDay - 1 + 7) % 7) {
-                    showDayEvents(updatedCurrentDay);
+                if (activeButton) {
+                    const activeDay = parseInt(activeButton.getAttribute('data-day'));
+                    checkCurrentEvents(activeDay);
+                    updateJoinButtons();
+                    
+                    // If it's a new day and the currently displayed day was yesterday
+                    if (updatedCurrentDay !== currentDay && 
+                        ((activeDay === updatedCurrentDay - 1) || 
+                         (updatedCurrentDay === 1 && activeDay === 5))) {
+                        showDayEvents(updatedCurrentDay);
+                    }
                 }
             }, 60000); // Check every minute
 
