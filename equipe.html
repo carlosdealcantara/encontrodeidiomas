@@ -1177,19 +1177,20 @@
                 }
             });
 
-            // Scroll to position the language filter at the top of the viewport
+            // Scroll to position the tabs at the top of the viewport
             setTimeout(() => {
                 const visibleCards = document.querySelectorAll('#online .host-card:not(.hidden)');
                 if (visibleCards.length > 0) {
-                    // Get the language filter element
-                    const languageFilter = document.querySelector('#online .language-filter');
-                    
                     // Altura do menu fixo (header)
                     const headerHeight = document.querySelector('.header').offsetHeight;
                     
-                    // Scroll para posicionar o filtro logo abaixo do header fixo
-                    const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                    window.scrollTo({top: y, behavior: 'smooth'});
+                    // Obter a posição das abas (tabs) em vez do filtro
+                    const tabsElement = document.querySelector('.tabs');
+                    if (tabsElement) {
+                        // Scroll para posicionar as abas logo abaixo do header fixo
+                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
                 }
             }, 300);
 
@@ -1225,19 +1226,20 @@
                 }
             });
 
-            // Scroll to position the city filter at the top of the viewport
+            // Scroll to position the tabs at the top of the viewport
             setTimeout(() => {
                 const visibleCards = document.querySelectorAll('#presencial .host-card:not(.hidden)');
                 if (visibleCards.length > 0) {
-                    // Get the city filter element
-                    const cityFilter = document.querySelector('#presencial .language-filter');
-                    
                     // Altura do menu fixo (header)
                     const headerHeight = document.querySelector('.header').offsetHeight;
                     
-                    // Scroll para posicionar o filtro logo abaixo do header fixo
-                    const y = cityFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                    window.scrollTo({top: y, behavior: 'smooth'});
+                    // Obter a posição das abas (tabs) em vez do filtro
+                    const tabsElement = document.querySelector('.tabs');
+                    if (tabsElement) {
+                        // Scroll para posicionar as abas logo abaixo do header fixo
+                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
                 }
             }, 300);
 
@@ -1274,19 +1276,20 @@
                 }
             });
 
-            // Scroll to position the role filter at the top of the viewport
+            // Scroll to position the tabs at the top of the viewport
             setTimeout(() => {
                 const visibleCards = document.querySelectorAll('#conteudo .host-card:not(.hidden)');
                 if (visibleCards.length > 0) {
-                    // Get the role filter element
-                    const roleFilter = document.querySelector('#conteudo .language-filter');
-                    
                     // Altura do menu fixo (header)
                     const headerHeight = document.querySelector('.header').offsetHeight;
                     
-                    // Scroll para posicionar o filtro logo abaixo do header fixo
-                    const y = roleFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                    window.scrollTo({top: y, behavior: 'smooth'});
+                    // Obter a posição das abas (tabs) em vez do filtro
+                    const tabsElement = document.querySelector('.tabs');
+                    if (tabsElement) {
+                        // Scroll para posicionar as abas logo abaixo do header fixo
+                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
                 }
             }, 300);
 
@@ -1500,11 +1503,11 @@
                     // Altura do menu fixo (header)
                     const headerHeight = document.querySelector('.header').offsetHeight;
                     
-                    // Obter a posição do filtro de idiomas
-                    const languageFilter = document.querySelector('#online .language-filter');
-                    if (languageFilter) {
-                        // Scroll para posicionar o filtro logo abaixo do header fixo
-                        const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    // Obter a posição das abas (tabs) em vez do filtro
+                    const tabsElement = document.querySelector('.tabs');
+                    if (tabsElement) {
+                        // Scroll para posicionar as abas logo abaixo do header fixo
+                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
                         window.scrollTo({top: y, behavior: 'smooth'});
                     }
                 }, 300);
