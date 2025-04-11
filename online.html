@@ -1487,46 +1487,47 @@
         
         // Show events for a specific day
         function showDayEvents(day, updateURL = true) {
-            // Track this action
+            // Track day selection
             trackDayFilterEvent(day);
-            
-            // Hide all day events
-            document.querySelectorAll('.day-events').forEach(element => {
-                element.classList.remove('active');
-            });
-            
-            // Remove active class from all buttons
+
             document.querySelectorAll('.day-button').forEach(button => {
                 button.classList.remove('active');
+                if (parseInt(button.getAttribute('data-day')) === day) {
+                    button.classList.add('active');
+                }
             });
             
-            // Show selected day events
-            document.getElementById(`day-${day}`).classList.add('active');
-            
-            // Add active class to clicked button
-            document.querySelector(`.day-button[data-day="${day}"]`).classList.add('active');
+            document.querySelectorAll('.day-events').forEach(dayEvents => {
+                dayEvents.classList.remove('active');
+                if (dayEvents.id === `day-${day}`) {
+                    dayEvents.classList.add('active');
+                }
+            });
             
             // Check if any events are happening now
             checkCurrentEvents(day);
             
-            // Update join buttons state
-            updateJoinButtons();
-
-            // Update URL with the day
+            // Update URL
             if (updateURL) {
                 const url = new URL(window.location);
+                url.searchParams.set('view', 'day');
                 url.searchParams.set('dia', day);
                 history.pushState({}, '', url);
             }
-
-            // Scroll to the calendar section if not already visible
-            const calendarSection = document.getElementById('calendar');
-            if (calendarSection) {
-                const rect = calendarSection.getBoundingClientRect();
-                if (rect.top < 0 || rect.bottom > window.innerHeight) {
-                    calendarSection.scrollIntoView({ behavior: 'smooth' });
+            
+            // Scroll para posicionar o calendário na posição correta
+            setTimeout(() => {
+                // Altura do menu fixo (header)
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                
+                // Obter a posição da navegação do calendário
+                const calendarNav = document.querySelector('.calendar-nav');
+                if (calendarNav) {
+                    // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
                 }
-            }
+            }, 300);
         }
         
         // Check if any events are happening now and highlight them
@@ -1618,7 +1619,16 @@
             // após um pequeno delay para garantir que tudo foi carregado
             if (hasParameters) {
                 setTimeout(() => {
-                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
+                    // Altura do menu fixo (header)
+                    const headerHeight = document.querySelector('.header').offsetHeight;
+                    
+                    // Obter a posição da navegação do calendário
+                    const calendarNav = document.querySelector('.calendar-nav');
+                    if (calendarNav) {
+                        // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                        const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
                 }, 300);
             }
             
@@ -1718,7 +1728,18 @@
                     }
                     
                     // Rolar para a seção de programação
-                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => {
+                        // Altura do menu fixo (header)
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        
+                        // Obter a posição da navegação do calendário
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 300);
                 });
             }
 
@@ -1738,7 +1759,18 @@
                     }
                     
                     // Rolar para a seção de programação
-                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => {
+                        // Altura do menu fixo (header)
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        
+                        // Obter a posição da navegação do calendário
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 300);
                 });
             }
         });
@@ -1848,6 +1880,20 @@
                 url.searchParams.set('idioma', language);
                 history.pushState({}, '', url);
             }
+            
+            // Scroll para posicionar o calendário na posição correta
+            setTimeout(() => {
+                // Altura do menu fixo (header)
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                
+                // Obter a posição da navegação do calendário
+                const calendarNav = document.querySelector('.calendar-nav');
+                if (calendarNav) {
+                    // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }, 300);
         }
     </script>
 </body>
