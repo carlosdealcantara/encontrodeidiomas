@@ -612,7 +612,7 @@
             
             <div class="host-grid">
                 <!-- Host Card para outros idiomas -->
-                <div class="host-card" data-languages="outros">
+                <div id="torne-se-anfitriao" class="host-card" data-languages="outros">
                     <div class="host-badge">Seja Anfitrião</div>
                     <img src="assets/images/MaisIdiomasCidades.png" alt="Novo idioma" class="host-image">
                     <div class="host-info">
@@ -1288,6 +1288,22 @@
                         });
                     }
                 }
+            }
+            
+            // Verificar se há um link de âncora para o card "Torne-se anfitrião!"
+            if (window.location.hash === '#torne-se-anfitriao') {
+                setActiveTab('online', false);
+                // Filtrar para mostrar apenas o card de "Torne-se anfitrião!"
+                languageFilterButtons.forEach(btn => {
+                    if (btn.dataset.language === 'outros') {
+                        btn.click();
+                    }
+                });
+                
+                // Rolar para o card
+                setTimeout(() => {
+                    document.getElementById('torne-se-anfitriao').scrollIntoView({ behavior: 'smooth' });
+                }, 300);
             }
         }
         
