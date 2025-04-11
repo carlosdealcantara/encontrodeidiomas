@@ -482,6 +482,7 @@
             transition: all 0.3s ease;
             background-color: transparent;
             border: none;
+            color: #555; /* Monochrome color */
         }
         
         .social-icon:hover {
@@ -490,11 +491,11 @@
         }
         
         .whatsapp-icon {
-            color: #25D366;
+            color: #555; /* Alterado para preto e branco como pedido */
         }
         
         .instagram-icon {
-            color: #833AB4;
+            color: #555; /* Alterado para preto e branco como pedido */
         }
         
         .event-flag {
@@ -1784,7 +1785,7 @@
         function showLanguageEvents(language, updateURL = true) {
             // Caso especial para "O seu!"
             if (language.toLowerCase() === 'seu') {
-                window.location.href = 'equipe.html?tab=online&language=outros#torne-se-anfitriao';
+                window.location.href = 'equipe.html?tab=online&language=outros&idioma=outros#torne-se-anfitriao';
                 return;
             }
             
