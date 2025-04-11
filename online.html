@@ -330,10 +330,11 @@
         .day-events {
             display: none;
             animation: fadeIn 0.5s ease;
+            width: 100%;
         }
         
         .day-events.active {
-            display: block;
+            display: block !important;
             opacity: 1;
             visibility: visible;
         }
@@ -348,6 +349,7 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px 0;
+            width: 100%;
         }
         
         .timeline::before {
@@ -1093,9 +1095,12 @@
         
         // Show events for the specified day
         function showDayEvents(day, updateURL = true) {
+            console.log("showDayEvents chamado para o dia:", day);
+            
             // Hide all day events
             document.querySelectorAll('.day-events').forEach(element => {
                 element.classList.remove('active');
+                element.style.display = 'none';
             });
             
             // Remove active class from all buttons
@@ -1107,11 +1112,16 @@
             const dayElement = document.getElementById(`day-${day}`);
             if (dayElement) {
                 dayElement.classList.add('active');
+                dayElement.style.display = 'block';
+                console.log("Ativando elemento do dia:", dayElement);
                 
                 // Add active class to clicked button
                 const dayButton = document.querySelector(`.day-button[data-day="${day}"]`);
                 if (dayButton) {
                     dayButton.classList.add('active');
+                    console.log("Botão ativado:", dayButton);
+                } else {
+                    console.log("Botão não encontrado para o dia:", day);
                 }
                 
                 // Check if any events are happening now
@@ -1135,6 +1145,8 @@
                         calendarSection.scrollIntoView({ behavior: 'smooth' });
                     }
                 }
+            } else {
+                console.error("Elemento do dia não encontrado:", `day-${day}`);
             }
         }
         
@@ -1180,12 +1192,41 @@
             const urlParams = new URLSearchParams(window.location.search);
             const dia = urlParams.get('dia');
             
+            // Depuração
+            console.log("Parâmetros de URL:", urlParams.toString());
+            console.log("Dia selecionado:", dia);
+            
             if (dia && dia >= 1 && dia <= 5) {
+                console.log("Exibindo dia:", dia);
                 showDayEvents(dia, false);
+                
+                // Forçar seleção visual do botão
+                document.querySelectorAll('.day-button').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('data-day') === dia) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // Forçar exibição do conteúdo
+                document.querySelectorAll('.day-events').forEach(element => {
+                    element.classList.remove('active');
+                    element.style.display = 'none';
+                });
+                
+                const targetDay = document.getElementById(`day-${dia}`);
+                if (targetDay) {
+                    targetDay.classList.add('active');
+                    targetDay.style.display = 'block';
+                    console.log("Elemento do dia ativado:", targetDay);
+                } else {
+                    console.log("Elemento do dia não encontrado:", `day-${dia}`);
+                }
             } else {
                 // Default to current/next day
                 const { day: currentDay } = getCurrentDayAndTime();
                 const nextEventDay = findNextDay(currentDay);
+                console.log("Dia padrão:", nextEventDay);
                 showDayEvents(nextEventDay, false);
             }
         }
@@ -1232,8 +1273,36 @@
         
         // Run when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM carregado - inicializando calendário");
+            
+            // Função para garantir que sempre haja um dia selecionado
+            function ensureDaySelected() {
+                // Verificar se algum dia já está selecionado
+                const hasActiveDay = document.querySelector('.day-button.active');
+                const hasActiveDayContent = document.querySelector('.day-events.active');
+                
+                console.log("Estado inicial:", {
+                    "Botão ativo": hasActiveDay,
+                    "Conteúdo ativo": hasActiveDayContent
+                });
+                
+                if (!hasActiveDay || !hasActiveDayContent) {
+                    console.log("Nenhum dia selecionado, forçando seleção do primeiro dia");
+                    // Se nenhum dia estiver ativo, selecionar o primeiro
+                    const firstDayButton = document.querySelector('.day-button');
+                    if (firstDayButton) {
+                        const day = firstDayButton.getAttribute('data-day');
+                        console.log("Selecionando dia:", day);
+                        showDayEvents(day, false);
+                    }
+                }
+            }
+            
             initCalendar();
             updateJoinButtons();
+            
+            // Garantir que um dia esteja selecionado após a inicialização
+            setTimeout(ensureDaySelected, 300);
 
             // Atualizar o evento de clique do botão "Ver Programação" para usar a URL
             const heroButton = document.querySelector('.hero-button');
