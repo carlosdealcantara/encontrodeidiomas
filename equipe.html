@@ -1485,6 +1485,20 @@
                     document.getElementById('torne-se-anfitriao').scrollIntoView({ behavior: 'smooth' });
                 }, 300);
             }
+
+            // Verificar especificamente se estamos acessando via idioma=outros
+            if (urlParams.get('idioma') === 'outros' || urlParams.get('idioma') === 'outros&torne-se-anfitriao') {
+                setTimeout(() => {
+                    // Rolar para manter os filtros visíveis
+                    const languageFilter = document.querySelector('#online .language-filter');
+                    if (languageFilter) {
+                        // Scroll para posicionar o filtro no topo com um pequeno offset
+                        const yOffset = 20; // Pequeno offset do topo
+                        const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
+                }, 300);
+            }
         }
         
         // Função para calcular a distância de Levenshtein (para comparações aproximadas)
