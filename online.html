@@ -472,7 +472,7 @@
         }
         
         .social-icon {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 22px;
@@ -480,22 +480,23 @@
             border-radius: 50%;
             font-size: 0.7rem;
             transition: all 0.3s ease;
-            background-color: transparent;
-            border: none;
-            color: #555; /* Monochrome color */
+            background-color: #f0f2f5;
+            color: var(--text-color);
+            border: 1px solid #ddd;
         }
         
         .social-icon:hover {
             transform: translateY(-2px);
-            opacity: 0.7;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: #e6e9ec;
         }
         
-        .whatsapp-icon {
-            color: #555; /* Alterado para preto e branco como pedido */
+        .whatsapp-icon:hover {
+            color: #25D366;
         }
         
-        .instagram-icon {
-            color: #555; /* Alterado para preto e branco como pedido */
+        .instagram-icon:hover {
+            color: #E1306C;
         }
         
         .event-flag {
@@ -1785,7 +1786,9 @@
         function showLanguageEvents(language, updateURL = true) {
             // Caso especial para "O seu!"
             if (language.toLowerCase() === 'seu') {
-                window.location.href = 'equipe.html?tab=online&language=outros&idioma=outros#torne-se-anfitriao';
+                // Use window.location.replace em vez de window.location.href para garantir
+                // que a navegação ocorra corretamente sem problemas de cache/histórico
+                window.location.replace('equipe.html?tab=online&language=outros&idioma=outros#torne-se-anfitriao');
                 return;
             }
             
