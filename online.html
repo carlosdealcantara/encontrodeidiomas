@@ -512,8 +512,20 @@
         
         .replay-button {
             background-color: var(--bg-light);
-            color: var(--text-color);
+            color: #ff0000;
             border: 1px solid #ddd;
+        }
+        
+        .whatsapp-button {
+            background-color: #25D366;
+            color: var(--white);
+        }
+        
+        .instagram-button {
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+            color: var(--white);
+            min-width: 44px;
+            padding: 10px;
         }
         
         .event-button:hover {
@@ -843,6 +855,23 @@
             box-shadow: var(--shadow);
             margin: 20px 0;
         }
+        
+        .language-button.special {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px dashed var(--accent-red);
+            font-weight: 600;
+            transform: scale(1.02);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        }
+        
+        .language-button.special:hover, 
+        .language-button.special.active {
+            background: var(--accent-red);
+            color: var(--white);
+            border: 1px solid var(--accent-red);
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -936,6 +965,10 @@
                         <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
                         <span>Português</span>
                     </button>
+                    <button class="language-button special" data-language="seu">
+                        <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🚩</span>
+                        <span>O seu!</span>
+                    </button>
                 </div>
                 
                 <div id="language-events">
@@ -963,10 +996,12 @@
                                 <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
                                 <span>Francês</span>
                             </div>
-                            <p class="event-description">Venha praticar francês com nossos professores e outros participantes. Todos os níveis são bem-vindos!</p>
+                            <p class="event-description">Venha praticar francês em um ambiente acolhedor. Para todos os níveis.</p>
                             <div class="event-actions">
-                                <a href="https://meet.google.com/yxy-vkzd-hxx" target="_blank" class="event-button join-button" data-day="1" data-time="19">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomasfrances2" target="_blank" class="event-button replay-button">Replays</a>
+                                <a href="https://meet.google.com/aih-vfir-eyy" target="_blank" class="event-button join-button" data-day="1" data-time="19">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomas-frances" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://chat.whatsapp.com/IWaqrILjnE66oMZQWq8lXA" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
+                                <a href="https://instagr.am/encontrodeidiomas_frances" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -979,7 +1014,9 @@
                             <p class="event-description">Pratique japonês com falantes de diferentes níveis. Conversação e cultura japonesa.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/hjt-eyny-sqm" target="_blank" class="event-button join-button" data-day="1" data-time="20">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomasjapones" target="_blank" class="event-button replay-button">Replays</a>
+                                <a href="https://youtube.com/@encontrodeidiomasjapones" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://chat.whatsapp.com/BjbmHpFukZ70p42sOA18Ui" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
+                                <a href="https://instagr.am/encontrodeidiomasjapones" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -992,7 +1029,9 @@
                             <p class="event-description">Aprenda e pratique italiano em um ambiente descontraído. Todos os níveis são bem-vindos!</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/epp-bhcj-mam" target="_blank" class="event-button join-button" data-day="1" data-time="21">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomasitaliano2" target="_blank" class="event-button replay-button">Replays</a>
+                                <a href="https://youtube.com/@encontrodeidiomasitaliano2" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://chat.whatsapp.com/JHUR4j7RB7h3EJH4dPPscq" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
+                                <a href="https://instagr.am/encontrodeidiomasitaliano" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -1009,7 +1048,9 @@
                             <p class="event-description">Pratique espanhol com outros entusiastas. Conversação e temas culturais.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/zwn-eaja-fbf" target="_blank" class="event-button join-button" data-day="2" data-time="19">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomasespanhol" target="_blank" class="event-button replay-button">Replays</a>
+                                <a href="https://youtube.com/@encontrodeidiomasespanhol" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://chat.whatsapp.com/EIAg1eKh8p8GrH1jC2bFdm" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
+                                <a href="https://instagr.am/encontrodeidiomasespanhol" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1022,7 +1063,9 @@
                             <p class="event-description">Melhore seu inglês com conversação prática. Para todos os níveis.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/ptc-rqdc-cvj" target="_blank" class="event-button join-button" data-day="2" data-time="20">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomasingles" target="_blank" class="event-button replay-button">Replays</a>
+                                <a href="https://youtube.com/@encontrodeidiomasingles" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://chat.whatsapp.com/HZkSKN2gYlv6Lq6oNdntTp" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
+                                <a href="https://instagr.am/encontrodeidiomasingles" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1035,7 +1078,9 @@
                             <p class="event-description">Aprenda elementos da língua e cultura coreana em um encontro dinâmico.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/xsf-frdr-qms" target="_blank" class="event-button join-button" data-day="2" data-time="21">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomascoreano" target="_blank" class="event-button replay-button">Replays</a>
+                                <a href="https://youtube.com/@encontrodeidiomascoreano" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://chat.whatsapp.com/IlFGI6lxTIyDkKIDn3tL2v" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
+                                <a href="https://instagr.am/encontrodeidiomascoreano" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -1052,7 +1097,9 @@
                             <p class="event-description">Aprenda e pratique a Língua Brasileira de Sinais com nossos instrutores.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/kte-dpst-ycn" target="_blank" class="event-button join-button" data-day="3" data-time="19">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomaslibras" target="_blank" class="event-button replay-button">Replays</a>
+                                <a href="https://youtube.com/@encontrodeidiomaslibras" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://chat.whatsapp.com/C9cL4VVW9msALKOi1Ea8oe" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
+                                <a href="https://instagr.am/encontrodeidiomaslibras" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
