@@ -379,40 +379,6 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
         
-        /* White space between CTA and footer */
-        .white-space {
-            background-color: #f7f7f7;
-            padding: 40px 0;
-        }
-        
-        /* Footer styles */
-        .footer {
-            background-color: #222;
-            padding: 30px 0 20px;
-            text-align: center;
-            color: white;
-        }
-        
-        .social-links {
-            margin-bottom: 20px;
-        }
-        
-        .social-links a {
-            color: white;
-            font-size: 1.5rem;
-            margin: 0 10px;
-            text-decoration: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .social-links a:hover {
-            opacity: 0.8;
-        }
-        
-        .footer-bottom {
-            padding: 10px 20px;
-        }
-        
         /* Mobile styles */
         @media (max-width: 768px) {
             .section-title {
@@ -1009,18 +975,32 @@
         </div>
     </section>
 
-    <section class="white-space">
-        <!-- White space content -->
-    </section>
-
     <footer class="footer">
-        <div class="social-links">
-            <a href="https://www.instagram.com/encontrodeidiomas" target="_blank" aria-label="Instagram">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="https://discord.com/invite/STHkrEhMpP" target="_blank" aria-label="Discord">
-                <i class="fab fa-discord"></i>
-            </a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Sobre Nós</h3>
+                <p>Somos especialistas em idiomas, comprometidos em fornecer uma experiência única e eficaz para nossos alunos.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links Rápidos</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="cursos.html">Cursos</a></li>
+                    <li><a href="equipe.html">Equipe</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contato</h3>
+                <p>Email: contato@encontrodeidiomas.com</p>
+                <p>Telefone: (11) 1234-5678</p>
+                <div class="social-icons">
+                    <a href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
         </div>
         <div class="footer-bottom">
             <p>&copy; <span id="current-year"></span> Encontro de Idiomas. Todos os direitos reservados.</p>
@@ -1264,4 +1244,4 @@
         });
     </script>
 </body>
-</html>
+</html> 
