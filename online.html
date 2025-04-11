@@ -478,26 +478,23 @@
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            color: white;
             font-size: 0.7rem;
             transition: all 0.3s ease;
+            background-color: transparent;
+            border: none;
         }
         
         .social-icon:hover {
             transform: translateY(-2px);
-            opacity: 0.8;
+            opacity: 0.7;
         }
         
         .whatsapp-icon {
-            background-color: transparent;
             color: #25D366;
-            border: 1px solid #25D366;
         }
         
         .instagram-icon {
-            background: transparent;
             color: #833AB4;
-            border: 1px solid #833AB4;
         }
         
         .event-flag {
@@ -1016,7 +1013,7 @@
                         <span>Coreano</span>
                     </button>
                     <button class="language-button" data-language="libras">
-                        <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
+                        <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👋</span>
                         <span>Libras</span>
                     </button>
                     <button class="language-button" data-language="chinês">
@@ -1036,7 +1033,7 @@
                         <span>Português</span>
                     </button>
                     <button class="language-button special" data-language="seu">
-                        <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🚩</span>
+                        <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🚩</span>
                         <span>O seu!</span>
                     </button>
                 </div>
@@ -1173,7 +1170,7 @@
                         <div class="timeline-event" data-time="19">
                             <span class="event-time">19h</span>
                             <div class="event-title">
-                                <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
+                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👋</span>
                                 <span>Libras</span>
                                 <div class="event-social-links">
                                     <a href="https://chat.whatsapp.com/C9cL4VVW9msALKOi1Ea8oe" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
@@ -1787,7 +1784,7 @@
         function showLanguageEvents(language, updateURL = true) {
             // Caso especial para "O seu!"
             if (language.toLowerCase() === 'seu') {
-                window.location.href = 'equipe.html?tab=online&language=outros';
+                window.location.href = 'equipe.html?tab=online&language=outros#torne-se-anfitriao';
                 return;
             }
             
