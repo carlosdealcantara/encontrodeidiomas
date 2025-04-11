@@ -1263,8 +1263,13 @@
                 if (tab === 'online') {
                     const idioma = urlParams.get('idioma');
                     if (idioma) {
+                        // Normalizar idioma da URL para comparação insensível a acentos e maiúsculas/minúsculas
+                        const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        
                         languageFilterButtons.forEach(btn => {
-                            if (btn.dataset.language === idioma) {
+                            // Normalizar o dataset.language do botão para mesma comparação
+                            const btnLanguage = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            if (btnLanguage === normalizedIdioma) {
                                 btn.click();
                             }
                         });
@@ -1272,8 +1277,13 @@
                 } else if (tab === 'presencial') {
                     const cidade = urlParams.get('cidade');
                     if (cidade) {
+                        // Normalizar cidade da URL
+                        const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        
                         cityFilterButtons.forEach(btn => {
-                            if (btn.dataset.city === cidade) {
+                            // Normalizar o dataset.city do botão
+                            const btnCity = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            if (btnCity === normalizedCidade) {
                                 btn.click();
                             }
                         });
@@ -1281,8 +1291,13 @@
                 } else if (tab === 'conteudo') {
                     const papel = urlParams.get('papel');
                     if (papel) {
+                        // Normalizar papel da URL
+                        const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        
                         roleFilterButtons.forEach(btn => {
-                            if (btn.dataset.role === papel) {
+                            // Normalizar o dataset.role do botão
+                            const btnRole = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            if (btnRole === normalizedPapel) {
                                 btn.click();
                             }
                         });
