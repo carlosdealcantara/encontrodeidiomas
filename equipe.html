@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Conheça a equipe do Encontro de Idiomas - Anfitriões, desenvolvedores e criadores de conteúdo que tornam nossa comunidade especial.">
+    <meta name="keywords" content="equipe, anfitriões, encontro de idiomas, professores, tutores, idiomas, online, presencial, desenvolvedores, design">
+    <meta name="author" content="Encontro de Idiomas">
+    <meta name="robots" content="index, follow">
+
+    <!-- Essential Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Equipe - Encontro de Idiomas">
+    <meta property="og:description" content="Conheça a equipe do Encontro de Idiomas - Anfitriões, desenvolvedores e criadores de conteúdo que tornam nossa comunidade especial.">
+    <meta property="og:image" content="https://encontrodeidiomas.com.br/assets/images/og_image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Logo do Encontro de Idiomas">
+    <meta property="og:url" content="https://encontrodeidiomas.com.br/equipe.html">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://encontrodeidiomas.com.br/equipe.html">
+    <meta property="twitter:title" content="Equipe - Encontro de Idiomas">
+    <meta property="twitter:description" content="Conheça a equipe do Encontro de Idiomas - Anfitriões, desenvolvedores e criadores de conteúdo que tornam nossa comunidade especial.">
+    <meta property="twitter:image" content="https://encontrodeidiomas.com.br/assets/images/og_image.png">
+    <meta property="twitter:image:alt" content="Logo do Encontro de Idiomas">
+
+    <link rel="canonical" href="https://encontrodeidiomas.com.br/equipe.html">
+    <title>Equipe - Encontro de Idiomas</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <link rel="apple-touch-icon" href="assets/images/favicon.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-red: #e31d1c;
+            --accent-blue: #002654;
+            --accent-yellow: #ffd700;
+            --accent-green: #28a745;
+            --accent-purple: #6f42c1;
+            --text-color: #333;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --card-bg: #ffffff;
+            --border-radius: 16px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            color: var(--text-color);
+            background-color: #f7f7f7;
+            line-height: 1.6;
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        .header {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--white);
+        }
+        
+        .site-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .site-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .nav-links a:hover {
+            background: var(--accent-red);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+            margin-top: 100px; /* Espaço para o header fixo */
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--accent-red), var(--accent-blue));
+            border-radius: 2px;
+        }
+        
+        .section-description {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 50px;
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            overflow: hidden;
+            position: relative;
+            background: var(--white);
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: var(--white);
+        }
+        
+        .tab-indicator {
+            position: absolute;
+            height: calc(100% - 20px);
+            top: 10px;
+            left: 10px;
+            background: var(--accent-red);
+            border-radius: 50px;
+            transition: all 0.4s ease;
+            z-index: 1;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Host Cards */
+        .host-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .host-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .host-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .host-image {
+            height: 250px;
+            width: 100%;
+            object-fit: cover;
+            border-bottom: 4px solid var(--accent-red);
+        }
+        
+        .host-info {
+            padding: 20px;
+        }
+        
+        .host-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        
+        .host-languages, .host-role {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .language-tag, .role-tag {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .host-bio {
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            color: #666;
+        }
+        
+        .host-contact {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background-color: #f0f2f5;
+            color: var(--text-color);
+            border: 1px solid #ddd;
+        }
+        
+        .contact-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: #e6e9ec;
+        }
+        
+        .contact-btn.whatsapp:hover { color: #25D366; }
+        .contact-btn.email:hover { color: var(--accent-red); }
+        .contact-btn.instagram:hover { color: #E1306C; }
+        .contact-btn.linkedin:hover { color: #0077B5; }
+        .contact-btn.github:hover { color: #333; }
+        
+        .contact-link {
+            display: none; /* Escondendo os botões antigos */
+        }
+        
+        .host-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-red);
+            color: var(--white);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, var(--accent-blue), var(--primary-color));
+            padding: 80px 0;
+            margin: 80px 0 0;
+            text-align: center;
+            color: var(--white);
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .cta-description {
+            max-width: 700px;
+            margin: 0 auto 30px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: var(--accent-red);
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .host-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-button {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Language Filter */
+        .language-filter {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .language-filter-btn {
+            background: var(--bg-light);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .language-filter-btn.active {
+            background: var(--accent-blue);
+            color: var(--white);
+        }
+        
+        /* Estilo especial para os botões "Outros" */
+        .language-filter-btn.special {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px dashed var(--accent-red);
+            font-weight: 600;
+            transform: scale(1.02);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        }
+        
+        .language-filter-btn.special:hover, 
+        .language-filter-btn.special.active {
+            background: var(--accent-red);
+            color: var(--white);
+            border: 1px solid var(--accent-red);
+            transform: scale(1.05);
+        }
+        
+        .language-filter-btn:hover:not(.active):not(.special) {
+            background: #e6e9ec;
+        }
+        
+        .host-card {
+            display: block;
+        }
+        
+        .host-card.hidden {
+            display: none;
+        }
+        
+        /* Estilos para a seção de conteúdo */
+        .team-badge {
+            background: var(--accent-purple);
+        }
+        
+        .dev-badge {
+            background: var(--accent-blue);
+        }
+        
+        .design-badge {
+            background: var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="assets/images/logo.png" alt="Encontro de Idiomas Logo" class="logo">
+                <div>
+                    <div class="site-title">Encontro de Idiomas</div>
+                    <div class="site-description">Conectando pessoas através da linguagem</div>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Início</a>
+                <a href="online.html">Online</a>
+                <a href="equipe.html" style="background-color: var(--accent-red);">Equipe</a>
+                <a href="links.html">Links</a>
+                <a href="contato.html">Contato</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="section-title">Nossa Equipe</h1>
+        <p class="section-description">
+            Conheça as pessoas que fazem o Encontro de Idiomas acontecer, desde nossos anfitriões até a equipe de desenvolvedores e criadores de conteúdo.
+        </p>
+        
+        <div class="tabs">
+            <button class="tab-button active" data-tab="online">Anfitriões Online</button>
+            <button class="tab-button" data-tab="presencial">Anfitriões Presenciais</button>
+            <button class="tab-button" data-tab="conteudo">Conteúdo e Desenvolvimento</button>
+            <div class="tab-indicator"></div>
+        </div>
+        
+        <div class="tab-content active" id="online">
+            <div class="language-filter">
+                <button class="language-filter-btn active" data-language="all">Todos os idiomas</button>
+                <button class="language-filter-btn" data-language="inglês">Inglês</button>
+                <button class="language-filter-btn" data-language="espanhol">Espanhol</button>
+                <button class="language-filter-btn" data-language="francês">Francês</button>
+                <button class="language-filter-btn" data-language="português">Português</button>
+                <button class="language-filter-btn" data-language="alemão">Alemão</button>
+                <button class="language-filter-btn" data-language="italiano">Italiano</button>
+                <button class="language-filter-btn" data-language="coreano">Coreano</button>
+                <button class="language-filter-btn" data-language="chinês">Chinês</button>
+                <button class="language-filter-btn" data-language="russo">Russo</button>
+                <button class="language-filter-btn" data-language="polonês">Polonês</button>
+                <button class="language-filter-btn" data-language="libras">Libras</button>
+                <button class="language-filter-btn special" data-language="outros">Outros</button>
+            </div>
+            
+            <div class="host-grid">
+                <!-- Host Card para outros idiomas -->
+                <div class="host-card" data-languages="outros">
+                    <div class="host-badge">Seja Anfitrião</div>
+                    <img src="assets/images/MaisIdiomasCidades.png" alt="Novo idioma" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Torne-se anfitrião!</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Qualquer idioma</span>
+                            <span class="language-tag">Voluntário</span>
+                        </div>
+                        <p class="host-bio">
+                            Gostaria de praticar ou ensinar um idioma? Seja para um idioma já disponível ou para um novo, você pode se tornar anfitrião voluntário! Compartilhe seu conhecimento e ajude a expandir nossa comunidade de aprendizado.
+                        </p>
+                        <div class="host-contact">
+                            <a href="contato.html" class="contact-btn" title="Entre em contato">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Host Card 1 - Carlos - Inglês -->
+                <div class="host-card" data-languages="inglês">
+                    <div class="host-badge">Inglês</div>
+                    <img src="assets/images/Carlos.jpg" alt="Carlos de Alcântara" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Carlos de Alcântara</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Inglês</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Carlos de Alcântara é um anfitrião experiente e entusiasta do inglês. Seus encontros são dinâmicos e focados na prática conversacional, criando um ambiente acolhedor para todos os níveis.
+                        </p>
+                        <div class="host-contact">
+                            <a href="https://wa.me/5561992666148" class="contact-btn whatsapp" target="_blank" title="WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="mailto:carlodealcantarajr@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="https://instagram.com/carlosdealcantara_" class="contact-btn instagram" target="_blank" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/in/carlos-de-alc%C3%A2ntara-75b96a6b/" class="contact-btn linkedin" target="_blank" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Host Card - Anne - Espanhol -->
+                <div class="host-card" data-languages="espanhol">
+                    <div class="host-badge">Espanhol</div>
+                    <img src="assets/images/Ane.jpg" alt="Ane" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Ane</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Espanhol</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Ane conduz encontros dinâmicos de espanhol, focados na prática da conversação. Com sua experiência, ela cria um ambiente acolhedor onde todos se sentem confortáveis para praticar o idioma.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:ane.eloa2017@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Host Card - Rhádila - Alemão -->
+                <div class="host-card" data-languages="alemão">
+                    <div class="host-badge">Alemão</div>
+                    <img src="assets/images/Rhadila.jpg" alt="Rhádila" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Rhádila</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Alemão</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Rhádila é especialista em língua alemã e compartilha seu conhecimento de forma envolvente e dinâmica. Seus encontros combinam aspectos culturais e práticas conversacionais para uma experiência completa.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:grhadila@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Host Card 2 - Alyce - Coreano -->
+                <div class="host-card" data-languages="coreano">
+                    <div class="host-badge">Coreano</div>
+                    <img src="assets/images/Alyce.jpg" alt="Alyce" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Alyce</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Coreano</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Alyce é apaixonada pela cultura coreana e compartilha seu conhecimento e entusiasmo em todos os encontros. Ela cria um ambiente acolhedor para os interessados em aprender sobre o idioma e a cultura coreana.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:alyce.a.ribeiro@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Host Card 3 - Rosana - Italiano -->
+                <div class="host-card" data-languages="italiano">
+                    <div class="host-badge">Italiano</div>
+                    <img src="assets/images/Rosana.jpg" alt="Rosana" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Rosana</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Italiano</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Rosana é uma entusiasta da língua e cultura italiana. Seus encontros são uma excelente oportunidade para praticar o idioma em um ambiente descontraído e culturalmente enriquecedor.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:rosanapiai22@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Card 4 - Carlos Daniel - Francês e Alemão -->
+                <div class="host-card" data-languages="francês,alemão">
+                    <div class="host-badge">Francês & Alemão</div>
+                    <img src="assets/images/CarlosDaniel.jpg" alt="Carlos Daniel" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Carlos Daniel</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Francês</span>
+                            <span class="language-tag">Alemão</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Carlos Daniel é fluente em francês e alemão. Com sua experiência internacional, ele cria um ambiente imersivo para os participantes praticarem esses idiomas com foco na conversação natural.
+                        </p>
+                        <div class="host-contact">
+                            <!-- Nenhuma informação de contato disponível -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Card 5 - Isaac - Chinês -->
+                <div class="host-card" data-languages="chinês">
+                    <div class="host-badge">Chinês</div>
+                    <img src="assets/images/Isaac.jpg" alt="Isaac" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Isaac</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Chinês</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Isaac é especialista em língua chinesa e compartilha seu conhecimento de forma acessível e divertida. Seus encontros incluem elementos culturais e expressões cotidianas, tornando o aprendizado mais completo.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:isaacdep.oliveira@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Card 6 - Wellington - Libras -->
+                <div class="host-card" data-languages="libras">
+                    <div class="host-badge">Libras</div>
+                    <img src="assets/images/Wellington.jpg" alt="Wellington" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Wellington</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Libras</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Wellington é especialista em Língua Brasileira de Sinais e facilita encontros inclusivos para quem deseja aprender ou praticar Libras, criando um espaço acolhedor e de constante aprendizado.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:wellingtonlffilho@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Card - Caíque - Libras -->
+                <div class="host-card" data-languages="libras">
+                    <div class="host-badge">Libras</div>
+                    <img src="assets/images/Caique.jpg" alt="Caíque" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Caíque</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Libras</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Caíque é entusiasta da Língua Brasileira de Sinais e promove encontros acessíveis e inclusivos. Ele trabalha para criar um ambiente onde todos possam aprender e praticar Libras de forma natural e confortável.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:caiquelima116@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Card - Jackelynne - Libras -->
+                <div class="host-card" data-languages="libras">
+                    <div class="host-badge">Libras</div>
+                    <img src="assets/images/Jackelynne.jpg" alt="Jackelynne" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Jackelynne</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Libras</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Jackelynne é dedicada ao ensino e prática de Libras. Seus encontros são planejados para proporcionar um ambiente de aprendizado inclusivo, onde todos possam se comunicar e aprender juntos.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:jackepassos58@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Card 8 - Daniel - Russo e Polonês -->
+                <div class="host-card" data-languages="russo,polonês">
+                    <div class="host-badge">Russo & Polonês</div>
+                    <img src="assets/images/Daniel.jpg" alt="Daniel" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Daniel</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Russo</span>
+                            <span class="language-tag">Polonês</span>
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Daniel é apaixonado por línguas eslavas e compartilha seu conhecimento de russo e polonês de forma acessível e engajadora. Seus encontros são uma excelente introdução a esses fascinantes idiomas.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:danieldantas432@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Card - Társis - Português -->
+                <div class="host-card" data-languages="português">
+                    <div class="host-badge">Português</div>
+                    <img src="assets/images/Tarsis.jpg" alt="Társis" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Társis</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Português</span>
+                        </div>
+                        <p class="host-bio">
+                            Társis é especialista em língua portuguesa e conduz encontros focados no aprimoramento da comunicação e expressão em português. Ele cria um ambiente de prática onde participantes de diferentes níveis podem desenvolver suas habilidades no idioma.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:tltehele@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="presencial">
+            <div class="language-filter city-filter">
+                <button class="language-filter-btn active" data-city="all">Todas as cidades</button>
+                <button class="language-filter-btn" data-city="brasilia">Brasília - DF</button>
+                <button class="language-filter-btn" data-city="saopaulo">São Paulo - SP</button>
+                <button class="language-filter-btn special" data-city="outras">Outras regiões</button>
+            </div>
+            <div class="host-grid">
+                <!-- Host Card para outras cidades -->
+                <div class="host-card" data-city="outras">
+                    <div class="host-badge">Anfitriões Presenciais</div>
+                    <img src="assets/images/MaisIdiomasCidades.png" alt="Nova cidade" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Seja anfitrião presencial!</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Sua cidade</span>
+                        </div>
+                        <p class="host-bio">
+                            Quer participar dos encontros presenciais? Você pode ser voluntário como anfitrião em uma nova cidade ou se juntar à equipe nas cidades onde já temos encontros. Ajude a expandir nossa rede de encontros presenciais!
+                        </p>
+                        <div class="host-contact">
+                            <a href="contato.html" class="contact-btn" title="Entre em contato">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Presencial Host Card 1 - Carlos - Brasília -->
+                <div class="host-card" data-city="brasilia">
+                    <div class="host-badge">Brasília - DF</div>
+                    <img src="assets/images/Carlos.jpg" alt="Carlos de Alcântara" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Carlos de Alcântara</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Português</span>
+                            <span class="language-tag">Inglês</span>
+                        </div>
+                        <p class="host-bio">
+                            Carlos de Alcântara é o anfitrião dos encontros presenciais em Brasília. Com sua experiência e carisma, ele cria um ambiente acolhedor para a prática de idiomas em diversos pontos da capital federal.
+                        </p>
+                        <div class="host-contact">
+                            <a href="https://wa.me/5561992666148" class="contact-btn whatsapp" target="_blank" title="WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="mailto:carlodealcantarajr@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="https://instagram.com/carlosdealcantara_" class="contact-btn instagram" target="_blank" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/in/carlos-de-alc%C3%A2ntara-75b96a6b/" class="contact-btn linkedin" target="_blank" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Presencial Host Card 2 - Paula - São Paulo -->
+                <div class="host-card" data-city="saopaulo">
+                    <div class="host-badge">São Paulo - SP</div>
+                    <img src="assets/images/Paula.jpg" alt="Paula" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Paula</h3>
+                        <div class="host-languages">
+                            <span class="language-tag">Português</span>
+                            <span class="language-tag">Inglês</span>
+                            <span class="language-tag">Espanhol</span>
+                        </div>
+                        <p class="host-bio">
+                            Paula coordena os encontros presenciais em São Paulo. Com seu dinamismo e conhecimento da cidade, ela organiza encontros em locais interessantes e acessíveis para a prática de idiomas.
+                        </p>
+                        <div class="host-contact">
+                            <!-- Nenhuma informação de contato disponível -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="conteudo">
+            <div class="language-filter">
+                <button class="language-filter-btn active" data-role="all">Todos os papéis</button>
+                <button class="language-filter-btn" data-role="desenvolvimento">Desenvolvimento</button>
+                <button class="language-filter-btn" data-role="design">Design</button>
+                <button class="language-filter-btn special" data-role="junte-se">Faça parte!</button>
+            </div>
+            
+            <div class="host-grid">
+                <!-- Team Card - Junte-se -->
+                <div class="host-card" data-role="junte-se">
+                    <div class="host-badge team-badge">Oportunidade</div>
+                    <img src="assets/images/MaisIdiomasCidades.png" alt="Junte-se à equipe" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Faça parte da nossa equipe!</h3>
+                        <div class="host-role">
+                            <span class="role-tag">Desenvolvimento</span>
+                            <span class="role-tag">Design</span>
+                            <span class="role-tag">Voluntário</span>
+                        </div>
+                        <p class="host-bio">
+                            Tem habilidades em desenvolvimento, design, redação ou marketing digital? Junte-se à nossa equipe de voluntários e ajude a expandir o Encontro de Idiomas! Estamos sempre procurando talentos apaixonados por conectar pessoas e culturas.
+                        </p>
+                        <div class="host-contact">
+                            <a href="contato.html" class="contact-btn" title="Entre em contato">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team Card - Carlos - Desenvolvedor -->
+                <div class="host-card" data-role="desenvolvimento,design">
+                    <div class="host-badge design-badge" style="right: auto; left: 20px;">Design</div>
+                    <div class="host-badge dev-badge" style="left: auto; right: 20px;">Desenvolvimento</div>
+                    <img src="assets/images/Carlos.jpg" alt="Carlos de Alcântara" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Carlos de Alcântara</h3>
+                        <div class="host-role">
+                            <span class="role-tag">Desenvolvedor</span>
+                            <span class="role-tag">Full Stack</span>
+                            <span class="role-tag">Designer</span>
+                            <span class="role-tag">Artes Gráficas</span>
+                        </div>
+                        <p class="host-bio">
+                            Carlos é responsável pelo desenvolvimento do site e das aplicações do Encontro de Idiomas, além de contribuir com a equipe de design. Com conhecimento em diversas tecnologias e design gráfico, ele trabalha constantemente para melhorar a experiência online e identidade visual da nossa comunidade.
+                        </p>
+                        <div class="host-contact">
+                            <a href="mailto:carlodealcantarajr@gmail.com" class="contact-btn email" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/in/carlos-de-alc%C3%A2ntara-75b96a6b/" class="contact-btn linkedin" target="_blank" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="https://github.com/carlosdealcantara" class="contact-btn github" target="_blank" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team Card - Michele - Designer -->
+                <div class="host-card" data-role="design">
+                    <div class="host-badge design-badge">Design</div>
+                    <img src="assets/images/Michele.jpg" alt="Michele" class="host-image">
+                    <div class="host-info">
+                        <h3 class="host-name">Michele</h3>
+                        <div class="host-role">
+                            <span class="role-tag">Designer Gráfico</span>
+                            <span class="role-tag">Artes Visuais</span>
+                        </div>
+                        <p class="host-bio">
+                            Michele é responsável pelo design e identidade visual do Encontro de Idiomas. Seu trabalho criativo dá vida à nossa marca, criando materiais visuais, logos e artes de divulgação que representam a essência do projeto.
+                        </p>
+                        <div class="host-contact">
+                            <!-- Nenhuma informação de contato disponível -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Quer se tornar parte da nossa comunidade?</h2>
+            <p class="cta-description">
+                Seja como anfitrião, desenvolvedor ou criador de conteúdo, você pode contribuir para o crescimento do Encontro de Idiomas e fazer a diferença na vida de pessoas que desejam aprender novos idiomas e culturas.
+            </p>
+            <a href="contato.html" class="cta-button">Quero participar</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Sobre Nós</h3>
+                <p>Somos especialistas em idiomas, comprometidos em fornecer uma experiência única e eficaz para nossos alunos.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links Rápidos</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="cursos.html">Cursos</a></li>
+                    <li><a href="equipe.html">Equipe</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contato</h3>
+                <p>Email: contato@encontrodeidiomas.com</p>
+                <p>Telefone: (11) 1234-5678</p>
+                <div class="social-icons">
+                    <a href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Encontro de Idiomas. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const tabIndicator = document.querySelector('.tab-indicator');
+        
+        function setActiveTab(tab) {
+            // Update indicator position
+            const activeButton = document.querySelector(`.tab-button[data-tab="${tab}"]`);
+            const buttonRect = activeButton.getBoundingClientRect();
+            const tabsRect = document.querySelector('.tabs').getBoundingClientRect();
+            
+            tabIndicator.style.width = `${buttonRect.width}px`;
+            tabIndicator.style.left = `${buttonRect.left - tabsRect.left}px`;
+            
+            // Update active class
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.dataset.tab === tab) {
+                    button.classList.add('active');
+                }
+            });
+            
+            // Show active content
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                if (content.id === tab) {
+                    content.classList.add('active');
+                }
+            });
+        }
+        
+        // Language filter functionality
+        const languageFilterButtons = document.querySelectorAll('#online .language-filter-btn');
+        const hostCards = document.querySelectorAll('#online .host-card');
+        
+        function filterByLanguage(language) {
+            hostCards.forEach(card => {
+                if (language === 'all') {
+                    card.classList.remove('hidden');
+                } else if (language === 'outros') {
+                    if (card.dataset.languages === 'outros') {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                } else {
+                    const languages = card.dataset.languages ? card.dataset.languages.split(',') : [];
+                    if (languages.includes(language)) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
+        // City filter functionality
+        const cityFilterButtons = document.querySelectorAll('.city-filter .language-filter-btn');
+        const cityHostCards = document.querySelectorAll('#presencial .host-card');
+        
+        function filterByCity(city) {
+            cityHostCards.forEach(card => {
+                if (city === 'all') {
+                    card.classList.remove('hidden');
+                } else if (city === 'outras') {
+                    if (card.dataset.city === 'outras') {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                } else {
+                    if (card.dataset.city === city) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
+        // Role filter functionality
+        const roleFilterButtons = document.querySelectorAll('#conteudo .language-filter-btn');
+        const teamCards = document.querySelectorAll('#conteudo .host-card');
+        
+        function filterByRole(role) {
+            teamCards.forEach(card => {
+                if (role === 'all') {
+                    card.classList.remove('hidden');
+                } else if (role === 'junte-se') {
+                    if (card.dataset.role === 'junte-se') {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                } else {
+                    const roles = card.dataset.role ? card.dataset.role.split(',') : [];
+                    if (roles.includes(role)) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
+        // Initial setup
+        window.addEventListener('DOMContentLoaded', () => {
+            setActiveTab('online');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    setActiveTab(button.dataset.tab);
+                });
+            });
+            
+            languageFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active class
+                    languageFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Filter hosts
+                    filterByLanguage(button.dataset.language);
+                });
+            });
+            
+            cityFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active class
+                    cityFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Filter hosts
+                    filterByCity(button.dataset.city);
+                });
+            });
+            
+            roleFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active class
+                    roleFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Filter team members
+                    filterByRole(button.dataset.role);
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
