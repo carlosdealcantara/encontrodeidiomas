@@ -1574,6 +1574,20 @@
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     setActiveTab(button.dataset.tab);
+                    
+                    // Rolagem imediata após clicar na aba
+                    setTimeout(() => {
+                        // Altura do menu fixo (header)
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        
+                        // Obter a posição das abas
+                        const tabsElement = document.querySelector('.tabs');
+                        if (tabsElement) {
+                            // Scroll para posicionar as abas logo abaixo do header fixo
+                            const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 100);
                 });
             });
             
