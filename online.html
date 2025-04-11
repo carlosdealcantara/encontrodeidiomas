@@ -755,11 +755,11 @@
             </div>
             
             <div class="calendar-days">
-                <button class="day-button" data-day="1" onclick="showDayEvents(1)">Segunda</button>
-                <button class="day-button" data-day="2" onclick="showDayEvents(2)">Terça</button>
-                <button class="day-button" data-day="3" onclick="showDayEvents(3)">Quarta</button>
-                <button class="day-button" data-day="4" onclick="showDayEvents(4)">Quinta</button>
-                <button class="day-button" data-day="5" onclick="showDayEvents(5)">Sexta</button>
+                <button class="day-button" data-day="1">Segunda</button>
+                <button class="day-button" data-day="2">Terça</button>
+                <button class="day-button" data-day="3">Quarta</button>
+                <button class="day-button" data-day="4">Quinta</button>
+                <button class="day-button" data-day="5">Sexta</button>
             </div>
             
             <!-- Day Events -->
@@ -964,39 +964,31 @@
         // Get current day and time
         function getCurrentDayAndTime() {
             const now = new Date();
-            const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-            const currentHour = now.getHours();
-            return { day: currentDay, hour: currentHour };
+            const day = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const hour = now.getHours();
+            return { day, hour };
         }
         
-        // Find the next day with events
+        // Find the next day that has events (1-5 for weekdays)
         function findNextDay(currentDay) {
-            // Days with events (1=Monday, 2=Tuesday, etc.)
-            const daysWithEvents = [1, 2, 3, 4, 5]; // Monday to Friday
-            
-            // If current day has events, return it
-            if (daysWithEvents.includes(currentDay)) {
+            // If currentDay is a weekday (1-5), return it
+            if (currentDay >= 1 && currentDay <= 5) {
                 return currentDay;
             }
             
-            // Find the next day with events
-            let nextDay = currentDay;
-            for (let i = 1; i <= 7; i++) {
-                nextDay = (nextDay + 1) % 7;
-                if (daysWithEvents.includes(nextDay)) {
-                    return nextDay;
-                }
-            }
-            
-            return 1; // Default to Monday if nothing found (shouldn't happen)
+            // If it's a weekend, return Monday (1)
+            return 1;
         }
         
-        // Check if a specific event is happening now or has passed
+        // Determine the status of an event
         function getEventStatus(eventDay, eventHour) {
             const { day, hour } = getCurrentDayAndTime();
             
-            // Mesmo dia
-            if (day === parseInt(eventDay)) {
+            // Convert event day to number if it's a string
+            const eventDayNum = parseInt(eventDay);
+            
+            // Event day is today
+            if (day === eventDayNum) {
                 // Hora atual
                 if (hour === parseInt(eventHour)) {
                     return "now"; // Acontecendo agora
@@ -1090,7 +1082,7 @@
         }
         
         // Show events for the specified day
-        function showDayEvents(day) {
+        function showDayEvents(day, updateURL = true) {
             // Hide all day events
             document.querySelectorAll('.day-events').forEach(element => {
                 element.classList.remove('active');
@@ -1112,6 +1104,22 @@
             
             // Update join buttons state
             updateJoinButtons();
+
+            // Update URL with the day
+            if (updateURL) {
+                const url = new URL(window.location);
+                url.searchParams.set('dia', day);
+                history.pushState({}, '', url);
+            }
+
+            // Scroll to the calendar section if not already visible
+            const calendarSection = document.getElementById('calendar');
+            if (calendarSection) {
+                const rect = calendarSection.getBoundingClientRect();
+                if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                    calendarSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
         }
         
         // Check if any events are happening now and highlight them
@@ -1149,14 +1157,50 @@
                 });
             }
         }
+
+        // Read URL parameters
+        function readURLParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dia = urlParams.get('dia');
+            
+            if (dia && dia >= 1 && dia <= 5) {
+                // Mostrar o dia especificado na URL e rolar para a seção de programação
+                showDayEvents(parseInt(dia), false);
+                
+                // Rolar para a seção de programação automaticamente
+                const calendarSection = document.getElementById('calendar');
+                if (calendarSection) {
+                    setTimeout(() => {
+                        calendarSection.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+                return true;
+            }
+            
+            return false;
+        }
         
         // Initialize the calendar
         function initCalendar() {
-            const { day: currentDay } = getCurrentDayAndTime();
-            const nextEventDay = findNextDay(currentDay);
+            // Primeiro, verificar se há parâmetros na URL
+            const hasParams = readURLParameters();
             
-            // Show events for the next day with events (or today if it has events)
-            showDayEvents(nextEventDay);
+            if (!hasParams) {
+                // Se não houver parâmetros, mostrar o dia atual ou próximo com eventos
+                const { day: currentDay } = getCurrentDayAndTime();
+                const nextEventDay = findNextDay(currentDay);
+                
+                // Show events for the next day with events (or today if it has events)
+                showDayEvents(nextEventDay, false);
+            }
+            
+            // Adicionar evento de clique nos botões de dia
+            document.querySelectorAll('.day-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const day = parseInt(button.getAttribute('data-day'));
+                    showDayEvents(day);
+                });
+            });
             
             // Set up an interval to check for current events every minute
             setInterval(() => {
@@ -1171,12 +1215,59 @@
                     showDayEvents(updatedCurrentDay);
                 }
             }, 60000); // Check every minute
+
+            // Handle browser back/forward navigation
+            window.addEventListener('popstate', () => {
+                readURLParameters();
+            });
         }
         
         // Run when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             initCalendar();
             updateJoinButtons();
+
+            // Atualizar o evento de clique do botão "Ver Programação" para usar a URL
+            const heroButton = document.querySelector('.hero-button');
+            if (heroButton) {
+                heroButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Usar a URL atual para preservar os parâmetros
+                    const url = new URL(window.location);
+                    
+                    // Se não houver parâmetro de dia, definir o dia atual
+                    if (!url.searchParams.has('dia')) {
+                        const { day: currentDay } = getCurrentDayAndTime();
+                        const nextEventDay = findNextDay(currentDay);
+                        url.searchParams.set('dia', nextEventDay);
+                    }
+                    
+                    // Atualizar a URL e rolar para a seção de programação
+                    history.pushState({}, '', url);
+                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+
+            // Fazer o mesmo para o link de rolagem
+            const scrollDown = document.querySelector('.scroll-down');
+            if (scrollDown) {
+                scrollDown.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Usar a URL atual para preservar os parâmetros
+                    const url = new URL(window.location);
+                    
+                    // Se não houver parâmetro de dia, definir o dia atual
+                    if (!url.searchParams.has('dia')) {
+                        const { day: currentDay } = getCurrentDayAndTime();
+                        const nextEventDay = findNextDay(currentDay);
+                        url.searchParams.set('dia', nextEventDay);
+                    }
+                    
+                    // Atualizar a URL e rolar para a seção de programação
+                    history.pushState({}, '', url);
+                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
+                });
+            }
         });
     </script>
 </body>
