@@ -465,6 +465,37 @@
             margin-bottom: 10px;
         }
         
+        .event-social-links {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            color: white;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-2px);
+            opacity: 0.8;
+        }
+        
+        .whatsapp-icon {
+            background-color: #25D366;
+        }
+        
+        .instagram-icon {
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+        }
+        
         .event-flag {
             font-size: 1.8rem;
             display: inline-block;
@@ -605,6 +636,15 @@
             .hero p {
                 font-size: 1rem;
             }
+            
+            .event-title {
+                flex-wrap: wrap;
+            }
+            
+            .event-social-links {
+                margin-left: 5px;
+                margin-top: 5px;
+            }
         }
         
         /* Mobile devices específica para telas muito pequenas */
@@ -663,6 +703,20 @@
             
             .event-title {
                 font-size: 1.1rem;
+                flex-wrap: wrap;
+            }
+            
+            .event-social-links {
+                margin-left: 0;
+                margin-top: 8px;
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .social-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 0.65rem;
             }
             
             .event-actions {
@@ -1007,13 +1061,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
                                 <span>Francês</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/IWaqrILjnE66oMZQWq8lXA" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomas_frances" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Venha praticar francês em um ambiente acolhedor. Para todos os níveis.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/aih-vfir-eyy" target="_blank" class="event-button join-button" data-day="1" data-time="19">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomas-frances" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/IWaqrILjnE66oMZQWq8lXA" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomas_frances" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1022,13 +1078,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
                                 <span>Japonês</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/BjbmHpFukZ70p42sOA18Ui" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasjapones" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Pratique japonês com falantes de diferentes níveis. Conversação e cultura japonesa.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/hjt-eyny-sqm" target="_blank" class="event-button join-button" data-day="1" data-time="20">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasjapones" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/BjbmHpFukZ70p42sOA18Ui" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomasjapones" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1037,13 +1095,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
                                 <span>Italiano</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/JHUR4j7RB7h3EJH4dPPscq" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasitaliano" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Aprenda e pratique italiano em um ambiente descontraído. Todos os níveis são bem-vindos!</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/epp-bhcj-mam" target="_blank" class="event-button join-button" data-day="1" data-time="21">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasitaliano2" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/JHUR4j7RB7h3EJH4dPPscq" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomasitaliano" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -1056,13 +1116,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
                                 <span>Espanhol</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/EIAg1eKh8p8GrH1jC2bFdm" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasespanhol" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Pratique espanhol com outros entusiastas. Conversação e temas culturais.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/zwn-eaja-fbf" target="_blank" class="event-button join-button" data-day="2" data-time="19">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasespanhol" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/EIAg1eKh8p8GrH1jC2bFdm" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomasespanhol" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1071,13 +1133,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
                                 <span>Inglês</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/HZkSKN2gYlv6Lq6oNdntTp" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasingles" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Melhore seu inglês com conversação prática. Para todos os níveis.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/ptc-rqdc-cvj" target="_blank" class="event-button join-button" data-day="2" data-time="20">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasingles" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/HZkSKN2gYlv6Lq6oNdntTp" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomasingles" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1086,13 +1150,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
                                 <span>Coreano</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/IlFGI6lxTIyDkKIDn3tL2v" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomascoreano" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Aprenda elementos da língua e cultura coreana em um encontro dinâmico.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/xsf-frdr-qms" target="_blank" class="event-button join-button" data-day="2" data-time="21">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomascoreano" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/IlFGI6lxTIyDkKIDn3tL2v" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomascoreano" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -1105,13 +1171,15 @@
                             <div class="event-title">
                                 <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
                                 <span>Libras</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/C9cL4VVW9msALKOi1Ea8oe" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomaslibras" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Aprenda e pratique a Língua Brasileira de Sinais com nossos instrutores.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/kte-dpst-ycn" target="_blank" class="event-button join-button" data-day="3" data-time="19">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomaslibras" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/C9cL4VVW9msALKOi1Ea8oe" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomaslibras" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -1124,13 +1192,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
                                 <span>Chinês</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/FdBdkAsgvRu2RZ3sDVfCz2" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomaschines" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Venha aprender e praticar mandarim. Abordagem comunicativa e cultural.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/iyq-uddf-qyw" target="_blank" class="event-button join-button" data-day="4" data-time="20">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomaschines" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/FdBdkAsgvRu2RZ3sDVfCz2" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomaschines" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1139,13 +1209,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
                                 <span>Alemão</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/BlwnJfFVRSLKPX9SrDcE4o" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasalemao" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Pratique alemão com nossos encontros online. Ideal para iniciantes e intermediários.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/csd-vmvs-sfo" target="_blank" class="event-button join-button" data-day="4" data-time="21">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasalemao" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/BlwnJfFVRSLKPX9SrDcE4o" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomasalemao" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -1158,13 +1230,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
                                 <span>Russo</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/HXiGFoSBFPS2veNFMREbeN" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasrusso" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Aprenda o básico da língua russa e aspectos culturais interessantes.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/rjb-ojrm-wci" target="_blank" class="event-button join-button" data-day="5" data-time="19">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasrusso" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/HXiGFoSBFPS2veNFMREbeN" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomasrusso" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1173,13 +1247,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/pl.png" class="flag-icon" alt="Polônia">
                                 <span>Polonês</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/H1DhGBXUAQD8jJZLdYqHPG" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomaspolones" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Descubra a língua e cultura polonesa com nossos encontros semanais.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/qys-pnux-iyn" target="_blank" class="event-button join-button" data-day="5" data-time="20">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomaspolones" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/H1DhGBXUAQD8jJZLdYqHPG" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomaspolones" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                         
@@ -1188,13 +1264,15 @@
                             <div class="event-title">
                                 <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
                                 <span>Português</span>
+                                <div class="event-social-links">
+                                    <a href="https://chat.whatsapp.com/HQv4XBL7bAeCocVzj8qZvB" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasportugues" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                </div>
                             </div>
                             <p class="event-description">Ajude estrangeiros a praticarem português brasileiro e compartilhe nossa cultura.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/boa-owry-wkh" target="_blank" class="event-button join-button" data-day="5" data-time="21">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasportugues" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
-                                <a href="https://chat.whatsapp.com/HQv4XBL7bAeCocVzj8qZvB" target="_blank" class="event-button whatsapp-button"><i class="fab fa-whatsapp"></i> Grupo</a>
-                                <a href="https://instagr.am/encontrodeidiomasportugues" target="_blank" class="event-button instagram-button"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
