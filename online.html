@@ -37,6 +37,15 @@
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
     <link rel="apple-touch-icon" href="assets/images/favicon.png">
     
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BZRMQE3XJT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-BZRMQE3XJT');
+    </script>
+    
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -281,14 +290,53 @@
         /* Calendar Component */
         .calendar-nav {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 30px;
         }
         
         .calendar-nav-title {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 600;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            background-color: var(--white);
+            border-radius: 30px;
+            padding: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-left: 15px;
+        }
+        
+        .view-button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .view-button.active {
+            color: var(--white);
+            background-color: var(--accent-red);
+        }
+        
+        .view-button:hover:not(.active) {
+            background-color: #f0f0f0;
+        }
+        
+        .view-content {
+            display: none;
+        }
+        
+        .view-content.active {
+            display: block;
         }
         
         .calendar-days {
@@ -315,10 +363,8 @@
         }
         
         .day-button.active {
-            background: linear-gradient(to right, var(--accent-red), var(--accent-blue));
+            background-color: var(--accent-red);
             color: var(--white);
-            transform: scale(1.05);
-            box-shadow: var(--shadow);
         }
         
         .day-button:hover:not(.active) {
@@ -739,6 +785,64 @@
             margin: 0;
             padding: 0;
         }
+        
+        .language-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .language-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background-color: var(--white);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .language-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .language-button.active {
+            background-color: var(--accent-red);
+            color: var(--white);
+        }
+        
+        .language-button .flag-icon {
+            width: 24px;
+            height: 18px;
+            border-radius: 3px;
+            object-fit: cover;
+        }
+        
+        .day-info {
+            background-color: var(--accent-blue);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .no-events {
+            text-align: center;
+            padding: 30px;
+            background: var(--white);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -779,189 +883,250 @@
             <p style="text-align: center; margin-bottom: 2rem;">Fuso horário: GMT-3 (Horário de Brasília)<br>As chamadas são gravadas e disponibilizadas no YouTube.</p>
             
             <div class="calendar-nav">
-                <div class="calendar-nav-title">Selecione o dia da semana</div>
+                <div class="calendar-nav-title">Filtre por:</div>
+                <div class="view-toggle">
+                    <button class="view-button active" data-view="language">Idioma</button>
+                    <button class="view-button" data-view="day">Dia da Semana</button>
+                </div>
             </div>
             
-            <div class="calendar-days">
-                <button class="day-button" data-day="1">Segunda</button>
-                <button class="day-button" data-day="2">Terça</button>
-                <button class="day-button" data-day="3">Quarta</button>
-                <button class="day-button" data-day="4">Quinta</button>
-                <button class="day-button" data-day="5">Sexta</button>
-            </div>
-            
-            <!-- Day Events -->
-            <div id="day-1" class="day-events">
-                <div class="timeline">
-                    <div class="timeline-event" data-time="19">
-                        <span class="event-time">19h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
-                            <span>Francês</span>
-                        </div>
-                        <p class="event-description">Venha praticar francês com nossos professores e outros participantes. Todos os níveis são bem-vindos!</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/yxy-vkzd-hxx" target="_blank" class="event-button join-button" data-day="1" data-time="19">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasfrances2" target="_blank" class="event-button replay-button">Replays</a>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-event" data-time="20">
-                        <span class="event-time">20h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
-                            <span>Japonês</span>
-                        </div>
-                        <p class="event-description">Pratique japonês com falantes de diferentes níveis. Conversação e cultura japonesa.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/hjt-eyny-sqm" target="_blank" class="event-button join-button" data-day="1" data-time="20">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasjapones" target="_blank" class="event-button replay-button">Replays</a>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-event" data-time="21">
-                        <span class="event-time">21h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
-                            <span>Italiano</span>
-                        </div>
-                        <p class="event-description">Aprenda e pratique italiano em um ambiente descontraído. Todos os níveis são bem-vindos!</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/epp-bhcj-mam" target="_blank" class="event-button join-button" data-day="1" data-time="21">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasitaliano2" target="_blank" class="event-button replay-button">Replays</a>
-                        </div>
+            <div id="language-view" class="view-content active">
+                <div class="language-filters">
+                    <button class="language-button" data-language="francês">
+                        <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
+                        <span>Francês</span>
+                    </button>
+                    <button class="language-button" data-language="japonês">
+                        <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
+                        <span>Japonês</span>
+                    </button>
+                    <button class="language-button" data-language="italiano">
+                        <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
+                        <span>Italiano</span>
+                    </button>
+                    <button class="language-button" data-language="espanhol">
+                        <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
+                        <span>Espanhol</span>
+                    </button>
+                    <button class="language-button active" data-language="inglês">
+                        <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
+                        <span>Inglês</span>
+                    </button>
+                    <button class="language-button" data-language="coreano">
+                        <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
+                        <span>Coreano</span>
+                    </button>
+                    <button class="language-button" data-language="libras">
+                        <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
+                        <span>Libras</span>
+                    </button>
+                    <button class="language-button" data-language="chinês">
+                        <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
+                        <span>Chinês</span>
+                    </button>
+                    <button class="language-button" data-language="alemão">
+                        <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
+                        <span>Alemão</span>
+                    </button>
+                    <button class="language-button" data-language="russo">
+                        <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
+                        <span>Russo</span>
+                    </button>
+                    <button class="language-button" data-language="português">
+                        <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
+                        <span>Português</span>
+                    </button>
+                </div>
+                
+                <div id="language-events">
+                    <div class="timeline">
+                        <!-- Events will be displayed here -->
                     </div>
                 </div>
             </div>
             
-            <div id="day-2" class="day-events">
-                <div class="timeline">
-                    <div class="timeline-event" data-time="19">
-                        <span class="event-time">19h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
-                            <span>Espanhol</span>
+            <div id="day-view" class="view-content">
+                <div class="calendar-days">
+                    <button class="day-button" data-day="1">Segunda</button>
+                    <button class="day-button" data-day="2">Terça</button>
+                    <button class="day-button" data-day="3">Quarta</button>
+                    <button class="day-button" data-day="4">Quinta</button>
+                    <button class="day-button" data-day="5">Sexta</button>
+                </div>
+                
+                <!-- Day Events -->
+                <div id="day-1" class="day-events">
+                    <div class="timeline">
+                        <div class="timeline-event" data-time="19">
+                            <span class="event-time">19h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
+                                <span>Francês</span>
+                            </div>
+                            <p class="event-description">Venha praticar francês com nossos professores e outros participantes. Todos os níveis são bem-vindos!</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/yxy-vkzd-hxx" target="_blank" class="event-button join-button" data-day="1" data-time="19">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasfrances2" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
-                        <p class="event-description">Pratique espanhol com outros entusiastas. Conversação e temas culturais.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/zwn-eaja-fbf" target="_blank" class="event-button join-button" data-day="2" data-time="19">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasespanhol" target="_blank" class="event-button replay-button">Replays</a>
+                        
+                        <div class="timeline-event" data-time="20">
+                            <span class="event-time">20h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
+                                <span>Japonês</span>
+                            </div>
+                            <p class="event-description">Pratique japonês com falantes de diferentes níveis. Conversação e cultura japonesa.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/hjt-eyny-sqm" target="_blank" class="event-button join-button" data-day="1" data-time="20">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasjapones" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="timeline-event" data-time="20">
-                        <span class="event-time">20h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
-                            <span>Inglês</span>
-                        </div>
-                        <p class="event-description">Melhore seu inglês com conversação prática. Para todos os níveis.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/ptc-rqdc-cvj" target="_blank" class="event-button join-button" data-day="2" data-time="20">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasingles" target="_blank" class="event-button replay-button">Replays</a>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-event" data-time="21">
-                        <span class="event-time">21h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
-                            <span>Coreano</span>
-                        </div>
-                        <p class="event-description">Aprenda elementos da língua e cultura coreana em um encontro dinâmico.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/xsf-frdr-qms" target="_blank" class="event-button join-button" data-day="2" data-time="21">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomascoreano" target="_blank" class="event-button replay-button">Replays</a>
+                        
+                        <div class="timeline-event" data-time="21">
+                            <span class="event-time">21h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
+                                <span>Italiano</span>
+                            </div>
+                            <p class="event-description">Aprenda e pratique italiano em um ambiente descontraído. Todos os níveis são bem-vindos!</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/epp-bhcj-mam" target="_blank" class="event-button join-button" data-day="1" data-time="21">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasitaliano2" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div id="day-3" class="day-events">
-                <div class="timeline">
-                    <div class="timeline-event" data-time="19">
-                        <span class="event-time">19h</span>
-                        <div class="event-title">
-                            <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
-                            <span>Libras</span>
+                
+                <div id="day-2" class="day-events">
+                    <div class="timeline">
+                        <div class="timeline-event" data-time="19">
+                            <span class="event-time">19h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
+                                <span>Espanhol</span>
+                            </div>
+                            <p class="event-description">Pratique espanhol com outros entusiastas. Conversação e temas culturais.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/zwn-eaja-fbf" target="_blank" class="event-button join-button" data-day="2" data-time="19">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasespanhol" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
-                        <p class="event-description">Aprenda e pratique a Língua Brasileira de Sinais com nossos instrutores.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/kte-dpst-ycn" target="_blank" class="event-button join-button" data-day="3" data-time="19">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomaslibras" target="_blank" class="event-button replay-button">Replays</a>
+                        
+                        <div class="timeline-event" data-time="20">
+                            <span class="event-time">20h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
+                                <span>Inglês</span>
+                            </div>
+                            <p class="event-description">Melhore seu inglês com conversação prática. Para todos os níveis.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/ptc-rqdc-cvj" target="_blank" class="event-button join-button" data-day="2" data-time="20">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasingles" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="day-4" class="day-events">
-                <div class="timeline">
-                    <div class="timeline-event" data-time="20">
-                        <span class="event-time">20h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
-                            <span>Chinês</span>
-                        </div>
-                        <p class="event-description">Venha aprender e praticar mandarim. Abordagem comunicativa e cultural.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/iyq-uddf-qyw" target="_blank" class="event-button join-button" data-day="4" data-time="20">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomaschines" target="_blank" class="event-button replay-button">Replays</a>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-event" data-time="21">
-                        <span class="event-time">21h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
-                            <span>Alemão</span>
-                        </div>
-                        <p class="event-description">Pratique alemão com nossos encontros online. Ideal para iniciantes e intermediários.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/csd-vmvs-sfo" target="_blank" class="event-button join-button" data-day="4" data-time="21">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasalemao" target="_blank" class="event-button replay-button">Replays</a>
+                        
+                        <div class="timeline-event" data-time="21">
+                            <span class="event-time">21h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
+                                <span>Coreano</span>
+                            </div>
+                            <p class="event-description">Aprenda elementos da língua e cultura coreana em um encontro dinâmico.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/xsf-frdr-qms" target="_blank" class="event-button join-button" data-day="2" data-time="21">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomascoreano" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div id="day-5" class="day-events">
-                <div class="timeline">
-                    <div class="timeline-event" data-time="19">
-                        <span class="event-time">19h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
-                            <span>Russo</span>
-                        </div>
-                        <p class="event-description">Aprenda o básico da língua russa e aspectos culturais interessantes.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/rjb-ojrm-wci" target="_blank" class="event-button join-button" data-day="5" data-time="19">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasrusso" target="_blank" class="event-button replay-button">Replays</a>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-event" data-time="20">
-                        <span class="event-time">20h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/pl.png" class="flag-icon" alt="Polônia">
-                            <span>Polonês</span>
-                        </div>
-                        <p class="event-description">Descubra a língua e cultura polonesa com nossos encontros semanais.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/qys-pnux-iyn" target="_blank" class="event-button join-button" data-day="5" data-time="20">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomaspolones" target="_blank" class="event-button replay-button">Replays</a>
+                
+                <div id="day-3" class="day-events">
+                    <div class="timeline">
+                        <div class="timeline-event" data-time="19">
+                            <span class="event-time">19h</span>
+                            <div class="event-title">
+                                <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
+                                <span>Libras</span>
+                            </div>
+                            <p class="event-description">Aprenda e pratique a Língua Brasileira de Sinais com nossos instrutores.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/kte-dpst-ycn" target="_blank" class="event-button join-button" data-day="3" data-time="19">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomaslibras" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="timeline-event" data-time="21">
-                        <span class="event-time">21h</span>
-                        <div class="event-title">
-                            <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
-                            <span>Português</span>
+                </div>
+                
+                <div id="day-4" class="day-events">
+                    <div class="timeline">
+                        <div class="timeline-event" data-time="20">
+                            <span class="event-time">20h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
+                                <span>Chinês</span>
+                            </div>
+                            <p class="event-description">Venha aprender e praticar mandarim. Abordagem comunicativa e cultural.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/iyq-uddf-qyw" target="_blank" class="event-button join-button" data-day="4" data-time="20">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomaschines" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
-                        <p class="event-description">Ajude estrangeiros a praticarem português brasileiro e compartilhe nossa cultura.</p>
-                        <div class="event-actions">
-                            <a href="https://meet.google.com/boa-owry-wkh" target="_blank" class="event-button join-button" data-day="5" data-time="21">Participar</a>
-                            <a href="https://youtube.com/@encontrodeidiomasportugues" target="_blank" class="event-button replay-button">Replays</a>
+                        
+                        <div class="timeline-event" data-time="21">
+                            <span class="event-time">21h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
+                                <span>Alemão</span>
+                            </div>
+                            <p class="event-description">Pratique alemão com nossos encontros online. Ideal para iniciantes e intermediários.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/csd-vmvs-sfo" target="_blank" class="event-button join-button" data-day="4" data-time="21">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasalemao" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="day-5" class="day-events">
+                    <div class="timeline">
+                        <div class="timeline-event" data-time="19">
+                            <span class="event-time">19h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
+                                <span>Russo</span>
+                            </div>
+                            <p class="event-description">Aprenda o básico da língua russa e aspectos culturais interessantes.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/rjb-ojrm-wci" target="_blank" class="event-button join-button" data-day="5" data-time="19">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasrusso" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-event" data-time="20">
+                            <span class="event-time">20h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/pl.png" class="flag-icon" alt="Polônia">
+                                <span>Polonês</span>
+                            </div>
+                            <p class="event-description">Descubra a língua e cultura polonesa com nossos encontros semanais.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/qys-pnux-iyn" target="_blank" class="event-button join-button" data-day="5" data-time="20">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomaspolones" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-event" data-time="21">
+                            <span class="event-time">21h</span>
+                            <div class="event-title">
+                                <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
+                                <span>Português</span>
+                            </div>
+                            <p class="event-description">Ajude estrangeiros a praticarem português brasileiro e compartilhe nossa cultura.</p>
+                            <div class="event-actions">
+                                <a href="https://meet.google.com/boa-owry-wkh" target="_blank" class="event-button join-button" data-day="5" data-time="21">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasportugues" target="_blank" class="event-button replay-button">Replays</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1121,8 +1286,60 @@
             });
         }
         
-        // Show events for the specified day
+        // Track language filter change in GA
+        function trackLanguageFilterEvent(language) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'filter_by_language', {
+                    'language': language
+                });
+            }
+        }
+        
+        // Track day filter change in GA
+        function trackDayFilterEvent(day) {
+            if (typeof gtag !== 'undefined') {
+                const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                gtag('event', 'filter_by_day', {
+                    'day': dayNames[day]
+                });
+            }
+        }
+        
+        // Track view toggle in GA
+        function trackViewToggleEvent(view) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'toggle_view', {
+                    'view_type': view
+                });
+            }
+        }
+        
+        // Track join button clicks
+        function trackJoinButtonClick(language, day, time) {
+            if (typeof gtag !== 'undefined') {
+                const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                gtag('event', 'join_meeting', {
+                    'language': language,
+                    'day': dayNames[day],
+                    'time': time + 'h'
+                });
+            }
+        }
+        
+        // Track replay button clicks
+        function trackReplayButtonClick(language) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'view_replays', {
+                    'language': language
+                });
+            }
+        }
+        
+        // Show events for a specific day
         function showDayEvents(day, updateURL = true) {
+            // Track this action
+            trackDayFilterEvent(day);
+            
             // Hide all day events
             document.querySelectorAll('.day-events').forEach(element => {
                 element.classList.remove('active');
@@ -1198,26 +1415,64 @@
             }
         }
 
-        // Read URL parameters
+        // Read URL parameters and set initial state
         function readURLParameters() {
             const urlParams = new URLSearchParams(window.location.search);
-            const dia = urlParams.get('dia');
+            let hasParameters = false;
             
-            if (dia && dia >= 1 && dia <= 5) {
-                // Mostrar o dia especificado na URL e rolar para a seção de programação
-                showDayEvents(parseInt(dia), false);
+            // Check for view parameter
+            const view = urlParams.get('view');
+            if (view) {
+                toggleView(view);
+                hasParameters = true;
                 
-                // Rolar para a seção de programação automaticamente
-                const calendarSection = document.getElementById('calendar');
-                if (calendarSection) {
-                    setTimeout(() => {
-                        calendarSection.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
+                if (view === 'day') {
+                    // Handle day view parameters
+                    const day = urlParams.get('dia');
+                    if (day && day >= 1 && day <= 5) {
+                        showDayEvents(parseInt(day), false);
+                        hasParameters = true;
+                    }
+                } else if (view === 'language') {
+                    // Handle language view parameters
+                    const language = urlParams.get('idioma');
+                    if (language) {
+                        // Encontrar o botão correspondente ao idioma
+                        let found = false;
+                        document.querySelectorAll('.language-button').forEach(button => {
+                            const buttonLanguage = button.getAttribute('data-language');
+                            // Comparação insensível a capitalização e acentuação
+                            if (buttonLanguage.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 
+                                language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+                                showLanguageEvents(buttonLanguage, false);
+                                found = true;
+                            }
+                        });
+                        
+                        if (found) {
+                            hasParameters = true;
+                        }
+                    }
                 }
-                return true;
+            } else {
+                // Handle legacy day parameter
+                const day = urlParams.get('dia');
+                if (day && day >= 1 && day <= 5) {
+                    toggleView('day');
+                    showDayEvents(parseInt(day), false);
+                    hasParameters = true;
+                }
             }
             
-            return false;
+            // Se há parâmetros na URL, rolar para a seção de programação automaticamente
+            // após um pequeno delay para garantir que tudo foi carregado
+            if (hasParameters) {
+                setTimeout(() => {
+                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            }
+            
+            return hasParameters;
         }
         
         // Initialize the calendar
@@ -1226,12 +1481,8 @@
             const hasParams = readURLParameters();
             
             if (!hasParams) {
-                // Se não houver parâmetros, mostrar o dia atual ou próximo com eventos
-                const { day: currentDay } = getCurrentDayAndTime();
-                const nextEventDay = findNextDay(currentDay);
-                
-                // Show events for the next day with events (or today if it has events)
-                showDayEvents(nextEventDay, false);
+                // Se não houver parâmetros, mostrar o idioma inglês por padrão
+                showLanguageEvents('inglês', false);
             }
             
             // Adicionar evento de clique nos botões de dia
@@ -1242,10 +1493,26 @@
                 });
             });
             
+            // Adicionar evento de clique nos botões de idioma
+            document.querySelectorAll('.language-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const language = button.getAttribute('data-language');
+                    showLanguageEvents(language);
+                });
+            });
+            
+            // Adicionar evento de clique nos botões de visualização (dia/idioma)
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const view = button.getAttribute('data-view');
+                    toggleView(view);
+                });
+            });
+            
             // Set up an interval to check for current events every minute
             setInterval(() => {
                 const { day: updatedCurrentDay } = getCurrentDayAndTime();
-                const activeDay = parseInt(document.querySelector('.day-button.active').getAttribute('data-day'));
+                const activeDay = parseInt(document.querySelector('.day-button.active')?.getAttribute('data-day') || "0");
                 
                 checkCurrentEvents(activeDay);
                 updateJoinButtons();
@@ -1267,23 +1534,40 @@
             initCalendar();
             updateJoinButtons();
 
+            // Adicionar eventos de rastreamento para os botões de participação
+            document.querySelectorAll('.join-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const day = parseInt(button.getAttribute('data-day'));
+                    const time = button.getAttribute('data-time');
+                    const language = button.closest('.timeline-event').querySelector('.event-title span:not(.now-badge)').textContent.trim();
+                    trackJoinButtonClick(language, day, time);
+                });
+            });
+            
+            // Adicionar eventos de rastreamento para os botões de replay
+            document.querySelectorAll('.replay-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const language = button.closest('.timeline-event').querySelector('.event-title span:not(.now-badge)').textContent.trim();
+                    trackReplayButtonClick(language);
+                });
+            });
+
             // Atualizar o evento de clique do botão "Ver Programação" para usar a URL
             const heroButton = document.querySelector('.hero-button');
             if (heroButton) {
                 heroButton.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // Usar a URL atual para preservar os parâmetros
-                    const url = new URL(window.location);
                     
-                    // Se não houver parâmetro de dia, definir o dia atual
-                    if (!url.searchParams.has('dia')) {
-                        const { day: currentDay } = getCurrentDayAndTime();
-                        const nextEventDay = findNextDay(currentDay);
-                        url.searchParams.set('dia', nextEventDay);
+                    // Se estamos na página inicial do site (sem parâmetros), iniciar com o padrão
+                    if (!window.location.search) {
+                        // Iniciar com a visualização de idioma e inglês selecionado
+                        const url = new URL(window.location);
+                        url.searchParams.set('view', 'language');
+                        url.searchParams.set('idioma', 'inglês');
+                        history.pushState({}, '', url);
                     }
                     
-                    // Atualizar a URL e rolar para a seção de programação
-                    history.pushState({}, '', url);
+                    // Rolar para a seção de programação
                     document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
                 });
             }
@@ -1293,22 +1577,119 @@
             if (scrollDown) {
                 scrollDown.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // Usar a URL atual para preservar os parâmetros
-                    const url = new URL(window.location);
                     
-                    // Se não houver parâmetro de dia, definir o dia atual
-                    if (!url.searchParams.has('dia')) {
-                        const { day: currentDay } = getCurrentDayAndTime();
-                        const nextEventDay = findNextDay(currentDay);
-                        url.searchParams.set('dia', nextEventDay);
+                    // Se estamos na página inicial do site (sem parâmetros), iniciar com o padrão
+                    if (!window.location.search) {
+                        // Iniciar com a visualização de idioma e inglês selecionado
+                        const url = new URL(window.location);
+                        url.searchParams.set('view', 'language');
+                        url.searchParams.set('idioma', 'inglês');
+                        history.pushState({}, '', url);
                     }
                     
-                    // Atualizar a URL e rolar para a seção de programação
-                    history.pushState({}, '', url);
+                    // Rolar para a seção de programação
                     document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
                 });
             }
         });
+
+        // Toggle between day and language views
+        function toggleView(view) {
+            // Track view toggle
+            trackViewToggleEvent(view);
+            
+            // Update active class on view buttons
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('data-view') === view) {
+                    button.classList.add('active');
+                }
+            });
+            
+            // Show active view content
+            document.querySelectorAll('.view-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${view}-view`).classList.add('active');
+            
+            // Update URL
+            const url = new URL(window.location);
+            url.searchParams.set('view', view);
+            
+            // If switching to language view and no language is selected yet, don't modify URL further
+            if (view === 'language' && !document.querySelector('.language-button.active')) {
+                history.pushState({}, '', url);
+                return;
+            }
+            
+            // If switching to day view and no day is selected yet, select the current/next day
+            if (view === 'day' && !document.querySelector('.day-button.active')) {
+                const { day: currentDay } = getCurrentDayAndTime();
+                const nextEventDay = findNextDay(currentDay);
+                showDayEvents(nextEventDay, false);
+            }
+            
+            history.pushState({}, '', url);
+        }
+        
+        // Show events for a specific language
+        function showLanguageEvents(language, updateURL = true) {
+            // Track language selection
+            trackLanguageFilterEvent(language);
+            
+            // Remove active class from all language buttons
+            document.querySelectorAll('.language-button').forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('data-language') === language) {
+                    button.classList.add('active');
+                }
+            });
+            
+            // Find all events for this language
+            const languageEvents = [];
+            document.querySelectorAll('.timeline-event').forEach(event => {
+                const eventTitle = event.querySelector('.event-title span:not(.now-badge)').textContent.trim().toLowerCase();
+                if (eventTitle.toLowerCase() === language.toLowerCase()) {
+                    const day = event.closest('.day-events').id.replace('day-', '');
+                    const time = event.getAttribute('data-time');
+                    const clone = event.cloneNode(true);
+                    
+                    // Add day info to the event
+                    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                    const dayInfo = document.createElement('div');
+                    dayInfo.className = 'day-info';
+                    dayInfo.innerHTML = `<span>${dayNames[day]}</span>`;
+                    clone.insertBefore(dayInfo, clone.firstChild);
+                    
+                    languageEvents.push(clone);
+                }
+            });
+            
+            // Display the events
+            const eventsContainer = document.querySelector('#language-events .timeline');
+            eventsContainer.innerHTML = '';
+            
+            if (languageEvents.length === 0) {
+                eventsContainer.innerHTML = `<div class="no-events">Nenhum encontro de ${language} encontrado na programação atual.</div>`;
+            } else {
+                languageEvents.forEach(event => {
+                    eventsContainer.appendChild(event);
+                });
+                
+                // Update join buttons and check current events
+                updateJoinButtons();
+                const { day: currentDay } = getCurrentDayAndTime();
+                checkCurrentEvents(currentDay);
+            }
+            
+            // Update URL
+            if (updateURL) {
+                const url = new URL(window.location);
+                url.searchParams.set('view', 'language');
+                url.searchParams.set('idioma', language);
+                history.pushState({}, '', url);
+            }
+        }
     </script>
 </body>
 </html> 
