@@ -451,6 +451,16 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .language-filter-btn .flag-icon {
+            width: 24px;
+            height: 18px;
+            border-radius: 3px;
+            object-fit: cover;
         }
         
         .language-filter-btn.active {
@@ -537,19 +547,58 @@
         
         <div class="tab-content active" id="online">
             <div class="language-filter">
-                <button class="language-filter-btn active" data-language="all">Todos os idiomas</button>
-                <button class="language-filter-btn" data-language="inglês">Inglês</button>
-                <button class="language-filter-btn" data-language="espanhol">Espanhol</button>
-                <button class="language-filter-btn" data-language="francês">Francês</button>
-                <button class="language-filter-btn" data-language="português">Português</button>
-                <button class="language-filter-btn" data-language="alemão">Alemão</button>
-                <button class="language-filter-btn" data-language="italiano">Italiano</button>
-                <button class="language-filter-btn" data-language="coreano">Coreano</button>
-                <button class="language-filter-btn" data-language="chinês">Chinês</button>
-                <button class="language-filter-btn" data-language="russo">Russo</button>
-                <button class="language-filter-btn" data-language="polonês">Polonês</button>
-                <button class="language-filter-btn" data-language="libras">Libras</button>
-                <button class="language-filter-btn special" data-language="outros">O seu!</button>
+                <button class="language-filter-btn active" data-language="all">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🌍</span>
+                    <span>Todos os idiomas</span>
+                </button>
+                <button class="language-filter-btn" data-language="inglês">
+                    <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
+                    <span>Inglês</span>
+                </button>
+                <button class="language-filter-btn" data-language="espanhol">
+                    <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
+                    <span>Espanhol</span>
+                </button>
+                <button class="language-filter-btn" data-language="francês">
+                    <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
+                    <span>Francês</span>
+                </button>
+                <button class="language-filter-btn" data-language="português">
+                    <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
+                    <span>Português</span>
+                </button>
+                <button class="language-filter-btn" data-language="alemão">
+                    <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
+                    <span>Alemão</span>
+                </button>
+                <button class="language-filter-btn" data-language="italiano">
+                    <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
+                    <span>Italiano</span>
+                </button>
+                <button class="language-filter-btn" data-language="coreano">
+                    <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
+                    <span>Coreano</span>
+                </button>
+                <button class="language-filter-btn" data-language="chinês">
+                    <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
+                    <span>Chinês</span>
+                </button>
+                <button class="language-filter-btn" data-language="russo">
+                    <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
+                    <span>Russo</span>
+                </button>
+                <button class="language-filter-btn" data-language="polonês">
+                    <img src="https://flagcdn.com/32x24/pl.png" class="flag-icon" alt="Polônia">
+                    <span>Polonês</span>
+                </button>
+                <button class="language-filter-btn" data-language="libras">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👋</span>
+                    <span>Libras</span>
+                </button>
+                <button class="language-filter-btn special" data-language="outros">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🌎</span>
+                    <span>O seu!</span>
+                </button>
             </div>
             
             <div class="host-grid">
@@ -793,18 +842,19 @@
                 </div>
 
                 <!-- Host Card 8 - Daniel - Russo e Polonês -->
-                <div class="host-card" data-languages="russo,polonês">
-                    <div class="host-badge">Russo & Polonês</div>
+                <div class="host-card" data-languages="russo,polonês,sérvio">
+                    <div class="host-badge">Russo, Polonês & Sérvio</div>
                     <img src="assets/images/Daniel.jpg" alt="Daniel" class="host-image">
                     <div class="host-info">
                         <h3 class="host-name">Daniel</h3>
                         <div class="host-languages">
                             <span class="language-tag">Russo</span>
                             <span class="language-tag">Polonês</span>
+                            <span class="language-tag">Sérvio</span>
                             <span class="language-tag">Português</span>
                         </div>
                         <p class="host-bio">
-                            Daniel é apaixonado por línguas eslavas e compartilha seu conhecimento de russo e polonês de forma acessível e engajadora. Seus encontros são uma excelente introdução a esses fascinantes idiomas.
+                            Daniel é apaixonado por línguas eslavas e compartilha seu conhecimento de russo, polonês e sérvio de forma acessível e engajadora. Seus encontros são uma excelente introdução a esses fascinantes idiomas.
                         </p>
                         <div class="host-contact">
                             <a href="mailto:danieldantas432@gmail.com" class="contact-btn email" title="Email">
@@ -838,10 +888,22 @@
 
         <div class="tab-content" id="presencial">
             <div class="language-filter city-filter">
-                <button class="language-filter-btn active" data-city="all">Todas as cidades</button>
-                <button class="language-filter-btn" data-city="brasilia">Brasília - DF</button>
-                <button class="language-filter-btn" data-city="saopaulo">São Paulo - SP</button>
-                <button class="language-filter-btn special" data-city="outras">Outras regiões</button>
+                <button class="language-filter-btn active" data-city="all">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🏙️</span>
+                    <span>Todas as cidades</span>
+                </button>
+                <button class="language-filter-btn" data-city="brasilia">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🏛️</span>
+                    <span>Brasília - DF</span>
+                </button>
+                <button class="language-filter-btn" data-city="saopaulo">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🏙️</span>
+                    <span>São Paulo - SP</span>
+                </button>
+                <button class="language-filter-btn special" data-city="outras">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">📍</span>
+                    <span>Outras regiões</span>
+                </button>
             </div>
             <div class="host-grid">
                 <!-- Host Card para outras cidades -->
@@ -918,10 +980,22 @@
 
         <div class="tab-content" id="conteudo">
             <div class="language-filter">
-                <button class="language-filter-btn active" data-role="all">Todos os papéis</button>
-                <button class="language-filter-btn" data-role="desenvolvimento">Desenvolvimento</button>
-                <button class="language-filter-btn" data-role="design">Design</button>
-                <button class="language-filter-btn special" data-role="junte-se">Faça parte!</button>
+                <button class="language-filter-btn active" data-role="all">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👥</span>
+                    <span>Todos os papéis</span>
+                </button>
+                <button class="language-filter-btn" data-role="desenvolvimento">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">💻</span>
+                    <span>Desenvolvimento</span>
+                </button>
+                <button class="language-filter-btn" data-role="design">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🎨</span>
+                    <span>Design</span>
+                </button>
+                <button class="language-filter-btn special" data-role="junte-se">
+                    <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">✨</span>
+                    <span>Faça parte!</span>
+                </button>
             </div>
             
             <div class="host-grid">
