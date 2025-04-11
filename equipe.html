@@ -1151,6 +1151,20 @@
                 url.searchParams.set('tab', tab);
                 history.pushState({}, '', url);
             }
+            
+            // Rolagem imediata após mudança de aba
+            setTimeout(() => {
+                // Altura do menu fixo (header)
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                
+                // Obter a posição das abas
+                const tabsElement = document.querySelector('.tabs');
+                if (tabsElement) {
+                    // Scroll para posicionar as abas logo abaixo do header fixo
+                    const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }, 100);
         }
         
         // Language filter functionality
