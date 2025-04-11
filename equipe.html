@@ -1105,6 +1105,27 @@
                 <i class="fab fa-discord"></i>
             </a>
         </div>
+        
+        <!-- Links de teste para verificação (temporários) -->
+        <div style="margin: 20px 0; padding: 15px; background: #eee; border-radius: 10px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto; font-size: 13px;">
+            <h4 style="text-align: center; margin-bottom: 10px;">Links de teste para validação (temporários)</h4>
+            <ul style="list-style-type: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                <li><a href="?tab=online&idioma=francês" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Francês (com acento)</a></li>
+                <li><a href="?tab=online&idioma=frances" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Frances (sem acento)</a></li>
+                <li><a href="?tab=online&idioma=FRANCÊS" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">FRANCÊS (maiúsculo)</a></li>
+                <li><a href="?tab=online&idioma=franc" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Franc (parcial)</a></li>
+                <li><a href="?tab=online&idioma=italiano" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Italiano</a></li>
+                <li><a href="?tab=online&idioma=alemão" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Alemão</a></li>
+                <li><a href="?tab=online&idioma=alemao" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Alemao</a></li>
+                <li><a href="?tab=online&idioma=portugues" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Portugues</a></li>
+                <li><a href="?tab=online&idioma=portugês" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Portugês</a></li>
+                <li><a href="?tab=online&idioma=coreano" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Coreano</a></li>
+                <li><a href="?tab=online&idioma=libras" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Libras</a></li>
+                <li><a href="?tab=presencial&cidade=brasilia" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Brasília</a></li>
+                <li><a href="?tab=presencial&cidade=brasilia" style="display: inline-block; padding: 5px 10px; background: #f0f2f5; border-radius: 5px; text-decoration: none; color: #333;">Brasilia</a></li>
+            </ul>
+        </div>
+        
         <div class="footer-bottom">
             <p>&copy; <span id="current-year"></span> Encontro de Idiomas. Todos os direitos reservados.</p>
         </div>
@@ -1113,6 +1134,63 @@
     <script>
         // Set current year in footer
         document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Função de debug para exibir informações detalhadas
+        function debugInfo() {
+            const debugContainer = document.createElement('div');
+            debugContainer.id = 'debug-info';
+            debugContainer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 15px; border-radius: 5px; font-size: 12px; max-width: 400px; max-height: 300px; overflow: auto; z-index: 10000;';
+            
+            // Verificar parâmetros da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            const idioma = urlParams.get('idioma');
+            const cidade = urlParams.get('cidade');
+            const papel = urlParams.get('papel');
+            
+            let html = '<h3>Debug Info</h3>';
+            html += '<p><strong>URL Params:</strong><br>';
+            html += `tab: ${tab || 'não definido'}<br>`;
+            html += `idioma: ${idioma || 'não definido'}<br>`;
+            html += `cidade: ${cidade || 'não definido'}<br>`;
+            html += `papel: ${papel || 'não definido'}</p>`;
+            
+            // Informações dos botões de idioma
+            html += '<p><strong>Botões de Idioma:</strong><br>';
+            languageFilterButtons.forEach(btn => {
+                const isActive = btn.classList.contains('active');
+                html += `ID: ${btn.id}, Language: ${btn.dataset.language}, Ativo: ${isActive}<br>`;
+            });
+            html += '</p>';
+            
+            // Informações dos botões de cidade
+            html += '<p><strong>Botões de Cidade:</strong><br>';
+            cityFilterButtons.forEach(btn => {
+                const isActive = btn.classList.contains('active');
+                html += `ID: ${btn.id}, City: ${btn.dataset.city}, Ativo: ${isActive}<br>`;
+            });
+            html += '</p>';
+            
+            // Informações dos botões de papel
+            html += '<p><strong>Botões de Papel:</strong><br>';
+            roleFilterButtons.forEach(btn => {
+                const isActive = btn.classList.contains('active');
+                html += `ID: ${btn.id}, Role: ${btn.dataset.role}, Ativo: ${isActive}<br>`;
+            });
+            html += '</p>';
+            
+            // Botão para fechar
+            html += '<button onclick="this.parentNode.remove()" style="background: #e31d1c; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Fechar</button>';
+            
+            debugContainer.innerHTML = html;
+            document.body.appendChild(debugContainer);
+        }
+        
+        // Adiciona botão de debug
+        const debugButton = document.createElement('button');
+        debugButton.innerHTML = '🔍 Debug';
+        debugButton.style.cssText = 'position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; z-index: 9999;';
+        debugButton.onclick = debugInfo;
         
         // Tab functionality
         const tabButtons = document.querySelectorAll('.tab-button');
@@ -1263,44 +1341,146 @@
                 if (tab === 'online') {
                     const idioma = urlParams.get('idioma');
                     if (idioma) {
-                        // Normalizar idioma da URL para comparação insensível a acentos e maiúsculas/minúsculas
-                        const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        // Abordagem alternativa - ID direto
+                        const idCandidato = `idioma-${idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
                         
+                        // Atribuir IDs aos botões
                         languageFilterButtons.forEach(btn => {
-                            // Normalizar o dataset.language do botão para mesma comparação
-                            const btnLanguage = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            if (btnLanguage === normalizedIdioma) {
-                                btn.click();
+                            if (!btn.id) {
+                                const language = btn.dataset.language;
+                                const btnId = `idioma-${language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                                btn.id = btnId;
                             }
                         });
+                        
+                        // Tentar encontrar o botão diretamente pelo ID
+                        const buttonDirect = document.getElementById(idCandidato);
+                        if (buttonDirect) {
+                            buttonDirect.click();
+                            return;
+                        }
+                        
+                        // Abordagem original aprimorada
+                        const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        const idiomaSemEspacos = idioma.toLowerCase().replace(/\s/g, '');
+                        
+                        let found = false;
+                        languageFilterButtons.forEach(btn => {
+                            if (found) return;
+                            
+                            const btnLanguage = btn.dataset.language;
+                            const btnLanguageNorm = btnLanguage.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            const btnLanguageSemEspacos = btnLanguage.toLowerCase().replace(/\s/g, '');
+                            
+                            if (btnLanguage.toLowerCase() === idioma.toLowerCase() || 
+                                btnLanguageNorm === normalizedIdioma || 
+                                btnLanguageNorm.includes(normalizedIdioma) || 
+                                normalizedIdioma.includes(btnLanguageNorm) ||
+                                levenshteinDistance(btnLanguageSemEspacos, idiomaSemEspacos) <= 2) {
+                                btn.click();
+                                found = true;
+                            }
+                        });
+                        
+                        if (!found) {
+                            languageFilterButtons[0].click();
+                        }
                     }
                 } else if (tab === 'presencial') {
                     const cidade = urlParams.get('cidade');
                     if (cidade) {
-                        // Normalizar cidade da URL
-                        const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        // Abordagem alternativa - ID direto
+                        const idCandidato = `cidade-${cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
                         
+                        // Atribuir IDs aos botões
                         cityFilterButtons.forEach(btn => {
-                            // Normalizar o dataset.city do botão
-                            const btnCity = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            if (btnCity === normalizedCidade) {
-                                btn.click();
+                            if (!btn.id) {
+                                const city = btn.dataset.city;
+                                const btnId = `cidade-${city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                                btn.id = btnId;
                             }
                         });
+                        
+                        // Tentar encontrar o botão diretamente pelo ID
+                        const buttonDirect = document.getElementById(idCandidato);
+                        if (buttonDirect) {
+                            buttonDirect.click();
+                            return;
+                        }
+                        
+                        // Abordagem original aprimorada
+                        const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        const cidadeSemEspacos = cidade.toLowerCase().replace(/\s/g, '');
+                        
+                        let found = false;
+                        cityFilterButtons.forEach(btn => {
+                            if (found) return;
+                            
+                            const btnCity = btn.dataset.city;
+                            const btnCityNorm = btnCity.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            const btnCitySemEspacos = btnCity.toLowerCase().replace(/\s/g, '');
+                            
+                            if (btnCity.toLowerCase() === cidade.toLowerCase() || 
+                                btnCityNorm === normalizedCidade || 
+                                btnCityNorm.includes(normalizedCidade) || 
+                                normalizedCidade.includes(btnCityNorm) ||
+                                levenshteinDistance(btnCitySemEspacos, cidadeSemEspacos) <= 2) {
+                                btn.click();
+                                found = true;
+                            }
+                        });
+                        
+                        if (!found) {
+                            cityFilterButtons[0].click();
+                        }
                     }
                 } else if (tab === 'conteudo') {
                     const papel = urlParams.get('papel');
                     if (papel) {
-                        // Normalizar papel da URL
-                        const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        // Abordagem alternativa - ID direto
+                        const idCandidato = `papel-${papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
                         
+                        // Atribuir IDs aos botões
                         roleFilterButtons.forEach(btn => {
-                            // Normalizar o dataset.role do botão
-                            const btnRole = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            if (btnRole === normalizedPapel) {
-                                btn.click();
+                            if (!btn.id) {
+                                const role = btn.dataset.role;
+                                const btnId = `papel-${role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+                                btn.id = btnId;
                             }
                         });
+                        
+                        // Tentar encontrar o botão diretamente pelo ID
+                        const buttonDirect = document.getElementById(idCandidato);
+                        if (buttonDirect) {
+                            buttonDirect.click();
+                            return;
+                        }
+                        
+                        // Abordagem original aprimorada
+                        const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        const papelSemEspacos = papel.toLowerCase().replace(/\s/g, '');
+                        
+                        let found = false;
+                        roleFilterButtons.forEach(btn => {
+                            if (found) return;
+                            
+                            const btnRole = btn.dataset.role;
+                            const btnRoleNorm = btnRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            const btnRoleSemEspacos = btnRole.toLowerCase().replace(/\s/g, '');
+                            
+                            if (btnRole.toLowerCase() === papel.toLowerCase() || 
+                                btnRoleNorm === normalizedPapel || 
+                                btnRoleNorm.includes(normalizedPapel) || 
+                                normalizedPapel.includes(btnRoleNorm) ||
+                                levenshteinDistance(btnRoleSemEspacos, papelSemEspacos) <= 2) {
+                                btn.click();
+                                found = true;
+                            }
+                        });
+                        
+                        if (!found) {
+                            roleFilterButtons[0].click();
+                        }
                     }
                 }
             }
@@ -1322,8 +1502,37 @@
             }
         }
         
+        // Função para calcular a distância de Levenshtein (para comparações aproximadas)
+        function levenshteinDistance(a, b) {
+            const matrix = Array(b.length + 1).fill().map(() => Array(a.length + 1).fill(0));
+            
+            for (let i = 0; i <= a.length; i++) {
+                matrix[0][i] = i;
+            }
+            
+            for (let j = 0; j <= b.length; j++) {
+                matrix[j][0] = j;
+            }
+            
+            for (let j = 1; j <= b.length; j++) {
+                for (let i = 1; i <= a.length; i++) {
+                    const substitutionCost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matrix[j][i] = Math.min(
+                        matrix[j][i - 1] + 1, // deletion
+                        matrix[j - 1][i] + 1, // insertion
+                        matrix[j - 1][i - 1] + substitutionCost // substitution
+                    );
+                }
+            }
+            
+            return matrix[b.length][a.length];
+        }
+        
         // Initial setup
         window.addEventListener('DOMContentLoaded', () => {
+            // Add debug button to page
+            document.body.appendChild(debugButton);
+            
             // Check for URL parameters first
             readURLParameters();
             
