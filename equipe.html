@@ -1183,9 +1183,12 @@
                 if (visibleCards.length > 0) {
                     // Get the language filter element
                     const languageFilter = document.querySelector('#online .language-filter');
-                    // Scroll to position the language filter at the top with a small offset
-                    const yOffset = 20; // Small offset from the top
-                    const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                    
+                    // Altura do menu fixo (header)
+                    const headerHeight = document.querySelector('.header').offsetHeight;
+                    
+                    // Scroll para posicionar o filtro logo abaixo do header fixo
+                    const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
                     window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
@@ -1228,9 +1231,12 @@
                 if (visibleCards.length > 0) {
                     // Get the city filter element
                     const cityFilter = document.querySelector('#presencial .language-filter');
-                    // Scroll to position the city filter at the top with a small offset
-                    const yOffset = 20; // Small offset from the top
-                    const y = cityFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                    
+                    // Altura do menu fixo (header)
+                    const headerHeight = document.querySelector('.header').offsetHeight;
+                    
+                    // Scroll para posicionar o filtro logo abaixo do header fixo
+                    const y = cityFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
                     window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
@@ -1274,9 +1280,12 @@
                 if (visibleCards.length > 0) {
                     // Get the role filter element
                     const roleFilter = document.querySelector('#conteudo .language-filter');
-                    // Scroll to position the role filter at the top with a small offset
-                    const yOffset = 20; // Small offset from the top
-                    const y = roleFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                    
+                    // Altura do menu fixo (header)
+                    const headerHeight = document.querySelector('.header').offsetHeight;
+                    
+                    // Scroll para posicionar o filtro logo abaixo do header fixo
+                    const y = roleFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
                     window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
@@ -1476,25 +1485,26 @@
                 // Filtrar para mostrar apenas o card de "Torne-se anfitrião!"
                 languageFilterButtons.forEach(btn => {
                     if (btn.dataset.language === 'outros') {
-                        btn.click();
+                        btn.classList.add('active');
+                        filterByLanguage('outros', false);
                     }
                 });
-                
-                // Rolar para o card
-                setTimeout(() => {
-                    document.getElementById('torne-se-anfitriao').scrollIntoView({ behavior: 'smooth' });
-                }, 300);
             }
 
             // Verificar especificamente se estamos acessando via idioma=outros
             if (urlParams.get('idioma') === 'outros' || urlParams.get('idioma') === 'outros&torne-se-anfitriao') {
+                setActiveTab('online', false);
+                
+                // Esperar um pouco para garantir que a página está carregada
                 setTimeout(() => {
-                    // Rolar para manter os filtros visíveis
+                    // Altura do menu fixo (header)
+                    const headerHeight = document.querySelector('.header').offsetHeight;
+                    
+                    // Obter a posição do filtro de idiomas
                     const languageFilter = document.querySelector('#online .language-filter');
                     if (languageFilter) {
-                        // Scroll para posicionar o filtro no topo com um pequeno offset
-                        const yOffset = 20; // Pequeno offset do topo
-                        const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - yOffset;
+                        // Scroll para posicionar o filtro logo abaixo do header fixo
+                        const y = languageFilter.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
                         window.scrollTo({top: y, behavior: 'smooth'});
                     }
                 }, 300);
