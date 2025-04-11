@@ -1694,6 +1694,16 @@
                 button.addEventListener('click', () => {
                     const view = button.getAttribute('data-view');
                     toggleView(view);
+                    
+                    // Rolagem imediata após clicar no filtro
+                    setTimeout(() => {
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 100);
                 });
             });
             
