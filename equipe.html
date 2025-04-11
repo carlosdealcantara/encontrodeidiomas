@@ -465,40 +465,6 @@
         .design-badge {
             background: var(--accent-green);
         }
-        
-        /* Estilos do rodapé */
-        footer {
-            background-color: var(--primary-color);
-            padding: 2rem 0;
-            color: var(--white);
-            text-align: center;
-            margin-top: 0;
-        }
-        
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 1rem;
-        }
-        
-        .social-links a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            color: var(--white);
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-        }
-        
-        .social-links a:hover {
-            background-color: var(--accent-red);
-            transform: translateY(-3px);
-        }
     </style>
 </head>
 <body>
@@ -1008,21 +974,42 @@
         </div>
     </section>
 
-    <footer>
-        <div class="container">
-            <div class="social-links">
-                <a href="https://www.instagram.com/encontrodeidiomas" target="_blank" aria-label="Instagram">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                <a href="https://discord.com/invite/STHkrEhMpP" target="_blank" aria-label="Discord">
-                    <i class="fab fa-discord"></i>
-                </a>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Sobre Nós</h3>
+                <p>Somos especialistas em idiomas, comprometidos em fornecer uma experiência única e eficaz para nossos alunos.</p>
             </div>
-            <p>&copy; <script>document.write(new Date().getFullYear())</script> Encontro de Idiomas. Todos os direitos reservados.</p>
+            <div class="footer-section">
+                <h3>Links Rápidos</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="cursos.html">Cursos</a></li>
+                    <li><a href="equipe.html">Equipe</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contato</h3>
+                <p>Email: contato@encontrodeidiomas.com</p>
+                <p>Telefone: (11) 1234-5678</p>
+                <div class="social-icons">
+                    <a href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span id="current-year"></span> Encontro de Idiomas. Todos os direitos reservados.</p>
         </div>
     </footer>
 
     <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
         // Tab functionality
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
