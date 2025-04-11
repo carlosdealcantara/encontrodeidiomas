@@ -1650,6 +1650,16 @@
                 button.addEventListener('click', () => {
                     const day = parseInt(button.getAttribute('data-day'));
                     showDayEvents(day);
+                    
+                    // Rolagem adicional após a mudança de conteúdo
+                    setTimeout(() => {
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 100);
                 });
             });
             
@@ -1657,7 +1667,21 @@
             document.querySelectorAll('.language-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const language = button.getAttribute('data-language');
-                    showLanguageEvents(language);
+                    
+                    // Evitar processamento para o botão "O seu!" que já tem navegação direta
+                    if (language.toLowerCase() !== 'seu') {
+                        showLanguageEvents(language);
+                        
+                        // Rolagem adicional após a mudança de conteúdo
+                        setTimeout(() => {
+                            const headerHeight = document.querySelector('.header').offsetHeight;
+                            const calendarNav = document.querySelector('.calendar-nav');
+                            if (calendarNav) {
+                                const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                                window.scrollTo({top: y, behavior: 'smooth'});
+                            }
+                        }, 100);
+                    }
                 });
             });
             
@@ -1812,6 +1836,16 @@
             }
             
             history.pushState({}, '', url);
+            
+            // Rolagem para manter os filtros visíveis
+            setTimeout(() => {
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const calendarNav = document.querySelector('.calendar-nav');
+                if (calendarNav) {
+                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }, 150);
         }
         
         // Show events for a specific language
