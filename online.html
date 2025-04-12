@@ -324,6 +324,7 @@
         }
         
         .language-badge {
+            display: none; /* Esconder os badges por enquanto */
             background-color: #f0f0f0;
             color: #666;
             font-size: 0.7rem;
@@ -1173,7 +1174,8 @@
             position: relative;
             width: calc(100% - 30px);
             text-align: left;
-            justify-content: flex-start;
+            justify-content: space-between; /* Alinha com os outros botões */
+            padding: 12px 20px; /* Mesmo padding dos outros botões */
         }
 
         .dropdown-content .language-button.special:hover {
