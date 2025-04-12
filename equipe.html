@@ -191,24 +191,31 @@
             padding: 10px;
             border-radius: 50px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 650px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+            width: 90%; /* Garante que ocupe apenas 90% da largura disponível */
         }
         
         .tab-button {
             background: none;
             border: none;
-            padding: 15px 30px;
+            padding: 15px 10px; /* Reduz o padding horizontal */
             cursor: pointer;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--text-color);
             position: relative;
             z-index: 2;
             flex: 1;
             border-radius: 50px;
             transition: all 0.3s ease;
+            text-align: center;
+            white-space: nowrap;
+            outline: none;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Adiciona reticências caso o texto não caiba */
         }
         
         .tab-button.active {
@@ -224,6 +231,48 @@
             border-radius: 50px;
             transition: all 0.4s ease;
             z-index: 1;
+            /* Garantir visibilidade inicial do indicador */
+            width: 200px; /* Valor padrão que será substituído pelo JavaScript */
+        }
+        
+        /* Responsividade para os botões de navegação */
+        @media (max-width: 768px) {
+            .tabs {
+                max-width: 100%;
+                border-radius: 30px;
+                padding: 5px;
+            }
+            
+            .tab-button {
+                padding: 12px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .tab-indicator {
+                height: calc(100% - 10px);
+                top: 5px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .tabs {
+                flex-direction: column;
+                border-radius: 20px;
+                padding: 8px;
+            }
+            
+            .tab-button {
+                margin-bottom: 5px;
+                padding: 10px 15px;
+            }
+            
+            .tab-indicator {
+                display: none; /* Ocultar o indicador em telas muito pequenas */
+            }
+            
+            .tab-button.active {
+                background-color: var(--accent-red);
+            }
         }
         
         .tab-content {
@@ -249,12 +298,14 @@
         }
         
         .host-card {
-            background: var(--card-bg);
+            background: var(--white);
             border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: var(--shadow);
+            box-shadow: var(--card-shadow);
             transition: var(--transition);
             position: relative;
+            display: block;
+            height: auto;
         }
         
         .host-card:hover {
@@ -267,10 +318,12 @@
             width: 100%;
             object-fit: cover;
             border-bottom: 4px solid var(--accent-red);
+            display: block;
         }
         
         .host-info {
             padding: 20px;
+            display: block;
         }
         
         .host-name {
@@ -519,6 +572,188 @@
         .design-badge {
             background: var(--accent-green);
         }
+        
+        .language-filter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Dropdown Estilo (inspirado na página online) */
+        .mobile-dropdown {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 20px;
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-dropdown {
+                max-width: 400px;
+            }
+        }
+        
+        .dropdown-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(227, 29, 28, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .dropdown-button:hover {
+            background-color: #c01a19;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(227, 29, 28, 0.4);
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 100;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+        
+        .dropdown-content.show {
+            display: block;
+            animation: fadeInDown 0.3s ease-out;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .search-filter {
+            padding: 10px 15px;
+            margin: 5px 15px 10px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 35px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #f5f5f7;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: var(--accent-red);
+            background-color: white;
+            box-shadow: 0 0 0 2px rgba(227, 29, 28, 0.1);
+            outline: none;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            color: #666;
+            font-style: italic;
+            font-size: 14px;
+        }
+        
+        .dropdown-content .language-button {
+            border-radius: 0;
+            margin: 0;
+            border: none;
+            border-bottom: 1px solid #f0f0f0;
+            width: 100%;
+            text-align: left;
+            padding: 12px 20px;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .dropdown-content .language-button:hover {
+            background-color: #f5f5f5;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .dropdown-flag-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #selected-language-flag {
+            width: 24px;
+            height: 18px;
+            border-radius: 3px;
+        }
+        
+        .language-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .language-badge {
+            background-color: #f0f0f0;
+            color: #555;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Esconde o filtro de idiomas original */
+        .language-filter {
+            display: none;
+        }
+        
+        /* Exibe o dropdown em todas as telas */
+        .mobile-dropdown {
+            display: flex;
+        }
+        
+        .no-hosts-message {
+            text-align: center;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #f5f5f7;
+            border-radius: 10px;
+            max-width: 500px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -549,12 +784,111 @@
         
         <div class="tabs">
             <button class="tab-button active" data-tab="online">Anfitriões Online</button>
-            <button class="tab-button" data-tab="presencial">Anfitriões Presenciais</button>
-            <button class="tab-button" data-tab="conteudo">Conteúdo e Desenvolvimento</button>
+            <button class="tab-button" data-tab="presencial">Presenciais</button>
+            <button class="tab-button" data-tab="conteudo">Equipe Técnica</button>
             <div class="tab-indicator"></div>
         </div>
         
         <div class="tab-content active" id="online">
+            <!-- Mobile Dropdown -->
+            <div class="mobile-dropdown">
+                <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um idioma:</p>
+                <button class="dropdown-button">
+                    <div class="dropdown-flag-container">
+                        <span id="selected-language-flag" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
+                        <span id="selected-language">Todos os idiomas</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <div class="search-filter">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="language-search" placeholder="Buscar idioma...">
+                    </div>
+                    <div class="no-results" id="no-results">
+                        Nenhum idioma encontrado.
+                    </div>
+                    <button class="language-button" data-language="all">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
+                            <span>Todos os idiomas</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="inglês">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
+                            <span>Inglês</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="espanhol">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
+                            <span>Espanhol</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="francês">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
+                            <span>Francês</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="português">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
+                            <span>Português</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="alemão">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
+                            <span>Alemão</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="italiano">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
+                            <span>Italiano</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="coreano">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
+                            <span>Coreano</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="chinês">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
+                            <span>Chinês</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="russo">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
+                            <span>Russo</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="polonês">
+                        <div class="language-info">
+                            <img src="https://flagcdn.com/32x24/pl.png" class="flag-icon" alt="Polônia">
+                            <span>Polonês</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="libras">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👋</span>
+                            <span>Libras</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-language="outros">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🚩</span>
+                            <span>Seu idioma aqui!</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
             <div class="language-filter">
                 <button class="language-filter-btn active" data-language="all">
                     <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🌍</span>
@@ -606,7 +940,7 @@
                 </button>
                 <button class="language-filter-btn special" data-language="outros">
                     <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🚩</span>
-                    <span>O seu!</span>
+                    <span>Seu idioma aqui!</span>
                 </button>
             </div>
             
@@ -643,7 +977,7 @@
                             <span class="language-tag">Português</span>
                         </div>
                         <p class="host-bio">
-                            Carlos de Alcântara é um anfitrião experiente e entusiasta do inglês. Seus encontros são dinâmicos e focados na prática conversacional, criando um ambiente acolhedor para todos os níveis.
+                            Carlos de Alcântara é um especialista e anfitrião experiente do inglês. Seus encontros são dinâmicos e focados na prática conversacional, criando um ambiente acolhedor para todos os níveis.
                         </p>
                         <div class="host-contact">
                             <a href="https://wa.me/5561992666148" class="contact-btn whatsapp" target="_blank" title="WhatsApp">
@@ -896,6 +1230,51 @@
         </div>
 
         <div class="tab-content" id="presencial">
+            <!-- Mobile Dropdown para cidades -->
+            <div class="mobile-dropdown">
+                <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione uma cidade:</p>
+                <button class="dropdown-button">
+                    <div class="dropdown-flag-container">
+                        <span id="selected-city-flag" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏙️</span>
+                        <span id="selected-city">Todas as cidades</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-content" id="city-dropdown">
+                    <div class="search-filter">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="city-search" placeholder="Buscar cidade...">
+                    </div>
+                    <div class="no-results" id="no-city-results">
+                        Nenhuma cidade encontrada.
+                    </div>
+                    <button class="language-button" data-city="all">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏙️</span>
+                            <span>Todas as cidades</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-city="brasilia">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏛️</span>
+                            <span>Brasília - DF</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-city="saopaulo">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏢</span>
+                            <span>São Paulo - SP</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-city="outras">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">📍</span>
+                            <span>Outras regiões</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
             <div class="language-filter city-filter">
                 <button class="language-filter-btn active" data-city="all">
                     <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🏙️</span>
@@ -988,6 +1367,51 @@
         </div>
 
         <div class="tab-content" id="conteudo">
+            <!-- Mobile Dropdown para papéis -->
+            <div class="mobile-dropdown">
+                <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um papel:</p>
+                <button class="dropdown-button">
+                    <div class="dropdown-flag-container">
+                        <span id="selected-role-flag" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👥</span>
+                        <span id="selected-role">Todos os papéis</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-content" id="role-dropdown">
+                    <div class="search-filter">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="role-search" placeholder="Buscar papel...">
+                    </div>
+                    <div class="no-results" id="no-role-results">
+                        Nenhum papel encontrado.
+                    </div>
+                    <button class="language-button" data-role="all">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👥</span>
+                            <span>Todos os papéis</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-role="desenvolvimento">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">💻</span>
+                            <span>Desenvolvimento</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-role="design">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🎨</span>
+                            <span>Design</span>
+                        </div>
+                    </button>
+                    <button class="language-button" data-role="junte-se">
+                        <div class="language-info">
+                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">✨</span>
+                            <span>Faça parte!</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
             <div class="language-filter">
                 <button class="language-filter-btn active" data-role="all">
                     <span class="flag-icon" style="font-size: 1.3rem; width: 24px; height: 24px; display: inline-block; text-align: center;">👥</span>
@@ -1121,8 +1545,15 @@
         const tabIndicator = document.querySelector('.tab-indicator');
         
         function setActiveTab(tab, updateURL = true) {
+            console.log(`Setting active tab: ${tab}, updateURL: ${updateURL}`);
+            
             // Update indicator position
             const activeButton = document.querySelector(`.tab-button[data-tab="${tab}"]`);
+            if (!activeButton) {
+                console.error(`Tab button not found for tab: ${tab}`);
+                return;
+            }
+            
             const buttonRect = activeButton.getBoundingClientRect();
             const tabsRect = document.querySelector('.tabs').getBoundingClientRect();
             
@@ -1147,9 +1578,9 @@
 
             // Update URL with the current tab
             if (updateURL) {
-                const url = new URL(window.location);
-                url.searchParams.set('tab', tab);
-                history.pushState({}, '', url);
+                const url = new URLSearchParams(window.location.search);
+                url.set('tab', tab);
+                history.replaceState(null, '', `?${url.toString()}`);
             }
             
             // Rolagem imediata após mudança de aba
@@ -1167,482 +1598,467 @@
             }, 100);
         }
         
-        // Language filter functionality
-        const languageFilterButtons = document.querySelectorAll('#online .language-filter-btn');
-        const hostCards = document.querySelectorAll('#online .host-card');
-        
-        function filterByLanguage(language, updateURL = true) {
-            hostCards.forEach(card => {
-                if (language === 'all') {
-                    card.classList.remove('hidden');
-                } else if (language === 'outros') {
-                    if (card.dataset.languages === 'outros') {
-                        card.classList.remove('hidden');
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                } else {
-                    const languages = card.dataset.languages ? card.dataset.languages.split(',') : [];
-                    if (languages.includes(language)) {
-                        card.classList.remove('hidden');
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                }
-            });
-
-            // Scroll to position the tabs at the top of the viewport
-            setTimeout(() => {
-                const visibleCards = document.querySelectorAll('#online .host-card:not(.hidden)');
-                if (visibleCards.length > 0) {
-                    // Altura do menu fixo (header)
-                    const headerHeight = document.querySelector('.header').offsetHeight;
-                    
-                    // Obter a posição das abas (tabs) em vez do filtro
-                    const tabsElement = document.querySelector('.tabs');
-                    if (tabsElement) {
-                        // Scroll para posicionar as abas logo abaixo do header fixo
-                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                        window.scrollTo({top: y, behavior: 'smooth'});
-                    }
-                }
-            }, 300);
-
-            // Update URL with the language filter
-            if (updateURL) {
-                const url = new URL(window.location);
-                url.searchParams.set('tab', 'online');
-                url.searchParams.set('idioma', language);
-                history.pushState({}, '', url);
-            }
-        }
-        
-        // City filter functionality
-        const cityFilterButtons = document.querySelectorAll('.city-filter .language-filter-btn');
-        const cityHostCards = document.querySelectorAll('#presencial .host-card');
-        
-        function filterByCity(city, updateURL = true) {
-            cityHostCards.forEach(card => {
-                if (city === 'all') {
-                    card.classList.remove('hidden');
-                } else if (city === 'outras') {
-                    if (card.dataset.city === 'outras') {
-                        card.classList.remove('hidden');
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                } else {
-                    if (card.dataset.city === city) {
-                        card.classList.remove('hidden');
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                }
-            });
-
-            // Scroll to position the tabs at the top of the viewport
-            setTimeout(() => {
-                const visibleCards = document.querySelectorAll('#presencial .host-card:not(.hidden)');
-                if (visibleCards.length > 0) {
-                    // Altura do menu fixo (header)
-                    const headerHeight = document.querySelector('.header').offsetHeight;
-                    
-                    // Obter a posição das abas (tabs) em vez do filtro
-                    const tabsElement = document.querySelector('.tabs');
-                    if (tabsElement) {
-                        // Scroll para posicionar as abas logo abaixo do header fixo
-                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                        window.scrollTo({top: y, behavior: 'smooth'});
-                    }
-                }
-            }, 300);
-
-            // Update URL with the city filter
-            if (updateURL) {
-                const url = new URL(window.location);
-                url.searchParams.set('tab', 'presencial');
-                url.searchParams.set('cidade', city);
-                history.pushState({}, '', url);
-            }
-        }
-        
-        // Role filter functionality
-        const roleFilterButtons = document.querySelectorAll('#conteudo .language-filter-btn');
-        const teamCards = document.querySelectorAll('#conteudo .host-card');
-        
-        function filterByRole(role, updateURL = true) {
-            teamCards.forEach(card => {
-                if (role === 'all') {
-                    card.classList.remove('hidden');
-                } else if (role === 'junte-se') {
-                    if (card.dataset.role === 'junte-se') {
-                        card.classList.remove('hidden');
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                } else {
-                    const roles = card.dataset.role ? card.dataset.role.split(',') : [];
-                    if (roles.includes(role)) {
-                        card.classList.remove('hidden');
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                }
-            });
-
-            // Scroll to position the tabs at the top of the viewport
-            setTimeout(() => {
-                const visibleCards = document.querySelectorAll('#conteudo .host-card:not(.hidden)');
-                if (visibleCards.length > 0) {
-                    // Altura do menu fixo (header)
-                    const headerHeight = document.querySelector('.header').offsetHeight;
-                    
-                    // Obter a posição das abas (tabs) em vez do filtro
-                    const tabsElement = document.querySelector('.tabs');
-                    if (tabsElement) {
-                        // Scroll para posicionar as abas logo abaixo do header fixo
-                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                        window.scrollTo({top: y, behavior: 'smooth'});
-                    }
-                }
-            }, 300);
-
-            // Update URL with the role filter
-            if (updateURL) {
-                const url = new URL(window.location);
-                url.searchParams.set('tab', 'conteudo');
-                url.searchParams.set('papel', role);
-                history.pushState({}, '', url);
-            }
-        }
-        
-        // Read URL parameters and set initial state
-        function readURLParameters() {
-            const urlParams = new URLSearchParams(window.location.search);
+        // Código para controlar o dropdown de idiomas
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing dropdowns...');
             
-            // Handle tab parameter
-            const tab = urlParams.get('tab');
-            if (tab && ['online', 'presencial', 'conteudo'].includes(tab)) {
-                setActiveTab(tab, false);
-                
-                // Handle specific filter parameters based on active tab
-                if (tab === 'online') {
-                    const idioma = urlParams.get('idioma');
-                    if (idioma) {
-                        // Forçar a ativação direta do botão pelo dataset
-                        let buttonFound = false;
-                        
-                        // Caso especial para "português" com ou sem acento
-                        const normalizedIdioma = idioma.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        if (normalizedIdioma === "portugues") {
-                            // Encontrar botão de português
-                            languageFilterButtons.forEach(btn => {
-                                const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                if (btnLanguageNorm === "portugues") {
-                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByLanguage(btn.dataset.language, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                        
-                        // Primeiro, tenta uma correspondência exata (case insensitive)
-                        if (!buttonFound) {
-                            languageFilterButtons.forEach(btn => {
-                                if (buttonFound) return;
-                                
-                                if (btn.dataset.language.toLowerCase() === idioma.toLowerCase()) {
-                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByLanguage(btn.dataset.language, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                        
-                        // Se não encontrou, tenta sem acentos
-                        if (!buttonFound) {
-                            languageFilterButtons.forEach(btn => {
-                                if (buttonFound) return;
-                                
-                                const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                if (btnLanguageNorm === normalizedIdioma) {
-                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByLanguage(btn.dataset.language, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                        
-                        // Se ainda não encontrou, tenta correspondência parcial
-                        if (!buttonFound) {
-                            languageFilterButtons.forEach(btn => {
-                                if (buttonFound) return;
-                                
-                                const btnLanguageNorm = btn.dataset.language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                if (btnLanguageNorm.includes(normalizedIdioma) || normalizedIdioma.includes(btnLanguageNorm)) {
-                                    languageFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByLanguage(btn.dataset.language, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                    }
-                } else if (tab === 'presencial') {
-                    const cidade = urlParams.get('cidade');
-                    if (cidade) {
-                        // Forçar a ativação direta do botão pelo dataset
-                        let buttonFound = false;
-                        
-                        // Normalizar a cidade da URL
-                        const normalizedCidade = cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        
-                        // Primeiro, tenta uma correspondência exata (case insensitive)
-                        cityFilterButtons.forEach(btn => {
-                            if (buttonFound) return;
-                            
-                            if (btn.dataset.city.toLowerCase() === cidade.toLowerCase()) {
-                                cityFilterButtons.forEach(b => b.classList.remove('active'));
-                                btn.classList.add('active');
-                                filterByCity(btn.dataset.city, false);
-                                buttonFound = true;
-                            }
-                        });
-                        
-                        // Se não encontrou, tenta sem acentos
-                        if (!buttonFound) {
-                            cityFilterButtons.forEach(btn => {
-                                if (buttonFound) return;
-                                
-                                const btnCityNorm = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                if (btnCityNorm === normalizedCidade) {
-                                    cityFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByCity(btn.dataset.city, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                        
-                        // Se ainda não encontrou, tenta correspondência parcial
-                        if (!buttonFound) {
-                            cityFilterButtons.forEach(btn => {
-                                if (buttonFound) return;
-                                
-                                const btnCityNorm = btn.dataset.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                if (btnCityNorm.includes(normalizedCidade) || normalizedCidade.includes(btnCityNorm)) {
-                                    cityFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByCity(btn.dataset.city, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                    }
-                } else if (tab === 'conteudo') {
-                    const papel = urlParams.get('papel');
-                    if (papel) {
-                        // Forçar a ativação direta do botão pelo dataset
-                        let buttonFound = false;
-                        
-                        // Normalizar o papel da URL
-                        const normalizedPapel = papel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        
-                        // Primeiro, tenta uma correspondência exata (case insensitive)
-                        roleFilterButtons.forEach(btn => {
-                            if (buttonFound) return;
-                            
-                            if (btn.dataset.role.toLowerCase() === papel.toLowerCase()) {
-                                roleFilterButtons.forEach(b => b.classList.remove('active'));
-                                btn.classList.add('active');
-                                filterByRole(btn.dataset.role, false);
-                                buttonFound = true;
-                            }
-                        });
-                        
-                        // Se não encontrou, tenta sem acentos
-                        if (!buttonFound) {
-                            roleFilterButtons.forEach(btn => {
-                                if (buttonFound) return;
-                                
-                                const btnRoleNorm = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                if (btnRoleNorm === normalizedPapel) {
-                                    roleFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByRole(btn.dataset.role, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                        
-                        // Se ainda não encontrou, tenta correspondência parcial
-                        if (!buttonFound) {
-                            roleFilterButtons.forEach(btn => {
-                                if (buttonFound) return;
-                                
-                                const btnRoleNorm = btn.dataset.role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                if (btnRoleNorm.includes(normalizedPapel) || normalizedPapel.includes(btnRoleNorm)) {
-                                    roleFilterButtons.forEach(b => b.classList.remove('active'));
-                                    btn.classList.add('active');
-                                    filterByRole(btn.dataset.role, false);
-                                    buttonFound = true;
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-            
-            // Verificar se há um link de âncora para o card "Torne-se anfitrião!"
-            if (window.location.hash === '#torne-se-anfitriao') {
-                setActiveTab('online', false);
-                // Filtrar para mostrar apenas o card de "Torne-se anfitrião!"
-                languageFilterButtons.forEach(btn => {
-                    if (btn.dataset.language === 'outros') {
-                        btn.classList.add('active');
-                        filterByLanguage('outros', false);
-                    }
-                });
-            }
-
-            // Verificar especificamente se estamos acessando via idioma=outros
-            if (urlParams.get('idioma') === 'outros') {
-                setActiveTab('online', false);
-                
-                // Esperar um pouco para garantir que a página está carregada
-                setTimeout(() => {
-                    // Altura do menu fixo (header)
-                    const headerHeight = document.querySelector('.header').offsetHeight;
-                    
-                    // Obter a posição das abas (tabs) em vez do filtro
-                    const tabsElement = document.querySelector('.tabs');
-                    if (tabsElement) {
-                        // Scroll para posicionar as abas logo abaixo do header fixo
-                        const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                        window.scrollTo({top: y, behavior: 'smooth'});
-                    }
-                }, 300);
-            }
-        }
-        
-        // Função para calcular a distância de Levenshtein (para comparações aproximadas)
-        function levenshteinDistance(a, b) {
-            const matrix = Array(b.length + 1).fill().map(() => Array(a.length + 1).fill(0));
-            
-            for (let i = 0; i <= a.length; i++) {
-                matrix[0][i] = i;
-            }
-            
-            for (let j = 0; j <= b.length; j++) {
-                matrix[j][0] = j;
-            }
-            
-            for (let j = 1; j <= b.length; j++) {
-                for (let i = 1; i <= a.length; i++) {
-                    const substitutionCost = a[i - 1] === b[j - 1] ? 0 : 1;
-                    matrix[j][i] = Math.min(
-                        matrix[j][i - 1] + 1, // deletion
-                        matrix[j - 1][i] + 1, // insertion
-                        matrix[j - 1][i - 1] + substitutionCost // substitution
-                    );
-                }
-            }
-            
-            return matrix[b.length][a.length];
-        }
-        
-        // Initial setup
-        window.addEventListener('DOMContentLoaded', () => {
-            // Inicializar IDs para todos os botões
-            languageFilterButtons.forEach(btn => {
-                const language = btn.dataset.language;
-                const btnId = `idioma-${language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
-                btn.id = btnId;
+            // Garantir que todos os cards tenham o display correto inicialmente
+            document.querySelectorAll('.host-card').forEach(card => {
+                card.style.display = 'block';
             });
             
-            // Inicializar IDs para botões de cidade
-            cityFilterButtons.forEach(btn => {
-                const city = btn.dataset.city;
-                const btnId = `cidade-${city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
-                btn.id = btnId;
-            });
-            
-            // Inicializar IDs para botões de papel
-            roleFilterButtons.forEach(btn => {
-                const role = btn.dataset.role;
-                const btnId = `papel-${role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
-                btn.id = btnId;
-            });
-            
-            // Check for URL parameters first
-            readURLParameters();
-            
-            // If no parameters were found, set default tab
-            if (!new URLSearchParams(window.location.search).has('tab')) {
-                setActiveTab('online');
-            }
-            
+            // Adicionar evento de clique nas abas
             tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    setActiveTab(button.dataset.tab);
+                button.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    setActiveTab(tab);
+                });
+            });
+            
+            // Inicializar dropdown de idiomas
+            initializeDropdown('selected-language', 'selected-language-flag', 
+                               '.dropdown-content .language-button[data-language]', 
+                               filterHostsByLanguage, 'language-search', 'no-results');
+            
+            // Inicializar dropdown de cidades
+            initializeDropdown('selected-city', 'selected-city-flag', 
+                               '#city-dropdown .language-button[data-city]', 
+                               filterHostsByCity, 'city-search', 'no-city-results');
+            
+            // Inicializar dropdown de papéis
+            initializeDropdown('selected-role', 'selected-role-flag', 
+                               '#role-dropdown .language-button[data-role]', 
+                               filterHostsByRole, 'role-search', 'no-role-results');
+            
+            // Analisar a URL para selecionar a aba e o idioma corretamente
+            parseURL();
+            
+            // Animações específicas para mobile
+            tabButtons.forEach(button => {
+                button.addEventListener('touchstart', function() {
+                    this.classList.add('touch-active');
+                });
+                button.addEventListener('touchend', function() {
+                    this.classList.remove('touch-active');
+                });
+            });
+            
+            // Forçar a atualização dos indicadores visuais para garantir que os estilos sejam aplicados
+            setTimeout(() => {
+                const activeTab = document.querySelector('.tab-button.active');
+                if (activeTab) {
+                    // Reaplica os estilos da aba ativa
+                    const tab = activeTab.dataset.tab;
+                    const buttonRect = activeTab.getBoundingClientRect();
+                    const tabsRect = document.querySelector('.tabs').getBoundingClientRect();
                     
-                    // Rolagem imediata após clicar na aba
-                    setTimeout(() => {
-                        // Altura do menu fixo (header)
-                        const headerHeight = document.querySelector('.header').offsetHeight;
-                        
-                        // Obter a posição das abas
-                        const tabsElement = document.querySelector('.tabs');
-                        if (tabsElement) {
-                            // Scroll para posicionar as abas logo abaixo do header fixo
-                            const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                            window.scrollTo({top: y, behavior: 'smooth'});
+                    // Posiciona o indicador corretamente
+                    tabIndicator.style.width = `${buttonRect.width}px`;
+                    tabIndicator.style.left = `${buttonRect.left - tabsRect.left}px`;
+                    
+                    // Garantir visibilidade da aba selecionada
+                    tabButtons.forEach(button => {
+                        button.classList.remove('active');
+                        if (button.dataset.tab === tab) {
+                            button.classList.add('active');
                         }
-                    }, 100);
-                });
-            });
-            
-            languageFilterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Update active class
-                    languageFilterButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
+                    });
                     
-                    // Filter hosts
-                    filterByLanguage(button.dataset.language);
-                });
-            });
+                    // Garantir visibilidade do conteúdo correto
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === tab) {
+                            content.classList.add('active');
+                        }
+                    });
+                } else {
+                    // Se nenhuma aba estiver ativa, seleciona a primeira por padrão
+                    setActiveTab('online', false);
+                }
+            }, 100);
             
-            cityFilterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Update active class
-                    cityFilterButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
+            // Adicionar evento de redimensionamento da janela para ajustar o indicador
+            window.addEventListener('resize', function() {
+                const activeTab = document.querySelector('.tab-button.active');
+                if (activeTab && window.innerWidth > 576) { // Verificar se não estamos em modo mobile
+                    const buttonRect = activeTab.getBoundingClientRect();
+                    const tabsRect = document.querySelector('.tabs').getBoundingClientRect();
                     
-                    // Filter hosts
-                    filterByCity(button.dataset.city);
-                });
-            });
-            
-            roleFilterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Update active class
-                    roleFilterButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    
-                    // Filter team members
-                    filterByRole(button.dataset.role);
-                });
-            });
-
-            // Handle browser back/forward navigation
-            window.addEventListener('popstate', () => {
-                readURLParameters();
+                    // Ajustar o indicador de acordo com o tamanho atual da janela
+                    tabIndicator.style.width = `${buttonRect.width}px`;
+                    tabIndicator.style.left = `${buttonRect.left - tabsRect.left}px`;
+                }
             });
         });
+        
+        // Função para inicializar qualquer dropdown
+        function initializeDropdown(selectedTextId, selectedFlagId, buttonSelector, filterFunc, searchInputId, noResultsId) {
+            const selectedTextEl = document.getElementById(selectedTextId);
+            const selectedFlagEl = document.getElementById(selectedFlagId);
+            const buttons = document.querySelectorAll(buttonSelector);
+            const dropdownButton = selectedTextEl ? selectedTextEl.closest('.dropdown-button') : null;
+            const dropdownContent = dropdownButton ? dropdownButton.nextElementSibling : null;
+            const searchInput = document.getElementById(searchInputId);
+            const noResults = document.getElementById(noResultsId);
+            
+            // Toggle dropdown
+            if (dropdownButton) {
+                // Remove previous event listeners to avoid duplicates
+                dropdownButton.removeEventListener('click', toggleDropdown);
+                dropdownButton.addEventListener('click', toggleDropdown);
+                
+                function toggleDropdown(e) {
+                    e.stopPropagation(); // Evitar propagação do evento
+                    dropdownContent.classList.toggle('show');
+                    if (dropdownContent.classList.contains('show') && searchInput) {
+                        // Foco na caixa de pesquisa ao abrir o dropdown
+                        setTimeout(() => searchInput.focus(), 100);
+                    }
+                }
+            }
+            
+            // Fechar dropdown quando clicar fora
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.dropdown-button') && !event.target.closest('.dropdown-content')) {
+                    const allDropdowns = document.querySelectorAll('.dropdown-content');
+                    allDropdowns.forEach(dropdown => {
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                        }
+                    });
+                }
+            });
+            
+            // Adicionar funcionalidade de busca
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    let visibleCount = 0;
+                    
+                    buttons.forEach(button => {
+                        const text = button.querySelector('.language-info span:last-child').textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            button.style.display = 'flex';
+                            visibleCount++;
+                        } else {
+                            button.style.display = 'none';
+                        }
+                    });
+                    
+                    // Mostrar/esconder mensagem de nenhum resultado
+                    if (noResults) {
+                        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+                    }
+                });
+            }
+            
+            // Adicionar evento de clique nos botões
+            buttons.forEach(button => {
+                // Remove any existing click handler to avoid duplicates
+                button.removeEventListener('click', buttonClickHandler);
+                
+                // Add the click handler
+                button.addEventListener('click', buttonClickHandler);
+                
+                function buttonClickHandler(e) {
+                    e.stopPropagation(); // Evitar propagação do evento
+                    
+                    const dataAttr = buttonSelector.includes('data-language') ? 'data-language' : 
+                                 buttonSelector.includes('data-city') ? 'data-city' : 'data-role';
+                    
+                    const value = this.getAttribute(dataAttr);
+                    const text = this.querySelector('.language-info span:last-child').textContent;
+                    const flagElement = this.querySelector('.language-info .flag-icon');
+                    
+                    console.log(`Button clicked: ${dataAttr}=${value}, text=${text}`);
+                    
+                    // Atualizar o dropdown UI corretamente
+                    updateDropdownUI(selectedTextId, selectedFlagId, this);
+                    
+                    // Fechar o dropdown
+                    if (dropdownContent) {
+                        dropdownContent.classList.remove('show');
+                    }
+                    
+                    // Filtrar os cards
+                    filterFunc(value);
+                }
+            });
+        }
+        
+        // Função para filtrar os cards de anfitriões por idioma
+        function filterHostsByLanguage(language) {
+            console.log(`Filtering hosts by language: ${language}`);
+            const hostCards = document.querySelectorAll('.host-card[data-languages]');
+            let visibleCount = 0;
+            
+            hostCards.forEach(card => {
+                const cardLanguages = card.getAttribute('data-languages');
+                
+                if (language === 'all' || cardLanguages.toLowerCase().includes(language.toLowerCase())) {
+                    card.style.display = 'block';
+                    card.classList.add('visible');
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('visible');
+                }
+            });
+            
+            console.log(`Found ${visibleCount} visible cards after filtering by language: ${language}`);
+            
+            // Verificar se existe algum card visível após o filtro
+            if (visibleCount === 0) {
+                // Se não houver cards visíveis, exiba uma mensagem
+                let noResults = document.querySelector('.no-hosts-message');
+                if (!noResults) {
+                    noResults = document.createElement('div');
+                    noResults.className = 'no-hosts-message';
+                    noResults.innerHTML = `
+                        <p>Não há anfitriões para este idioma ainda.</p>
+                        <p>Que tal <a href="#torne-se-anfitriao">se tornar um?</a></p>
+                    `;
+                    noResults.style.textAlign = 'center';
+                    noResults.style.padding = '30px';
+                    noResults.style.backgroundColor = 'white';
+                    noResults.style.borderRadius = '10px';
+                    noResults.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                    noResults.style.margin = '20px auto';
+                    noResults.style.maxWidth = '500px';
+                    noResults.style.display = 'block';
+                    
+                    const hostGrid = document.querySelector('#online .host-grid');
+                    if (hostGrid) {
+                        hostGrid.prepend(noResults);
+                    }
+                }
+            } else {
+                // Se houver cards visíveis, remova a mensagem caso exista
+                const noResults = document.querySelector('.no-hosts-message');
+                if (noResults) {
+                    noResults.remove();
+                }
+            }
+            
+            // Atualizar a URL
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('tab', 'online');
+            urlParams.set('idioma', language);
+            history.replaceState(null, '', `?${urlParams.toString()}`);
+            
+            // Rolagem imediata após filtragem
+            scrollToTabsAfterDelay();
+        }
+        
+        // Função para filtrar os cards de anfitriões por cidade
+        function filterHostsByCity(city) {
+            console.log(`Filtering hosts by city: ${city}`);
+            const hostCards = document.querySelectorAll('.host-card[data-city]');
+            let visibleCount = 0;
+            
+            hostCards.forEach(card => {
+                const cardCity = card.getAttribute('data-city');
+                
+                if (city === 'all' || cardCity.toLowerCase() === city.toLowerCase()) {
+                    card.style.display = 'block';
+                    card.classList.add('visible');
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('visible');
+                }
+            });
+            
+            console.log(`Found ${visibleCount} visible cards after filtering by city: ${city}`);
+            
+            // Atualizar a URL
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('tab', 'presencial');
+            urlParams.set('cidade', city);
+            history.replaceState(null, '', `?${urlParams.toString()}`);
+            
+            // Rolagem imediata após filtragem
+            scrollToTabsAfterDelay();
+        }
+        
+        // Função para filtrar os cards de anfitriões por papel
+        function filterHostsByRole(role) {
+            console.log(`Filtering hosts by role: ${role}`);
+            const hostCards = document.querySelectorAll('.host-card[data-role]');
+            let visibleCount = 0;
+            
+            hostCards.forEach(card => {
+                const cardRole = card.getAttribute('data-role');
+                
+                if (role === 'all' || cardRole.toLowerCase().includes(role.toLowerCase())) {
+                    card.style.display = 'block';
+                    card.classList.add('visible');
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('visible');
+                }
+            });
+            
+            console.log(`Found ${visibleCount} visible cards after filtering by role: ${role}`);
+            
+            // Atualizar a URL
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('tab', 'conteudo');
+            urlParams.set('papel', role);
+            history.replaceState(null, '', `?${urlParams.toString()}`);
+            
+            // Rolagem imediata após filtragem
+            scrollToTabsAfterDelay();
+        }
+        
+        // Função auxiliar para rolar a página até as abas após um pequeno delay
+        function scrollToTabsAfterDelay() {
+            setTimeout(() => {
+                // Altura do menu fixo (header)
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                
+                // Obter a posição das abas
+                const tabsElement = document.querySelector('.tabs');
+                if (tabsElement) {
+                    // Scroll para posicionar as abas logo abaixo do header fixo
+                    const y = tabsElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }, 100);
+        }
+
+        // Função para analisar os parâmetros da URL
+        function parseURL() {
+            console.log('Parsing URL parameters...');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Verificar e selecionar a aba correta
+            const tab = urlParams.get('tab');
+            if (tab) {
+                console.log(`Tab parameter found: ${tab}`);
+                const tabButton = document.querySelector(`.tab-button[data-tab="${tab}"]`);
+                if (tabButton) {
+                    console.log(`Tab button found, activating tab: ${tab}`);
+                    setActiveTab(tab, false);
+                } else {
+                    console.warn(`Tab button not found for tab: ${tab}`);
+                }
+            }
+            
+            // Verificar e selecionar o idioma correto para a aba online
+            if (tab === 'online' || !tab) {
+                const idioma = urlParams.get('idioma');
+                if (idioma) {
+                    console.log(`Language parameter found: ${idioma}`);
+                    // Buscar o botão correspondente no dropdown
+                    const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button[data-language]');
+                    const selectedButton = Array.from(dropdownButtons).find(button => 
+                        button.getAttribute('data-language').toLowerCase() === idioma.toLowerCase()
+                    );
+                    
+                    if (selectedButton) {
+                        console.log(`Language button found, updating UI and filtering: ${idioma}`);
+                        updateDropdownUI('selected-language', 'selected-language-flag', selectedButton);
+                        setTimeout(() => {
+                            filterHostsByLanguage(idioma);
+                        }, 50);
+                    } else {
+                        console.warn(`Language button not found for language: ${idioma}`);
+                    }
+                }
+            }
+            
+            // Verificar e selecionar a cidade correta para a aba presencial
+            if (tab === 'presencial') {
+                const cidade = urlParams.get('cidade');
+                if (cidade) {
+                    console.log(`City parameter found: ${cidade}`);
+                    // Buscar o botão correspondente no dropdown
+                    const dropdownButtons = document.querySelectorAll('#city-dropdown .language-button[data-city]');
+                    const selectedButton = Array.from(dropdownButtons).find(button => 
+                        button.getAttribute('data-city').toLowerCase() === cidade.toLowerCase()
+                    );
+                    
+                    if (selectedButton) {
+                        console.log(`City button found, updating UI and filtering: ${cidade}`);
+                        updateDropdownUI('selected-city', 'selected-city-flag', selectedButton);
+                        setTimeout(() => {
+                            filterHostsByCity(cidade);
+                        }, 50);
+                    } else {
+                        console.warn(`City button not found for city: ${cidade}`);
+                    }
+                }
+            }
+            
+            // Verificar e selecionar o papel correto para a aba conteúdo
+            if (tab === 'conteudo') {
+                const papel = urlParams.get('papel');
+                if (papel) {
+                    console.log(`Role parameter found: ${papel}`);
+                    // Buscar o botão correspondente no dropdown
+                    const dropdownButtons = document.querySelectorAll('#role-dropdown .language-button[data-role]');
+                    const selectedButton = Array.from(dropdownButtons).find(button => 
+                        button.getAttribute('data-role').toLowerCase() === papel.toLowerCase()
+                    );
+                    
+                    if (selectedButton) {
+                        console.log(`Role button found, updating UI and filtering: ${papel}`);
+                        updateDropdownUI('selected-role', 'selected-role-flag', selectedButton);
+                        setTimeout(() => {
+                            filterHostsByRole(papel);
+                        }, 50);
+                    } else {
+                        console.warn(`Role button not found for role: ${papel}`);
+                    }
+                }
+            }
+        }
+        
+        // Função auxiliar para atualizar a UI do dropdown
+        function updateDropdownUI(selectedTextId, selectedFlagId, selectedButton) {
+            const selectedTextEl = document.getElementById(selectedTextId);
+            const selectedFlagEl = document.getElementById(selectedFlagId);
+            const text = selectedButton.querySelector('.language-info span:last-child').textContent;
+            const flagElement = selectedButton.querySelector('.language-info .flag-icon');
+            
+            // Atualizar o texto
+            if (selectedTextEl) selectedTextEl.textContent = text;
+            
+            // Atualizar a bandeira/ícone - CORREÇÃO AQUI
+            if (selectedFlagEl && flagElement) {
+                // Remover o elemento atual
+                const parentNode = selectedFlagEl.parentNode;
+                
+                // Criar um novo elemento baseado no tipo do elemento de flag (img ou span)
+                if (flagElement.tagName.toLowerCase() === 'img') {
+                    // Se for uma imagem (bandeira)
+                    const imgElement = document.createElement('img');
+                    imgElement.id = selectedFlagId;
+                    imgElement.className = 'flag-icon';
+                    imgElement.src = flagElement.src;
+                    imgElement.alt = flagElement.alt;
+                    
+                    // Substituir o elemento atual
+                    if (parentNode) {
+                        parentNode.replaceChild(imgElement, selectedFlagEl);
+                    }
+                } else {
+                    // Se for um emoji
+                    const emojiSpan = document.createElement('span');
+                    emojiSpan.id = selectedFlagId;
+                    emojiSpan.className = 'flag-icon';
+                    emojiSpan.style = flagElement.getAttribute('style');
+                    emojiSpan.textContent = flagElement.textContent;
+                    
+                    // Substituir o elemento atual
+                    if (parentNode) {
+                        parentNode.replaceChild(emojiSpan, selectedFlagEl);
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>

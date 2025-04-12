@@ -3,7 +3,13 @@ import socketserver
 import os
 import sys
 
+# Porta padrão, mas permitindo uso de parâmetro de linha de comando
 PORT = 8000
+if len(sys.argv) > 1:
+    try:
+        PORT = int(sys.argv[1])
+    except ValueError:
+        print(f"Erro: Porta inválida '{sys.argv[1]}'. Usando porta padrão {PORT}.")
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
