@@ -1175,23 +1175,23 @@
             width: calc(100% - 30px);
             text-align: left;
             justify-content: space-between;
-            /* Ajustando o padding para ser mais compacto */
             padding: 12px 20px;
-            /* Garantindo que o conteúdo interno não force a expansão */
             box-sizing: border-box;
+            border-bottom: 1px dashed var(--accent-red) !important;
         }
 
         .dropdown-content .language-button.special .language-info {
-            /* Tornando o conteúdo do botão mais compacto */
             flex: initial;
-            max-width: calc(100% - 30px); /* Deixa espaço para o badge */
+            max-width: calc(100% - 30px);
             white-space: nowrap;
+            gap: 8px;
         }
 
         /* Garantindo que o botão especial se comporte como os outros quando hover */
         .dropdown-content .language-button.special:hover {
             background-color: rgba(227, 29, 28, 0.1);
             border: 1px dashed var(--accent-red);
+            border-bottom: 1px dashed var(--accent-red) !important;
             transform: none;
             box-shadow: none;
         }
@@ -1407,7 +1407,7 @@
                         <button class="language-button special" data-language="seu">
                             <div class="language-info">
                                 <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🚩</span>
-                                <span>O seu!</span>
+                                <span>Seu idioma aqui!</span>
                             </div>
                             <span class="language-badge">+</span>
                         </button>
