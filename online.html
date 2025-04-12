@@ -1174,13 +1174,26 @@
             position: relative;
             width: calc(100% - 30px);
             text-align: left;
-            justify-content: space-between; /* Alinha com os outros botões */
-            padding: 12px 20px; /* Mesmo padding dos outros botões */
+            justify-content: space-between;
+            /* Ajustando o padding para ser mais compacto */
+            padding: 12px 20px;
+            /* Garantindo que o conteúdo interno não force a expansão */
+            box-sizing: border-box;
         }
 
+        .dropdown-content .language-button.special .language-info {
+            /* Tornando o conteúdo do botão mais compacto */
+            flex: initial;
+            max-width: calc(100% - 30px); /* Deixa espaço para o badge */
+            white-space: nowrap;
+        }
+
+        /* Garantindo que o botão especial se comporte como os outros quando hover */
         .dropdown-content .language-button.special:hover {
             background-color: rgba(227, 29, 28, 0.1);
             border: 1px dashed var(--accent-red);
+            transform: none;
+            box-shadow: none;
         }
 
         /* Remove o pseudo-elemento after pois não é mais necessário */
