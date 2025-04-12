@@ -23,7 +23,7 @@ else:
     exit(1)
 
 # Fazer commit
-if run_command('git commit -m "Adicionado link para página online em todos os menus de navegação"'):
+if run_command('git commit -m "Atualização da estrutura da página online.html e equipe.html com melhorias na interface, responsividade e navegação"'):
     print("Commit realizado com sucesso.")
 else:
     print("Falha ao realizar commit.")
