@@ -6,11 +6,11 @@
     <meta name="description" content="Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência. Participe de encontros semanais de diversos idiomas.">
     <meta name="keywords" content="encontro de idiomas, clube poliglota, praticar idiomas, online, videoconferência, inglês, francês, espanhol, japonês, italiano, chinês, alemão, russo, coreano">
     <meta name="author" content="Encontro de Idiomas">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="noindex, nofollow">
 
     <!-- Essential Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Encontros Online - Encontro de Idiomas">
+    <meta property="og:title" content="VERSÃO DE TESTE - Encontros Online - Encontro de Idiomas">
     <meta property="og:description" content="Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência. Participe de encontros semanais de diversos idiomas.">
     <meta property="og:image" content="https://encontrodeidiomas.com.br/assets/images/og_image.png">
     <meta property="og:image:width" content="1200">
@@ -25,26 +25,18 @@
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://encontrodeidiomas.com.br/online.html">
-    <meta property="twitter:title" content="Encontros Online - Encontro de Idiomas">
+    <meta property="twitter:title" content="VERSÃO DE TESTE - Encontros Online - Encontro de Idiomas">
     <meta property="twitter:description" content="Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência. Participe de encontros semanais de diversos idiomas.">
     <meta property="twitter:image" content="https://encontrodeidiomas.com.br/assets/images/og_image.png">
     <meta property="twitter:image:alt" content="Logo do Encontro de Idiomas">
 
-    <link rel="canonical" href="https://encontrodeidiomas.com.br/online.html">
-    <title>Encontros Online - Encontro de Idiomas</title>
+    <title>VERSÃO DE TESTE - Otimização Mobile - Encontro de Idiomas</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
     <link rel="apple-touch-icon" href="assets/images/favicon.png">
     
-    <!-- Google Analytics (GA4) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1BD3DH8TJ"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-C1BD3DH8TJ');
-    </script>
+    <!-- Google Analytics (GA4) - DESATIVADO PARA VERSÃO DE TESTE -->
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -70,6 +62,26 @@
             --disabled-color: #888;
         }
         
+        /* Estilo para banner de versão de teste */
+        .test-banner {
+            background-color: #ff9800;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            top: 92px;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Ajustar o hero para acomodar o banner de teste */
+        .hero {
+            margin-top: 132px !important; /* 80px (header) + 52px (banner) */
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -83,11 +95,6 @@
             line-height: 1.6;
             overflow-x: hidden;
             width: 100%;
-            overscroll-behavior-y: contain;
-            -webkit-overflow-scrolling: touch;
-            will-change: scroll-position;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
         }
         
         .header {
@@ -99,10 +106,6 @@
             z-index: 1000;
             top: 0;
             left: 0;
-            transform: translateZ(0);
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
         }
         
         .header-content {
@@ -174,179 +177,9 @@
             width: 100%;
         }
         
-        /* Dropdown Estilo para Mobile */
-        .mobile-dropdown {
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto 20px;
-        }
-        
-        @media (min-width: 769px) {
-            .mobile-dropdown {
-                max-width: 400px;
-            }
-        }
-        
-        .dropdown-button {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: var(--accent-red);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(227, 29, 28, 0.3);
-            transition: all 0.3s;
-        }
-        
-        .dropdown-button:hover {
-            background-color: #c01a19;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(227, 29, 28, 0.4);
-        }
-        
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: calc(100% + 10px); /* Posicionamento abaixo do botão com espaço */
-            left: 0;
-            width: 100%;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            z-index: 100;
-            max-height: 350px;
-            overflow-y: auto;
-            padding: 8px 0;
-        }
-        
-        .dropdown-content.show {
-            display: block;
-            animation: fadeInDown 0.3s ease-out;
-        }
-        
-        /* Barra de pesquisa no dropdown */
-        .search-filter {
-            padding: 10px 15px;
-            margin: 5px 15px 10px;
-            position: relative;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 10px 15px 10px 35px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            background-color: #f5f5f7;
-            transition: all 0.3s;
-        }
-        
-        .search-input:focus {
-            border-color: var(--accent-red);
-            background-color: white;
-            box-shadow: 0 0 0 2px rgba(227, 29, 28, 0.1);
-            outline: none;
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 25px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-            font-size: 14px;
-        }
-        
-        .no-results {
-            display: none;
-            text-align: center;
-            padding: 15px;
-            color: #666;
-            font-style: italic;
-            font-size: 14px;
-        }
-        
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .dropdown-content .language-button {
-            border-radius: 0;
-            margin: 0;
-            border: none;
-            border-bottom: 1px solid #f0f0f0;
-            width: 100%;
-            text-align: left;
-            padding: 12px 20px;
-            transition: background 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .dropdown-content .language-button:hover {
-            background-color: #f5f5f5;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .dropdown-content .language-button.active {
-            background-color: rgba(227, 29, 28, 0.05);
-            color: var(--accent-red);
-            font-weight: 700;
-        }
-        
-        .dropdown-content .language-button:last-child {
-            border-bottom: none;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-        }
-        
-        .language-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .language-badge {
-            background-color: #f0f0f0;
-            color: #666;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-weight: 500;
-            min-width: 20px;
-            text-align: center;
-        }
-        
-        /* Esconder a lista horizontal de idiomas em todas as resoluções */
-        .language-filters {
-            display: none !important;
-            visibility: hidden;
-            height: 0;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-        }
-        
         /* Hero Section */
         .hero {
-            min-height: 70vh; /* Reduzindo de 100vh para 70vh para não ocupar a tela inteira */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -357,7 +190,7 @@
             position: relative;
             padding: 2rem 0;
             overflow: hidden;
-            margin-top: 80px; /* account for fixed header */
+            margin-top: 132px !important; /* 80px (header) + 52px (banner) */
         }
         
         .hero::before {
@@ -378,8 +211,6 @@
             max-width: 800px;
             animation: fadeUp 1s ease;
             padding: 0 20px;
-            text-align: center; /* Garantindo que o conteúdo esteja centralizado */
-            margin: 0 auto; /* Centralizando o bloco de conteúdo */
         }
         
         @keyframes fadeUp {
@@ -396,16 +227,12 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            text-align: center; /* Garantindo alinhamento centralizado */
         }
         
         .hero p {
             font-size: 1.2rem;
             margin-bottom: 2rem;
             max-width: 600px;
-            margin-left: auto; /* Centralizando o parágrafo */
-            margin-right: auto; /* Centralizando o parágrafo */
-            text-align: center; /* Garantindo alinhamento centralizado */
         }
         
         .hero-button {
@@ -452,14 +279,12 @@
         
         .section-title {
             text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .section-description {
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto 40px;
-            color: #666;
+            margin-bottom: 3rem;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: 15px;
         }
         
         .section-title::after {
@@ -528,33 +353,35 @@
         
         .calendar-days {
             display: flex;
-            justify-content: center;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
         
         .day-button {
-            padding: 10px 16px;
-            background-color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            min-width: 120px;
+            flex: 0 1 auto;
+            min-width: 80px;
+            max-width: 150px;
+            padding: 12px 15px;
             text-align: center;
-        }
-        
-        .day-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            border: none;
+            background-color: var(--bg-light);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            margin: 5px;
         }
         
         .day-button.active {
             background-color: var(--accent-red);
-            color: white;
+            color: var(--white);
+        }
+        
+        .day-button:hover:not(.active) {
+            background-color: #e9ecef;
+            transform: translateY(-3px);
         }
         
         /* Events Section */
@@ -601,10 +428,6 @@
             padding: 20px;
             transition: var(--transition);
             cursor: pointer;
-            transform: translateZ(0);
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            will-change: transform;
         }
         
         .timeline-event:hover {
@@ -785,36 +608,14 @@
             }
             
             .calendar-days {
-                padding: 0 10px;
-                gap: 8px;
+                justify-content: space-around;
             }
             
             .day-button {
-                flex: 1 1 calc(50% - 8px);
-                min-width: 0;
-                padding: 10px 5px;
+                flex: 0 1 auto;
+                min-width: 75px;
+                padding: 10px;
                 font-size: 0.9rem;
-            }
-            
-            /* Removendo regras redundantes já que estamos escondendo a lista em todas as resoluções */
-            /* .language-filters {
-                display: none;
-            }
-            
-            .mobile-dropdown {
-                display: flex;
-            } */
-            
-            .event-title {
-                font-size: 1.1rem;
-                flex-wrap: wrap;
-            }
-            
-            .event-social-links {
-                margin-left: 0;
-                margin-top: 8px;
-                width: 100%;
-                justify-content: flex-start;
             }
             
             .header-content {
@@ -904,15 +705,15 @@
             }
             
             .calendar-days {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-                margin: 0 20px 20px;
+                justify-content: space-evenly;
             }
             
             .day-button {
-                width: 100%;
-                padding: 12px 10px;
+                flex: 0 1 auto;
+                min-width: 70px;
+                padding: 8px 12px;
+                margin: 3px;
+                font-size: 0.85rem;
             }
             
             .event-title {
@@ -1152,99 +953,191 @@
             transform: translateY(-3px);
             box-shadow: none;
         }
-
-        .dropdown-flag-container {
+        
+        /* Estilos para as diferentes soluções móveis */
+        
+        /* Solução 1: Menu Dropdown */
+        .mobile-dropdown {
             display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #selected-language-flag {
-            width: 24px;
-            height: 18px;
-            border-radius: 3px;
-        }
-
-        .dropdown-content .language-button.special {
-            border: 1px dashed var(--accent-red);
-            background-color: rgba(227, 29, 28, 0.05);
-            margin: 8px 15px;
-            border-radius: 8px;
+            flex-direction: column;
             position: relative;
-            width: calc(100% - 30px);
-            text-align: left;
-            justify-content: flex-start;
+            width: 100%;
+            margin-bottom: 20px;
         }
-
-        .dropdown-content .language-button.special:hover {
-            background-color: rgba(227, 29, 28, 0.1);
-            border: 1px dashed var(--accent-red);
+        
+        .dropdown-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
         }
-
-        /* Remove o pseudo-elemento after pois não é mais necessário */
-        .dropdown-content .language-button.special:after {
+        
+        .dropdown-button:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .dropdown-content {
             display: none;
-        }
-
-        /* Ajuste para os botões dos dias da semana em dispositivos móveis */
-        @media (max-width: 480px) {
-            .calendar-days {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr); /* 3 colunas */
-                gap: 8px;
-                margin: 0 10px 20px;
-            }
-            
-            .day-button {
-                width: 100%;
-                padding: 10px 5px;
-                min-width: 0;
-                font-size: 0.85rem;
-            }
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+            max-height: 300px;
+            overflow-y: auto;
         }
         
-        /* Prevent all layout shifts on mobile */
-        html {
-            scroll-behavior: smooth;
-            height: 100%;
-            overflow-x: hidden;
+        /* Mostrar o dropdown quando a classe .show estiver presente */
+        .dropdown-content.show {
+            display: block;
         }
         
-        html, body, .container {
-            max-width: 100vw;
-            overflow-x: hidden;
+        .dropdown-content .language-button {
+            width: 100%;
+            text-align: left;
+            border-radius: 0;
+            padding: 10px 20px;
+            box-shadow: none;
+            margin: 0;
         }
         
-        /* Otimizações para dispositivos móveis */
-        @media (max-width: 768px) {
-            html, body {
-                position: relative;
-                overflow-x: hidden;
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior-y: contain;
-            }
-            
-            .header, .header-content, .container, .section, .view-content,
-            .timeline, .timeline-event, .language-filters, .calendar-days,
-            .day-events, .event-header, .event-description {
-                transform: translateZ(0);
-                -webkit-backface-visibility: hidden;
-                backface-visibility: hidden;
-                will-change: transform;
-                -webkit-transform-style: preserve-3d;
-                transform-style: preserve-3d;
-            }
-            
-            /* Reduzir animações em mobile para evitar piscadas */
-            .timeline-event:hover {
-                transform: translateY(-3px) translateZ(0);
-                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            }
-            
-            .language-button:hover,
-            .day-button:hover {
-                transform: translateY(-2px);
-            }
+        .dropdown-content .language-button:hover {
+            background-color: #f5f5f5;
+            transform: none;
+        }
+        
+        /* Solução 2: Scroll Horizontal */
+        .horizontal-scroll {
+            display: none;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .horizontal-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .horizontal-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .horizontal-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        .horizontal-scroll .language-button {
+            display: inline-flex;
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+        
+        /* Solução 3: Grid Compacto */
+        .language-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .language-grid .language-button {
+            margin: 0;
+            padding: 8px;
+            text-align: center;
+            flex-direction: column;
+        }
+        
+        .language-grid .language-button .flag-icon {
+            margin-bottom: 5px;
+            margin-right: 0;
+        }
+        
+        /* Solução 4: Pesquisa e Filtro */
+        .search-filter {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .search-bar {
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .filtered-languages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 15px;
+        }
+        
+        /* Botões para alternar entre os modos de visualização */
+        .view-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .view-option {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .view-option:hover, .view-option.active {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+        
+        /* Exibir soluções de acordo com o modo selecionado - CORRIGIDO */
+        /* Removido o media query que impedia a visualização em desktops */
+        .mobile-dropdown.active {
+            display: flex;
+        }
+        
+        .horizontal-scroll.active {
+            display: flex;
+        }
+        
+        .language-grid.active {
+            display: grid;
+        }
+        
+        .search-filter.active {
+            display: flex;
         }
     </style>
 </head>
@@ -1267,6 +1160,11 @@
             </nav>
         </div>
     </header>
+    
+    <!-- Banner de versão de teste -->
+    <div class="test-banner">
+        VERSÃO DE TESTE - Otimização para Dispositivos Móveis
+    </div>
     
     <section class="hero">
         <div class="hero-content container">
@@ -1293,110 +1191,95 @@
                 </div>
             </div>
             
+            <!-- Seletor de modo de visualização para dispositivos móveis -->
+            <div class="view-selector">
+                <button class="view-option active" data-mobile-view="dropdown">Menu Dropdown</button>
+                <button class="view-option" data-mobile-view="scroll">Scroll Horizontal</button>
+                <button class="view-option" data-mobile-view="grid">Grid de Ícones</button>
+                <button class="view-option" data-mobile-view="search">Pesquisa</button>
+            </div>
+            
             <div id="language-view" class="view-content active">
-                <!-- Mobile Dropdown -->
-                <div class="mobile-dropdown">
-                    <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um idioma:</p>
+                <!-- Solução 1: Menu Dropdown -->
+                <div class="mobile-dropdown active">
                     <button class="dropdown-button">
-                        <div class="dropdown-flag-container">
-                            <img id="selected-language-flag" src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
-                            <span id="selected-language">Inglês</span>
-                        </div>
+                        <span id="selected-language">Selecionar Idioma</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content">
-                        <div class="search-filter">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="search-input" id="language-search" placeholder="Buscar idioma...">
-                        </div>
-                        <div class="no-results" id="no-results">
-                            Nenhum idioma encontrado.
-                        </div>
-                        <button class="language-button" data-language="francês">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
-                                <span>Francês</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button" data-language="japonês">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
-                                <span>Japonês</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button" data-language="italiano">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
-                                <span>Italiano</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button" data-language="espanhol">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
-                                <span>Espanhol</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button" data-language="inglês">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
-                                <span>Inglês</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button" data-language="coreano">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
-                                <span>Coreano</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button" data-language="libras">
-                            <div class="language-info">
-                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👋</span>
-                                <span>Libras</span>
-                            </div>
-                            <span class="language-badge">1</span>
-                        </button>
-                        <button class="language-button" data-language="chinês">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
-                                <span>Chinês</span>
-                            </div>
-                            <span class="language-badge">2</span>
-                        </button>
-                        <button class="language-button" data-language="alemão">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
-                                <span>Alemão</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button" data-language="russo">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
-                                <span>Russo</span>
-                            </div>
-                            <span class="language-badge">1</span>
-                        </button>
-                        <button class="language-button" data-language="português">
-                            <div class="language-info">
-                                <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
-                                <span>Português</span>
-                            </div>
-                            <span class="language-badge">3</span>
-                        </button>
-                        <button class="language-button special" data-language="seu">
-                            <div class="language-info">
-                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🚩</span>
-                                <span>O seu!</span>
-                            </div>
-                            <span class="language-badge">+</span>
-                        </button>
+                        <!-- Botões de idioma serão clonados aqui pelo JavaScript -->
                     </div>
+                </div>
+                
+                <!-- Solução 2: Scroll Horizontal -->
+                <div class="horizontal-scroll">
+                    <!-- Botões de idioma serão clonados aqui pelo JavaScript -->
+                </div>
+                
+                <!-- Solução 3: Grid Compacto -->
+                <div class="language-grid">
+                    <!-- Botões de idioma serão clonados aqui pelo JavaScript -->
+                </div>
+                
+                <!-- Solução 4: Pesquisa e Filtro -->
+                <div class="search-filter">
+                    <input type="text" class="search-bar" placeholder="Buscar idioma...">
+                    <div class="filtered-languages">
+                        <!-- Botões de idioma serão clonados aqui pelo JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Removendo a visualização padrão (original) para os testes -->
+                <!-- Os botões de idioma ainda existem no HTML mas ficam escondidos para fornecer os dados -->
+                <div class="language-filters" style="display: none;">
+                    <button class="language-button" data-language="francês">
+                        <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
+                        <span>Francês</span>
+                    </button>
+                    <button class="language-button" data-language="japonês">
+                        <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
+                        <span>Japonês</span>
+                    </button>
+                    <button class="language-button" data-language="italiano">
+                        <img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Itália">
+                        <span>Italiano</span>
+                    </button>
+                    <button class="language-button" data-language="espanhol">
+                        <img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanha">
+                        <span>Espanhol</span>
+                    </button>
+                    <button class="language-button active" data-language="inglês">
+                        <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
+                        <span>Inglês</span>
+                    </button>
+                    <button class="language-button" data-language="coreano">
+                        <img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreia do Sul">
+                        <span>Coreano</span>
+                    </button>
+                    <button class="language-button" data-language="libras">
+                        <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👋</span>
+                        <span>Libras</span>
+                    </button>
+                    <button class="language-button" data-language="chinês">
+                        <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
+                        <span>Chinês</span>
+                    </button>
+                    <button class="language-button" data-language="alemão">
+                        <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
+                        <span>Alemão</span>
+                    </button>
+                    <button class="language-button" data-language="russo">
+                        <img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Rússia">
+                        <span>Russo</span>
+                    </button>
+                    <button class="language-button" data-language="português">
+                        <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
+                        <span>Português</span>
+                    </button>
+                    <button class="language-button special" data-language="seu">
+                        <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🚩</span>
+                        <span>O seu!</span>
+                    </button>
                 </div>
                 
                 <div id="language-events">
@@ -1428,7 +1311,7 @@
                                     <a href="https://instagr.am/encontrodeidiomas_frances" target="_blank" class="social-icon instagram-icon" title="Perfil de Francês"><i class="fab fa-instagram"></i></a>
                                 </div>
                             </div>
-                            <p class="event-description">Venha praticar francês em um ambiente acolhedor para todos.</p>
+                            <p class="event-description">Venha praticar francês em um ambiente acolhedor. Para todos os níveis.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/aih-vfir-eyy" target="_blank" class="event-button join-button" data-day="1" data-time="19">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomas-frances" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
@@ -1445,7 +1328,7 @@
                                     <a href="https://instagr.am/encontrodeidiomasjapones" target="_blank" class="social-icon instagram-icon" title="Perfil de Japonês"><i class="fab fa-instagram"></i></a>
                                 </div>
                             </div>
-                            <p class="event-description">Pratique japonês com falantes de diferentes níveis. Comunicação direta.</p>
+                            <p class="event-description">Pratique japonês com falantes de diferentes níveis. Conversação e cultura japonesa.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/hjt-eyny-sqm" target="_blank" class="event-button join-button" data-day="1" data-time="20">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasjapones" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
@@ -1462,7 +1345,7 @@
                                     <a href="https://instagr.am/encontrodeidiomasitaliano" target="_blank" class="social-icon instagram-icon" title="Perfil de Italiano"><i class="fab fa-instagram"></i></a>
                                 </div>
                             </div>
-                            <p class="event-description">Aprenda italiano em ambiente descontraído. Para todos os níveis.</p>
+                            <p class="event-description">Aprenda e pratique italiano em um ambiente descontraído. Todos os níveis são bem-vindos!</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/epp-bhcj-mam" target="_blank" class="event-button join-button" data-day="1" data-time="21">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasitaliano2" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
@@ -1483,7 +1366,7 @@
                                     <a href="https://instagr.am/encontrodeidiomasespanhol" target="_blank" class="social-icon instagram-icon" title="Perfil de Espanhol"><i class="fab fa-instagram"></i></a>
                                 </div>
                             </div>
-                            <p class="event-description">Pratique espanhol com nativos e entusiastas. Temas culturais.</p>
+                            <p class="event-description">Pratique espanhol com outros entusiastas. Conversação e temas culturais.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/zwn-eaja-fbf" target="_blank" class="event-button join-button" data-day="2" data-time="19">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasespanhol" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
@@ -1572,13 +1455,13 @@
                                 <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
                                 <span>Alemão</span>
                                 <div class="event-social-links">
-                                    <a href="https://chat.whatsapp.com/G1V39JA0j8YLyxDtBPTnXD" target="_blank" class="social-icon whatsapp-icon" title="Grupo de Alemão"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://chat.whatsapp.com/BlwnJfFVRSLKPX9SrDcE4o" target="_blank" class="social-icon whatsapp-icon" title="Grupo de Alemão"><i class="fab fa-whatsapp"></i></a>
                                     <a href="https://instagr.am/encontrodeidiomasalemao" target="_blank" class="social-icon instagram-icon" title="Perfil de Alemão"><i class="fab fa-instagram"></i></a>
                                 </div>
                             </div>
-                            <p class="event-description">Pratique alemão em nossos encontros online. Para todos os níveis.</p>
+                            <p class="event-description">Pratique alemão com nossos encontros online. Ideal para iniciantes e intermediários.</p>
                             <div class="event-actions">
-                                <a href="https://meet.google.com/jkr-yrsh-xuf" target="_blank" class="event-button join-button" data-day="3" data-time="21">Participar</a>
+                                <a href="https://meet.google.com/csd-vmvs-sfo" target="_blank" class="event-button join-button" data-day="4" data-time="21">Participar</a>
                                 <a href="https://youtube.com/@encontrodeidiomasalemao" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
                             </div>
                         </div>
@@ -1627,14 +1510,14 @@
                                 <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
                                 <span>Português</span>
                                 <div class="event-social-links">
-                                    <a href="https://chat.whatsapp.com/CzeuXBHwrMh9mAcSRPRasA" target="_blank" class="social-icon whatsapp-icon" title="Grupo de Português"><i class="fab fa-whatsapp"></i></a>
-                                    <a href="https://instagr.am/encontrodeidiomas_portugues" target="_blank" class="social-icon instagram-icon" title="Perfil de Português"><i class="fab fa-instagram"></i></a>
+                                    <a href="https://chat.whatsapp.com/HQv4XBL7bAeCocVzj8qZvB" target="_blank" class="social-icon whatsapp-icon" title="Grupo de Português"><i class="fab fa-whatsapp"></i></a>
+                                    <a href="https://instagr.am/encontrodeidiomasportugues" target="_blank" class="social-icon instagram-icon" title="Perfil de Português"><i class="fab fa-instagram"></i></a>
                                 </div>
                             </div>
-                            <p class="event-description">Ajude estrangeiros com português brasileiro. Troca cultural.</p>
+                            <p class="event-description">Ajude estrangeiros a praticarem português brasileiro e compartilhe nossa cultura.</p>
                             <div class="event-actions">
-                                <a href="https://meet.google.com/fhy-abuz-eai" target="_blank" class="event-button join-button" data-day="5" data-time="21">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomas-portugues" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://meet.google.com/boa-owry-wkh" target="_blank" class="event-button join-button" data-day="5" data-time="21">Participar</a>
+                                <a href="https://youtube.com/@encontrodeidiomasportugues" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
                             </div>
                         </div>
                     </div>
@@ -1662,128 +1545,126 @@
     </footer>
     
     <script>
-        // Definir o ano atual no footer
+        // Set current year in footer
         document.getElementById('current-year').textContent = new Date().getFullYear();
         
-        // Dropdown Mobile Toggle
+        // Código JavaScript para as soluções de visualização em dispositivos móveis
         document.addEventListener('DOMContentLoaded', function() {
-            const dropdownButton = document.querySelector('.dropdown-button');
+            // Clone os botões de idioma para cada solução
+            const originalButtons = document.querySelectorAll('.language-filters .language-button');
             const dropdownContent = document.querySelector('.dropdown-content');
-            const selectedLanguageText = document.getElementById('selected-language');
-            const searchInput = document.getElementById('language-search');
-            const noResults = document.getElementById('no-results');
+            const horizontalScroll = document.querySelector('.horizontal-scroll');
+            const languageGrid = document.querySelector('.language-grid');
+            const filteredLanguages = document.querySelector('.filtered-languages');
             
-            // Definir como "Inglês" por padrão, pois é o idioma ativo inicialmente
-            selectedLanguageText.textContent = "Inglês";
-            
-            if (dropdownButton) {
+            // Clonar botões para cada visualização
+            originalButtons.forEach(button => {
+                // Para o dropdown
+                const dropdownButton = button.cloneNode(true);
                 dropdownButton.addEventListener('click', function() {
-                    dropdownContent.classList.toggle('show');
-                    if (dropdownContent.classList.contains('show') && searchInput) {
-                        // Foco na caixa de pesquisa ao abrir o dropdown
-                        setTimeout(() => searchInput.focus(), 100);
-                    }
+                    const language = this.getAttribute('data-language');
+                    document.getElementById('selected-language').textContent = this.querySelector('span').textContent;
+                    document.querySelector('.dropdown-content').classList.remove('show');
+                    
+                    // Acionar o clique no botão original para manter a funcionalidade
+                    const originalButton = document.querySelector(`.language-filters .language-button[data-language="${language}"]`);
+                    if (originalButton) originalButton.click();
                 });
-            }
+                dropdownContent.appendChild(dropdownButton);
+                
+                // Para o scroll horizontal
+                const scrollButton = button.cloneNode(true);
+                scrollButton.addEventListener('click', function() {
+                    const language = this.getAttribute('data-language');
+                    const originalButton = document.querySelector(`.language-filters .language-button[data-language="${language}"]`);
+                    if (originalButton) originalButton.click();
+                });
+                horizontalScroll.appendChild(scrollButton);
+                
+                // Para o grid
+                const gridButton = button.cloneNode(true);
+                gridButton.addEventListener('click', function() {
+                    const language = this.getAttribute('data-language');
+                    const originalButton = document.querySelector(`.language-filters .language-button[data-language="${language}"]`);
+                    if (originalButton) originalButton.click();
+                });
+                languageGrid.appendChild(gridButton);
+                
+                // Para o filtro de pesquisa
+                const searchButton = button.cloneNode(true);
+                searchButton.addEventListener('click', function() {
+                    const language = this.getAttribute('data-language');
+                    const originalButton = document.querySelector(`.language-filters .language-button[data-language="${language}"]`);
+                    if (originalButton) originalButton.click();
+                });
+                filteredLanguages.appendChild(searchButton);
+            });
             
-            // Fechar o dropdown quando clicar fora dele
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.mobile-dropdown')) {
-                    if (dropdownContent && dropdownContent.classList.contains('show')) {
-                        dropdownContent.classList.remove('show');
-                    }
+            // Dropdown toggle
+            document.querySelector('.dropdown-button').addEventListener('click', function() {
+                document.querySelector('.dropdown-content').classList.toggle('show');
+            });
+            
+            // Fechar dropdown ao clicar fora
+            window.addEventListener('click', function(e) {
+                if (!e.target.matches('.dropdown-button') && !e.target.matches('.dropdown-button *')) {
+                    const dropdowns = document.querySelectorAll('.dropdown-content');
+                    dropdowns.forEach(dropdown => {
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                        }
+                    });
                 }
             });
             
-            // Adicionar funcionalidade de busca
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    let visibleCount = 0;
-                    
-                    document.querySelectorAll('.dropdown-content .language-button').forEach(button => {
-                        const langText = button.querySelector('span:not(.language-badge)').textContent.toLowerCase();
-                        if (langText.includes(searchTerm)) {
-                            button.style.display = 'flex';
-                            visibleCount++;
-                        } else {
-                            button.style.display = 'none';
-                        }
-                    });
-                    
-                    // Mostrar/esconder mensagem de nenhum resultado
-                    if (noResults) {
-                        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            // Funcionalidade de pesquisa
+            document.querySelector('.search-bar').addEventListener('input', function() {
+                const searchText = this.value.toLowerCase();
+                const buttons = document.querySelectorAll('.filtered-languages .language-button');
+                
+                buttons.forEach(button => {
+                    const languageName = button.querySelector('span').textContent.toLowerCase();
+                    if (languageName.includes(searchText)) {
+                        button.style.display = '';
+                    } else {
+                        button.style.display = 'none';
                     }
                 });
-            }
+            });
             
-            // Adicionar evento de clique nos botões de idioma do dropdown
-            const dropdownLanguageButtons = document.querySelectorAll('.dropdown-content .language-button');
-            dropdownLanguageButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const language = this.getAttribute('data-language');
-                    // Resetar o campo de pesquisa
-                    if (searchInput) {
-                        searchInput.value = '';
-                        // Mostrar todos os botões novamente
-                        document.querySelectorAll('.dropdown-content .language-button').forEach(btn => {
-                            btn.style.display = 'flex';
-                        });
-                        if (noResults) noResults.style.display = 'none';
-                    }
-                    
-                    const languageText = this.querySelector('.language-info span:not(.language-badge)').textContent;
-                    const flagElement = this.querySelector('.flag-icon');
-                    
-                    // Atualizar o texto do botão dropdown
-                    selectedLanguageText.textContent = languageText;
-                    
-                    // Atualizar a bandeira do botão dropdown se existir
-                    const selectedFlag = document.getElementById('selected-language-flag');
-                    if (selectedFlag && flagElement) {
-                        selectedFlag.src = flagElement.src || '';
-                        selectedFlag.alt = flagElement.alt || '';
-                    }
-                    
-                    // Caso especial para Libras que usa emoji
-                    if (language.toLowerCase() === 'libras') {
-                        selectedFlag.style.display = 'none';
-                    } else {
-                        selectedFlag.style.display = '';
-                    }
-                    
-                    // Fechar o dropdown
-                    dropdownContent.classList.remove('show');
-                    
-                    // Remover a classe active de todos os botões do dropdown
-                    dropdownLanguageButtons.forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    
-                    // Adicionar a classe active ao botão clicado
+            // Alternar entre os modos de visualização mobile - CORRIGIDO
+            document.querySelectorAll('.view-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    // Atualizar botão ativo
+                    document.querySelectorAll('.view-option').forEach(opt => opt.classList.remove('active'));
                     this.classList.add('active');
                     
-                    // Chamar a função de exibição de eventos para o idioma selecionado
-                    showLanguageEvents(language);
+                    // Esconder todas as visualizações
+                    document.querySelectorAll('.mobile-dropdown, .horizontal-scroll, .language-grid, .search-filter').forEach(view => {
+                        view.classList.remove('active');
+                    });
+                    
+                    // Mostrar a visualização selecionada
+                    const viewType = this.getAttribute('data-mobile-view');
+                    switch (viewType) {
+                        case 'dropdown':
+                            document.querySelector('.mobile-dropdown').classList.add('active');
+                            break;
+                        case 'scroll':
+                            document.querySelector('.horizontal-scroll').classList.add('active');
+                            break;
+                        case 'grid':
+                            document.querySelector('.language-grid').classList.add('active');
+                            break;
+                        case 'search':
+                            document.querySelector('.search-filter').classList.add('active');
+                            break;
+                    }
                 });
             });
         });
         
-        // Set current year
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-        
-        // Smooth scroll to anchor
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-        
-        // Get current day and time
+        // Get current time
         function getCurrentDayAndTime() {
             const now = new Date();
             const day = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
@@ -1793,17 +1674,12 @@
         
         // Find the next day that has events (1-5 for weekdays)
         function findNextDay(currentDay) {
-            // Se for fim de semana (0 = domingo, 6 = sábado), retornar sexta-feira (5)
-            if (currentDay === 0 || currentDay === 6) {
-                return 5; // Sexta-feira
-            }
-            
-            // Se for dia de semana (1-5), retornar o próprio dia
+            // If currentDay is a weekday (1-5), return it
             if (currentDay >= 1 && currentDay <= 5) {
                 return currentDay;
             }
             
-            // Em caso de erro, retornar segunda-feira (1)
+            // If it's a weekend, return Monday (1)
             return 1;
         }
         
@@ -1976,16 +1852,6 @@
                 }
             });
             
-            // Garantir que todos os eventos estejam visíveis, sem filtro por idioma
-            document.querySelectorAll('.timeline-event').forEach(event => {
-                event.style.display = '';
-            });
-            
-            // Remover quaisquer mensagens de "sem eventos"
-            document.querySelectorAll('.no-events').forEach(noEvents => {
-                noEvents.style.display = 'none';
-            });
-            
             // Check if any events are happening now
             checkCurrentEvents(day);
             
@@ -1994,12 +1860,6 @@
                 const url = new URL(window.location);
                 url.searchParams.set('view', 'day');
                 url.searchParams.set('dia', day);
-                
-                // Remover parâmetro de idioma na visualização por dia
-                if (url.searchParams.has('idioma')) {
-                    url.searchParams.delete('idioma');
-                }
-                
                 history.pushState({}, '', url);
             }
             
@@ -2054,206 +1914,92 @@
             }
         }
 
-        // Read URL parameters and update the UI accordingly
+        // Read URL parameters and set initial state
         function readURLParameters() {
-            const params = new URLSearchParams(window.location.search);
-            const view = params.get('view');
-            const idioma = params.get('idioma');
-            const dia = params.get('dia');
+            const urlParams = new URLSearchParams(window.location.search);
+            let hasParameters = false;
             
-            let parametersApplied = false;
-            
-            // Process view parameter
+            // Check for view parameter
+            const view = urlParams.get('view');
             if (view) {
-                // Update the UI to show the selected view
-                document.querySelectorAll('.view-button').forEach(button => {
-                    button.classList.toggle('active', button.getAttribute('data-view') === view);
-                });
+                toggleView(view);
+                hasParameters = true;
                 
-                document.querySelectorAll('.view-content').forEach(content => {
-                    content.classList.toggle('active', content.id === `${view}-view`);
-                });
-                
-                parametersApplied = true;
-            }
-            
-            // Process idioma parameter - apenas para visualização por idioma
-            if (idioma) {
-                // Atualizar dropdown independente da visualização
-                const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button');
-                const selectedButton = Array.from(dropdownButtons).find(button => 
-                    button.getAttribute('data-language').toLowerCase() === idioma.toLowerCase()
-                );
-                
-                if (selectedButton) {
-                    // Update active state
-                    dropdownButtons.forEach(btn => btn.classList.remove('active'));
-                    selectedButton.classList.add('active');
-                    
-                    // Update dropdown button text and flag
-                    const selectedLangText = document.getElementById('selected-language');
-                    const selectedLangFlag = document.getElementById('selected-language-flag');
-                    const buttonText = selectedButton.querySelector('span').textContent;
-                    const flagElement = selectedButton.querySelector('.flag-icon');
-                    
-                    if (selectedLangText) selectedLangText.textContent = buttonText;
-                    
-                    if (selectedLangFlag && flagElement) {
-                        // Caso especial para Libras e outros que usam emoji
-                        if (flagElement.tagName.toLowerCase() === 'img') {
-                            selectedLangFlag.src = flagElement.src;
-                            selectedLangFlag.alt = flagElement.alt;
-                            selectedLangFlag.style.display = '';
-                        } else {
-                            selectedLangFlag.style.display = 'none';
+                if (view === 'day') {
+                    // Handle day view parameters
+                    const day = urlParams.get('dia');
+                    if (day && day >= 1 && day <= 5) {
+                        showDayEvents(parseInt(day), false);
+                        hasParameters = true;
+                    }
+                } else if (view === 'language') {
+                    // Handle language view parameters
+                    const language = urlParams.get('idioma');
+                    if (language) {
+                        // Encontrar o botão correspondente ao idioma
+                        let found = false;
+                        document.querySelectorAll('.language-button').forEach(button => {
+                            const buttonLanguage = button.getAttribute('data-language');
+                            // Comparação insensível a capitalização e acentuação
+                            if (buttonLanguage.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 
+                                language.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+                                showLanguageEvents(buttonLanguage, false);
+                                found = true;
+                            }
+                        });
+                        
+                        if (found) {
+                            hasParameters = true;
                         }
                     }
                 }
-                
-                // Se estamos na visualização por idioma, mostrar os eventos deste idioma
-                if (view === 'language' || !view) {
-                    showLanguageEvents(idioma, false); // Don't update URL again
+            } else {
+                // Handle legacy day parameter
+                const day = urlParams.get('dia');
+                if (day && day >= 1 && day <= 5) {
+                    toggleView('day');
+                    showDayEvents(parseInt(day), false);
+                    hasParameters = true;
                 }
-                
-                parametersApplied = true;
             }
             
-            // Process dia parameter - IMPORTANTE: Na visualização por dia, mostrar TODOS os eventos do dia selecionado
-            if (dia && (view === 'day' || !view)) {
-                const dayNum = parseInt(dia);
-                
-                // Ativar o botão do dia correto
-                document.querySelectorAll('.day-button').forEach(button => {
-                    button.classList.toggle('active', parseInt(button.getAttribute('data-day')) === dayNum);
-                });
-                
-                // Mostrar os eventos do dia selecionado
-                document.querySelectorAll('.day-events').forEach(dayEvents => {
-                    dayEvents.classList.toggle('active', dayEvents.id === `day-${dayNum}`);
-                });
-                
-                // Mostrar TODOS os eventos do dia (sem filtrar por idioma)
-                document.querySelectorAll('.timeline-event').forEach(event => {
-                    event.style.display = '';
-                });
-                
-                // Remover mensagens de "sem eventos"
-                document.querySelectorAll('.no-events').forEach(noEvents => {
-                    noEvents.style.display = 'none';
-                });
-                
-                // Verificar eventos acontecendo agora
-                checkCurrentEvents(dayNum);
-                
-                parametersApplied = true;
-                
-                // Se não especificou o view, mas especificou o dia, assumimos visualização por dia
-                if (!view) {
-                    document.querySelectorAll('.view-button').forEach(button => {
-                        button.classList.toggle('active', button.getAttribute('data-view') === 'day');
-                    });
+            // Se há parâmetros na URL, rolar para a seção de programação automaticamente
+            // após um pequeno delay para garantir que tudo foi carregado
+            if (hasParameters) {
+                setTimeout(() => {
+                    // Altura do menu fixo (header)
+                    const headerHeight = document.querySelector('.header').offsetHeight;
                     
-                    document.querySelectorAll('.view-content').forEach(content => {
-                        content.classList.toggle('active', content.id === 'day-view');
-                    });
-                }
+                    // Obter a posição da navegação do calendário
+                    const calendarNav = document.querySelector('.calendar-nav');
+                    if (calendarNav) {
+                        // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                        const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
+                }, 300);
             }
             
-            return parametersApplied;
+            return hasParameters;
         }
         
         // Initialize the calendar
         function initCalendar() {
-            // Tenta ler os parâmetros da URL
-            const parametersExist = readURLParameters();
-
-            // Se não houver parâmetros OU se os parâmetros estiverem incompletos/inválidos, restaura o padrão
-            if (!parametersExist || !document.querySelector('.view-content.active')) {
-                // Definir visualização padrão (idioma)
-                const url = new URL(window.location);
-                url.searchParams.set('view', 'language');
-                url.searchParams.set('idioma', 'inglês');
-                history.replaceState({}, '', url);
-                
-                // Activar o botão de inglês no dropdown
-                const englishButton = document.querySelector('.dropdown-content .language-button[data-language="inglês"]');
-                if (englishButton) {
-                    englishButton.classList.add('active');
-                    
-                    // Update dropdown button text and flag
-                    const selectedLangText = document.getElementById('selected-language');
-                    const selectedLangFlag = document.getElementById('selected-language-flag');
-                    const buttonText = englishButton.querySelector('span').textContent;
-                    const flagElement = englishButton.querySelector('.flag-icon');
-                    
-                    if (selectedLangText) selectedLangText.textContent = buttonText;
-                    
-                    if (selectedLangFlag && flagElement) {
-                        selectedLangFlag.src = flagElement.src;
-                        selectedLangFlag.alt = flagElement.alt;
-                        selectedLangFlag.style.display = '';
-                    }
-                }
-                
-                // Mostrar eventos em inglês
+            // Primeiro, verificar se há parâmetros na URL
+            const hasParams = readURLParameters();
+            
+            if (!hasParams) {
+                // Se não houver parâmetros, mostrar o idioma inglês por padrão
                 showLanguageEvents('inglês', false);
-                
-                // Marcar o botão de visualização por idioma como ativo
-                document.querySelectorAll('.view-button').forEach(button => {
-                    if (button.getAttribute('data-view') === 'language') {
-                        button.classList.add('active');
-                    } else {
-                        button.classList.remove('active');
-                    }
-                });
-                
-                // Exibir o conteúdo da visualização por idioma
-                document.querySelectorAll('.view-content').forEach(content => {
-                    content.classList.toggle('active', content.id === 'language-view');
-                });
             }
             
-            // Se estamos na visualização por dia, garantir que os eventos do idioma selecionado apareçam
-            if (document.querySelector('#day-view.active')) {
-                const params = new URLSearchParams(window.location.search);
-                const idioma = params.get('idioma');
-                
-                if (idioma) {
-                    // Garantir que os eventos para este idioma sejam exibidos
-                    document.querySelectorAll('.timeline-event').forEach(event => {
-                        const eventLanguage = event.querySelector('.event-title span:not(.now-badge)').textContent.trim().toLowerCase();
-                        if (eventLanguage === idioma.toLowerCase()) {
-                            event.style.display = '';
-                        } else {
-                            event.style.display = 'none';
-                        }
-                    });
-                    
-                    // Se não houver o idioma selecionado nos eventos do dia, mostrar mensagem
-                    document.querySelectorAll('.day-events.active').forEach(dayEvents => {
-                        const eventsForLanguage = dayEvents.querySelectorAll(`.timeline-event[style="display: ;"]`);
-                        if (eventsForLanguage.length === 0) {
-                            // Verificar se já existe uma mensagem de "sem eventos"
-                            let noEventsMsg = dayEvents.querySelector('.no-events');
-                            if (!noEventsMsg) {
-                                noEventsMsg = document.createElement('div');
-                                noEventsMsg.className = 'no-events';
-                                dayEvents.appendChild(noEventsMsg);
-                            }
-                            noEventsMsg.innerHTML = `Não há eventos de ${idioma} neste dia. <br>Escolha outro dia ou idioma.`;
-                            noEventsMsg.style.display = 'block';
-                        }
-                    });
-                }
-            }
-
-            // Add event listeners
-            document.querySelectorAll('.view-button').forEach(button => {
+            // Adicionar evento de clique nos botões de dia
+            document.querySelectorAll('.day-button').forEach(button => {
                 button.addEventListener('click', () => {
-                    const view = button.getAttribute('data-view');
-                    toggleView(view);
+                    const day = parseInt(button.getAttribute('data-day'));
+                    showDayEvents(day);
                     
-                    // Rolagem imediata após clicar no filtro
+                    // Rolagem adicional após a mudança de conteúdo
                     setTimeout(() => {
                         const headerHeight = document.querySelector('.header').offsetHeight;
                         const calendarNav = document.querySelector('.calendar-nav');
@@ -2265,13 +2011,39 @@
                 });
             });
             
-            // Add event listeners to day buttons
-            document.querySelectorAll('.day-button').forEach(button => {
+            // Adicionar evento de clique nos botões de idioma
+            document.querySelectorAll('.language-button').forEach(button => {
                 button.addEventListener('click', () => {
-                    const day = parseInt(button.getAttribute('data-day'));
-                    showDayEvents(day);
+                    const language = button.getAttribute('data-language');
+                    
+                    // Caso especial para "O seu!" - Navegar para outra página imediatamente
+                    if (language.toLowerCase() === 'seu') {
+                        window.location.href = 'equipe.html?tab=online&idioma=outros';
+                        return; // Importante: parar execução aqui para evitar o processamento do restante
+                    }
+                    
+                    // Para todos os outros idiomas, processar normalmente
+                    showLanguageEvents(language);
                     
                     // Rolagem adicional após a mudança de conteúdo
+                    setTimeout(() => {
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 100);
+                });
+            });
+            
+            // Adicionar evento de clique nos botões de visualização (dia/idioma)
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const view = button.getAttribute('data-view');
+                    toggleView(view);
+                    
+                    // Rolagem imediata após clicar no filtro
                     setTimeout(() => {
                         const headerHeight = document.querySelector('.header').offsetHeight;
                         const calendarNav = document.querySelector('.calendar-nav');
@@ -2298,49 +2070,8 @@
             }, 60000); // Check every minute
 
             // Handle browser back/forward navigation
-            window.addEventListener('popstate', function(event) {
-                console.log('Navegação detectada, recarregando parâmetros da URL');
-                // Recarregar os parâmetros da URL atual
+            window.addEventListener('popstate', () => {
                 readURLParameters();
-                
-                // Verificar se o view está ativo corretamente
-                const params = new URLSearchParams(window.location.search);
-                const view = params.get('view');
-                
-                if (view) {
-                    // Atualizar a UI para mostrar a visualização selecionada
-                    document.querySelectorAll('.view-button').forEach(button => {
-                        button.classList.toggle('active', button.getAttribute('data-view') === view);
-                    });
-                    
-                    document.querySelectorAll('.view-content').forEach(content => {
-                        content.classList.toggle('active', content.id === `${view}-view`);
-                    });
-                    
-                    // Se a visualização for por dia, garantir que todos os eventos sejam mostrados (sem filtro)
-                    if (view === 'day') {
-                        document.querySelectorAll('.timeline-event').forEach(event => {
-                            event.style.display = '';
-                        });
-                        
-                        // Remover mensagens de "sem eventos" que possam existir
-                        document.querySelectorAll('.no-events').forEach(msg => {
-                            msg.style.display = 'none';
-                        });
-                    }
-                }
-                
-                // Atualizar os botões de participação e eventos em destaque
-                updateJoinButtons();
-                
-                // Se estamos na visualização por dia, verificar eventos atuais
-                if (view === 'day') {
-                    const dia = params.get('dia');
-                    if (dia) {
-                        const dayNum = parseInt(dia);
-                        checkCurrentEvents(dayNum);
-                    }
-                }
             });
         }
         
@@ -2453,81 +2184,19 @@
             const url = new URL(window.location);
             url.searchParams.set('view', view);
             
-            // Se mudar para visualização por idioma, garantir que o idioma está definido
-            if (view === 'language') {
-                // Find active language button or default to English
-                const activeLanguageButton = document.querySelector('.dropdown-content .language-button.active');
-                if (activeLanguageButton) {
-                    // Use the language from the active button
-                    const language = activeLanguageButton.getAttribute('data-language');
-                    showLanguageEvents(language, false);
-                    // Manter o idioma na URL
-                    url.searchParams.set('idioma', language);
-                } else {
-                    // Default to English
-                    showLanguageEvents('inglês', false);
-                    url.searchParams.set('idioma', 'inglês');
-                }
-                
-                // Remover parâmetro de dia, se houver
-                if (url.searchParams.has('dia')) {
-                    url.searchParams.delete('dia');
-                }
+            // If switching to language view and no language is selected yet, don't modify URL further
+            if (view === 'language' && !document.querySelector('.language-button.active')) {
+                history.pushState({}, '', url);
+                return;
             }
             
-            // Se mudar para visualização por dia, selecionar o dia atual ou próximo útil
-            if (view === 'day') {
-                // Quando alterna para visualização por dia, mostrar TODOS os eventos (sem filtro de idioma)
-                document.querySelectorAll('.timeline-event').forEach(event => {
-                    event.style.display = '';
-                });
-                
-                // Remover quaisquer mensagens de "sem eventos"
-                document.querySelectorAll('.no-events').forEach(noEvents => {
-                    noEvents.style.display = 'none';
-                });
-                
-                // Checar se já tem um dia selecionado
-                const activeButton = document.querySelector('.day-button.active');
-                let dayToShow;
-                
-                if (activeButton) {
-                    dayToShow = parseInt(activeButton.getAttribute('data-day'));
-                } else {
-                    // Se não tiver, usar o dia atual ou último dia útil (sexta) se for fim de semana
-                    const { day: currentDay } = getCurrentDayAndTime();
-                    
-                    // Se for sábado (6) ou domingo (0), mostra sexta-feira (5)
-                    if (currentDay === 0 || currentDay === 6) {
-                        dayToShow = 5; // Sexta-feira
-                    } else {
-                        dayToShow = currentDay;
-                    }
-                    
-                    // Ativar o botão do dia
-                    document.querySelectorAll('.day-button').forEach(button => {
-                        button.classList.toggle('active', parseInt(button.getAttribute('data-day')) === dayToShow);
-                    });
-                    
-                    // Mostrar os eventos do dia
-                    document.querySelectorAll('.day-events').forEach(dayEvents => {
-                        dayEvents.classList.toggle('active', dayEvents.id === `day-${dayToShow}`);
-                    });
-                }
-                
-                // Definir o dia na URL
-                url.searchParams.set('dia', dayToShow);
-                
-                // Remover parâmetro de idioma na visualização por dia
-                if (url.searchParams.has('idioma')) {
-                    url.searchParams.delete('idioma');
-                }
-                
-                // Verificar eventos acontecendo agora
-                checkCurrentEvents(dayToShow);
+            // If switching to day view and no day is selected yet, select the current/next day
+            if (view === 'day' && !document.querySelector('.day-button.active')) {
+                const { day: currentDay } = getCurrentDayAndTime();
+                const nextEventDay = findNextDay(currentDay);
+                showDayEvents(nextEventDay, false);
             }
             
-            // Atualizar a URL
             history.pushState({}, '', url);
             
             // Rolagem para manter os filtros visíveis
@@ -2553,36 +2222,13 @@
             // Track language selection
             trackLanguageFilterEvent(language);
             
-            // Update dropdown selection
-            const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button');
-            const selectedButton = Array.from(dropdownButtons).find(button => 
-                button.getAttribute('data-language') === language.toLowerCase()
-            );
-            
-            if (selectedButton) {
-                // Update active state
-                dropdownButtons.forEach(btn => btn.classList.remove('active'));
-                selectedButton.classList.add('active');
-                
-                // Update dropdown button text and flag
-                const selectedLangText = document.getElementById('selected-language');
-                const selectedLangFlag = document.getElementById('selected-language-flag');
-                const buttonText = selectedButton.querySelector('span').textContent;
-                const flagElement = selectedButton.querySelector('.flag-icon');
-                
-                if (selectedLangText) selectedLangText.textContent = buttonText;
-                
-                if (selectedLangFlag && flagElement) {
-                    // Caso especial para Libras e outros que usam emoji
-                    if (flagElement.tagName.toLowerCase() === 'img') {
-                        selectedLangFlag.src = flagElement.src;
-                        selectedLangFlag.alt = flagElement.alt;
-                        selectedLangFlag.style.display = '';
-                    } else {
-                        selectedLangFlag.style.display = 'none';
-                    }
+            // Remove active class from all language buttons
+            document.querySelectorAll('.language-button').forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('data-language') === language) {
+                    button.classList.add('active');
                 }
-            }
+            });
             
             // Find all events for this language
             const languageEvents = [];
@@ -2644,84 +2290,6 @@
                     window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
-        }
-
-        // Função para inicializar os eventos dos idiomas
-        function initializeLanguageEvents() {
-            // ... existing code ...
-            
-            // Ajustar as descrições de eventos para manter consistência
-            const languageDescriptions = {
-                'português': 'Ajude estrangeiros com português brasileiro. Troca cultural.',
-                'alemão': 'Pratique alemão em nossos encontros online. Para todos os níveis.',
-                'italiano': 'Aprenda italiano em ambiente descontraído. Para todos os níveis.',
-                'francês': 'Venha praticar francês em um ambiente acolhedor para todos.',
-                'espanhol': 'Pratique espanhol com nativos e entusiastas. Temas culturais.',
-                'japonês': 'Pratique japonês com falantes de diferentes níveis. Comunicação direta.',
-                // outros idiomas se necessário
-            };
-            
-            // Aplicar descrições ajustadas aos elementos existentes
-            document.querySelectorAll('.event-description').forEach(desc => {
-                const eventElement = desc.closest('.timeline-event');
-                if (!eventElement) return;
-                
-                const language = eventElement.getAttribute('data-language');
-                if (language && languageDescriptions[language.toLowerCase()]) {
-                    // Verificar se a descrição atual é muito longa (mais de 74 caracteres)
-                    // e substituir apenas se for o caso
-                    if (desc.textContent.trim().length > 74) {
-                        desc.textContent = languageDescriptions[language.toLowerCase()];
-                    }
-                }
-            });
-        }
-
-        // Chamar inicialização de eventos após o carregamento completo da página
-        document.addEventListener('DOMContentLoaded', function() {
-            initCalendar();
-            updateJoinButtons();
-            
-            // Inicializar eventos dos idiomas depois que o calendário estiver carregado
-            initializeLanguageEvents();
-            
-            // Verificar eventos atuais a cada minuto
-            setInterval(function() {
-                updateJoinButtons();
-                
-                // Recuperar o dia ativo atualmente
-                const activeDay = document.querySelector('.day-button.active');
-                if (activeDay) {
-                    const day = parseInt(activeDay.getAttribute('data-day'));
-                    checkCurrentEvents(day);
-                }
-            }, 60000); // 60 segundos
-        });
-
-        // Função para limpar os filtros quando necessário
-        function clearFilters() {
-            // Quando mudamos para visualização por dia, garantir que os eventos sejam filtrados pelo idioma
-            const params = new URLSearchParams(window.location.search);
-            const idioma = params.get('idioma');
-            
-            if (idioma) {
-                document.querySelectorAll('.timeline-event').forEach(event => {
-                    const eventTitle = event.querySelector('.event-title span:not(.now-badge)');
-                    if (!eventTitle) return;
-                    
-                    const eventLanguage = eventTitle.textContent.trim().toLowerCase();
-                    if (eventLanguage === idioma.toLowerCase()) {
-                        event.style.display = '';
-                    } else {
-                        event.style.display = 'none';
-                    }
-                });
-            } else {
-                // Se não houver idioma selecionado, mostrar todos os eventos
-                document.querySelectorAll('.timeline-event').forEach(event => {
-                    event.style.display = '';
-                });
-            }
         }
     </script>
 </body>
