@@ -1,5 +1,5 @@
 # Script simplificado para enviar alterações para o GitHub
 git add -A
-git commit -m "Adicionado link para página online em todos os menus de navegação"
-git push origin main
+git commit -m "Atualizando arquivos do site"
+git push origin master
 Write-Host "Processo concluído" 

@@ -8,7 +8,7 @@ git add links.html
 git commit -m "Corrigido fundo preto da página links para fundo claro padronizado"
 
 # Push para o GitHub
-git push origin main
+git push origin master
 
 # Mensagem de sucesso
 Write-Host "Alterações enviadas com sucesso! A página de links agora tem o fundo claro padronizado." 

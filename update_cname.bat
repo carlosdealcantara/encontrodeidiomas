@@ -24,24 +24,20 @@ REM Verificar branch atual
 for /f "tokens=*" %%a in ('git branch --show-current') do set current_branch=%%a
 echo Branch atual: %current_branch%
 
-REM Enviar para o branch master e main
+REM Enviar para o branch master
 if "%current_branch%"=="master" (
     echo Enviando para o GitHub (branch master)...
     git push -u origin master
-) else if "%current_branch%"=="main" (
-    echo Enviando para o GitHub (branch main)...
-    git push -u origin main
-    
+) else (
     echo Mudando para o branch master...
     git checkout master || git checkout -b master
     
-    echo Mesclando alterações do CNAME para master...
-    git merge main -m "Mesclando alterações do CNAME para master"
+    echo Atualizando o arquivo CNAME no branch master...
+    git add CNAME
+    git commit -m "Atualizando arquivo CNAME para o domínio encontrodeidiomas.com.br"
     
     echo Enviando para o GitHub (branch master)...
     git push -u origin master
-) else (
-    echo Branch não reconhecido. Por favor, mude manualmente para master ou main.
 )
 
 echo.

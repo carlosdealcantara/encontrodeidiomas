@@ -11,6 +11,6 @@ git add equipe.html
 git commit -m "Atualizada descrição do Isaac para entusiasta conforme feedback"
 
 # Enviar as alterações para o GitHub
-git push origin main
+git push origin master
 
 Write-Host "Alterações enviadas com sucesso!" 

@@ -11,6 +11,6 @@ Copy-Item -Path "online.html" -Destination "temp_online.html" -Force
 # Use Git to add, commit, and push the changes
 git add online.html
 git commit -m "Add language filter feature to online.html"
-git push origin main
+git push origin master
 
 Write-Host "Language filter feature has been updated and pushed to GitHub" 

@@ -11,6 +11,6 @@ git add contato.html index.html links.html online.html
 git commit -m "Adicionado link para página online em todos os menus de navegação"
 
 # Enviar as alterações para o GitHub
-git push origin main
+git push origin master
 
 Write-Host "Alterações enviadas com sucesso!" 

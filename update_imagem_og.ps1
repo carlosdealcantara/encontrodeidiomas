@@ -8,7 +8,7 @@ git add online.html
 git commit -m "Corrigida referência de imagem OG para WhatsApp e Twitter"
 
 # Push para o GitHub
-git push origin main
+git push origin master
 
 # Mensagem de sucesso
 Write-Host "Alterações enviadas com sucesso!" 

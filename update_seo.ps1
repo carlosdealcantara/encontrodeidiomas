@@ -8,7 +8,7 @@ git add anfitrioes-modelo3.html
 git commit -m "Otimização das meta tags SEO e Open Graph na página de anfitriões (modelo3)"
 
 # Enviar as alterações para o GitHub
-git push origin main
+git push origin master
 
 # Confirmar sucesso
 Write-Host "Alterações enviadas com sucesso!" 

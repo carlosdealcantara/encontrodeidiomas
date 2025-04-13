@@ -11,6 +11,6 @@ git add index.html online.html equipe.html links.html contato.html
 git commit -m "Atualizado ID do Google Analytics e corrigido filtro de Libras"
 
 # Enviar as alterações para o GitHub
-git push origin main
+git push origin master
 
 Write-Host "Alterações enviadas com sucesso!" 
