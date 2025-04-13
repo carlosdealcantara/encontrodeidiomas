@@ -1,0 +1,3 @@
+O logotipo da D'lauro Jóias seria uma imagem elegante com o nome "D'lauro Jóias" em uma fonte serif dourada, possivelmente com um pequeno símbolo de uma joia (como um diamante estilizado) ao lado ou acima do texto. As cores predominantes seriam dourado (#c9a96e) sobre fundo branco ou transparente.
+
+Este arquivo é apenas um placeholder para indicar onde o logotipo real deve ser colocado. Para implementação final, substitua este arquivo por uma imagem real do logotipo nos formatos PNG ou SVG com fundo transparente. 

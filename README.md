@@ -6,6 +6,15 @@ Este é o repositório para o site oficial do Encontro de Idiomas, uma comunidad
 
 - `index.html` - Página principal do site, otimizada para SEO
 - `simple_server.py` - Servidor Python simples para testes locais
+- `dlaurojoias/` - Projeto separado da D'Lauro Joias, acessível em encontrodeidiomas.com.br/dlaurojoias
+
+## Projetos
+
+### Encontro de Idiomas
+O site principal para a comunidade de prática de idiomas.
+
+### D'Lauro Joias
+Um projeto separado hospedado no mesmo domínio, mas sem integração com o site principal do Encontro de Idiomas. Este projeto é acessível apenas pelo endereço encontrodeidiomas.com.br/dlaurojoias.
 
 ## Iniciando o Servidor Local
 
@@ -22,6 +31,7 @@ Para iniciar o servidor local, siga os passos abaixo:
    ```
 
 3. Acesse o site em `http://localhost:8000`
+4. Acesse o projeto D'Lauro Joias em `http://localhost:8000/dlaurojoias`
 
 ## Deploy no GitHub Pages
 
