@@ -15,32 +15,21 @@ Se os scripts automatizados não funcionarem, você pode seguir estas instruçõ
 git branch
 ```
 
-O branch atual será marcado com um asterisco (*). Se você estiver no branch **main**, precisará mudar para o branch **master**.
+O branch atual será marcado com um asterisco (*). Se você estiver em outro branch que não seja **master**, precisará mudar para o branch **master**.
 
-### 3. Mude para o branch master
-
-Se você estiver no branch **main** ou em outro branch, mude para o branch **master**:
-
+### 3. Mudar para o branch master
+Se você estiver em outro branch que não seja **master**, mude para o branch **master**:
 ```
 git checkout master
 ```
 
-Se o comando acima resultar em erro, crie um novo branch **master**:
-
+### 4. Se o branch master não existir, crie-o
+Se o comando anterior falhar, será necessário criar o branch master:
 ```
 git checkout -b master
 ```
 
-### 4. Mescle as alterações do branch main (se necessário)
-
-Se você tiver alterações no branch **main** que deseja manter, mescle-as com o branch **master**:
-
-```
-git merge main -m "Mesclando alterações do main para master"
-```
-
 ### 5. Adicione todos os arquivos ao Git
-
 ```
 git add -A
 ```

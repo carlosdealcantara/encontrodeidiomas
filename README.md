@@ -37,7 +37,7 @@ Para iniciar o servidor local, siga os passos abaixo:
 
 1. Crie um novo repositório no GitHub chamado "encontrodeidiomas"
 2. Faça upload dos arquivos para o repositório
-3. Nas configurações do repositório, ative o GitHub Pages usando a branch "main"
+3. Nas configurações do repositório, ative o GitHub Pages usando a branch "master"
 4. Configure os registros DNS para o domínio personalizado
 
 ## Configuração DNS para encontrodeidiomas.com.br

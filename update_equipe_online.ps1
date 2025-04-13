@@ -11,6 +11,6 @@ git add equipe.html online.html
 git commit -m "Corrigido o rodapé nas páginas de equipe e online para um design consistente"
 
 # Enviar as alterações para o GitHub
-git push origin main
+git push origin master
 
 Write-Host "Alterações enviadas com sucesso!" 

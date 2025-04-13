@@ -11,6 +11,6 @@ git add index.html links.html contato.html online.html
 git commit -m "Melhorias na responsividade para dispositivos móveis"
 
 # Enviar as alterações para o GitHub
-git push origin main
+git push origin master
 
 Write-Host "Alterações enviadas com sucesso!" 

@@ -8,6 +8,6 @@ Write-Host "Backup created: online.html.bak"
 # Use Git to add, commit, and push the changes
 git add online.html
 git commit -m "Update social icons to monochrome and fix 'O seu' button link"
-git push origin main
+git push origin master
 
 Write-Host "Social icons and links have been updated and pushed to GitHub" 

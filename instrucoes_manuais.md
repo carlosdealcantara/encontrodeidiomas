@@ -1,7 +1,7 @@
 # Instruções para Resolver Problemas com o Site e a Pasta dlaurojoias
 
 ## Problema 1: Site não está acessível
-O site não está acessível porque está configurado para ser publicado a partir do branch **main**, mas você alterou para usar o branch **master** no GitHub. É necessário sincronizar essas configurações.
+O site não está acessível porque pode haver problemas de configuração no GitHub Pages. É necessário garantir que todas as configurações estejam corretas para publicação do site usando o branch master.
 
 ## Problema 2: Pasta dlaurojoias não está no repositório
 A pasta dlaurojoias existe localmente, mas pode não ter sido enviada corretamente para o GitHub.
@@ -39,10 +39,6 @@ Se o branch atual não for **master**, mude para ele:
 ```
 git checkout master
 ```
-Se o comando acima der erro, crie o branch master:
-```
-git checkout -b master
-```
 
 ### 3. Adicionar a pasta dlaurojoias ao Git
 ```
@@ -58,17 +54,23 @@ git add CNAME
 git commit -m "Atualizando arquivo CNAME"
 ```
 
-### 5. Se você estava trabalhando no branch main, mescle as alterações para master
+### 5. Garanta que está usando o branch master
 ```
-git merge main -m "Mesclando alterações do main para master"
-```
-
-### 6. Enviar as alterações para o GitHub
-```
-git push -u origin master --force
+git checkout master
 ```
 
-### 7. Configurar o GitHub Pages corretamente
+### 6. Adicione e comite suas alterações
+```
+git add -A
+git commit -m "Atualizando o site"
+```
+
+### 7. Envie para o GitHub
+```
+git push -u origin master
+```
+
+### 8. Configurar o GitHub Pages corretamente
 1. Acesse o repositório no GitHub
 2. Vá para `Settings > Pages`
 3. Na seção "Source", selecione o branch **master**
@@ -76,10 +78,10 @@ git push -u origin master --force
 5. Marque a opção "Enforce HTTPS" se disponível
 6. Clique em "Save"
 
-### 8. Aguardar a propagação
+### 9. Aguardar a propagação
 Após fazer essas alterações, pode levar alguns minutos (até 10-15 minutos) para que o site seja publicado novamente.
 
-### 9. Verificar o site
+### 10. Verificar o site
 - Acesse `encontrodeidiomas.com.br` para verificar se o site principal está funcionando
 - Acesse `encontrodeidiomas.com.br/dlaurojoias` para verificar se a seção D'Lauro Joias está acessível
 

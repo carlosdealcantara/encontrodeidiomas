@@ -11,6 +11,6 @@ git add index.html online.html equipe.html links.html contato.html
 git commit -m "Implementado Google Analytics e correção de links diretos para filtros de idiomas e dias"
 
 # Enviar as alterações para o GitHub
-git push origin main
+git push origin master
 
 Write-Host "Alterações enviadas com sucesso!" 
