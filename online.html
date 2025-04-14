@@ -1845,9 +1845,9 @@
                 }
             }
             // Se hoje é domingo (0) ou sábado (6) e estamos olhando eventos de sexta (5)
-            // considerar como "passado" apenas se for segunda-feira (1)
+            // considerar como "passado" pois já aconteceu nesta semana
             else if (eventDayNum === 5 && (day === 0 || day === 6)) {
-                return "future"; // Considerar como evento futuro da próxima semana
+                return "past"; // Evento de sexta já aconteceu quando visto no fim de semana
             }
             // Dia passado na mesma semana
             else if (day > eventDayNum) {
