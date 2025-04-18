@@ -1,6 +1,6 @@
 # Encontro de Idiomas - Site
 
-Testing commit and push.
+New test!!! Testing commit and push.
 
 Este é o repositório para o site oficial do Encontro de Idiomas, uma comunidade gratuita para praticar idiomas em grupo.
 
