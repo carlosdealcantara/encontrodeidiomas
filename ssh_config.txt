@@ -1,0 +1,4 @@
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile C:\Users\sorla\.ssh\id_rsa 
