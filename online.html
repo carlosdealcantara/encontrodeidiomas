@@ -1275,7 +1275,7 @@
             </div>
             <nav class="nav-links">
                 <a href="index.html">Início</a>
-                <a href="online.html" style="background-color: var(--accent-red);">Online</a>
+                <a href="online.html?filtro=dia&dia=sexta" style="background-color: var(--accent-red);">Online</a>
                 <a href="equipe.html">Equipe</a>
                 <a href="links.html">Links</a>
                 <a href="contato.html">Contato</a>
@@ -1735,23 +1735,34 @@
 
         // Specialized function to initialize the language dropdown
         function initializeLanguageDropdown() {
-            console.log("Setting up language dropdown");
+            console.log("Setting up language dropdown - START");
             
-            const dropdownButton = document.querySelector('.dropdown-button');
-            const dropdownContent = document.querySelector('.dropdown-content');
+            // Find dropdown elements
+            const dropdownButton = document.querySelector('.mobile-dropdown .dropdown-button');
+            const dropdownContent = document.querySelector('.mobile-dropdown .dropdown-content');
             
             if (!dropdownButton || !dropdownContent) {
                 console.error("Dropdown elements not found:", { 
-                    dropdownButton: !!dropdownButton, 
-                    dropdownContent: !!dropdownContent 
+                    dropdownButton: dropdownButton ? "Found" : "Not found", 
+                    dropdownContent: dropdownContent ? "Found" : "Not found"
                 });
                 return;
             }
             
-            // Debug elements
+            // Debug elements and their position
+            const buttonRect = dropdownButton.getBoundingClientRect();
+            const contentRect = dropdownContent.getBoundingClientRect();
             console.log("Dropdown elements:", {
-                button: dropdownButton,
-                content: dropdownContent,
+                button: { 
+                    id: dropdownButton.id, 
+                    class: dropdownButton.className,
+                    position: { top: buttonRect.top, left: buttonRect.left }
+                },
+                content: { 
+                    id: dropdownContent.id, 
+                    class: dropdownContent.className,
+                    position: { top: contentRect.top, left: contentRect.left }
+                },
                 languageButtons: document.querySelectorAll('.language-button').length
             });
             
@@ -1759,6 +1770,7 @@
             const newDropdownButton = dropdownButton.cloneNode(true);
             dropdownButton.parentNode.replaceChild(newDropdownButton, dropdownButton);
             
+            console.log("Adding click listener to dropdown button");
             // Add click event to toggle dropdown visibility
             newDropdownButton.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1767,7 +1779,12 @@
                 dropdownContent.classList.toggle('show');
                 
                 // Debug dropdown state
-                console.log("Dropdown visibility:", dropdownContent.classList.contains('show'));
+                console.log("Dropdown visibility after toggle:", dropdownContent.classList.contains('show'));
+                
+                // Fix z-index if needed
+                if (dropdownContent.classList.contains('show')) {
+                    dropdownContent.style.zIndex = "1000";
+                }
             });
             
             // Setup search functionality
@@ -1798,10 +1815,16 @@
             }
             
             // Setup language button functionality
-            document.querySelectorAll('.language-button').forEach(button => {
+            const languageButtons = document.querySelectorAll('.language-button');
+            console.log(`Setting up ${languageButtons.length} language buttons`);
+            
+            languageButtons.forEach((button, index) => {
                 // Clone and replace to remove old event listeners
                 const newButton = button.cloneNode(true);
                 button.parentNode.replaceChild(newButton, button);
+                
+                const language = newButton.getAttribute('data-language');
+                console.log(`Setting up button for language: ${language || 'unknown'} (${index + 1}/${languageButtons.length})`);
                 
                 newButton.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1825,7 +1848,7 @@
                                 selectedLangFlag.src = flagElement.src;
                                 selectedLangFlag.alt = flagElement.alt;
                                 selectedLangFlag.style.display = '';
-                    } else {
+                            } else {
                                 // For emoji flags
                                 selectedLangFlag.style.display = 'none';
                             }
@@ -1848,17 +1871,36 @@
                 }
             });
             
-            // Add CSS fix for dropdown visibility if needed
-            const styleEl = document.createElement('style');
-            styleEl.textContent = `
-                .dropdown-content.show {
-                    display: block !important;
-                    opacity: 1 !important;
-                    visibility: visible !important;
-                    z-index: 1000 !important;
-                }
-            `;
-            document.head.appendChild(styleEl);
+            // Add CSS fix for dropdown visibility
+            const styleId = "dropdown-fix-styles";
+            if (!document.getElementById(styleId)) {
+                const styleEl = document.createElement('style');
+                styleEl.id = styleId;
+                styleEl.textContent = `
+                    .dropdown-content.show {
+                        display: block !important;
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        z-index: 1000 !important;
+                        position: absolute !important;
+                    }
+                    
+                    /* Additional styles to ensure visibility */
+                    .mobile-dropdown {
+                        position: relative;
+                        z-index: 999;
+                    }
+                    
+                    .dropdown-content {
+                        max-height: 300px;
+                        overflow-y: auto;
+                    }
+                `;
+                document.head.appendChild(styleEl);
+                console.log("Added dropdown fix styles");
+            }
+            
+            console.log("Setting up language dropdown - COMPLETE");
         }
         
         // Set current year
@@ -1900,39 +1942,54 @@
         
         // Determine the status of an event
         function getEventStatus(eventDay, eventHour) {
+            console.log(`Getting event status for day ${eventDay}, hour ${eventHour}`);
+            
             const now = new Date();
-            const day = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-            const hour = now.getHours();
+            const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const currentHour = now.getHours();
+            
+            console.log("Current date/time:", {
+                date: now.toLocaleDateString(),
+                day: currentDay, 
+                hour: currentHour
+            });
+            
+            // FIRST CHECK: If today is weekend (Saturday or Sunday), ALL events are in the past
+            // This ensures no events show as "happening now" on weekends
+            if (currentDay === 0 || currentDay === 6) { // 0 = Sunday, 6 = Saturday
+                console.log("Weekend detected - all events marked as past");
+                return "past"; // Weekend - mark ALL events as past
+            }
             
             // Convert event day to number if it's a string
             const eventDayNum = parseInt(eventDay);
             
-            // Special case for weekends: All events should be considered past
-            if (day === 0 || day === 6) { // Saturday or Sunday
-                return "past"; // All events are in the past during weekends
-            }
-            
             // Event day is today
-            if (day === eventDayNum) {
-                // Hora atual
-                if (hour === parseInt(eventHour)) {
+            if (currentDay === eventDayNum) {
+                // Current hour
+                if (currentHour === parseInt(eventHour)) {
+                    console.log("Event is happening now");
                     return "now"; // Acontecendo agora
                 }
-                // Já passou
-                else if (hour > parseInt(eventHour)) {
+                // Already happened today
+                else if (currentHour > parseInt(eventHour)) {
+                    console.log("Event already happened today");
                     return "past"; // Já aconteceu hoje
                 }
-                // Ainda vai acontecer
+                // Will happen later today
                 else {
+                    console.log("Event will happen later today");
                     return "future"; // Vai acontecer hoje
                 }
             }
-            // Dia passado na mesma semana
-            else if (day > eventDayNum) {
+            // Day already passed this week
+            else if (currentDay > eventDayNum) {
+                console.log("Event day already passed this week");
                 return "past"; // Dia já passou nesta semana
             }
-            // Dia futuro
+            // Future day this week
             else {
+                console.log("Event is in a future day this week");
                 return "future"; // Dia ainda vai chegar
             }
         }
@@ -2130,28 +2187,48 @@
         
         // Check if any events are happening now and highlight them
         function checkCurrentEvents(day) {
-            const { day: currentRealDay, hour: currentHour } = getCurrentDayAndTime();
+            console.log("Checking current events for day:", day);
+            const now = new Date();
+            const currentRealDay = now.getDay(); // 0 (Sunday) to 6 (Saturday)
+            const currentHour = now.getHours();
             
-            // Ajustar o dia atual para sexta-feira se for fim de semana
-            let currentDay = currentRealDay;
-            if (currentDay === 0 || currentDay === 6) {
-                currentDay = 5; // Sexta-feira
+            console.log("Current day/time:", { 
+                date: now.toLocaleDateString(), 
+                day: currentRealDay, 
+                hour: currentHour 
+            });
+            
+            // Special case for weekends (Saturday or Sunday)
+            // Don't mark any events as "happening now" on weekends
+            if (currentRealDay === 0 || currentRealDay === 6) {
+                console.log("Weekend detected - no events happening now");
+                // Remove "happening now" class from all events
+                document.querySelectorAll(`.timeline-event`).forEach(event => {
+                    event.classList.remove('happening-now');
+                    
+                    // Remove "AGORA" badge if exists
+                    const nowBadge = event.querySelector('.now-badge');
+                    if (nowBadge) {
+                        nowBadge.remove();
+                    }
+                });
+                return;
             }
             
             // Only check if the displayed day is today
-            if (day === currentDay) {
+            if (day === currentRealDay) {
                 const events = document.querySelectorAll(`#day-${day} .timeline-event`);
                 
                 events.forEach(event => {
                     const eventHour = parseInt(event.getAttribute('data-time'));
                     
                     // Check if event is happening now (within the hour)
-                    if (eventHour === currentHour && currentRealDay === currentDay) {
+                    if (eventHour === currentHour) {
                         event.classList.add('happening-now');
                         
                         // Add "AGORA" badge if not already there
                         const eventTitle = event.querySelector('.event-title');
-                        if (!eventTitle.querySelector('.now-badge')) {
+                        if (eventTitle && !eventTitle.querySelector('.now-badge')) {
                             const nowBadge = document.createElement('span');
                             nowBadge.className = 'now-badge';
                             nowBadge.textContent = 'AGORA';
@@ -2165,6 +2242,18 @@
                         if (nowBadge) {
                             nowBadge.remove();
                         }
+                    }
+                });
+            } else {
+                // If not today, remove all "happening now" highlights
+                const events = document.querySelectorAll(`#day-${day} .timeline-event`);
+                events.forEach(event => {
+                    event.classList.remove('happening-now');
+                    
+                    // Remove "AGORA" badge if exists
+                    const nowBadge = event.querySelector('.now-badge');
+                    if (nowBadge) {
+                        nowBadge.remove();
                     }
                 });
             }
