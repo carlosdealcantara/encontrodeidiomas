@@ -1904,62 +1904,68 @@
         
         // Update join buttons state
         function updateJoinButtons() {
-            const now = new Date();
-            const currentDay = now.getDay(); // 0 (Sunday) to 6 (Saturday)
-            const currentHour = now.getHours();
+            const joinButtons = document.querySelectorAll('.join-button');
             
-            // To determine if we're in the same week as events
-            const currentWeekStart = new Date(now);
-            // Set to previous Sunday (start of week)
-            currentWeekStart.setDate(now.getDate() - now.getDay());
-            currentWeekStart.setHours(0, 0, 0, 0);
-            
-            document.querySelectorAll('.join-button').forEach(button => {
-                const buttonDay = parseInt(button.getAttribute('data-day'));
-                const buttonTime = parseInt(button.getAttribute('data-time'));
+            joinButtons.forEach(button => {
+                const eventDay = button.getAttribute('data-day');
+                const eventHour = button.getAttribute('data-time');
+                const status = getEventStatus(eventDay, eventHour);
+                const buttonContainer = button.parentElement;
                 
-                // Convert day from 1-5 (Mon-Fri) to 0-6 (Sun-Sat) for comparison
-                // Monday (1) becomes 1, Tuesday (2) becomes 2, etc.
-                const buttonDayOfWeek = buttonDay;
+                // Remove any existing tooltips
+                const existingTooltip = buttonContainer.querySelector('.tooltip');
+                if (existingTooltip) existingTooltip.remove();
                 
-                // Create a date object for the event
-                const eventDate = new Date(currentWeekStart);
-                // Add days to get to the event day (buttonDayOfWeek is 1-5, we need to add days)
-                eventDate.setDate(currentWeekStart.getDate() + buttonDayOfWeek);
-                eventDate.setHours(buttonTime, 0, 0, 0);
-                
-                // Check if the event is in the past
-                if (eventDate < now) {
-                    // It's a past event
-                    button.innerHTML = '<i class="fas fa-check"></i> Finalizado';
+                if (status === "now") {
+                    // Acontecendo agora
+                    button.classList.remove('disabled');
+                    button.removeAttribute('disabled');
+                    button.style.pointerEvents = 'auto';
+                    button.innerHTML = 'Participar';
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro está acontecendo agora. Clique para participar.';
+                    buttonContainer.appendChild(tooltip);
+                } 
+                else if (status === "past") {
+                    // Já aconteceu
                     button.classList.add('disabled');
-                    button.classList.remove('active');
-                    button.disabled = true;
+                    button.setAttribute('disabled', 'disabled');
+                    button.style.pointerEvents = 'none';
+                    button.innerHTML = '<i class="fas fa-check check-icon"></i> Finalizado';
                     
-                    // Find the closest event element and add a class
-                    const eventElement = button.closest('.timeline-event');
-                    if (eventElement) {
-                        eventElement.classList.add('past-event');
-                    }
-                } else {
-                    // It's a future event
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro já ocorreu. Retorne no próximo horário programado.';
+                    buttonContainer.appendChild(tooltip);
+                } 
+                else {
+                    // Ainda vai acontecer
+                    button.classList.add('disabled');
+                    button.setAttribute('disabled', 'disabled');
+                    button.style.pointerEvents = 'none';
+                    button.innerHTML = '<i class="fas fa-clock wait-icon"></i> Aguarde';
                     
-                    // Check if it's today and within 15 minutes of the event
-                    const isToday = buttonDayOfWeek === currentDay;
-                    const isWithinTimeWindow = isToday && (buttonTime === currentHour || buttonTime === currentHour + 1);
-                    
-                    if (isWithinTimeWindow) {
-                        button.innerHTML = 'Participar';
-                        button.classList.add('active');
-                        button.classList.remove('disabled');
-                        button.disabled = false;
-                    } else {
-                        button.innerHTML = '<i class="fas fa-clock"></i> Aguarde';
-                        button.classList.add('disabled');
-                        button.classList.remove('active');
-                        button.disabled = true;
-                    }
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro ainda não começou. Volte no horário programado.';
+                    buttonContainer.appendChild(tooltip);
                 }
+                
+                // Add event listeners for tooltip visibility
+                buttonContainer.addEventListener('mouseenter', () => {
+                    const tooltip = buttonContainer.querySelector('.tooltip');
+                    if (tooltip) tooltip.style.opacity = '1';
+                });
+                
+                buttonContainer.addEventListener('mouseleave', () => {
+                    const tooltip = buttonContainer.querySelector('.tooltip');
+                    if (tooltip) tooltip.style.opacity = '0';
+                });
             });
         }
         
