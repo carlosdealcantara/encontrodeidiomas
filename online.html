@@ -1861,68 +1861,62 @@
         
         // Update join buttons state
         function updateJoinButtons() {
-            const joinButtons = document.querySelectorAll('.join-button');
+            const now = new Date();
+            const currentDay = now.getDay(); // 0 (Sunday) to 6 (Saturday)
+            const currentHour = now.getHours();
             
-            joinButtons.forEach(button => {
-                const eventDay = button.getAttribute('data-day');
-                const eventHour = button.getAttribute('data-time');
-                const status = getEventStatus(eventDay, eventHour);
-                const buttonContainer = button.parentElement;
+            // To determine if we're in the same week as events
+            const currentWeekStart = new Date(now);
+            // Set to previous Sunday (start of week)
+            currentWeekStart.setDate(now.getDate() - now.getDay());
+            currentWeekStart.setHours(0, 0, 0, 0);
+            
+            document.querySelectorAll('.join-button').forEach(button => {
+                const buttonDay = parseInt(button.getAttribute('data-day'));
+                const buttonTime = parseInt(button.getAttribute('data-time'));
                 
-                // Remove any existing tooltips
-                const existingTooltip = buttonContainer.querySelector('.tooltip');
-                if (existingTooltip) existingTooltip.remove();
+                // Convert day from 1-5 (Mon-Fri) to 0-6 (Sun-Sat) for comparison
+                // Monday (1) becomes 1, Tuesday (2) becomes 2, etc.
+                const buttonDayOfWeek = buttonDay;
                 
-                if (status === "now") {
-                    // Acontecendo agora
-                    button.classList.remove('disabled');
-                    button.removeAttribute('disabled');
-                    button.style.pointerEvents = 'auto';
-                    button.innerHTML = 'Participar';
-                    
-                    // Create tooltip
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip';
-                    tooltip.textContent = 'Este encontro está acontecendo agora. Clique para participar.';
-                    buttonContainer.appendChild(tooltip);
-                } 
-                else if (status === "past") {
-                    // Já aconteceu
+                // Create a date object for the event
+                const eventDate = new Date(currentWeekStart);
+                // Add days to get to the event day (buttonDayOfWeek is 1-5, we need to add days)
+                eventDate.setDate(currentWeekStart.getDate() + buttonDayOfWeek);
+                eventDate.setHours(buttonTime, 0, 0, 0);
+                
+                // Check if the event is in the past
+                if (eventDate < now) {
+                    // It's a past event
+                    button.textContent = 'Finalizado';
                     button.classList.add('disabled');
-                    button.setAttribute('disabled', 'disabled');
-                    button.style.pointerEvents = 'none';
-                    button.innerHTML = '<i class="fas fa-check check-icon"></i> Finalizado';
+                    button.classList.remove('active');
+                    button.disabled = true;
                     
-                    // Create tooltip
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip';
-                    tooltip.textContent = 'Este encontro já ocorreu. Retorne no próximo horário programado.';
-                    buttonContainer.appendChild(tooltip);
-                } 
-                else {
-                    // Ainda vai acontecer
-                    button.classList.add('disabled');
-                    button.setAttribute('disabled', 'disabled');
-                    button.style.pointerEvents = 'none';
-                    button.innerHTML = '<i class="fas fa-clock wait-icon"></i> Aguarde';
+                    // Find the closest event element and add a class
+                    const eventElement = button.closest('.timeline-event');
+                    if (eventElement) {
+                        eventElement.classList.add('past-event');
+                    }
+                } else {
+                    // It's a future event
                     
-                    // Create tooltip
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip';
-                    tooltip.textContent = 'Este encontro ainda não começou. Volte no horário programado.';
-                    buttonContainer.appendChild(tooltip);
+                    // Check if it's today and within 15 minutes of the event
+                    const isToday = buttonDayOfWeek === currentDay;
+                    const isWithinTimeWindow = isToday && (buttonTime === currentHour || buttonTime === currentHour + 1);
+                    
+                    if (isWithinTimeWindow) {
+                        button.textContent = 'Participar';
+                        button.classList.add('active');
+                        button.classList.remove('disabled');
+                        button.disabled = false;
+                    } else {
+                        button.textContent = 'Aguarde';
+                        button.classList.add('disabled');
+                        button.classList.remove('active');
+                        button.disabled = true;
+                    }
                 }
-                
-                // Add event listeners for tooltip visibility
-                buttonContainer.addEventListener('mouseenter', () => {
-                    const tooltip = buttonContainer.querySelector('.tooltip');
-                    if (tooltip) tooltip.style.opacity = '1';
-                });
-                
-                buttonContainer.addEventListener('mouseleave', () => {
-                    const tooltip = buttonContainer.querySelector('.tooltip');
-                    if (tooltip) tooltip.style.opacity = '0';
-                });
             });
         }
         
@@ -2406,9 +2400,40 @@
         
         // Run when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize the view buttons
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    toggleView(view);
+                });
+            });
+            
+            // Initialize the dropdown functionality
+            const dropdownButton = document.querySelector('.dropdown-button');
+            if (dropdownButton) {
+                console.log("Setting up dropdown button event listener");
+                dropdownButton.addEventListener('click', function(e) {
+                    console.log("Dropdown button clicked");
+                    e.preventDefault();
+                    e.stopPropagation();
+                    document.querySelector('.dropdown-content').classList.toggle('show');
+                });
+            }
+            
+            // Close the dropdown if clicked outside
+            window.addEventListener('click', function(event) {
+                if (!event.target.matches('.dropdown-button') && 
+                    !event.target.closest('.dropdown-button')) {
+                    const dropdowns = document.getElementsByClassName('dropdown-content');
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        dropdowns[i].classList.remove('show');
+                    }
+                }
+            });
+            
             initCalendar();
             updateJoinButtons();
-
+            
             // Adicionar eventos de rastreamento para os botões de participação
             document.querySelectorAll('.join-button').forEach(button => {
                 button.addEventListener('click', () => {
@@ -2426,90 +2451,21 @@
                     trackReplayButtonClick(language);
                 });
             });
-
-            // Atualizar o evento de clique do botão "Ver Programação" para usar a URL
-            const heroButton = document.querySelector('.hero-button');
-            if (heroButton) {
-                heroButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    
-                    // Se estamos na página inicial do site (sem parâmetros), iniciar com o padrão
-                    if (!window.location.search) {
-                        // Iniciar com a visualização por dia e o dia atual selecionado
-                        const url = new URL(window.location);
-                        url.searchParams.set('view', 'day');
-                        
-                        // Obter o dia da semana atual (0=Domingo, 1=Segunda, ..., 6=Sábado)
-                        let currentDay = new Date().getDay();
-                        
-                        // Ajustar para sexta-feira (5) se for fim de semana (0=Domingo ou 6=Sábado)
-                        if (currentDay === 0 || currentDay === 6) {
-                            currentDay = 5; // Sexta-feira
-                        }
-                        
-                        url.searchParams.set('dia', getDayName(currentDay));
-                        
-                        history.pushState({}, '', url);
-                        
-                        // Mostrar eventos do dia atual
-                        showDayEvents(currentDay, false);
-                        
-                        // Atualizar a aparência dos botões
-                        document.querySelectorAll('.view-button').forEach(button => {
-                            button.classList.toggle('active', button.getAttribute('data-view') === 'day');
-                        });
-                        
-                        document.querySelectorAll('.view-content').forEach(content => {
-                            content.classList.toggle('active', content.id === 'day-view');
-                        });
-                    }
-                    
-                    // Rolar para a seção de programação
-                    setTimeout(() => {
-                        // Altura do menu fixo (header)
-                        const headerHeight = document.querySelector('.header').offsetHeight;
-                        
-                        // Obter a posição da navegação do calendário
-                        const calendarNav = document.querySelector('.calendar-nav');
-                        if (calendarNav) {
-                            // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
-                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                            window.scrollTo({top: y, behavior: 'smooth'});
-                        }
-                    }, 300);
-                });
-            }
-
-            // Fazer o mesmo para o link de rolagem
-            const scrollDown = document.querySelector('.scroll-down');
-            if (scrollDown) {
-                scrollDown.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    
-                    // Se estamos na página inicial do site (sem parâmetros), iniciar com o padrão
-                    if (!window.location.search) {
-                        // Iniciar com a visualização de idioma e inglês selecionado
-                        const url = new URL(window.location);
-                        url.searchParams.set('view', 'language');
-                        url.searchParams.set('idioma', 'inglês');
-                        history.pushState({}, '', url);
-                    }
-                    
-                    // Rolar para a seção de programação
-                    setTimeout(() => {
-                        // Altura do menu fixo (header)
-                        const headerHeight = document.querySelector('.header').offsetHeight;
-                        
-                        // Obter a posição da navegação do calendário
-                        const calendarNav = document.querySelector('.calendar-nav');
-                        if (calendarNav) {
-                            // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
-                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                            window.scrollTo({top: y, behavior: 'smooth'});
-                        }
-                    }, 300);
-                });
-            }
+            
+            // Inicializar eventos dos idiomas depois que o calendário estiver carregado
+            initializeLanguageEvents();
+            
+            // Verificar eventos atuais a cada minuto
+            setInterval(function() {
+                updateJoinButtons();
+                
+                // Recuperar o dia ativo atualmente
+                const activeDay = document.querySelector('.day-button.active');
+                if (activeDay) {
+                    const day = parseInt(activeDay.getAttribute('data-day'));
+                    checkCurrentEvents(day);
+                }
+            }, 60000); // 60 segundos
         });
 
         // Toggle between views
@@ -2549,12 +2505,18 @@
                     // Use the language from the active button
                     const language = activeLanguageButton.getAttribute('data-language');
                     showLanguageEvents(language, false);
-                    // Manter o idioma na URL
-                    url.searchParams.set('idioma', language);
+                    
+                    // Normalize the language name for URL (remove special characters)
+                    const normalizedLanguage = language.toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
+                    
+                    // Manter o idioma na URL (sem caracteres especiais)
+                    url.searchParams.set('idioma', normalizedLanguage);
                 } else {
                     // Default to English
                     showLanguageEvents('inglês', false);
-                    url.searchParams.set('idioma', 'inglês');
+                    url.searchParams.set('idioma', 'ingles'); // No special characters in URL
                 }
                 
                 // Remover parâmetro de dia, se houver
@@ -2614,6 +2576,9 @@
             
             // Rolagem para manter os filtros visíveis
             positionCalendarNav();
+            
+            // Update join buttons after view change
+            updateJoinButtons();
         }
         
         // Função para converter número do dia para nome
@@ -2654,12 +2619,6 @@
             
             // Track language selection
             trackLanguageFilterEvent(language);
-            
-            // Ensure dropdown is initialized
-            const dropdownContent = document.querySelector('.dropdown-content');
-            if (dropdownContent) {
-                dropdownContent.classList.remove('show');
-            }
             
             // Update active state of language buttons
             document.querySelectorAll('.dropdown-content .language-button').forEach(button => {
@@ -2780,6 +2739,9 @@
                     window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
+            
+            // Update join button status after changing view
+            updateJoinButtons();
         }
 
         // Helper function to capitalize first letter
@@ -2821,32 +2783,12 @@
                 });
             }
             
-            // Configurar dropdown
-            const dropdownButton = document.querySelector('.dropdown-button');
-            if (dropdownButton) {
-                console.log("Adding click event to dropdown button");
-                dropdownButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    console.log("Dropdown button clicked");
-                    const dropdownContent = document.querySelector('.dropdown-content');
-                    dropdownContent.classList.toggle('show');
-                });
-            }
-            
-            // Fechar dropdown quando clicar fora
-            window.addEventListener('click', function(event) {
-                if (!event.target.matches('.dropdown-button') && 
-                    !event.target.closest('.dropdown-button') && 
-                    !event.target.matches('.dropdown-content') && 
-                    !event.target.closest('.dropdown-content')) {
-                    const dropdowns = document.getElementsByClassName('dropdown-content');
-                    for (let i = 0; i < dropdowns.length; i++) {
-                        if (dropdowns[i].classList.contains('show')) {
-                            dropdowns[i].classList.remove('show');
-                        }
-                    }
+            // Adicionar "data-language" attributes aos eventos com base no título
+            document.querySelectorAll('.timeline-event').forEach(event => {
+                const eventTitle = event.querySelector('.event-title span:not(.now-badge)');
+                if (eventTitle) {
+                    const language = eventTitle.textContent.trim().toLowerCase();
+                    event.setAttribute('data-language', language);
                 }
             });
             
@@ -2880,37 +2822,7 @@
                     }
                 }
             });
-            
-            // Adicione atributos data-language aos eventos com base no título
-            document.querySelectorAll('.timeline-event').forEach(event => {
-                const eventTitle = event.querySelector('.event-title span:not(.now-badge)');
-                if (eventTitle) {
-                    const language = eventTitle.textContent.trim().toLowerCase();
-                    event.setAttribute('data-language', language);
-                }
-            });
         }
-
-        // Chamar inicialização de eventos após o carregamento completo da página
-        document.addEventListener('DOMContentLoaded', function() {
-            initCalendar();
-            updateJoinButtons();
-            
-            // Inicializar eventos dos idiomas depois que o calendário estiver carregado
-            initializeLanguageEvents();
-            
-            // Verificar eventos atuais a cada minuto
-            setInterval(function() {
-                updateJoinButtons();
-                
-                // Recuperar o dia ativo atualmente
-                const activeDay = document.querySelector('.day-button.active');
-                if (activeDay) {
-                    const day = parseInt(activeDay.getAttribute('data-day'));
-                    checkCurrentEvents(day);
-                }
-            }, 60000); // 60 segundos
-        });
 
         // Função para limpar os filtros quando necessário
         function clearFilters() {
