@@ -1677,51 +1677,9 @@
     </footer>
     
     <script>
-        // Determine the status of an event
-        function getEventStatus(eventDay, eventHour) {
-            const { day, hour } = getCurrentDayAndTime();
-            
-            // Check if today is weekend (Saturday or Sunday)
-            const isRealWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
-            
-            // On weekends, all events should be marked as past
-            if (isRealWeekend) {
-                return "past";
-            }
-            
-            // Convert event day to number if it's a string
-            const eventDayNum = parseInt(eventDay);
-            
-            // Event day is today
-            if (day === eventDayNum) {
-                // Hora atual
-                if (hour === parseInt(eventHour)) {
-                    return "now"; // Acontecendo agora
-                }
-                // Já passou
-                else if (hour > parseInt(eventHour)) {
-                    return "past"; // Já aconteceu hoje
-                }
-                // Ainda vai acontecer
-                else {
-                    return "future"; // Vai acontecer hoje
-                }
-            }
-            // Se hoje é domingo (0) ou sábado (6) e estamos olhando eventos de sexta (5)
-            // considerar como "passado" pois já aconteceu nesta semana
-            else if (eventDayNum === 5 && (day === 0 || day === 6)) {
-                return "past"; // Evento de sexta já aconteceu quando visto no fim de semana
-            }
-            // Dia passado na mesma semana
-            else if (day > eventDayNum) {
-                return "past"; // Dia já passou nesta semana
-            }
-            // Dia futuro
-            else {
-                return "future"; // Dia ainda vai chegar
-            }
-        }
-
+        // Definir o ano atual no footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
         // Run when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             // Update the Online menu link to use the new parameter format
@@ -1775,139 +1733,957 @@
             }, 60000); // 60 segundos
         });
 
-        // Function to initialize the language dropdown properly
+        // Specialized function to initialize the language dropdown
         function initializeLanguageDropdown() {
-            console.log("Initializing language dropdown");
+            console.log("Setting up language dropdown");
             
-            // Get dropdown elements
-            const dropdownButton = document.querySelector('.mobile-dropdown .dropdown-button');
-            const dropdownContent = document.querySelector('.mobile-dropdown .dropdown-content');
+            const dropdownButton = document.querySelector('.dropdown-button');
+            const dropdownContent = document.querySelector('.dropdown-content');
             
             if (!dropdownButton || !dropdownContent) {
-                console.error("Dropdown elements not found");
+                console.error("Dropdown elements not found:", { 
+                    dropdownButton: !!dropdownButton, 
+                    dropdownContent: !!dropdownContent 
+                });
                 return;
             }
             
-            // Clone to remove existing event listeners
-            const newButton = dropdownButton.cloneNode(true);
-            const newContent = dropdownContent.cloneNode(true);
-            
-            // Replace elements
-            dropdownButton.parentNode.replaceChild(newButton, dropdownButton);
-            dropdownContent.parentNode.replaceChild(newContent, dropdownContent);
-            
-            // Add click handler to dropdown button
-            newButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log("Dropdown button clicked!");
-                newContent.classList.toggle('show');
+            // Debug elements
+            console.log("Dropdown elements:", {
+                button: dropdownButton,
+                content: dropdownContent,
+                languageButtons: document.querySelectorAll('.language-button').length
             });
             
-            // Setup language buttons
-            const languageButtons = newContent.querySelectorAll('.language-button');
-            languageButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const language = this.getAttribute('data-language');
-                    console.log(`Language button clicked: ${language}`);
-                    
-                    // Update dropdown text and icon
-                    const selectedText = document.getElementById('selected-language');
-                    const selectedFlag = document.getElementById('selected-language-flag');
-                    
-                    if (selectedText) {
-                        selectedText.textContent = this.querySelector('span').textContent;
-                    }
-                    
-                    if (selectedFlag) {
-                        const flagIcon = this.querySelector('.flag-icon');
-                        if (flagIcon) {
-                            if (flagIcon.tagName.toLowerCase() === 'img') {
-                                selectedFlag.src = flagIcon.src;
-                                selectedFlag.alt = flagIcon.alt;
-                                selectedFlag.style.display = '';
-                            } else {
-                                selectedFlag.style.display = 'none';
-                            }
-                        }
-                    }
-                    
-                    // Update active state
-                    languageButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Show language events
-                    showLanguageEvents(language);
-                    
-                    // Close dropdown
-                    newContent.classList.remove('show');
-                });
+            // Clean up any existing event listeners on dropdown button
+            const newDropdownButton = dropdownButton.cloneNode(true);
+            dropdownButton.parentNode.replaceChild(newDropdownButton, dropdownButton);
+            
+            // Add click event to toggle dropdown visibility
+            newDropdownButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Dropdown button clicked");
+                dropdownContent.classList.toggle('show');
+                
+                // Debug dropdown state
+                console.log("Dropdown visibility:", dropdownContent.classList.contains('show'));
             });
             
             // Setup search functionality
-            const searchInput = newContent.querySelector('.search-input');
+            const searchInput = document.getElementById('language-search');
             if (searchInput) {
-                searchInput.addEventListener('input', function() {
+                // Reset any previous event listeners
+                const newSearchInput = searchInput.cloneNode(true);
+                searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+                
+                newSearchInput.addEventListener('input', function() {
                     const searchText = this.value.toLowerCase();
+                    console.log("Searching for:", searchText);
                     let resultsFound = false;
                     
-                    languageButtons.forEach(button => {
+                    document.querySelectorAll('.language-button').forEach(button => {
                         const buttonText = button.querySelector('span').textContent.toLowerCase();
                         const match = buttonText.includes(searchText);
                         button.style.display = match ? '' : 'none';
                         if (match) resultsFound = true;
                     });
                     
-                    // Show/hide no results message
-                    const noResults = newContent.querySelector('.no-results');
+                    // Show/hide "no results" message
+                    const noResults = document.getElementById('no-results');
                     if (noResults) {
                         noResults.style.display = resultsFound ? 'none' : 'block';
                     }
                 });
             }
             
+            // Setup language button functionality
+            document.querySelectorAll('.language-button').forEach(button => {
+                // Clone and replace to remove old event listeners
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+                
+                newButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const language = this.getAttribute('data-language');
+                    console.log(`Language button clicked: ${language}`);
+                    
+                    // Update the dropdown text and icon
+                    const selectedLangText = document.getElementById('selected-language');
+                    const selectedLangFlag = document.getElementById('selected-language-flag');
+                    
+                    if (selectedLangText) {
+                        selectedLangText.textContent = this.querySelector('span').textContent;
+                    }
+                    
+                    if (selectedLangFlag) {
+                        const flagElement = this.querySelector('.flag-icon');
+                        if (flagElement) {
+                            if (flagElement.tagName.toLowerCase() === 'img') {
+                                selectedLangFlag.src = flagElement.src;
+                                selectedLangFlag.alt = flagElement.alt;
+                                selectedLangFlag.style.display = '';
+                    } else {
+                                // For emoji flags
+                                selectedLangFlag.style.display = 'none';
+                            }
+                        }
+                    }
+                    
+                    // Show events for this language
+                    showLanguageEvents(language);
+                    
+                    // Close the dropdown
+                    dropdownContent.classList.remove('show');
+                });
+            });
+            
             // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
                 if (!event.target.closest('.dropdown-button') && 
                     !event.target.closest('.dropdown-content')) {
-                    const dropdowns = document.querySelectorAll('.dropdown-content');
+                    dropdownContent.classList.remove('show');
+                }
+            });
+            
+            // Add CSS fix for dropdown visibility if needed
+            const styleEl = document.createElement('style');
+            styleEl.textContent = `
+                .dropdown-content.show {
+                    display: block !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    z-index: 1000 !important;
+                }
+            `;
+            document.head.appendChild(styleEl);
+        }
+        
+        // Set current year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Smooth scroll to anchor
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Get current day and time
+        function getCurrentDayAndTime() {
+            const now = new Date();
+            const day = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const hour = now.getHours();
+            return { day, hour };
+        }
+        
+        // Find the next day that has events (1-5 for weekdays)
+        function findNextDay(currentDay) {
+            // Se for fim de semana (0 = domingo, 6 = sábado), retornar sexta-feira (5)
+            if (currentDay === 0 || currentDay === 6) {
+                return 5; // Sexta-feira
+            }
+            
+            // Se for dia de semana (1-5), retornar o próprio dia
+            if (currentDay >= 1 && currentDay <= 5) {
+                return currentDay;
+            }
+            
+            // Em caso de erro, retornar segunda-feira (1)
+            return 1;
+        }
+        
+        // Determine the status of an event
+        function getEventStatus(eventDay, eventHour) {
+            const now = new Date();
+            const day = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const hour = now.getHours();
+            
+            // Convert event day to number if it's a string
+            const eventDayNum = parseInt(eventDay);
+            
+            // Special case for weekends: All events should be considered past
+            if (day === 0 || day === 6) { // Saturday or Sunday
+                return "past"; // All events are in the past during weekends
+            }
+            
+            // Event day is today
+            if (day === eventDayNum) {
+                // Hora atual
+                if (hour === parseInt(eventHour)) {
+                    return "now"; // Acontecendo agora
+                }
+                // Já passou
+                else if (hour > parseInt(eventHour)) {
+                    return "past"; // Já aconteceu hoje
+                }
+                // Ainda vai acontecer
+                else {
+                    return "future"; // Vai acontecer hoje
+                }
+            }
+            // Dia passado na mesma semana
+            else if (day > eventDayNum) {
+                return "past"; // Dia já passou nesta semana
+            }
+            // Dia futuro
+            else {
+                return "future"; // Dia ainda vai chegar
+            }
+        }
+        
+        // Update join buttons state
+        function updateJoinButtons() {
+            const joinButtons = document.querySelectorAll('.join-button');
+            
+            joinButtons.forEach(button => {
+                const eventDay = button.getAttribute('data-day');
+                const eventHour = button.getAttribute('data-time');
+                const status = getEventStatus(eventDay, eventHour);
+                const buttonContainer = button.parentElement;
+                
+                // Remove any existing tooltips
+                const existingTooltip = buttonContainer.querySelector('.tooltip');
+                if (existingTooltip) existingTooltip.remove();
+                
+                if (status === "now") {
+                    // Acontecendo agora
+                    button.classList.remove('disabled');
+                    button.removeAttribute('disabled');
+                    button.style.pointerEvents = 'auto';
+                    button.innerHTML = 'Participar';
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro está acontecendo agora. Clique para participar.';
+                    buttonContainer.appendChild(tooltip);
+                } 
+                else if (status === "past") {
+                    // Já aconteceu
+                    button.classList.add('disabled');
+                    button.setAttribute('disabled', 'disabled');
+                    button.style.pointerEvents = 'none';
+                    button.innerHTML = '<i class="fas fa-check check-icon"></i> Finalizado';
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro já ocorreu. Retorne no próximo horário programado.';
+                    buttonContainer.appendChild(tooltip);
+                } 
+                else {
+                    // Ainda vai acontecer
+                    button.classList.add('disabled');
+                    button.setAttribute('disabled', 'disabled');
+                    button.style.pointerEvents = 'none';
+                    button.innerHTML = '<i class="fas fa-clock wait-icon"></i> Aguarde';
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = 'Este encontro ainda não começou. Volte no horário programado.';
+                    buttonContainer.appendChild(tooltip);
+                }
+                
+                // Add event listeners for tooltip visibility
+                buttonContainer.addEventListener('mouseenter', () => {
+                    const tooltip = buttonContainer.querySelector('.tooltip');
+                    if (tooltip) tooltip.style.opacity = '1';
+                });
+                
+                buttonContainer.addEventListener('mouseleave', () => {
+                    const tooltip = buttonContainer.querySelector('.tooltip');
+                    if (tooltip) tooltip.style.opacity = '0';
+                });
+            });
+        }
+        
+        // Track language filter change in GA
+        function trackLanguageFilterEvent(language) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'filter_by_language', {
+                    'language': language
+                });
+            }
+        }
+        
+        // Track day filter change in GA
+        function trackDayFilterEvent(day) {
+            if (typeof gtag !== 'undefined') {
+                const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                gtag('event', 'filter_by_day', {
+                    'day': dayNames[day]
+                });
+            }
+        }
+        
+        // Track view toggle in GA
+        function trackViewToggleEvent(view) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'toggle_view', {
+                    'view_type': view
+                });
+            }
+        }
+        
+        // Track join button clicks
+        function trackJoinButtonClick(language, day, time) {
+            if (typeof gtag !== 'undefined') {
+                const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                gtag('event', 'join_meeting', {
+                    'language': language,
+                    'day': dayNames[day],
+                    'time': time + 'h'
+                });
+            }
+        }
+        
+        // Track replay button clicks
+        function trackReplayButtonClick(language) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'view_replays', {
+                    'language': language
+                });
+            }
+        }
+        
+        // Show events for a specific day
+        function showDayEvents(day, updateURL = true) {
+            console.log(`Showing events for day: ${day}`);
+            
+            // Track day selection
+            trackDayFilterEvent(day);
+            
+            // Ajustar para mostrar sexta-feira (5) se o dia for fim de semana (0=Domingo ou 6=Sábado)
+            if (day === 0 || day === 6) {
+                day = 5; // Sexta-feira
+            }
+            
+            // Update active class for day buttons
+            document.querySelectorAll('.day-button').forEach(button => {
+                const buttonDay = parseInt(button.getAttribute('data-day'));
+                button.classList.toggle('active', buttonDay === day);
+            });
+            
+            // Show events for selected day
+            document.querySelectorAll('.day-events').forEach(dayEvents => {
+                dayEvents.classList.toggle('active', dayEvents.id === `day-${day}`);
+            });
+            
+            // Make all events visible initially (we will filter by language if needed)
+            document.querySelectorAll('.timeline-event').forEach(event => {
+                event.style.display = '';
+            });
+            
+            // Hide "no events" messages initially
+            document.querySelectorAll('.no-events').forEach(noEvents => {
+                noEvents.style.display = 'none';
+            });
+            
+            // Check if any events are happening now
+            checkCurrentEvents(day);
+            
+            // Update URL
+            if (updateURL) {
+                const url = new URL(window.location);
+                
+                // Remove old 'view' parameter if it exists
+                if (url.searchParams.has('view')) {
+                    url.searchParams.delete('view');
+                }
+                
+                // Use new 'filtro' parameter
+                url.searchParams.set('filtro', 'dia');
+                
+                // Usar nome do dia em vez do número
+                let diaNome = getDayName(day);
+                url.searchParams.set('dia', diaNome);
+                
+                // Remover parâmetro de idioma na visualização por dia
+                if (url.searchParams.has('idioma')) {
+                    url.searchParams.delete('idioma');
+                }
+                
+                history.pushState({}, '', url);
+            }
+            
+            // Scroll para posicionar o calendário na posição correta
+            setTimeout(() => {
+                // Altura do menu fixo (header)
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                
+                // Obter a posição da navegação do calendário
+                const calendarNav = document.querySelector('.calendar-nav');
+                if (calendarNav) {
+                    // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }, 300);
+        }
+        
+        // Check if any events are happening now and highlight them
+        function checkCurrentEvents(day) {
+            const { day: currentRealDay, hour: currentHour } = getCurrentDayAndTime();
+            
+            // Ajustar o dia atual para sexta-feira se for fim de semana
+            let currentDay = currentRealDay;
+            if (currentDay === 0 || currentDay === 6) {
+                currentDay = 5; // Sexta-feira
+            }
+            
+            // Only check if the displayed day is today
+            if (day === currentDay) {
+                const events = document.querySelectorAll(`#day-${day} .timeline-event`);
+                
+                events.forEach(event => {
+                    const eventHour = parseInt(event.getAttribute('data-time'));
+                    
+                    // Check if event is happening now (within the hour)
+                    if (eventHour === currentHour && currentRealDay === currentDay) {
+                        event.classList.add('happening-now');
+                        
+                        // Add "AGORA" badge if not already there
+                        const eventTitle = event.querySelector('.event-title');
+                        if (!eventTitle.querySelector('.now-badge')) {
+                            const nowBadge = document.createElement('span');
+                            nowBadge.className = 'now-badge';
+                            nowBadge.textContent = 'AGORA';
+                            eventTitle.appendChild(nowBadge);
+                        }
+                    } else {
+                        event.classList.remove('happening-now');
+                        
+                        // Remove "AGORA" badge if exists
+                        const nowBadge = event.querySelector('.now-badge');
+                        if (nowBadge) {
+                            nowBadge.remove();
+                        }
+                    }
+                });
+            }
+        }
+
+        // Read URL parameters and update the UI accordingly
+        function readURLParameters() {
+            const params = new URLSearchParams(window.location.search);
+            // Only check for filtro parameter, use view as fallback for backward compatibility
+            const filtro = params.get('filtro') || params.get('view'); 
+            const idioma = params.get('idioma');
+            const dia = params.get('dia');
+            
+            let parametersApplied = false;
+            
+            // Process filtro parameter
+            if (filtro) {
+                // Translate old parameter values to new ones
+                let viewValue = filtro;
+                if (filtro === 'language') viewValue = 'idioma';
+                if (filtro === 'day') viewValue = 'dia';
+                
+                // Map filtro value to view buttons and content
+                let viewButtonValue = 'day';
+                if (viewValue === 'idioma') viewButtonValue = 'language';
+                else if (viewValue === 'dia') viewButtonValue = 'day';
+                
+                // Update the UI to show the selected view
+                document.querySelectorAll('.view-button').forEach(button => {
+                    button.classList.toggle('active', button.getAttribute('data-view') === viewButtonValue);
+                });
+                
+                document.querySelectorAll('.view-content').forEach(content => {
+                    content.classList.toggle('active', content.id === `${viewButtonValue}-view`);
+                });
+                
+                parametersApplied = true;
+            }
+            
+            // Process idioma parameter - apenas para visualização por idioma
+            if (idioma) {
+                // Remover acentos e caracteres especiais para comparação
+                const idiomaSimplificado = idioma.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+                
+                // Atualizar dropdown independente da visualização
+                const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button');
+                const selectedButton = Array.from(dropdownButtons).find(button => {
+                    const buttonLanguage = button.getAttribute('data-language').toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
+                    return buttonLanguage === idiomaSimplificado;
+                });
+                
+                if (selectedButton) {
+                    // Update active state
+                    dropdownButtons.forEach(btn => btn.classList.remove('active'));
+                    selectedButton.classList.add('active');
+                    
+                    // Update dropdown button text and flag
+                    const selectedLangText = document.getElementById('selected-language');
+                    const selectedLangFlag = document.getElementById('selected-language-flag');
+                    const buttonText = selectedButton.querySelector('span').textContent;
+                    const flagElement = selectedButton.querySelector('.flag-icon');
+                    
+                    if (selectedLangText) selectedLangText.textContent = buttonText;
+                    
+                    if (selectedLangFlag && flagElement) {
+                        // Caso especial para Libras e outros que usam emoji
+                        if (flagElement.tagName.toLowerCase() === 'img') {
+                            selectedLangFlag.src = flagElement.src;
+                            selectedLangFlag.alt = flagElement.alt;
+                            selectedLangFlag.style.display = '';
+                        } else {
+                            selectedLangFlag.style.display = 'none';
+                        }
+                    }
+                }
+                
+                // Se estamos na visualização por idioma, mostrar os eventos deste idioma
+                if (filtro === 'idioma' || filtro === 'language' || !filtro) {
+                    showLanguageEvents(idioma, false); // Don't update URL again
+                }
+                
+                parametersApplied = true;
+            }
+            
+            // Process dia parameter - IMPORTANTE: Na visualização por dia, mostrar TODOS os eventos do dia selecionado
+            if (dia && (filtro === 'dia' || filtro === 'day' || !filtro)) {
+                let dayNum;
+                
+                // Converter nome do dia para número
+                switch (dia.toLowerCase()) {
+                    case 'segunda':
+                        dayNum = 1;
+                        break;
+                    case 'terca':
+                        dayNum = 2;
+                        break;
+                    case 'quarta':
+                        dayNum = 3;
+                        break;
+                    case 'quinta':
+                        dayNum = 4;
+                        break;
+                    case 'sexta':
+                        dayNum = 5;
+                        break;
+                    default:
+                        // Tentar converter para número se for um valor numérico
+                        dayNum = parseInt(dia);
+                }
+                
+                // Ajustar para mostrar sexta-feira (5) se o dia for fim de semana (0=Domingo ou 6=Sábado)
+                if (dayNum === 0 || dayNum === 6) {
+                    dayNum = 5; // Sexta-feira
+                }
+                
+                // Usar a função showDayEvents para exibir os eventos do dia correto
+                showDayEvents(dayNum, false);
+                
+                parametersApplied = true;
+                
+                // Se não especificou o view, mas especificou o dia, assumimos visualização por dia
+                if (!filtro) {
+                    document.querySelectorAll('.view-button').forEach(button => {
+                        button.classList.toggle('active', button.getAttribute('data-view') === 'day');
+                    });
+                    
+                    document.querySelectorAll('.view-content').forEach(content => {
+                        content.classList.toggle('active', content.id === 'day-view');
+                    });
+                }
+            }
+            
+            // Rolar a página para a posição correta após um pequeno atraso
+            setTimeout(() => {
+                // Altura do menu fixo (header)
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                
+                // Obter a posição da navegação do calendário
+                const calendarNav = document.querySelector('.calendar-nav');
+                if (calendarNav) {
+                    // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }, 300);
+            
+            return parametersApplied;
+        }
+        
+        // Initialize the calendar
+        function initCalendar() {
+            // Tenta ler os parâmetros da URL
+            const parametersExist = readURLParameters();
+
+            // Se não houver parâmetros OU se os parâmetros estiverem incompletos/inválidos, restaura o padrão
+            if (!parametersExist || !document.querySelector('.view-content.active')) {
+                // Definir visualização padrão (dia)
+                const url = new URL(window.location);
+                url.searchParams.set('view', 'day');
+                
+                // Obter o dia da semana atual (0=Domingo, 1=Segunda, ..., 6=Sábado)
+                let currentDay = new Date().getDay();
+                
+                // Ajustar para sexta-feira (5) se for fim de semana (0=Domingo ou 6=Sábado)
+                if (currentDay === 0 || currentDay === 6) {
+                    currentDay = 5; // Sexta-feira
+                }
+                
+                url.searchParams.set('dia', getDayName(currentDay));
+                
+                history.replaceState({}, '', url);
+                
+                // Mostrar eventos do dia atual
+                showDayEvents(currentDay, false);
+                
+                // Marcar o botão de visualização por dia como ativo
+                document.querySelectorAll('.view-button').forEach(button => {
+                    if (button.getAttribute('data-view') === 'day') {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+                
+                // Exibir o conteúdo da visualização por dia
+                document.querySelectorAll('.view-content').forEach(content => {
+                    content.classList.toggle('active', content.id === 'day-view');
+                });
+            }
+            
+            // Verificar se a visualização atual está funcionando corretamente
+            verificarEstadoAtual();
+            
+            // Add event listeners
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const view = button.getAttribute('data-view');
+                    toggleView(view);
+                    
+                    // Verificar se a visualização foi aplicada corretamente após um breve atraso
+                    setTimeout(verificarEstadoAtual, 500);
+                    
+                    // Rolagem imediata após clicar no filtro
+                    setTimeout(() => {
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 100);
+                });
+            });
+            
+            // Add event listeners to day buttons
+            document.querySelectorAll('.day-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const day = parseInt(button.getAttribute('data-day'));
+                    showDayEvents(day);
+                    
+                    // Rolagem adicional após a mudança de conteúdo
+                    setTimeout(() => {
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 100);
+                });
+            });
+            
+            // Set up an interval to check for current events every minute
+            setInterval(() => {
+                const { day: updatedRealDay } = getCurrentDayAndTime();
+                
+                // Ajustar o dia atual para sexta-feira se for fim de semana
+                let updatedCurrentDay = updatedRealDay;
+                if (updatedCurrentDay === 0 || updatedCurrentDay === 6) {
+                    updatedCurrentDay = 5; // Sexta-feira
+                }
+                
+                const activeDay = parseInt(document.querySelector('.day-button.active')?.getAttribute('data-day') || "0");
+                
+                checkCurrentEvents(activeDay);
+                updateJoinButtons();
+                
+                // Se já é outro dia e o dia exibido era o dia anterior, atualizar para o dia atual
+                if (updatedCurrentDay !== currentDay && activeDay === (updatedCurrentDay - 1 + 7) % 7) {
+                    showDayEvents(updatedCurrentDay);
+                }
+            }, 60000); // Check every minute
+
+            // Handle browser back/forward navigation
+            window.addEventListener('popstate', function(event) {
+                console.log('Navegação detectada, recarregando parâmetros da URL');
+                // Recarregar os parâmetros da URL atual
+                readURLParameters();
+                
+                // Verificar se o view está ativo corretamente
+                const params = new URLSearchParams(window.location.search);
+                const view = params.get('view');
+                
+                if (view) {
+                    // Atualizar a UI para mostrar a visualização selecionada
+                    document.querySelectorAll('.view-button').forEach(button => {
+                        button.classList.toggle('active', button.getAttribute('data-view') === view);
+                    });
+                    
+                    document.querySelectorAll('.view-content').forEach(content => {
+                        content.classList.toggle('active', content.id === `${view}-view`);
+                    });
+                    
+                    // Se a visualização for por dia, garantir que todos os eventos sejam mostrados (sem filtro)
+                    if (view === 'day') {
+                        document.querySelectorAll('.timeline-event').forEach(event => {
+                            event.style.display = '';
+                        });
+                        
+                        // Remover mensagens de "sem eventos" que possam existir
+                        document.querySelectorAll('.no-events').forEach(msg => {
+                            msg.style.display = 'none';
+                        });
+                    }
+                }
+                
+                // Atualizar os botões de participação e eventos em destaque
+                updateJoinButtons();
+                
+                // Se estamos na visualização por dia, verificar eventos atuais
+                if (view === 'day') {
+                    const dia = params.get('dia');
+                    if (dia) {
+                        const dayNum = parseInt(dia);
+                        checkCurrentEvents(dayNum);
+                    }
+                }
+            });
+        }
+        
+        // Run when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize the view buttons
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    toggleView(view);
+                });
+            });
+            
+            // Initialize the dropdown functionality
+            const dropdownButton = document.querySelector('.dropdown-button');
+            if (dropdownButton) {
+                console.log("Setting up dropdown button event listener");
+                dropdownButton.addEventListener('click', function(e) {
+                    console.log("Dropdown button clicked");
+                    e.preventDefault();
+                    e.stopPropagation();
+                    document.querySelector('.dropdown-content').classList.toggle('show');
+                });
+            }
+            
+            // Close the dropdown if clicked outside
+            window.addEventListener('click', function(event) {
+                if (!event.target.matches('.dropdown-button') && 
+                    !event.target.closest('.dropdown-button')) {
+                    const dropdowns = document.getElementsByClassName('dropdown-content');
                     for (let i = 0; i < dropdowns.length; i++) {
                         dropdowns[i].classList.remove('show');
                     }
                 }
             });
-        }
-
-        // Helper function to normalize text (remove accents and special characters)
-        function normalizeText(text) {
-            return text.toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '');
-        }
-
-        // Update URL parameters to ensure no special characters
-        function updateURLParameters(url, params) {
-            // Create a new URL object if url is a string
-            const urlObj = typeof url === 'string' ? new URL(url) : url;
             
-            // Process each parameter
-            Object.entries(params).forEach(([key, value]) => {
-                if (value === null) {
-                    // Remove parameter if value is null
-                    urlObj.searchParams.delete(key);
-                } else {
-                    // Normalize value to remove special characters
-                    const normalizedValue = normalizeText(value.toString());
-                    urlObj.searchParams.set(key, normalizedValue);
-                }
+            initCalendar();
+            updateJoinButtons();
+
+            // Adicionar eventos de rastreamento para os botões de participação
+            document.querySelectorAll('.join-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const day = parseInt(button.getAttribute('data-day'));
+                    const time = button.getAttribute('data-time');
+                    const language = button.closest('.timeline-event').querySelector('.event-title span:not(.now-badge)').textContent.trim();
+                    trackJoinButtonClick(language, day, time);
+                });
             });
             
-            return urlObj;
-        }
+            // Adicionar eventos de rastreamento para os botões de replay
+            document.querySelectorAll('.replay-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const language = button.closest('.timeline-event').querySelector('.event-title span:not(.now-badge)').textContent.trim();
+                    trackReplayButtonClick(language);
+                });
+            });
 
+            // Inicializar eventos dos idiomas depois que o calendário estiver carregado
+            initializeLanguageEvents();
+            
+            // Verificar eventos atuais a cada minuto
+            setInterval(function() {
+                updateJoinButtons();
+                
+                // Recuperar o dia ativo atualmente
+                const activeDay = document.querySelector('.day-button.active');
+                if (activeDay) {
+                    const day = parseInt(activeDay.getAttribute('data-day'));
+                    checkCurrentEvents(day);
+                }
+            }, 60000); // 60 segundos
+        });
+
+        // Toggle between views
+        function toggleView(view) {
+            console.log(`Toggling to view: ${view}`);
+            
+            // Track view toggle
+            trackViewToggleEvent(view);
+            
+            // Update active state of view buttons
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.classList.toggle('active', button.getAttribute('data-view') === view);
+            });
+            
+            // Show selected content
+            document.querySelectorAll('.view-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${view}-view`).classList.add('active');
+            
+            // Update URL with filtro parameter only (not view)
+            const url = new URL(window.location);
+            
+            // Remove old view parameter if present
+            if (url.searchParams.has('view')) {
+                url.searchParams.delete('view');
+            }
+            
+            // Set new filtro parameter
+            url.searchParams.set('filtro', view === 'language' ? 'idioma' : 'dia');
+            
+            // Se mudar para visualização por idioma, garantir que o idioma está definido
+            if (view === 'language') {
+                // Find active language button or default to English
+                const activeLanguageButton = document.querySelector('.dropdown-content .language-button.active');
+                if (activeLanguageButton) {
+                    // Use the language from the active button
+                    const language = activeLanguageButton.getAttribute('data-language');
+                    showLanguageEvents(language, false);
+                    
+                    // Normalize the language name for URL (remove special characters)
+                    const normalizedLanguage = language.toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
+                    
+                    // Manter o idioma na URL (sem caracteres especiais)
+                    url.searchParams.set('idioma', normalizedLanguage);
+                } else {
+                    // Default to English
+                    showLanguageEvents('inglês', false);
+                    url.searchParams.set('idioma', 'ingles'); // No special characters in URL
+                }
+                
+                // Remover parâmetro de dia, se houver
+                if (url.searchParams.has('dia')) {
+                    url.searchParams.delete('dia');
+                }
+            }
+            
+            // Se mudar para visualização por dia, selecionar o dia atual ou próximo útil
+            if (view === 'day') {
+                // Quando alterna para visualização por dia, mostrar TODOS os eventos (sem filtro de idioma)
+                document.querySelectorAll('.timeline-event').forEach(event => {
+                    event.style.display = '';
+                });
+                
+                // Remover quaisquer mensagens de "sem eventos"
+                document.querySelectorAll('.no-events').forEach(noEvents => {
+                    noEvents.style.display = 'none';
+                });
+                
+                // Checar se já tem um dia selecionado
+                const activeButton = document.querySelector('.day-button.active');
+                let dayToShow;
+                
+                if (activeButton) {
+                    dayToShow = parseInt(activeButton.getAttribute('data-day'));
+                } else {
+                    // Se não tiver, usar o dia atual ou último dia útil (sexta) se for fim de semana
+                    const { day: currentDay } = getCurrentDayAndTime();
+                    
+                    // Se for sábado (6) ou domingo (0), mostra sexta-feira (5)
+                    if (currentDay === 0 || currentDay === 6) {
+                        dayToShow = 5; // Sexta-feira
+                    } else {
+                        dayToShow = currentDay;
+                    }
+                }
+                
+                // Garantir que o dia selecionado seja exibido corretamente
+                showDayEvents(dayToShow, false);
+                
+                // Definir o dia na URL
+                const diaNome = getDayName(dayToShow);
+                url.searchParams.set('dia', diaNome);
+                
+                // Remover parâmetro de idioma na visualização por dia
+                if (url.searchParams.has('idioma')) {
+                    url.searchParams.delete('idioma');
+                }
+                
+                // Verificar eventos acontecendo agora
+                checkCurrentEvents(dayToShow);
+            }
+            
+            // Atualizar a URL
+            history.pushState({}, '', url);
+            
+            // Rolagem para manter os filtros visíveis
+            positionCalendarNav();
+            
+            // Update join buttons after view change
+            updateJoinButtons();
+        }
+        
+        // Função para converter número do dia para nome
+        function getDayName(day) {
+            switch (day) {
+                case 1:
+                    return 'segunda';
+                case 2:
+                    return 'terca';
+                case 3:
+                    return 'quarta';
+                case 4:
+                    return 'quinta';
+                case 5:
+                    return 'sexta';
+                default:
+                    return 'sexta'; // Default para sexta-feira
+            }
+        }
+        
+        // Função para obter o dia da semana e a hora atual
+        function getCurrentDayAndTime() {
+            const now = new Date();
+            const day = now.getDay(); // 0 (domingo) a 6 (sábado)
+            let hour = now.getHours();
+            
+            // Converter dia de 0-6 para 1-5 (segunda a sexta)
+            // 0 (domingo) => 5 (sexta), 1 (segunda) => 1, ..., 5 (sexta) => 5, 6 (sábado) => 5 (sexta)
+            // Para dias úteis (1-5), manter o mesmo valor
+            const adjustedDay = (day === 0 || day === 6) ? 5 : day;
+            
+            return { day: adjustedDay, hour };
+        }
+        
         // Show events for a specific language
         function showLanguageEvents(language, updateURL = true) {
             console.log(`Showing events for language: ${language}`);
@@ -1920,10 +2696,10 @@
                 const buttonLanguage = button.getAttribute('data-language');
                 button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === language.toLowerCase());
             });
-            
-            // Update dropdown button text and flag
-            const selectedLangText = document.getElementById('selected-language');
-            const selectedLangFlag = document.getElementById('selected-language-flag');
+                
+                // Update dropdown button text and flag
+                const selectedLangText = document.getElementById('selected-language');
+                const selectedLangFlag = document.getElementById('selected-language-flag');
             
             if (selectedLangText) {
                 selectedLangText.textContent = capitalizeFirstLetter(language);
@@ -1938,13 +2714,13 @@
                 if (matchingButton) {
                     const flagElement = matchingButton.querySelector('.flag-icon');
                     if (flagElement) {
-                        if (flagElement.tagName.toLowerCase() === 'img') {
-                            selectedLangFlag.src = flagElement.src;
-                            selectedLangFlag.alt = flagElement.alt;
-                            selectedLangFlag.style.display = '';
-                        } else {
+                    if (flagElement.tagName.toLowerCase() === 'img') {
+                        selectedLangFlag.src = flagElement.src;
+                        selectedLangFlag.alt = flagElement.alt;
+                        selectedLangFlag.style.display = '';
+                    } else {
                             // For emoji flags
-                            selectedLangFlag.style.display = 'none';
+                        selectedLangFlag.style.display = 'none';
                         }
                     }
                 }
@@ -1966,8 +2742,10 @@
                 if (!eventTitle) return;
                 
                 const eventLanguage = eventTitle.textContent.trim().toLowerCase();
-                const normalizedLanguage = normalizeText(language);
-                const normalizedEventLanguage = normalizeText(eventLanguage);
+                const normalizedLanguage = language.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const normalizedEventLanguage = eventLanguage.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                
+                console.log(`Comparing languages: '${normalizedEventLanguage}' vs '${normalizedLanguage}'`);
                 
                 if (normalizedEventLanguage === normalizedLanguage) {
                     // Clone the event and add to language view
@@ -2004,43 +2782,39 @@
             if (updateURL) {
                 const url = new URL(window.location);
                 
-                // Update URL parameters using helper function
-                updateURLParameters(url, {
-                    'view': null, // Remove old parameter
-                    'filtro': 'idioma',
-                    'idioma': language,
-                    'dia': null // Remove day parameter
-                });
+                // Remove old view parameter if present
+                if (url.searchParams.has('view')) {
+                    url.searchParams.delete('view');
+                }
                 
+                // Set filtro parameter
+                url.searchParams.set('filtro', 'idioma');
+                
+                // Normalizar o nome do idioma removendo acentos e caracteres especiais
+                const normalizedLanguage = language.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+                
+                url.searchParams.set('idioma', normalizedLanguage);
                 history.pushState({}, '', url);
             }
             
-            // Scroll to position calendar
+            // Scroll para posicionar o calendário na posição correta
             setTimeout(() => {
-                // Header height
+                // Altura do menu fixo (header)
                 const headerHeight = document.querySelector('.header').offsetHeight;
                 
-                // Get calendar nav position
+                // Obter a posição da navegação do calendário
                 const calendarNav = document.querySelector('.calendar-nav');
                 if (calendarNav) {
-                    // Scroll to position calendar nav just below fixed header
+                    // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
                     const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
                     window.scrollTo({top: y, behavior: 'smooth'});
                 }
             }, 300);
             
-            // Update join buttons
+            // Update join button status after changing view
             updateJoinButtons();
-            
-            // Update join buttons on cloned events
-            document.querySelectorAll('#language-events .join-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const day = parseInt(button.getAttribute('data-day'));
-                    const time = button.getAttribute('data-time');
-                    const language = button.closest('.timeline-event').querySelector('.event-title span:not(.now-badge)').textContent.trim();
-                    trackJoinButtonClick(language, day, time);
-                });
-            });
         }
 
         // Helper function to capitalize first letter
@@ -2317,157 +3091,6 @@
                 }
             }
         });
-
-        // Show events for a specific day
-        function showDayEvents(day, updateURL = true) {
-            console.log(`Showing events for day: ${day}`);
-            
-            // Track day selection
-            trackDayFilterEvent(day);
-            
-            // Ajustar para mostrar sexta-feira (5) se o dia for fim de semana (0=Domingo ou 6=Sábado)
-            if (day === 0 || day === 6) {
-                day = 5; // Sexta-feira
-            }
-            
-            // Update active class for day buttons
-            document.querySelectorAll('.day-button').forEach(button => {
-                const buttonDay = parseInt(button.getAttribute('data-day'));
-                button.classList.toggle('active', buttonDay === day);
-            });
-            
-            // Show events for selected day
-            document.querySelectorAll('.day-events').forEach(dayEvents => {
-                dayEvents.classList.toggle('active', dayEvents.id === `day-${day}`);
-            });
-            
-            // Make all events visible initially (we will filter by language if needed)
-            document.querySelectorAll('.timeline-event').forEach(event => {
-                event.style.display = '';
-            });
-            
-            // Hide "no events" messages initially
-            document.querySelectorAll('.no-events').forEach(noEvents => {
-                noEvents.style.display = 'none';
-            });
-            
-            // Check if any events are happening now
-            checkCurrentEvents(day);
-            
-            // Update URL
-            if (updateURL) {
-                const url = new URL(window.location);
-                
-                // Get day name
-                const dayName = getDayName(day);
-                
-                // Update URL parameters
-                updateURLParameters(url, {
-                    'view': null, // Remove old parameter
-                    'filtro': 'dia',
-                    'dia': dayName,
-                    'idioma': null // Remove language parameter
-                });
-                
-                history.pushState({}, '', url);
-            }
-            
-            // Scroll to position calendar
-            setTimeout(() => {
-                // Header height
-                const headerHeight = document.querySelector('.header').offsetHeight;
-                
-                // Get calendar nav position
-                const calendarNav = document.querySelector('.calendar-nav');
-                if (calendarNav) {
-                    // Scroll to position calendar nav just below fixed header
-                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                    window.scrollTo({top: y, behavior: 'smooth'});
-                }
-            }, 300);
-        }
-
-        // Toggle between views
-        function toggleView(view) {
-            console.log(`Toggling to view: ${view}`);
-            
-            // Track view toggle
-            trackViewToggleEvent(view);
-            
-            // Update active state of view buttons
-            document.querySelectorAll('.view-button').forEach(button => {
-                button.classList.toggle('active', button.getAttribute('data-view') === view);
-            });
-            
-            // Show selected content
-            document.querySelectorAll('.view-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(`${view}-view`).classList.add('active');
-            
-            // Update URL based on view type
-            const url = new URL(window.location);
-            
-            if (view === 'language') {
-                // Find active language button or default to English
-                const activeLanguageButton = document.querySelector('.dropdown-content .language-button.active');
-                let language = 'ingles'; // Default language
-                
-                if (activeLanguageButton) {
-                    // Use language from active button
-                    language = activeLanguageButton.getAttribute('data-language');
-                } else {
-                    // Default to English and trigger language view
-                    showLanguageEvents('inglês', false);
-                }
-                
-                // Update URL parameters
-                updateURLParameters(url, {
-                    'view': null, // Remove old parameter
-                    'filtro': 'idioma',
-                    'idioma': language,
-                    'dia': null // Remove day parameter
-                });
-            } else if (view === 'day') {
-                // Check if a day is already selected
-                const activeButton = document.querySelector('.day-button.active');
-                let dayToShow;
-                
-                if (activeButton) {
-                    dayToShow = parseInt(activeButton.getAttribute('data-day'));
-                } else {
-                    // Use current day or Friday if weekend
-                    const { day: currentDay } = getCurrentDayAndTime();
-                    dayToShow = (currentDay === 0 || currentDay === 6) ? 5 : currentDay;
-                }
-                
-                // Show events for selected day
-                showDayEvents(dayToShow, false);
-                
-                // Get day name
-                const dayName = getDayName(dayToShow);
-                
-                // Update URL parameters
-                updateURLParameters(url, {
-                    'view': null, // Remove old parameter
-                    'filtro': 'dia',
-                    'dia': dayName,
-                    'idioma': null // Remove language parameter
-                });
-                
-                // Check for current events
-                checkCurrentEvents(dayToShow);
-            }
-            
-            // Update URL
-            history.pushState({}, '', url);
-            
-            // Scroll to position calendar
-            positionCalendarNav();
-            
-            // Update join buttons
-            updateJoinButtons();
-        }
     </script>
 </body>
 </html> 
