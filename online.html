@@ -1327,14 +1327,14 @@
                         <div class="no-results" id="no-results">
                             Nenhum idioma encontrado.
                         </div>
-                        <button class="language-button" data-language="francês">
+                        <button class="language-button" data-language="frances">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
                                 <span>Francês</span>
                             </div>
                             <span class="language-badge">3</span>
                         </button>
-                        <button class="language-button" data-language="japonês">
+                        <button class="language-button" data-language="japones">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
                                 <span>Japonês</span>
@@ -1355,7 +1355,7 @@
                             </div>
                             <span class="language-badge">3</span>
                         </button>
-                        <button class="language-button" data-language="inglês">
+                        <button class="language-button" data-language="ingles">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
                                 <span>Inglês</span>
@@ -1376,14 +1376,14 @@
                             </div>
                             <span class="language-badge">1</span>
                         </button>
-                        <button class="language-button" data-language="chinês">
+                        <button class="language-button" data-language="chines">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
                                 <span>Chinês</span>
                             </div>
                             <span class="language-badge">2</span>
                         </button>
-                        <button class="language-button" data-language="alemão">
+                        <button class="language-button" data-language="alemao">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
                                 <span>Alemão</span>
@@ -1397,7 +1397,7 @@
                             </div>
                             <span class="language-badge">1</span>
                         </button>
-                        <button class="language-button" data-language="português">
+                        <button class="language-button" data-language="portugues">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
                                 <span>Português</span>
@@ -2300,16 +2300,18 @@
                     .normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '');
                 
+                console.log(`Processing language parameter: '${idioma}', simplified: '${idiomaSimplificado}'`);
+                
                 // Atualizar dropdown independente da visualização
                 const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button');
                 const selectedButton = Array.from(dropdownButtons).find(button => {
-                    const buttonLanguage = button.getAttribute('data-language').toLowerCase()
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '');
+                    const buttonLanguage = button.getAttribute('data-language').toLowerCase();
+                    console.log(`Comparing with button language: '${buttonLanguage}'`);
                     return buttonLanguage === idiomaSimplificado;
                 });
                 
                 if (selectedButton) {
+                    console.log(`Found matching button for '${idioma}'`);
                     // Update active state
                     dropdownButtons.forEach(btn => btn.classList.remove('active'));
                     selectedButton.classList.add('active');
@@ -2662,17 +2664,15 @@
                 // Find active language button or default to English
                 const activeLanguageButton = document.querySelector('.dropdown-content .language-button.active');
                 if (activeLanguageButton) {
-                    // Use the language from the active button
+                    // Use the language from the active button - already normalized in data-language
                     const language = activeLanguageButton.getAttribute('data-language');
-                    showLanguageEvents(language, false);
+                    // Use the display text from the button span for visual display
+                    const languageText = activeLanguageButton.querySelector('span').textContent;
                     
-                    // Normalize the language name for URL (remove special characters)
-                    const normalizedLanguage = language.toLowerCase()
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '');
+                    showLanguageEvents(languageText, false);
                     
-                    // Manter o idioma na URL (sem caracteres especiais)
-                    url.searchParams.set('idioma', normalizedLanguage);
+                    // Use data-language attribute which is already normalized for URL
+                    url.searchParams.set('idioma', language);
                 } else {
                     // Default to English
                     showLanguageEvents('inglês', false);
@@ -2780,18 +2780,34 @@
             // Track language selection
             trackLanguageFilterEvent(language);
             
-            // Update active state of language buttons
+            // Update active state of language buttons - compare normalized versions
+            const normalizedSearchLanguage = language.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+            
             document.querySelectorAll('.dropdown-content .language-button').forEach(button => {
                 const buttonLanguage = button.getAttribute('data-language');
-                button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === language.toLowerCase());
+                // Compare with normalized values
+                button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === normalizedSearchLanguage);
             });
                 
-                // Update dropdown button text and flag
-                const selectedLangText = document.getElementById('selected-language');
-                const selectedLangFlag = document.getElementById('selected-language-flag');
-            
+            // Update dropdown button text and flag - maintain display with accents
+            const selectedLangText = document.getElementById('selected-language');
+            const selectedLangFlag = document.getElementById('selected-language-flag');
+
             if (selectedLangText) {
-                selectedLangText.textContent = capitalizeFirstLetter(language);
+                // Use the actual text content from the button for display (with accents)
+                const activeButton = document.querySelector('.dropdown-content .language-button.active');
+                if (activeButton) {
+                    const textElement = activeButton.querySelector('span');
+                    if (textElement) {
+                        selectedLangText.textContent = textElement.textContent;
+                    } else {
+                        selectedLangText.textContent = capitalizeFirstLetter(language);
+                    }
+                } else {
+                    selectedLangText.textContent = capitalizeFirstLetter(language);
+                }
             }
             
             if (selectedLangFlag) {
