@@ -2015,7 +2015,30 @@
             if (updateURL) {
                 const url = new URL(window.location);
                 url.searchParams.set('view', 'day');
-                url.searchParams.set('dia', day);
+                
+                // Usar nome do dia em vez do número
+                let diaNome;
+                switch (day) {
+                    case 1:
+                        diaNome = 'segunda';
+                        break;
+                    case 2:
+                        diaNome = 'terca';
+                        break;
+                    case 3:
+                        diaNome = 'quarta';
+                        break;
+                    case 4:
+                        diaNome = 'quinta';
+                        break;
+                    case 5:
+                        diaNome = 'sexta';
+                        break;
+                    default:
+                        diaNome = 'sexta'; // Default para sexta-feira
+                }
+                
+                url.searchParams.set('dia', diaNome);
                 
                 // Remover parâmetro de idioma na visualização por dia
                 if (url.searchParams.has('idioma')) {
@@ -2107,11 +2130,19 @@
             
             // Process idioma parameter - apenas para visualização por idioma
             if (idioma) {
+                // Remover acentos e caracteres especiais para comparação
+                const idiomaSimplificado = idioma.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+                
                 // Atualizar dropdown independente da visualização
                 const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button');
-                const selectedButton = Array.from(dropdownButtons).find(button => 
-                    button.getAttribute('data-language').toLowerCase() === idioma.toLowerCase()
-                );
+                const selectedButton = Array.from(dropdownButtons).find(button => {
+                    const buttonLanguage = button.getAttribute('data-language').toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
+                    return buttonLanguage === idiomaSimplificado;
+                });
                 
                 if (selectedButton) {
                     // Update active state
@@ -2148,7 +2179,29 @@
             
             // Process dia parameter - IMPORTANTE: Na visualização por dia, mostrar TODOS os eventos do dia selecionado
             if (dia && (view === 'day' || !view)) {
-                let dayNum = parseInt(dia);
+                let dayNum;
+                
+                // Converter nome do dia para número
+                switch (dia.toLowerCase()) {
+                    case 'segunda':
+                        dayNum = 1;
+                        break;
+                    case 'terca':
+                        dayNum = 2;
+                        break;
+                    case 'quarta':
+                        dayNum = 3;
+                        break;
+                    case 'quinta':
+                        dayNum = 4;
+                        break;
+                    case 'sexta':
+                        dayNum = 5;
+                        break;
+                    default:
+                        // Tentar converter para número se for um valor numérico
+                        dayNum = parseInt(dia);
+                }
                 
                 // Ajustar para mostrar sexta-feira (5) se o dia for fim de semana (0=Domingo ou 6=Sábado)
                 if (dayNum === 0 || dayNum === 6) {
@@ -2208,7 +2261,7 @@
                     currentDay = 5; // Sexta-feira
                 }
                 
-                url.searchParams.set('dia', currentDay);
+                url.searchParams.set('dia', getDayName(currentDay));
                 
                 history.replaceState({}, '', url);
                 
@@ -2383,7 +2436,7 @@
                             currentDay = 5; // Sexta-feira
                         }
                         
-                        url.searchParams.set('dia', currentDay);
+                        url.searchParams.set('dia', getDayName(currentDay));
                         
                         history.pushState({}, '', url);
                         
@@ -2400,13 +2453,19 @@
                         });
                     }
                     
-                    // Scroll para a seção de calendário
-                    const calendarSection = document.querySelector('.calendar-section');
-                    if (calendarSection) {
+                    // Rolar para a seção de programação
+                    setTimeout(() => {
+                        // Altura do menu fixo (header)
                         const headerHeight = document.querySelector('.header').offsetHeight;
-                        const y = calendarSection.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-                        window.scrollTo({top: y, behavior: 'smooth'});
-                    }
+                        
+                        // Obter a posição da navegação do calendário
+                        const calendarNav = document.querySelector('.calendar-nav');
+                        if (calendarNav) {
+                            // Scroll para posicionar a navegação do calendário logo abaixo do header fixo
+                            const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                            window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                    }, 300);
                 });
             }
 
@@ -2520,7 +2579,8 @@
                 showDayEvents(dayToShow, false);
                 
                 // Definir o dia na URL
-                url.searchParams.set('dia', dayToShow);
+                const diaNome = getDayName(dayToShow);
+                url.searchParams.set('dia', diaNome);
                 
                 // Remover parâmetro de idioma na visualização por dia
                 if (url.searchParams.has('idioma')) {
@@ -2535,103 +2595,88 @@
             history.pushState({}, '', url);
             
             // Rolagem para manter os filtros visíveis
-            setTimeout(() => {
-                const headerHeight = document.querySelector('.header').offsetHeight;
-                const calendarNav = document.querySelector('.calendar-nav');
-                if (calendarNav) {
-                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
-                    window.scrollTo({top: y, behavior: 'smooth'});
-                }
-            }, 150);
+            positionCalendarNav();
+        }
+        
+        // Função para converter número do dia para nome
+        function getDayName(day) {
+            switch (day) {
+                case 1:
+                    return 'segunda';
+                case 2:
+                    return 'terca';
+                case 3:
+                    return 'quarta';
+                case 4:
+                    return 'quinta';
+                case 5:
+                    return 'sexta';
+                default:
+                    return 'sexta'; // Default para sexta-feira
+            }
+        }
+        
+        // Função para obter o dia da semana e a hora atual
+        function getCurrentDayAndTime() {
+            const now = new Date();
+            const day = now.getDay(); // 0 (domingo) a 6 (sábado)
+            let hour = now.getHours();
+            
+            // Converter dia de 0-6 para 1-5 (segunda a sexta)
+            // 0 (domingo) => 5 (sexta), 1 (segunda) => 1, ..., 5 (sexta) => 5, 6 (sábado) => 5 (sexta)
+            // Para dias úteis (1-5), manter o mesmo valor
+            const adjustedDay = (day === 0 || day === 6) ? 5 : day;
+            
+            return { day: adjustedDay, hour };
         }
         
         // Show events for a specific language
         function showLanguageEvents(language, updateURL = true) {
-            // Caso especial para "O seu!"
-            if (language.toLowerCase() === 'seu') {
-                // Usar href com window.location para navegação completa
-                window.location.href = 'equipe.html?tab=online&idioma=outros';
-                return;
-            }
+            console.log(`Showing events for language: ${language}`);
             
             // Track language selection
             trackLanguageFilterEvent(language);
             
-            // Update dropdown selection
-            const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button');
-            const selectedButton = Array.from(dropdownButtons).find(button => 
-                button.getAttribute('data-language') === language.toLowerCase()
-            );
-            
-            if (selectedButton) {
-                // Update active state
-                dropdownButtons.forEach(btn => btn.classList.remove('active'));
-                selectedButton.classList.add('active');
-                
-                // Update dropdown button text and flag
-                const selectedLangText = document.getElementById('selected-language');
-                const selectedLangFlag = document.getElementById('selected-language-flag');
-                const buttonText = selectedButton.querySelector('span').textContent;
-                const flagElement = selectedButton.querySelector('.flag-icon');
-                
-                if (selectedLangText) selectedLangText.textContent = buttonText;
-                
-                if (selectedLangFlag && flagElement) {
-                    // Caso especial para Libras e outros que usam emoji
-                    if (flagElement.tagName.toLowerCase() === 'img') {
-                        selectedLangFlag.src = flagElement.src;
-                        selectedLangFlag.alt = flagElement.alt;
-                        selectedLangFlag.style.display = '';
-                    } else {
-                        selectedLangFlag.style.display = 'none';
-                    }
-                }
-            }
-            
-            // Find all events for this language
-            const languageEvents = [];
-            document.querySelectorAll('.timeline-event').forEach(event => {
-                // Obter o texto do idioma, ignorando o emoji/imagem e o badge "AGORA" se estiver presente
-                const eventTitle = event.querySelector('.event-title span:not(.flag-icon):not(.now-badge)');
-                
-                if (eventTitle && eventTitle.textContent.trim().toLowerCase() === language.toLowerCase()) {
-                    const day = event.closest('.day-events').id.replace('day-', '');
-                    const time = event.getAttribute('data-time');
-                    const clone = event.cloneNode(true);
-                    
-                    // Add day info to the event
-                    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-                    const dayInfo = document.createElement('div');
-                    dayInfo.className = 'day-info';
-                    dayInfo.innerHTML = `<span>${dayNames[day]}</span>`;
-                    clone.insertBefore(dayInfo, clone.firstChild);
-                    
-                    languageEvents.push(clone);
-                }
+            // Update active state of language buttons
+            document.querySelectorAll('.dropdown-content .language-button').forEach(button => {
+                const buttonLanguage = button.getAttribute('data-language');
+                button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === language.toLowerCase());
             });
             
-            // Display the events
-            const eventsContainer = document.querySelector('#language-events .timeline');
-            eventsContainer.innerHTML = '';
-            
-            if (languageEvents.length === 0) {
-                eventsContainer.innerHTML = `<div class="no-events">Nenhum encontro de ${language} encontrado na programação atual.</div>`;
-            } else {
-                languageEvents.forEach(event => {
-                    eventsContainer.appendChild(event);
-                });
+            // Show language events
+            document.querySelectorAll('.timeline-event').forEach(event => {
+                const eventTitle = event.querySelector('.event-title span:not(.now-badge)');
+                if (!eventTitle) return;
                 
-                // Update join buttons and check current events
-                updateJoinButtons();
-                const { day: currentDay } = getCurrentDayAndTime();
-                checkCurrentEvents(currentDay);
-            }
+                const eventLanguage = eventTitle.textContent.trim().toLowerCase();
+                event.style.display = (eventLanguage === language.toLowerCase()) ? '' : 'none';
+            });
+            
+            // Check if there are any events for this language
+            document.querySelectorAll('.day-events').forEach(dayEvents => {
+                const dayEventsContainer = dayEvents.querySelector('.timeline');
+                const hasVisibleEvents = Array.from(dayEventsContainer.querySelectorAll('.timeline-event')).some(event => 
+                    event.style.display !== 'none'
+                );
+                
+                // Show "no events" message if there are no events for this language
+                const noEventsMessage = dayEvents.querySelector('.no-events');
+                if (noEventsMessage) {
+                    noEventsMessage.style.display = hasVisibleEvents ? 'none' : 'block';
+                }
+            });
             
             // Update URL
             if (updateURL) {
                 const url = new URL(window.location);
                 url.searchParams.set('view', 'language');
-                url.searchParams.set('idioma', language);
+                
+                // Normalizar o nome do idioma removendo acentos e caracteres especiais
+                const normalizedLanguage = language.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+                
+                url.searchParams.set('idioma', normalizedLanguage);
                 history.pushState({}, '', url);
             }
             
@@ -2808,6 +2853,18 @@
                     showDayEvents(currentDay, false);
                 }
             }
+        }
+
+        // Função para posicionar a navegação do calendário
+        function positionCalendarNav() {
+            setTimeout(() => {
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const calendarNav = document.querySelector('.calendar-nav');
+                if (calendarNav) {
+                    const y = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }, 150);
         }
     </script>
 </body>
