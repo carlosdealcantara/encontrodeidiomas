@@ -1680,110 +1680,153 @@
         // Definir o ano atual no footer
         document.getElementById('current-year').textContent = new Date().getFullYear();
         
-        // Dropdown Mobile Toggle
-        document.addEventListener('DOMContentLoaded', function() {
+        // Run when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update the Online menu link to use the new parameter format
+            const onlineMenuLink = document.querySelector('header a[href="online.html"]');
+            if (onlineMenuLink) {
+                onlineMenuLink.setAttribute('href', 'online.html?filtro=dia&dia=sexta');
+            }
+            
+            // Initialize the dropdown properly
+            initializeLanguageDropdown();
+            
+            // Initialize the view buttons
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    toggleView(view);
+                });
+            });
+            
+            // Adicionar eventos de rastreamento para os botões de participação
+            document.querySelectorAll('.join-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const day = parseInt(button.getAttribute('data-day'));
+                    const time = button.getAttribute('data-time');
+                    const language = button.closest('.timeline-event').querySelector('.event-title span:not(.now-badge)').textContent.trim();
+                    trackJoinButtonClick(language, day, time);
+                });
+            });
+            
+            // Adicionar eventos de rastreamento para os botões de replay
+            document.querySelectorAll('.replay-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const language = button.closest('.timeline-event').querySelector('.event-title span:not(.now-badge)').textContent.trim();
+                    trackReplayButtonClick(language);
+                });
+            });
+            
+            initCalendar();
+            updateJoinButtons();
+            
+            // Verificar eventos atuais a cada minuto
+            setInterval(function() {
+                updateJoinButtons();
+                
+                // Recuperar o dia ativo atualmente
+                const activeDay = document.querySelector('.day-button.active');
+                if (activeDay) {
+                    const day = parseInt(activeDay.getAttribute('data-day'));
+                    checkCurrentEvents(day);
+                }
+            }, 60000); // 60 segundos
+        });
+
+        // Specialized function to initialize the language dropdown
+        function initializeLanguageDropdown() {
             const dropdownButton = document.querySelector('.dropdown-button');
             const dropdownContent = document.querySelector('.dropdown-content');
-            const selectedLanguageText = document.getElementById('selected-language');
-            const searchInput = document.getElementById('language-search');
-            const noResults = document.getElementById('no-results');
             
-            // Definir como "Inglês" por padrão, pois é o idioma ativo inicialmente
-            selectedLanguageText.textContent = "Inglês";
-            
-            if (dropdownButton) {
-                dropdownButton.addEventListener('click', function() {
-                    dropdownContent.classList.toggle('show');
-                    if (dropdownContent.classList.contains('show') && searchInput) {
-                        // Foco na caixa de pesquisa ao abrir o dropdown
-                        setTimeout(() => searchInput.focus(), 100);
-                    }
-                });
+            if (!dropdownButton || !dropdownContent) {
+                console.error("Dropdown elements not found");
+                return;
             }
             
-            // Fechar o dropdown quando clicar fora dele
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.mobile-dropdown')) {
-                    if (dropdownContent && dropdownContent.classList.contains('show')) {
-                        dropdownContent.classList.remove('show');
-                    }
-                }
+            console.log("Setting up language dropdown");
+            
+            // Clean up existing event listeners
+            const newDropdownButton = dropdownButton.cloneNode(true);
+            dropdownButton.parentNode.replaceChild(newDropdownButton, dropdownButton);
+            
+            // Add click event to toggle dropdown visibility
+            newDropdownButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Dropdown button clicked");
+                dropdownContent.classList.toggle('show');
             });
             
-            // Adicionar funcionalidade de busca
+            // Setup search functionality
+            const searchInput = document.getElementById('language-search');
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    let visibleCount = 0;
+                    const searchText = this.value.toLowerCase();
+                    let resultsFound = false;
                     
-                    document.querySelectorAll('.dropdown-content .language-button').forEach(button => {
-                        const langText = button.querySelector('span:not(.language-badge)').textContent.toLowerCase();
-                        if (langText.includes(searchTerm)) {
-                            button.style.display = 'flex';
-                            visibleCount++;
-                        } else {
-                            button.style.display = 'none';
-                        }
+                    document.querySelectorAll('.language-button').forEach(button => {
+                        const buttonText = button.querySelector('span').textContent.toLowerCase();
+                        const match = buttonText.includes(searchText);
+                        button.style.display = match ? '' : 'none';
+                        if (match) resultsFound = true;
                     });
                     
-                    // Mostrar/esconder mensagem de nenhum resultado
-                    if (noResults) {
-                        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-                    }
+                    // Show/hide "no results" message
+                    document.getElementById('no-results').style.display = resultsFound ? 'none' : 'block';
                 });
             }
             
-            // Adicionar evento de clique nos botões de idioma do dropdown
-            const dropdownLanguageButtons = document.querySelectorAll('.dropdown-content .language-button');
-            dropdownLanguageButtons.forEach(button => {
-                button.addEventListener('click', function() {
+            // Setup language button functionality
+            document.querySelectorAll('.language-button').forEach(button => {
+                // Clone and replace to remove old event listeners
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+                
+                newButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
                     const language = this.getAttribute('data-language');
-                    // Resetar o campo de pesquisa
-                    if (searchInput) {
-                        searchInput.value = '';
-                        // Mostrar todos os botões novamente
-                        document.querySelectorAll('.dropdown-content .language-button').forEach(btn => {
-                            btn.style.display = 'flex';
-                        });
-                        if (noResults) noResults.style.display = 'none';
+                    console.log(`Language button clicked: ${language}`);
+                    
+                    // Update the dropdown text and icon
+                    const selectedLangText = document.getElementById('selected-language');
+                    const selectedLangFlag = document.getElementById('selected-language-flag');
+                    
+                    if (selectedLangText) {
+                        selectedLangText.textContent = this.querySelector('span').textContent;
                     }
                     
-                    const languageText = this.querySelector('.language-info span:not(.language-badge)').textContent;
-                    const flagElement = this.querySelector('.flag-icon');
-                    
-                    // Atualizar o texto do botão dropdown
-                    selectedLanguageText.textContent = languageText;
-                    
-                    // Atualizar a bandeira do botão dropdown se existir
-                    const selectedFlag = document.getElementById('selected-language-flag');
-                    if (selectedFlag && flagElement) {
-                        selectedFlag.src = flagElement.src || '';
-                        selectedFlag.alt = flagElement.alt || '';
+                    if (selectedLangFlag) {
+                        const flagElement = this.querySelector('.flag-icon');
+                        if (flagElement) {
+                            if (flagElement.tagName.toLowerCase() === 'img') {
+                                selectedLangFlag.src = flagElement.src;
+                                selectedLangFlag.alt = flagElement.alt;
+                                selectedLangFlag.style.display = '';
+                            } else {
+                                // For emoji flags
+                                selectedLangFlag.style.display = 'none';
+                            }
+                        }
                     }
                     
-                    // Caso especial para Libras que usa emoji
-                    if (language.toLowerCase() === 'libras') {
-                        selectedFlag.style.display = 'none';
-                    } else {
-                        selectedFlag.style.display = '';
-                    }
-                    
-                    // Fechar o dropdown
-                    dropdownContent.classList.remove('show');
-                    
-                    // Remover a classe active de todos os botões do dropdown
-                    dropdownLanguageButtons.forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    
-                    // Adicionar a classe active ao botão clicado
-                    this.classList.add('active');
-                    
-                    // Chamar a função de exibição de eventos para o idioma selecionado
+                    // Show events for this language
                     showLanguageEvents(language);
+                    
+                    // Close the dropdown
+                    dropdownContent.classList.remove('show');
                 });
             });
-        });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.dropdown-button') && 
+                    !event.target.closest('.dropdown-content')) {
+                    dropdownContent.classList.remove('show');
+                }
+            });
+        }
         
         // Set current year
         document.getElementById('current-year').textContent = new Date().getFullYear();
@@ -1888,7 +1931,7 @@
                 // Check if the event is in the past
                 if (eventDate < now) {
                     // It's a past event
-                    button.textContent = 'Finalizado';
+                    button.innerHTML = '<i class="fas fa-check"></i> Finalizado';
                     button.classList.add('disabled');
                     button.classList.remove('active');
                     button.disabled = true;
@@ -1906,12 +1949,12 @@
                     const isWithinTimeWindow = isToday && (buttonTime === currentHour || buttonTime === currentHour + 1);
                     
                     if (isWithinTimeWindow) {
-                        button.textContent = 'Participar';
+                        button.innerHTML = 'Participar';
                         button.classList.add('active');
                         button.classList.remove('disabled');
                         button.disabled = false;
                     } else {
-                        button.textContent = 'Aguarde';
+                        button.innerHTML = '<i class="fas fa-clock"></i> Aguarde';
                         button.classList.add('disabled');
                         button.classList.remove('active');
                         button.disabled = true;
@@ -2008,30 +2051,17 @@
             // Update URL
             if (updateURL) {
                 const url = new URL(window.location);
-                url.searchParams.set('view', 'day');
                 
-                // Usar nome do dia em vez do número
-                let diaNome;
-                switch (day) {
-                    case 1:
-                        diaNome = 'segunda';
-                        break;
-                    case 2:
-                        diaNome = 'terca';
-                        break;
-                    case 3:
-                        diaNome = 'quarta';
-                        break;
-                    case 4:
-                        diaNome = 'quinta';
-                        break;
-                    case 5:
-                        diaNome = 'sexta';
-                        break;
-                    default:
-                        diaNome = 'sexta'; // Default para sexta-feira
+                // Remove old 'view' parameter if it exists
+                if (url.searchParams.has('view')) {
+                    url.searchParams.delete('view');
                 }
                 
+                // Use new 'filtro' parameter
+                url.searchParams.set('filtro', 'dia');
+                
+                // Usar nome do dia em vez do número
+                let diaNome = getDayName(day);
                 url.searchParams.set('dia', diaNome);
                 
                 // Remover parâmetro de idioma na visualização por dia
