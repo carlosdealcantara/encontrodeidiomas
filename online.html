@@ -2108,35 +2108,32 @@
         // Read URL parameters and update the UI accordingly
         function readURLParameters() {
             const params = new URLSearchParams(window.location.search);
-            const filtro = params.get('filtro') || params.get('view'); // Support both new and old parameter names
+            // Only check for filtro parameter, use view as fallback for backward compatibility
+            const filtro = params.get('filtro') || params.get('view'); 
             const idioma = params.get('idioma');
             const dia = params.get('dia');
             
             let parametersApplied = false;
             
-            // Process view/filtro parameter
+            // Process filtro parameter
             if (filtro) {
                 // Translate old parameter values to new ones
                 let viewValue = filtro;
                 if (filtro === 'language') viewValue = 'idioma';
                 if (filtro === 'day') viewValue = 'dia';
                 
+                // Map filtro value to view buttons and content
+                let viewButtonValue = 'day';
+                if (viewValue === 'idioma') viewButtonValue = 'language';
+                else if (viewValue === 'dia') viewButtonValue = 'day';
+                
                 // Update the UI to show the selected view
                 document.querySelectorAll('.view-button').forEach(button => {
-                    const buttonView = button.getAttribute('data-view');
-                    const matches = (buttonView === viewValue) || 
-                                   (buttonView === 'language' && viewValue === 'idioma') ||
-                                   (buttonView === 'day' && viewValue === 'dia');
-                    button.classList.toggle('active', matches);
+                    button.classList.toggle('active', button.getAttribute('data-view') === viewButtonValue);
                 });
                 
                 document.querySelectorAll('.view-content').forEach(content => {
-                    let contentId = content.id;
-                    // Handle both old and new parameter values
-                    const matches = (contentId === `${viewValue}-view`) || 
-                                   (contentId === 'language-view' && viewValue === 'idioma') ||
-                                   (contentId === 'day-view' && viewValue === 'dia');
-                    content.classList.toggle('active', matches);
+                    content.classList.toggle('active', content.id === `${viewButtonValue}-view`);
                 });
                 
                 parametersApplied = true;
@@ -2533,8 +2530,15 @@
             });
             document.getElementById(`${view}-view`).classList.add('active');
             
-            // Update URL - use 'filtro' parameter instead of 'view'
+            // Update URL with filtro parameter only (not view)
             const url = new URL(window.location);
+            
+            // Remove old view parameter if present
+            if (url.searchParams.has('view')) {
+                url.searchParams.delete('view');
+            }
+            
+            // Set new filtro parameter
             url.searchParams.set('filtro', view === 'language' ? 'idioma' : 'dia');
             
             // Se mudar para visualização por idioma, garantir que o idioma está definido
@@ -2651,11 +2655,46 @@
             // Track language selection
             trackLanguageFilterEvent(language);
             
+            // Ensure dropdown is initialized
+            const dropdownContent = document.querySelector('.dropdown-content');
+            if (dropdownContent) {
+                dropdownContent.classList.remove('show');
+            }
+            
             // Update active state of language buttons
             document.querySelectorAll('.dropdown-content .language-button').forEach(button => {
                 const buttonLanguage = button.getAttribute('data-language');
                 button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === language.toLowerCase());
             });
+            
+            // Update dropdown button text and flag
+            const selectedLangText = document.getElementById('selected-language');
+            const selectedLangFlag = document.getElementById('selected-language-flag');
+            
+            if (selectedLangText) {
+                selectedLangText.textContent = capitalizeFirstLetter(language);
+            }
+            
+            if (selectedLangFlag) {
+                // Find the matching language button to get its flag
+                const matchingButton = Array.from(document.querySelectorAll('.language-button')).find(btn => 
+                    btn.getAttribute('data-language').toLowerCase() === language.toLowerCase()
+                );
+                
+                if (matchingButton) {
+                    const flagElement = matchingButton.querySelector('.flag-icon');
+                    if (flagElement) {
+                        if (flagElement.tagName.toLowerCase() === 'img') {
+                            selectedLangFlag.src = flagElement.src;
+                            selectedLangFlag.alt = flagElement.alt;
+                            selectedLangFlag.style.display = '';
+                        } else {
+                            // For emoji flags
+                            selectedLangFlag.style.display = 'none';
+                        }
+                    }
+                }
+            }
             
             // Populate the language-events container with events from all days
             const languageEvents = document.getElementById('language-events');
@@ -2710,7 +2749,14 @@
             // Update URL
             if (updateURL) {
                 const url = new URL(window.location);
-                url.searchParams.set('filtro', 'idioma'); // Use 'filtro' instead of 'view'
+                
+                // Remove old view parameter if present
+                if (url.searchParams.has('view')) {
+                    url.searchParams.delete('view');
+                }
+                
+                // Set filtro parameter
+                url.searchParams.set('filtro', 'idioma');
                 
                 // Normalizar o nome do idioma removendo acentos e caracteres especiais
                 const normalizedLanguage = language.toLowerCase()
@@ -2736,8 +2782,15 @@
             }, 300);
         }
 
+        // Helper function to capitalize first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
         // Função para inicializar os eventos dos idiomas
         function initializeLanguageEvents() {
+            console.log("Initializing language events");
+            
             // Configurar botões de idioma
             document.querySelectorAll('.language-button').forEach(button => {
                 button.addEventListener('click', function() {
@@ -2771,8 +2824,14 @@
             // Configurar dropdown
             const dropdownButton = document.querySelector('.dropdown-button');
             if (dropdownButton) {
-                dropdownButton.addEventListener('click', function() {
-                    document.querySelector('.dropdown-content').classList.toggle('show');
+                console.log("Adding click event to dropdown button");
+                dropdownButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log("Dropdown button clicked");
+                    const dropdownContent = document.querySelector('.dropdown-content');
+                    dropdownContent.classList.toggle('show');
                 });
             }
             
@@ -2979,7 +3038,7 @@
             
             // Recarregar parâmetros da URL e atualizar a UI
             const params = new URLSearchParams(window.location.search);
-            const filtro = params.get('filtro') || params.get('view'); // Support both
+            const filtro = params.get('filtro') || params.get('view'); // Support both for backward compatibility
             const idioma = params.get('idioma');
             const dia = params.get('dia');
             
