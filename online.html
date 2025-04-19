@@ -2108,21 +2108,35 @@
         // Read URL parameters and update the UI accordingly
         function readURLParameters() {
             const params = new URLSearchParams(window.location.search);
-            const view = params.get('view');
+            const filtro = params.get('filtro') || params.get('view'); // Support both new and old parameter names
             const idioma = params.get('idioma');
             const dia = params.get('dia');
             
             let parametersApplied = false;
             
-            // Process view parameter
-            if (view) {
+            // Process view/filtro parameter
+            if (filtro) {
+                // Translate old parameter values to new ones
+                let viewValue = filtro;
+                if (filtro === 'language') viewValue = 'idioma';
+                if (filtro === 'day') viewValue = 'dia';
+                
                 // Update the UI to show the selected view
                 document.querySelectorAll('.view-button').forEach(button => {
-                    button.classList.toggle('active', button.getAttribute('data-view') === view);
+                    const buttonView = button.getAttribute('data-view');
+                    const matches = (buttonView === viewValue) || 
+                                   (buttonView === 'language' && viewValue === 'idioma') ||
+                                   (buttonView === 'day' && viewValue === 'dia');
+                    button.classList.toggle('active', matches);
                 });
                 
                 document.querySelectorAll('.view-content').forEach(content => {
-                    content.classList.toggle('active', content.id === `${view}-view`);
+                    let contentId = content.id;
+                    // Handle both old and new parameter values
+                    const matches = (contentId === `${viewValue}-view`) || 
+                                   (contentId === 'language-view' && viewValue === 'idioma') ||
+                                   (contentId === 'day-view' && viewValue === 'dia');
+                    content.classList.toggle('active', matches);
                 });
                 
                 parametersApplied = true;
@@ -2170,7 +2184,7 @@
                 }
                 
                 // Se estamos na visualização por idioma, mostrar os eventos deste idioma
-                if (view === 'language' || !view) {
+                if (filtro === 'idioma' || filtro === 'language' || !filtro) {
                     showLanguageEvents(idioma, false); // Don't update URL again
                 }
                 
@@ -2178,7 +2192,7 @@
             }
             
             // Process dia parameter - IMPORTANTE: Na visualização por dia, mostrar TODOS os eventos do dia selecionado
-            if (dia && (view === 'day' || !view)) {
+            if (dia && (filtro === 'dia' || filtro === 'day' || !filtro)) {
                 let dayNum;
                 
                 // Converter nome do dia para número
@@ -2214,7 +2228,7 @@
                 parametersApplied = true;
                 
                 // Se não especificou o view, mas especificou o dia, assumimos visualização por dia
-                if (!view) {
+                if (!filtro) {
                     document.querySelectorAll('.view-button').forEach(button => {
                         button.classList.toggle('active', button.getAttribute('data-view') === 'day');
                     });
@@ -2519,9 +2533,9 @@
             });
             document.getElementById(`${view}-view`).classList.add('active');
             
-            // Update URL
+            // Update URL - use 'filtro' parameter instead of 'view'
             const url = new URL(window.location);
-            url.searchParams.set('view', view);
+            url.searchParams.set('filtro', view === 'language' ? 'idioma' : 'dia');
             
             // Se mudar para visualização por idioma, garantir que o idioma está definido
             if (view === 'language') {
@@ -2643,33 +2657,60 @@
                 button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === language.toLowerCase());
             });
             
-            // Show language events
-            document.querySelectorAll('.timeline-event').forEach(event => {
+            // Populate the language-events container with events from all days
+            const languageEvents = document.getElementById('language-events');
+            const timeline = languageEvents.querySelector('.timeline');
+            
+            // Clear current events
+            timeline.innerHTML = '';
+            
+            // Counter to track if we found any events
+            let eventsFound = 0;
+            
+            // Copy events from day view that match the language
+            document.querySelectorAll('.day-events .timeline-event').forEach(event => {
                 const eventTitle = event.querySelector('.event-title span:not(.now-badge)');
                 if (!eventTitle) return;
                 
                 const eventLanguage = eventTitle.textContent.trim().toLowerCase();
-                event.style.display = (eventLanguage === language.toLowerCase()) ? '' : 'none';
-            });
-            
-            // Check if there are any events for this language
-            document.querySelectorAll('.day-events').forEach(dayEvents => {
-                const dayEventsContainer = dayEvents.querySelector('.timeline');
-                const hasVisibleEvents = Array.from(dayEventsContainer.querySelectorAll('.timeline-event')).some(event => 
-                    event.style.display !== 'none'
-                );
+                const normalizedLanguage = language.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const normalizedEventLanguage = eventLanguage.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 
-                // Show "no events" message if there are no events for this language
-                const noEventsMessage = dayEvents.querySelector('.no-events');
-                if (noEventsMessage) {
-                    noEventsMessage.style.display = hasVisibleEvents ? 'none' : 'block';
+                if (normalizedEventLanguage === normalizedLanguage) {
+                    // Clone the event and add to language view
+                    const clonedEvent = event.cloneNode(true);
+                    
+                    // Add day information to the time
+                    const dayElement = event.closest('.day-events');
+                    if (dayElement) {
+                        const dayId = dayElement.id.split('-')[1];
+                        const dayButton = document.querySelector(`.day-button[data-day="${dayId}"]`);
+                        if (dayButton) {
+                            const dayName = dayButton.textContent.trim();
+                            const timeElement = clonedEvent.querySelector('.event-time');
+                            if (timeElement) {
+                                timeElement.textContent = `${dayName} - ${timeElement.textContent}`;
+                            }
+                        }
+                    }
+                    
+                    timeline.appendChild(clonedEvent);
+                    eventsFound++;
                 }
             });
+            
+            // If no events were found, show a message
+            if (eventsFound === 0) {
+                const noEventsDiv = document.createElement('div');
+                noEventsDiv.className = 'no-events';
+                noEventsDiv.textContent = `Não há eventos programados para ${language} nesta semana.`;
+                timeline.appendChild(noEventsDiv);
+            }
             
             // Update URL
             if (updateURL) {
                 const url = new URL(window.location);
-                url.searchParams.set('view', 'language');
+                url.searchParams.set('filtro', 'idioma'); // Use 'filtro' instead of 'view'
                 
                 // Normalizar o nome do idioma removendo acentos e caracteres especiais
                 const normalizedLanguage = language.toLowerCase()
@@ -2697,7 +2738,58 @@
 
         // Função para inicializar os eventos dos idiomas
         function initializeLanguageEvents() {
-            // ... existing code ...
+            // Configurar botões de idioma
+            document.querySelectorAll('.language-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const language = this.getAttribute('data-language');
+                    showLanguageEvents(language);
+                    
+                    // Fechar dropdown após selecionar
+                    document.querySelector('.dropdown-content').classList.remove('show');
+                });
+            });
+            
+            // Configurar busca de idiomas
+            const searchInput = document.getElementById('language-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchText = this.value.toLowerCase();
+                    let resultsFound = false;
+                    
+                    document.querySelectorAll('.language-button').forEach(button => {
+                        const buttonText = button.querySelector('span').textContent.toLowerCase();
+                        const match = buttonText.includes(searchText);
+                        button.style.display = match ? '' : 'none';
+                        if (match) resultsFound = true;
+                    });
+                    
+                    // Mostrar/esconder mensagem de "nenhum resultado"
+                    document.getElementById('no-results').style.display = resultsFound ? 'none' : 'block';
+                });
+            }
+            
+            // Configurar dropdown
+            const dropdownButton = document.querySelector('.dropdown-button');
+            if (dropdownButton) {
+                dropdownButton.addEventListener('click', function() {
+                    document.querySelector('.dropdown-content').classList.toggle('show');
+                });
+            }
+            
+            // Fechar dropdown quando clicar fora
+            window.addEventListener('click', function(event) {
+                if (!event.target.matches('.dropdown-button') && 
+                    !event.target.closest('.dropdown-button') && 
+                    !event.target.matches('.dropdown-content') && 
+                    !event.target.closest('.dropdown-content')) {
+                    const dropdowns = document.getElementsByClassName('dropdown-content');
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        if (dropdowns[i].classList.contains('show')) {
+                            dropdowns[i].classList.remove('show');
+                        }
+                    }
+                }
+            });
             
             // Ajustar as descrições de eventos para manter consistência
             const languageDescriptions = {
@@ -2707,6 +2799,11 @@
                 'francês': 'Venha praticar francês em um ambiente acolhedor para todos.',
                 'espanhol': 'Pratique espanhol com nativos e entusiastas. Temas culturais.',
                 'japonês': 'Pratique japonês com falantes de diferentes níveis. Comunicação direta.',
+                'inglês': 'Pratique inglês em conversas descontraídas. Todos os níveis.',
+                'coreano': 'Aprenda e pratique coreano com falantes e estudantes.',
+                'chinês': 'Converse em mandarim com pessoas de todos os níveis.',
+                'russo': 'Pratique russo em um ambiente amigável para todos os níveis.',
+                'libras': 'Aprenda e pratique a Língua Brasileira de Sinais.',
                 // outros idiomas se necessário
             };
             
@@ -2722,6 +2819,15 @@
                     if (desc.textContent.trim().length > 74) {
                         desc.textContent = languageDescriptions[language.toLowerCase()];
                     }
+                }
+            });
+            
+            // Adicione atributos data-language aos eventos com base no título
+            document.querySelectorAll('.timeline-event').forEach(event => {
+                const eventTitle = event.querySelector('.event-title span:not(.now-badge)');
+                if (eventTitle) {
+                    const language = eventTitle.textContent.trim().toLowerCase();
+                    event.setAttribute('data-language', language);
                 }
             });
         }
@@ -2866,6 +2972,81 @@
                 }
             }, 150);
         }
+
+        // Lidar com navegação do navegador (voltar/avançar)
+        window.addEventListener('popstate', function(event) {
+            console.log('Navigation state change detected');
+            
+            // Recarregar parâmetros da URL e atualizar a UI
+            const params = new URLSearchParams(window.location.search);
+            const filtro = params.get('filtro') || params.get('view'); // Support both
+            const idioma = params.get('idioma');
+            const dia = params.get('dia');
+            
+            // Verificar qual visualização mostrar
+            let viewToShow = 'day'; // Padrão
+            
+            if (filtro === 'idioma' || filtro === 'language') {
+                viewToShow = 'language';
+            } else if (filtro === 'dia' || filtro === 'day') {
+                viewToShow = 'day';
+            } else if (idioma) {
+                viewToShow = 'language';
+            } else if (dia) {
+                viewToShow = 'day';
+            }
+            
+            // Atualizar botões e conteúdo da visualização
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.classList.toggle('active', button.getAttribute('data-view') === viewToShow);
+            });
+            
+            document.querySelectorAll('.view-content').forEach(content => {
+                content.classList.toggle('active', content.id === `${viewToShow}-view`);
+            });
+            
+            // Se for visualização por idioma e tiver o parâmetro idioma, atualizar a visualização
+            if (viewToShow === 'language' && idioma) {
+                showLanguageEvents(idioma, false);
+            }
+            
+            // Se for visualização por dia e tiver o parâmetro dia, atualizar a visualização
+            if (viewToShow === 'day' && dia) {
+                let dayNum;
+                
+                // Converter nome do dia para número
+                switch (dia.toLowerCase()) {
+                    case 'segunda':
+                        dayNum = 1;
+                        break;
+                    case 'terca':
+                        dayNum = 2;
+                        break;
+                    case 'quarta':
+                        dayNum = 3;
+                        break;
+                    case 'quinta':
+                        dayNum = 4;
+                        break;
+                    case 'sexta':
+                        dayNum = 5;
+                        break;
+                    default:
+                        dayNum = parseInt(dia) || 5; // Default para sexta-feira
+                }
+                
+                showDayEvents(dayNum, false);
+            }
+            
+            // Verificar eventos acontecendo agora
+            if (viewToShow === 'day') {
+                const activeDay = document.querySelector('.day-button.active');
+                if (activeDay) {
+                    const day = parseInt(activeDay.getAttribute('data-day'));
+                    checkCurrentEvents(day);
+                }
+            }
+        });
     </script>
 </body>
 </html> 
