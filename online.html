@@ -1327,14 +1327,14 @@
                         <div class="no-results" id="no-results">
                             Nenhum idioma encontrado.
                         </div>
-                        <button class="language-button" data-language="frances">
+                        <button class="language-button" data-language="francês">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="França">
                                 <span>Francês</span>
                             </div>
                             <span class="language-badge">3</span>
                         </button>
-                        <button class="language-button" data-language="japones">
+                        <button class="language-button" data-language="japonês">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/jp.png" class="flag-icon" alt="Japão">
                                 <span>Japonês</span>
@@ -1355,7 +1355,7 @@
                             </div>
                             <span class="language-badge">3</span>
                         </button>
-                        <button class="language-button" data-language="ingles">
+                        <button class="language-button" data-language="inglês">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
                                 <span>Inglês</span>
@@ -1376,14 +1376,14 @@
                             </div>
                             <span class="language-badge">1</span>
                         </button>
-                        <button class="language-button" data-language="chines">
+                        <button class="language-button" data-language="chinês">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="China">
                                 <span>Chinês</span>
                             </div>
                             <span class="language-badge">2</span>
                         </button>
-                        <button class="language-button" data-language="alemao">
+                        <button class="language-button" data-language="alemão">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemanha">
                                 <span>Alemão</span>
@@ -1397,7 +1397,7 @@
                             </div>
                             <span class="language-badge">1</span>
                         </button>
-                        <button class="language-button" data-language="portugues">
+                        <button class="language-button" data-language="português">
                             <div class="language-info">
                                 <img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Brasil">
                                 <span>Português</span>
@@ -1848,7 +1848,7 @@
                                 selectedLangFlag.src = flagElement.src;
                                 selectedLangFlag.alt = flagElement.alt;
                                 selectedLangFlag.style.display = '';
-                            } else {
+                    } else {
                                 // For emoji flags
                                 selectedLangFlag.style.display = 'none';
                             }
@@ -2300,18 +2300,28 @@
                     .normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '');
                 
-                console.log(`Processing language parameter: '${idioma}', simplified: '${idiomaSimplificado}'`);
-                
                 // Atualizar dropdown independente da visualização
                 const dropdownButtons = document.querySelectorAll('.dropdown-content .language-button');
-                const selectedButton = Array.from(dropdownButtons).find(button => {
-                    const buttonLanguage = button.getAttribute('data-language').toLowerCase();
-                    console.log(`Comparing with button language: '${buttonLanguage}'`);
-                    return buttonLanguage === idiomaSimplificado;
+                
+                // Primeiro tenta encontrar pelo atributo data-normalized
+                let selectedButton = Array.from(dropdownButtons).find(button => {
+                    return button.getAttribute('data-normalized') === idiomaSimplificado;
                 });
                 
+                // Se não encontrar, tenta pela normalização do data-language
+                if (!selectedButton) {
+                    selectedButton = Array.from(dropdownButtons).find(button => {
+                        const buttonLanguage = button.getAttribute('data-language');
+                        if (!buttonLanguage) return false;
+                        
+                        const normalizedButtonLanguage = buttonLanguage.toLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '');
+                        return normalizedButtonLanguage === idiomaSimplificado;
+                    });
+                }
+                
                 if (selectedButton) {
-                    console.log(`Found matching button for '${idioma}'`);
                     // Update active state
                     dropdownButtons.forEach(btn => btn.classList.remove('active'));
                     selectedButton.classList.add('active');
@@ -2334,14 +2344,16 @@
                             selectedLangFlag.style.display = 'none';
                         }
                     }
+                    
+                    // Se estamos na visualização por idioma, mostrar os eventos deste idioma
+                    if (filtro === 'idioma' || filtro === 'language' || !filtro) {
+                        // Usar o valor do data-language original para manter acentos na interface
+                        const originalLanguage = selectedButton.getAttribute('data-language');
+                        showLanguageEvents(originalLanguage, false); // Don't update URL again
+                    }
+                    
+                    parametersApplied = true;
                 }
-                
-                // Se estamos na visualização por idioma, mostrar os eventos deste idioma
-                if (filtro === 'idioma' || filtro === 'language' || !filtro) {
-                    showLanguageEvents(idioma, false); // Don't update URL again
-                }
-                
-                parametersApplied = true;
             }
             
             // Process dia parameter - IMPORTANTE: Na visualização por dia, mostrar TODOS os eventos do dia selecionado
@@ -2371,7 +2383,7 @@
                 }
                 
                 // Ajustar para mostrar sexta-feira (5) se o dia for fim de semana (0=Domingo ou 6=Sábado)
-                if (dayNum === 0 || dayNum === 6) {
+                if (dayNum === 0 || dayNum === 6 || isNaN(dayNum)) {
                     dayNum = 5; // Sexta-feira
                 }
                 
@@ -2664,15 +2676,17 @@
                 // Find active language button or default to English
                 const activeLanguageButton = document.querySelector('.dropdown-content .language-button.active');
                 if (activeLanguageButton) {
-                    // Use the language from the active button - already normalized in data-language
+                    // Use the language from the active button
                     const language = activeLanguageButton.getAttribute('data-language');
-                    // Use the display text from the button span for visual display
-                    const languageText = activeLanguageButton.querySelector('span').textContent;
+                    showLanguageEvents(language, false);
                     
-                    showLanguageEvents(languageText, false);
+                    // Normalize the language name for URL (remove special characters)
+                    const normalizedLanguage = language.toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
                     
-                    // Use data-language attribute which is already normalized for URL
-                    url.searchParams.set('idioma', language);
+                    // Manter o idioma na URL (sem caracteres especiais)
+                    url.searchParams.set('idioma', normalizedLanguage);
                 } else {
                     // Default to English
                     showLanguageEvents('inglês', false);
@@ -2780,34 +2794,18 @@
             // Track language selection
             trackLanguageFilterEvent(language);
             
-            // Update active state of language buttons - compare normalized versions
-            const normalizedSearchLanguage = language.toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '');
-            
+            // Update active state of language buttons
             document.querySelectorAll('.dropdown-content .language-button').forEach(button => {
                 const buttonLanguage = button.getAttribute('data-language');
-                // Compare with normalized values
-                button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === normalizedSearchLanguage);
+                button.classList.toggle('active', buttonLanguage && buttonLanguage.toLowerCase() === language.toLowerCase());
             });
                 
-            // Update dropdown button text and flag - maintain display with accents
+            // Update dropdown button text and flag
             const selectedLangText = document.getElementById('selected-language');
             const selectedLangFlag = document.getElementById('selected-language-flag');
-
+            
             if (selectedLangText) {
-                // Use the actual text content from the button for display (with accents)
-                const activeButton = document.querySelector('.dropdown-content .language-button.active');
-                if (activeButton) {
-                    const textElement = activeButton.querySelector('span');
-                    if (textElement) {
-                        selectedLangText.textContent = textElement.textContent;
-                    } else {
-                        selectedLangText.textContent = capitalizeFirstLetter(language);
-                    }
-                } else {
-                    selectedLangText.textContent = capitalizeFirstLetter(language);
-                }
+                selectedLangText.textContent = capitalizeFirstLetter(language);
             }
             
             if (selectedLangFlag) {
@@ -2819,13 +2817,13 @@
                 if (matchingButton) {
                     const flagElement = matchingButton.querySelector('.flag-icon');
                     if (flagElement) {
-                    if (flagElement.tagName.toLowerCase() === 'img') {
-                        selectedLangFlag.src = flagElement.src;
-                        selectedLangFlag.alt = flagElement.alt;
-                        selectedLangFlag.style.display = '';
-                    } else {
+                        if (flagElement.tagName.toLowerCase() === 'img') {
+                            selectedLangFlag.src = flagElement.src;
+                            selectedLangFlag.alt = flagElement.alt;
+                            selectedLangFlag.style.display = '';
+                        } else {
                             // For emoji flags
-                        selectedLangFlag.style.display = 'none';
+                            selectedLangFlag.style.display = 'none';
                         }
                     }
                 }
@@ -2841,18 +2839,35 @@
             // Counter to track if we found any events
             let eventsFound = 0;
             
+            // Normalizar o idioma para comparação
+            const normalizedLanguage = language.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+            
             // Copy events from day view that match the language
             document.querySelectorAll('.day-events .timeline-event').forEach(event => {
                 const eventTitle = event.querySelector('.event-title span:not(.now-badge)');
                 if (!eventTitle) return;
                 
-                const eventLanguage = eventTitle.textContent.trim().toLowerCase();
-                const normalizedLanguage = language.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                const normalizedEventLanguage = eventLanguage.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                // Tenta pelo data-normalized primeiro
+                let matchFound = false;
+                const eventNormalized = event.getAttribute('data-normalized');
                 
-                console.log(`Comparing languages: '${normalizedEventLanguage}' vs '${normalizedLanguage}'`);
+                if (eventNormalized) {
+                    matchFound = eventNormalized === normalizedLanguage;
+                } else {
+                    // Normaliza o texto do evento manualmente
+                    const eventLanguage = eventTitle.textContent.trim().toLowerCase();
+                    const normalizedEventLanguage = eventLanguage
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
+                    
+                    matchFound = normalizedEventLanguage === normalizedLanguage;
+                }
                 
-                if (normalizedEventLanguage === normalizedLanguage) {
+                console.log(`Comparing languages for: ${eventTitle.textContent.trim()}, match: ${matchFound}`);
+                
+                if (matchFound) {
                     // Clone the event and add to language view
                     const clonedEvent = event.cloneNode(true);
                     
@@ -2940,6 +2955,15 @@
                     // Fechar dropdown após selecionar
                     document.querySelector('.dropdown-content').classList.remove('show');
                 });
+                
+                // Adicionar data-normalized atributo para busca sem acentos
+                const language = button.getAttribute('data-language');
+                if (language) {
+                    const normalizedLanguage = language.toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
+                    button.setAttribute('data-normalized', normalizedLanguage);
+                }
             });
             
             // Configurar busca de idiomas
@@ -2951,7 +2975,15 @@
                     
                     document.querySelectorAll('.language-button').forEach(button => {
                         const buttonText = button.querySelector('span').textContent.toLowerCase();
-                        const match = buttonText.includes(searchText);
+                        // Buscar sem considerar acentos
+                        const normalizedButtonText = buttonText
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '');
+                        const normalizedSearchText = searchText
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '');
+                        
+                        const match = normalizedButtonText.includes(normalizedSearchText);
                         button.style.display = match ? '' : 'none';
                         if (match) resultsFound = true;
                     });
@@ -2967,6 +2999,12 @@
                 if (eventTitle) {
                     const language = eventTitle.textContent.trim().toLowerCase();
                     event.setAttribute('data-language', language);
+                    
+                    // Adicionar versão normalizada do idioma (sem acentos)
+                    const normalizedLanguage = language
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
+                    event.setAttribute('data-normalized', normalizedLanguage);
                 }
             });
             
