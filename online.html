@@ -1649,7 +1649,7 @@
                             <p class="event-description">Ajude estrangeiros com português brasileiro. Troca cultural.</p>
                             <div class="event-actions">
                                 <a href="https://meet.google.com/boa-owry-wkh" target="_blank" class="event-button join-button" data-day="5" data-time="21">Participar</a>
-                                <a href="https://youtube.com/@encontrodeidiomas-portugues" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
+                                <a href="https://youtube.com/@encontrodeidiomasportugues" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>
                             </div>
                         </div>
                     </div>
@@ -1737,9 +1737,44 @@
         function initializeLanguageDropdown() {
             console.log("Setting up language dropdown - START");
             
-            // Find dropdown elements
-            const dropdownButton = document.querySelector('.mobile-dropdown .dropdown-button');
-            const dropdownContent = document.querySelector('.mobile-dropdown .dropdown-content');
+            // Remove any existing dropdown fix styles to avoid duplication
+            const existingStyle = document.getElementById("dropdown-fix-styles");
+            if (existingStyle) {
+                existingStyle.parentNode.removeChild(existingStyle);
+            }
+            
+            // Add enhanced styles for dropdown visibility
+            const styleEl = document.createElement('style');
+            styleEl.id = "dropdown-fix-styles";
+            styleEl.textContent = `
+                .dropdown-content.show {
+                    display: block !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    z-index: 1050 !important;
+                    position: absolute !important;
+                }
+                
+                .mobile-dropdown {
+                    position: relative !important;
+                    z-index: 1000 !important;
+                }
+                
+                .dropdown-button {
+                    z-index: 999 !important;
+                }
+                
+                .dropdown-content {
+                    max-height: 350px !important;
+                    overflow-y: auto !important;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important;
+                }
+            `;
+            document.head.appendChild(styleEl);
+            
+            // Get dropdown elements
+            const dropdownButton = document.querySelector('.dropdown-button');
+            const dropdownContent = document.querySelector('.dropdown-content');
             
             if (!dropdownButton || !dropdownContent) {
                 console.error("Dropdown elements not found:", { 
@@ -1749,59 +1784,79 @@
                 return;
             }
             
-            // Debug elements and their position
-            const buttonRect = dropdownButton.getBoundingClientRect();
-            const contentRect = dropdownContent.getBoundingClientRect();
-            console.log("Dropdown elements:", {
-                button: { 
-                    id: dropdownButton.id, 
-                    class: dropdownButton.className,
-                    position: { top: buttonRect.top, left: buttonRect.left }
-                },
-                content: { 
-                    id: dropdownContent.id, 
-                    class: dropdownContent.className,
-                    position: { top: contentRect.top, left: contentRect.left }
-                },
-                languageButtons: document.querySelectorAll('.language-button').length
-            });
-            
-            // Clean up any existing event listeners on dropdown button
-            const newDropdownButton = dropdownButton.cloneNode(true);
-            dropdownButton.parentNode.replaceChild(newDropdownButton, dropdownButton);
-            
-            console.log("Adding click listener to dropdown button");
-            // Add click event to toggle dropdown visibility
-            newDropdownButton.addEventListener('click', function(e) {
+            // Direct click handler - simpler approach
+            dropdownButton.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Dropdown button clicked");
+                console.log("Dropdown button clicked (direct handler)");
                 dropdownContent.classList.toggle('show');
-                
-                // Debug dropdown state
-                console.log("Dropdown visibility after toggle:", dropdownContent.classList.contains('show'));
-                
-                // Fix z-index if needed
-                if (dropdownContent.classList.contains('show')) {
-                    dropdownContent.style.zIndex = "1000";
-                }
+                console.log("Dropdown visibility:", dropdownContent.classList.contains('show'));
+            };
+            
+            // Setup language buttons (without cloning)
+            const languageButtons = document.querySelectorAll('.language-button');
+            console.log(`Setting up ${languageButtons.length} language buttons`);
+            
+            languageButtons.forEach(button => {
+                button.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const language = this.getAttribute('data-language');
+                    console.log(`Language button clicked: ${language}`);
+                    
+                    // Set this button as active
+                    languageButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update dropdown display
+                    const selectedLangText = document.getElementById('selected-language');
+                    const selectedLangFlag = document.getElementById('selected-language-flag');
+                    const buttonText = this.querySelector('span').textContent;
+                    const flagElement = this.querySelector('.flag-icon');
+                    
+                    if (selectedLangText) selectedLangText.textContent = buttonText;
+                    
+                    if (selectedLangFlag && flagElement) {
+                        if (flagElement.tagName.toLowerCase() === 'img') {
+                            selectedLangFlag.src = flagElement.src;
+                            selectedLangFlag.alt = flagElement.alt;
+                            selectedLangFlag.style.display = '';
+                        } else {
+                            // For emoji flags
+                            selectedLangFlag.style.display = 'none';
+                        }
+                    }
+                    
+                    // Show events for this language
+                    showLanguageEvents(language);
+                    
+                    // Close dropdown
+                    dropdownContent.classList.remove('show');
+                };
             });
             
-            // Setup search functionality
+            // Setup search input
             const searchInput = document.getElementById('language-search');
             if (searchInput) {
-                // Reset any previous event listeners
-                const newSearchInput = searchInput.cloneNode(true);
-                searchInput.parentNode.replaceChild(newSearchInput, searchInput);
-                
-                newSearchInput.addEventListener('input', function() {
+                searchInput.addEventListener('input', function() {
                     const searchText = this.value.toLowerCase();
-                    console.log("Searching for:", searchText);
                     let resultsFound = false;
+                    
+                    // Normalize search text to remove accents
+                    const normalizedSearchText = searchText
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '');
                     
                     document.querySelectorAll('.language-button').forEach(button => {
                         const buttonText = button.querySelector('span').textContent.toLowerCase();
-                        const match = buttonText.includes(searchText);
+                        
+                        // Normalize button text to remove accents
+                        const normalizedButtonText = buttonText
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '');
+                        
+                        const match = normalizedButtonText.includes(normalizedSearchText);
                         button.style.display = match ? '' : 'none';
                         if (match) resultsFound = true;
                     });
@@ -1814,55 +1869,6 @@
                 });
             }
             
-            // Setup language button functionality
-            const languageButtons = document.querySelectorAll('.language-button');
-            console.log(`Setting up ${languageButtons.length} language buttons`);
-            
-            languageButtons.forEach((button, index) => {
-                // Clone and replace to remove old event listeners
-                const newButton = button.cloneNode(true);
-                button.parentNode.replaceChild(newButton, button);
-                
-                const language = newButton.getAttribute('data-language');
-                console.log(`Setting up button for language: ${language || 'unknown'} (${index + 1}/${languageButtons.length})`);
-                
-                newButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const language = this.getAttribute('data-language');
-                    console.log(`Language button clicked: ${language}`);
-                    
-                    // Update the dropdown text and icon
-                    const selectedLangText = document.getElementById('selected-language');
-                    const selectedLangFlag = document.getElementById('selected-language-flag');
-                    
-                    if (selectedLangText) {
-                        selectedLangText.textContent = this.querySelector('span').textContent;
-                    }
-                    
-                    if (selectedLangFlag) {
-                        const flagElement = this.querySelector('.flag-icon');
-                        if (flagElement) {
-                            if (flagElement.tagName.toLowerCase() === 'img') {
-                                selectedLangFlag.src = flagElement.src;
-                                selectedLangFlag.alt = flagElement.alt;
-                                selectedLangFlag.style.display = '';
-                    } else {
-                                // For emoji flags
-                                selectedLangFlag.style.display = 'none';
-                            }
-                        }
-                    }
-                    
-                    // Show events for this language
-                    showLanguageEvents(language);
-                    
-                    // Close the dropdown
-                    dropdownContent.classList.remove('show');
-                });
-            });
-            
             // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
                 if (!event.target.closest('.dropdown-button') && 
@@ -1871,36 +1877,7 @@
                 }
             });
             
-            // Add CSS fix for dropdown visibility
-            const styleId = "dropdown-fix-styles";
-            if (!document.getElementById(styleId)) {
-                const styleEl = document.createElement('style');
-                styleEl.id = styleId;
-                styleEl.textContent = `
-                    .dropdown-content.show {
-                        display: block !important;
-                        opacity: 1 !important;
-                        visibility: visible !important;
-                        z-index: 1000 !important;
-                        position: absolute !important;
-                    }
-                    
-                    /* Additional styles to ensure visibility */
-                    .mobile-dropdown {
-                        position: relative;
-                        z-index: 999;
-                    }
-                    
-                    .dropdown-content {
-                        max-height: 300px;
-                        overflow-y: auto;
-                    }
-                `;
-                document.head.appendChild(styleEl);
-                console.log("Added dropdown fix styles");
-            }
-            
-            console.log("Setting up language dropdown - COMPLETE");
+            console.log("Language dropdown setup complete");
         }
         
         // Set current year
@@ -2335,25 +2312,25 @@
                     if (selectedLangText) selectedLangText.textContent = buttonText;
                     
                     if (selectedLangFlag && flagElement) {
-                        // Caso especial para Libras e outros que usam emoji
                         if (flagElement.tagName.toLowerCase() === 'img') {
                             selectedLangFlag.src = flagElement.src;
                             selectedLangFlag.alt = flagElement.alt;
                             selectedLangFlag.style.display = '';
                         } else {
+                            // For emoji flags
                             selectedLangFlag.style.display = 'none';
                         }
                     }
-                    
-                    // Se estamos na visualização por idioma, mostrar os eventos deste idioma
-                    if (filtro === 'idioma' || filtro === 'language' || !filtro) {
-                        // Usar o valor do data-language original para manter acentos na interface
-                        const originalLanguage = selectedButton.getAttribute('data-language');
-                        showLanguageEvents(originalLanguage, false); // Don't update URL again
-                    }
-                    
-                    parametersApplied = true;
                 }
+                
+                // Se estamos na visualização por idioma, mostrar os eventos deste idioma
+                if (filtro === 'idioma' || filtro === 'language' || !filtro) {
+                    // Usar o valor do data-language original para manter acentos na interface
+                    const originalLanguage = selectedButton.getAttribute('data-language');
+                    showLanguageEvents(originalLanguage, false); // Don't update URL again
+                }
+                
+                parametersApplied = true;
             }
             
             // Process dia parameter - IMPORTANTE: Na visualização por dia, mostrar TODOS os eventos do dia selecionado
