@@ -394,7 +394,8 @@
             margin-bottom: 1rem;
             line-height: 1.2;
             background: linear-gradient(to right, var(--accent-red), var(--accent-yellow));
-            -webkit-background-clip: text;
+            background-clip: text; /* Standard property */
+            -webkit-background-clip: text; /* Vendor prefix for WebKit browsers */
             -webkit-text-fill-color: transparent;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             text-align: center; /* Garantindo alinhamento centralizado */
