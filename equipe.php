@@ -255,7 +255,7 @@ include 'includes/header.php';
                                 <div class="host-badge"><?= $primaryLanguage ?></div>
                             <?php endif; ?>
                             
-                            <img src="<?= !empty($host['profile_picture']) ? $host['profile_picture'] : 'assets/images/HostSemFoto.png' ?>" 
+                            <img src="<?= !empty($host['profile_picture']) ? (strpos($host['profile_picture'], 'assets/') === 0 ? $host['profile_picture'] : 'assets/images/' . $host['profile_picture']) : 'assets/images/HostSemFoto.png' ?>" 
                                  alt="<?= $host['full_name'] ?>" class="host-image">
                                  
                             <div class="host-info">
