@@ -1,6 +1,4 @@
 <?php
-$title = "Encontros Online";
-
 // Get all events
 require_once 'config.php';
 $allEvents = getEvents();
@@ -10,17 +8,6 @@ $eventsByDay = [];
 for ($i = 1; $i <= 7; $i++) {
     $eventsByDay[$i] = [];
 }
-
-// Day names mapping
-$dayNames = [
-    1 => 'Segunda-feira',
-    2 => 'Terça-feira',
-    3 => 'Quarta-feira',
-    4 => 'Quinta-feira',
-    5 => 'Sexta-feira',
-    6 => 'Sábado',
-    7 => 'Domingo'
-];
 
 // Group events by day
 foreach ($allEvents as $event) {
@@ -42,6 +29,19 @@ foreach ($allEvents as $event) {
 
 // Get current day of week (1-7, Monday is 1)
 $currentDayOfWeek = date('N');
+
+// Day names mapping
+$dayNames = [
+    1 => 'Segunda-feira',
+    2 => 'Terça-feira',
+    3 => 'Quarta-feira',
+    4 => 'Quinta-feira',
+    5 => 'Sexta-feira',
+    6 => 'Sábado',
+    7 => 'Domingo'
+];
+
+$title = "Encontros Online";
 
 // Additional styles for this page
 $page_styles = <<<EOT
@@ -547,16 +547,138 @@ EOT;
 
 // Additional scripts for this page
 $extra_head = <<<EOT
+<meta property="og:title" content="Encontros Online - Encontro de Idiomas">
+<meta property="og:description" content="Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência. Participe de encontros semanais de diversos idiomas.">
+<meta property="og:image" content="https://encontrodeidiomas.com.br/assets/images/og_image.png">
+<meta property="og:url" content="https://encontrodeidiomas.com.br/online.php">
+<meta property="twitter:title" content="Encontros Online - Encontro de Idiomas">
+<meta property="twitter:description" content="Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência. Participe de encontros semanais de diversos idiomas.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
 EOT;
 
+// Define page_scripts to be included at the end
 $page_scripts = <<<EOT
-<script src="assets/js/online.js"></script>
+<script src="assets/js/online.php.js"></script>
 EOT;
 
 include 'includes/header.php';
 ?>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Encontros Online</h1>
+        <p>Participe de videoconferências gratuitas para praticar diversos idiomas com outros estudantes e poliglotas. Encontros semanais em vários horários.</p>
+        <a href="#" class="hero-button">Ver Programação</a>
+    </div>
+    <a href="#" class="scroll-down">
+        <i class="fas fa-chevron-down"></i>
+    </a>
+</section>
+
+<style>
+    /* Hero Section */
+    .hero {
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: linear-gradient(135deg, #000428, #004e92);
+        color: var(--white);
+        position: relative;
+        padding: 2rem 0;
+        overflow: hidden;
+        margin-top: 80px; /* account for fixed header */
+    }
+    
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('assets/images/encontrodeidiomas-20250407-0002.jpg') no-repeat center center/cover;
+        opacity: 0.2;
+        z-index: 0;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+        animation: fadeUp 1s ease;
+        padding: 0 20px;
+        text-align: center;
+        margin: 0 auto;
+    }
+    
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .hero h1 {
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        background: linear-gradient(to right, var(--accent-red), var(--accent-yellow));
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+    
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+    
+    .hero-button {
+        display: inline-block;
+        padding: 12px 32px;
+        background: var(--accent-red);
+        color: var(--white);
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: var(--transition);
+        box-shadow: 0 5px 15px rgba(227, 29, 28, 0.4);
+    }
+    
+    .hero-button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 25px rgba(227, 29, 28, 0.5);
+    }
+    
+    .scroll-down {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation: bounce 2s infinite;
+        cursor: pointer;
+        color: var(--white);
+        font-size: 2rem;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+        40% { transform: translateY(-20px) translateX(-50%); }
+        60% { transform: translateY(-10px) translateX(-50%); }
+    }
+</style>
 
 <div class="main-content">
     <div class="container">
