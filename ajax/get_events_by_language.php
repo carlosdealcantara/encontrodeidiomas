@@ -20,7 +20,7 @@ require_once '../config.php';
 try {
     // Get language info
     $conn = connectDB();
-    $languageStmt = $conn->prepare("SELECT name FROM languages WHERE id = :id AND active = 1");
+    $languageStmt = $conn->prepare("SELECT * FROM languages WHERE id = :id AND active = 1");
     $languageStmt->bindParam(':id', $languageId, PDO::PARAM_INT);
     $languageStmt->execute();
     $language = $languageStmt->fetch(PDO::FETCH_ASSOC);
@@ -36,6 +36,14 @@ try {
     
     // Get events for this language
     $events = getEventsByLanguage($languageId);
+
+    // Sort events by day of week and time
+    usort($events, function($a, $b) {
+        if ($a['day_of_week'] == $b['day_of_week']) {
+            return $a['time_hour'] - $b['time_hour'];
+        }
+        return $a['day_of_week'] - $b['day_of_week'];
+    });
     
     // Return JSON response
     echo json_encode([

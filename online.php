@@ -1157,6 +1157,143 @@ html, body {
     height: 18px;
     border-radius: 3px;
 }
+
+/* Filter Toggle Buttons */
+.filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    background: #f5f5f5;
+    border-radius: 30px;
+    padding: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.filter-button {
+    border: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.filter-button.active {
+    background-color: #e31d1c;
+    color: white;
+}
+
+.filter-button:not(.active) {
+    background: none;
+    color: #333;
+}
+
+.filter-button:hover:not(.active) {
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* Card style for events */
+.timeline-event {
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.timeline-event:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.day-info {
+    display: inline-block;
+    background-color: #002654;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.now-badge {
+    display: inline-block;
+    background-color: #e31d1c;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 10px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+/* Updated day buttons */
+.calendar-days {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.day-button {
+    background-color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 120px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.day-button.active {
+    background-color: #e31d1c;
+    color: white;
+}
+
+.day-button:hover:not(.active) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* Responsive updates */
+@media (max-width: 768px) {
+    .calendar-days {
+        flex-wrap: wrap;
+    }
+    
+    .day-button {
+        flex: 1 1 calc(33.333% - 10px);
+        min-width: 0;
+        padding: 10px;
+    }
+    
+    .filter-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .day-button {
+        flex: 1 1 calc(50% - 5px);
+    }
+    
+    .filter-button {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+}
 EOT;
 
 // Additional scripts for this page
@@ -1179,120 +1316,143 @@ include 'includes/header.php';
             <p>Videoconferências gratuitas para praticar diversos idiomas. Conheça nossa programação semanal e participe dos encontros.</p>
         </div>
         
-        <div class="days-selector">
-            <?php for ($i = 1; $i <= 7; $i++): ?>
-                <button class="day-button <?= $i == $currentDayOfWeek ? 'active current-day' : '' ?>" data-day="<?= $i ?>">
-                    <?= substr($dayNames[$i], 0, 3) ?>
-                </button>
-            <?php endfor; ?>
+        <!-- Filter Toggle -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div class="filter-toggle">
+                <p style="margin: 0 15px 0 0; font-weight: 500;">Filtre por:</p>
+                <button id="day-filter-btn" class="filter-button active">Dia da Semana</button>
+                <button id="language-filter-btn" class="filter-button">Idioma</button>
+            </div>
         </div>
         
-        <?php for ($i = 1; $i <= 7; $i++): ?>
-            <div id="day-<?= $i ?>" class="day-events <?= $i == $currentDayOfWeek ? 'active' : '' ?>">
-                <div class="timeline">
-                    <?php if (empty($eventsByDay[$i])): ?>
-                        <div class="no-events">
-                            Não há encontros agendados para <?= $dayNames[$i] ?>.
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($eventsByDay[$i] as $event): ?>
-                            <div class="timeline-event" data-time="<?= $event['time_hour'] ?>" data-language="<?= strtolower($event['language_name']) ?>">
-                                <span class="event-time"><?= $event['time_hour'] ?>h</span>
-                                <div class="event-title">
-                                    <?php if (!empty($event['flag_emoji'])): ?>
-                                        <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;"><?= $event['flag_emoji'] ?></span>
-                                    <?php elseif (!empty($event['flag_code'])): ?>
-                                        <img src="https://flagcdn.com/32x24/<?= strtolower($event['flag_code']) ?>.png" class="flag-icon" alt="<?= $event['language_name'] ?>">
-                                    <?php endif; ?>
-                                    <span><?= $event['language_name'] ?></span>
-                                    <div class="event-social-links">
-                                        <?php if (!empty($event['whatsapp_group_link'])): ?>
-                                            <a href="<?= $event['whatsapp_group_link'] ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo de <?= $event['language_name'] ?>">
-                                                <i class="fab fa-whatsapp"></i>
+        <!-- Day View (Default Active) -->
+        <div id="day-view" class="filter-view active">
+            <div class="calendar-days">
+                <?php for ($i = 1; $i <= 5; $i++): ?>
+                    <button class="day-button <?= $i == $currentDayOfWeek ? 'active' : '' ?>" data-day="<?= $i ?>">
+                        <?= getDayName($i) ?>
+                    </button>
+                <?php endfor; ?>
+            </div>
+            
+            <?php for ($i = 1; $i <= 5; $i++): ?>
+                <div id="day-<?= $i ?>" class="day-events <?= $i == $currentDayOfWeek ? 'active' : '' ?>">
+                    <div class="timeline">
+                        <?php if (empty($eventsByDay[$i])): ?>
+                            <div class="no-events">
+                                <p>Não há eventos programados para <?= getDayName($i) ?></p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($eventsByDay[$i] as $event): ?>
+                                <div class="timeline-event" data-time="<?= $event['time_hour'] ?>" data-language="<?= strtolower($event['language_name']) ?>">
+                                    <span class="event-time"><?= $event['time_hour'] ?>h</span>
+                                    <div class="event-title">
+                                        <?php if (!empty($event['flag_emoji'])): ?>
+                                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;"><?= $event['flag_emoji'] ?></span>
+                                        <?php elseif (!empty($event['flag_code'])): ?>
+                                            <img src="https://flagcdn.com/32x24/<?= strtolower($event['flag_code']) ?>.png" class="flag-icon" alt="<?= $event['language_name'] ?>">
+                                        <?php endif; ?>
+                                        <span><?= $event['language_name'] ?></span>
+                                        
+                                        <?php 
+                                        // Check if event is happening now
+                                        $currentHour = (int)date('G');
+                                        $currentDay = (int)date('N');
+                                        $isNow = ($currentDay == $i && $currentHour == $event['time_hour']);
+                                        ?>
+                                        
+                                        <?php if ($isNow): ?>
+                                            <span class="now-badge">AGORA</span>
+                                        <?php endif; ?>
+                                        
+                                        <div class="event-social-links">
+                                            <?php if (!empty($event['whatsapp_group_link'])): ?>
+                                                <a href="<?= $event['whatsapp_group_link'] ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo de <?= $event['language_name'] ?>">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                            
+                                            <?php if (!empty($event['instagram_link'])): ?>
+                                                <a href="<?= $event['instagram_link'] ?>" target="_blank" class="social-icon instagram-icon" title="Perfil de <?= $event['language_name'] ?>">
+                                                    <i class="fab fa-instagram"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <p class="event-description"><?= $event['description'] ?></p>
+                                    <div class="event-actions">
+                                        <?php if (!empty($event['meet_link'])): ?>
+                                            <a href="<?= $event['meet_link'] ?>" target="_blank" class="event-button join-button <?= $isNow ? '' : ($currentDay == $i && $currentHour > $event['time_hour'] ? 'disabled' : '') ?>">
+                                                <?php if ($isNow): ?>
+                                                    Participar
+                                                <?php elseif ($currentDay == $i && $currentHour > $event['time_hour']): ?>
+                                                    <i class="fas fa-check check-icon"></i> Finalizado
+                                                <?php else: ?>
+                                                    Participar
+                                                <?php endif; ?>
                                             </a>
                                         <?php endif; ?>
                                         
-                                        <?php if (!empty($event['instagram_link'])): ?>
-                                            <a href="<?= $event['instagram_link'] ?>" target="_blank" class="social-icon instagram-icon" title="Perfil de <?= $event['language_name'] ?>">
-                                                <i class="fab fa-instagram"></i>
+                                        <?php if (!empty($event['youtube_link'])): ?>
+                                            <a href="<?= $event['youtube_link'] ?>" target="_blank" class="event-button replay-button">
+                                                <i class="fab fa-youtube"></i> Anteriores
                                             </a>
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                                <p class="event-description"><?= $event['description'] ?></p>
-                                <div class="event-actions">
-                                    <?php if (!empty($event['meet_link'])): ?>
-                                        <a href="<?= $event['meet_link'] ?>" target="_blank" class="event-button join-button" data-day="<?= $i ?>" data-time="<?= $event['time_hour'] ?>">Participar</a>
-                                    <?php endif; ?>
-                                    
-                                    <?php if (!empty($event['youtube_link'])): ?>
-                                        <a href="<?= $event['youtube_link'] ?>" target="_blank" class="event-button replay-button">
-                                            <i class="fab fa-youtube"></i> Anteriores
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
-        <?php endfor; ?>
+            <?php endfor; ?>
+        </div>
         
-        <div id="language-view" class="view-content active">
-            <!-- Mobile Dropdown -->
-            <div class="mobile-dropdown">
-                <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um idioma:</p>
-                <button class="dropdown-button">
-                    <div class="dropdown-flag-container">
-                        <img id="selected-language-flag" src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="EUA">
-                        <span id="selected-language">Selecione um idioma</span>
-                    </div>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div class="dropdown-content">
-                    <div class="search-filter">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" id="language-search" placeholder="Buscar idioma...">
-                    </div>
-                    <div class="no-results" id="no-results">
-                        Nenhum idioma encontrado.
-                    </div>
-                    
-                    <?php foreach ($languages as $language): ?>
-                        <button class="language-button" data-language="<?= strtolower($language['name']) ?>" data-language-id="<?= $language['id'] ?>">
-                            <div class="language-info">
-                                <?php if (!empty($language['flag_emoji'])): ?>
-                                    <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;"><?= $language['flag_emoji'] ?></span>
-                                <?php elseif (!empty($language['flag_code'])): ?>
-                                    <img src="https://flagcdn.com/32x24/<?= $language['flag_code'] ?>.png" class="flag-icon" alt="<?= $language['name'] ?>">
-                                <?php else: ?>
-                                    <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
-                                <?php endif; ?>
-                                <span><?= $language['name'] ?></span>
-                            </div>
-                            <span class="language-badge"><?= isset($languageCounts[$language['id']]) ? $languageCounts[$language['id']] : 0 ?></span>
-                        </button>
-                    <?php endforeach; ?>
-                    
-                    <!-- Botão especial para adicionar seu próprio idioma -->
-                    <button class="language-button special">
-                        <div class="language-info">
-                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🚩</span>
-                            <span>Seu idioma aqui!</span>
+        <!-- Language View (Initially Hidden) -->
+        <div id="language-view" class="filter-view" style="display:none;">
+            <!-- Language Selection Dropdown -->
+            <div style="margin-bottom: 30px; text-align: center;">
+                <p style="margin-bottom: 10px; font-weight: 500;">Selecione um idioma:</p>
+                <div style="max-width: 400px; margin: 0 auto; position: relative;">
+                    <button id="language-dropdown-btn" style="width: 100%; justify-content: space-between; background-color: #e31d1c; color: white; border: none; border-radius: 30px; padding: 12px 20px; cursor: pointer; display: flex; align-items: center; box-shadow: 0 4px 10px rgba(227,29,28,0.3);">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img id="selected-language-flag" src="https://flagcdn.com/32x24/us.png" style="width: 24px; height: 18px; border-radius: 3px;" alt="EUA">
+                            <span id="selected-language">Inglês</span>
                         </div>
-                        <span class="language-badge">+</span>
+                        <i class="fas fa-chevron-down"></i>
                     </button>
+                    <div id="language-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); margin-top: 10px; z-index: 100; max-height: 300px; overflow-y: auto;">
+                        <div style="padding: 10px 15px; border-bottom: 1px solid #eee;">
+                            <div style="position: relative;">
+                                <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                                <input type="text" id="language-search" placeholder="Buscar idioma..." style="width: 100%; padding: 8px 10px 8px 30px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
+                            </div>
+                        </div>
+                        <div id="language-list">
+                            <?php foreach ($languages as $index => $language): ?>
+                                <button class="language-option <?= $index === 0 ? 'active' : '' ?>" data-language-id="<?= $language['id'] ?>" data-language="<?= $language['name'] ?>" style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 15px; border: none; background: <?= $index === 0 ? 'rgba(227, 29, 28, 0.05)' : 'white' ?>; text-align: left; cursor: pointer; border-bottom: 1px solid #eee;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <?php if (!empty($language['flag_emoji'])): ?>
+                                            <span style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center;"><?= $language['flag_emoji'] ?></span>
+                                        <?php elseif (!empty($language['flag_code'])): ?>
+                                            <img src="https://flagcdn.com/32x24/<?= $language['flag_code'] ?>.png" style="width: 24px; height: 18px; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" alt="<?= $language['name'] ?>">
+                                        <?php else: ?>
+                                            <span style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🌍</span>
+                                        <?php endif; ?>
+                                        <span><?= $language['name'] ?></span>
+                                    </div>
+                                    <?php if (isset($languageCounts[$language['id']]) && $languageCounts[$language['id']] > 0): ?>
+                                        <span style="background: #f0f0f0; color: #666; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;"><?= $languageCounts[$language['id']] ?></span>
+                                    <?php endif; ?>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div id="language-events">
-                <div class="timeline">
-                    <!-- Events will be displayed here via JavaScript when a language is selected -->
-                    <div style="text-align: center; margin: 50px 0; color: #666;">
-                        <i class="fas fa-language" style="font-size: 3rem; margin-bottom: 20px; display: block; color: #ddd;"></i>
-                        <p>Selecione um idioma acima para ver os eventos disponíveis.</p>
-                    </div>
-                </div>
+            <!-- Language Events Timeline -->
+            <div id="language-events-container">
+                <!-- Will be populated via AJAX -->
             </div>
         </div>
     </div>
@@ -1312,21 +1472,133 @@ include 'includes/header.php';
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle between day and language views
-        const viewButtons = document.querySelectorAll('.view-button');
-        const viewContents = document.querySelectorAll('.view-content');
+        // Filter toggle functionality
+        const dayFilterBtn = document.getElementById('day-filter-btn');
+        const languageFilterBtn = document.getElementById('language-filter-btn');
+        const dayView = document.getElementById('day-view');
+        const languageView = document.getElementById('language-view');
         
-        viewButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const view = this.getAttribute('data-view');
+        // Day filter button click event
+        dayFilterBtn.addEventListener('click', function() {
+            dayFilterBtn.classList.add('active');
+            languageFilterBtn.classList.remove('active');
+            languageFilterBtn.style.background = 'none';
+            languageFilterBtn.style.color = '#333';
+            dayFilterBtn.style.backgroundColor = '#e31d1c';
+            dayFilterBtn.style.color = 'white';
+            
+            dayView.style.display = 'block';
+            languageView.style.display = 'none';
+        });
+        
+        // Language filter button click event
+        languageFilterBtn.addEventListener('click', function() {
+            languageFilterBtn.classList.add('active');
+            dayFilterBtn.classList.remove('active');
+            dayFilterBtn.style.background = 'none';
+            dayFilterBtn.style.color = '#333';
+            languageFilterBtn.style.backgroundColor = '#e31d1c';
+            languageFilterBtn.style.color = 'white';
+            
+            languageView.style.display = 'block';
+            dayView.style.display = 'none';
+            
+            // Load the default language (English) events if not already loaded
+            if (document.getElementById('language-events-container').innerHTML === '') {
+                const defaultLanguageButton = document.querySelector('.language-option[data-language="Inglês"]') || 
+                                             document.querySelector('.language-option[data-language="English"]') || 
+                                             document.querySelector('.language-option:first-child');
                 
-                // Toggle button active state
-                viewButtons.forEach(btn => btn.classList.remove('active'));
+                if (defaultLanguageButton) {
+                    // Simulate click on default language button to load events
+                    const languageId = defaultLanguageButton.getAttribute('data-language-id');
+                    loadLanguageEvents(languageId, defaultLanguageButton.querySelector('span:last-child').textContent);
+                }
+            }
+        });
+        
+        // Language dropdown functionality
+        const languageDropdownBtn = document.getElementById('language-dropdown-btn');
+        const languageDropdown = document.getElementById('language-dropdown');
+        const languageOptions = document.querySelectorAll('.language-option');
+        const languageSearch = document.getElementById('language-search');
+        
+        // Toggle dropdown
+        languageDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            languageDropdown.style.display = languageDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#language-dropdown') && !e.target.closest('#language-dropdown-btn')) {
+                languageDropdown.style.display = 'none';
+            }
+        });
+        
+        // Search functionality
+        languageSearch.addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            let hasResults = false;
+            
+            languageOptions.forEach(option => {
+                const languageName = option.getAttribute('data-language').toLowerCase();
+                if (languageName.includes(searchValue)) {
+                    option.style.display = 'flex';
+                    hasResults = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+            
+            // Show no results message if needed
+            const noResultsMsg = document.getElementById('no-results-msg');
+            if (!hasResults) {
+                if (!noResultsMsg) {
+                    const msg = document.createElement('div');
+                    msg.id = 'no-results-msg';
+                    msg.style.padding = '15px';
+                    msg.style.textAlign = 'center';
+                    msg.style.color = '#666';
+                    msg.textContent = 'Nenhum idioma encontrado.';
+                    document.getElementById('language-list').appendChild(msg);
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
+        });
+        
+        // Language selection
+        languageOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const languageId = this.getAttribute('data-language-id');
+                const languageName = this.getAttribute('data-language');
+                const flagElem = this.querySelector('img, span:first-child');
+                
+                // Update selected language UI
+                document.getElementById('selected-language').textContent = languageName;
+                
+                if (flagElem.tagName === 'IMG') {
+                    document.getElementById('selected-language-flag').src = flagElem.src;
+                    document.getElementById('selected-language-flag').style.display = 'inline-block';
+                } else {
+                    // Handle emoji flags
+                    document.getElementById('selected-language-flag').style.display = 'none';
+                }
+                
+                // Mark this option as active
+                languageOptions.forEach(opt => {
+                    opt.classList.remove('active');
+                    opt.style.background = 'white';
+                });
                 this.classList.add('active');
+                this.style.background = 'rgba(227, 29, 28, 0.05)';
                 
-                // Toggle view content
-                viewContents.forEach(content => content.classList.remove('active'));
-                document.getElementById(view + '-view').classList.add('active');
+                // Load events for this language
+                loadLanguageEvents(languageId, languageName);
+                
+                // Close dropdown
+                languageDropdown.style.display = 'none';
             });
         });
         
@@ -1348,167 +1620,117 @@ include 'includes/header.php';
             });
         });
         
-        // Language dropdown functionality
-        const dropdownButton = document.querySelector('.dropdown-button');
-        const dropdownContent = document.querySelector('.dropdown-content');
-        const languageButtons = document.querySelectorAll('.language-button:not(.special)');
-        const languageSearch = document.getElementById('language-search');
-        const noResults = document.getElementById('no-results');
-        const selectedLanguageText = document.getElementById('selected-language');
-        const selectedLanguageFlag = document.getElementById('selected-language-flag');
-        
-        // Toggle dropdown
-        dropdownButton.addEventListener('click', function() {
-            dropdownContent.classList.toggle('show');
-        });
-        
-        // Close dropdown when clicking outside
-        window.addEventListener('click', function(event) {
-            if (!event.target.matches('.dropdown-button') && 
-                !event.target.closest('.dropdown-button') && 
-                !event.target.matches('.dropdown-content') && 
-                !event.target.closest('.dropdown-content')) {
-                dropdownContent.classList.remove('show');
-            }
-        });
-        
-        // Filter languages on search
-        languageSearch.addEventListener('input', function() {
-            const searchValue = this.value.toLowerCase();
-            let noMatches = true;
+        // Function to load language events
+        function loadLanguageEvents(languageId, languageName) {
+            const container = document.getElementById('language-events-container');
+            container.innerHTML = '<div style="text-align: center; padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #e31d1c;"></i><p style="margin-top: 15px;">Carregando eventos...</p></div>';
             
-            languageButtons.forEach(button => {
-                const languageName = button.getAttribute('data-language');
-                
-                if (languageName.includes(searchValue)) {
-                    button.style.display = 'flex';
-                    noMatches = false;
-                } else {
-                    button.style.display = 'none';
-                }
-            });
-            
-            noResults.style.display = noMatches ? 'block' : 'none';
-        });
-        
-        // Handle language selection
-        languageButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const languageName = this.querySelector('.language-info span:last-child').textContent;
-                const languageId = this.getAttribute('data-language-id');
-                const flagElement = this.querySelector('.flag-icon');
-                
-                // Update selected language
-                selectedLanguageText.textContent = languageName;
-                
-                // Update selected flag
-                if (flagElement.tagName === 'IMG') {
-                    selectedLanguageFlag.src = flagElement.src;
-                    selectedLanguageFlag.style.display = 'inline-block';
-                    selectedLanguageFlag.alt = flagElement.alt;
-                } else {
-                    // For emoji flags
-                    selectedLanguageFlag.style.display = 'none';
-                    selectedLanguageText.innerHTML = flagElement.outerHTML + ' ' + languageName;
-                }
-                
-                // Get events by language using AJAX
-                fetch(`ajax/get_language_events.php?language_id=${languageId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const timelineContainer = document.querySelector('#language-events .timeline');
-                        const events = data.events || [];
-                        
-                        // Clear previous events
-                        timelineContainer.innerHTML = '';
-                        
-                        if (events.length === 0) {
-                            timelineContainer.innerHTML = `
-                                <div class="no-events">
-                                    <p>Não há eventos programados para ${languageName}</p>
-                                </div>
-                            `;
-                            return;
-                        }
-                        
-                        // Add events to timeline
-                        events.forEach(event => {
-                            const eventElement = document.createElement('div');
-                            eventElement.className = 'timeline-event';
-                            eventElement.setAttribute('data-time', event.time_hour);
-                            
-                            // Create flag element
-                            let flagHtml = '';
-                            if (event.flag_emoji) {
-                                flagHtml = `<span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">${event.flag_emoji}</span>`;
-                            } else if (event.flag_code) {
-                                flagHtml = `<img src="https://flagcdn.com/32x24/${event.flag_code}.png" class="flag-icon" alt="${event.language_name}">`;
-                            } else {
-                                flagHtml = `<span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>`;
-                            }
-                            
-                            // Create social links
-                            let socialLinks = '';
-                            if (event.whatsapp_group_link) {
-                                socialLinks += `<a href="${event.whatsapp_group_link}" target="_blank" class="social-icon whatsapp-icon" title="Grupo de ${event.language_name}"><i class="fab fa-whatsapp"></i></a>`;
-                            }
-                            if (event.instagram_link) {
-                                socialLinks += `<a href="${event.instagram_link}" target="_blank" class="social-icon instagram-icon" title="Perfil de ${event.language_name}"><i class="fab fa-instagram"></i></a>`;
-                            }
-                            
-                            // Create action buttons
-                            let actionButtons = '';
-                            if (event.meet_link) {
-                                actionButtons += `<a href="${event.meet_link}" target="_blank" class="event-button join-button" data-day="${event.day_of_week}" data-time="${event.time_hour}">Participar</a>`;
-                            }
-                            if (event.youtube_link) {
-                                actionButtons += `<a href="${event.youtube_link}" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>`;
-                            }
-                            
-                            // Create day name for the event
-                            const dayNames = {
-                                1: 'Segunda-feira',
-                                2: 'Terça-feira',
-                                3: 'Quarta-feira',
-                                4: 'Quinta-feira',
-                                5: 'Sexta-feira',
-                                6: 'Sábado',
-                                7: 'Domingo'
-                            };
-                            
-                            eventElement.innerHTML = `
-                                <span class="day-info">${dayNames[event.day_of_week]}</span>
-                                <span class="event-time">${event.time_hour}h</span>
-                                <div class="event-title">
-                                    ${flagHtml}
-                                    <span>${event.language_name}</span>
-                                    <div class="event-social-links">
-                                        ${socialLinks}
-                                    </div>
-                                </div>
-                                <p class="event-description">${event.description}</p>
-                                <div class="event-actions">
-                                    ${actionButtons}
-                                </div>
-                            `;
-                            
-                            timelineContainer.appendChild(eventElement);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching events:', error);
-                        const timelineContainer = document.querySelector('#language-events .timeline');
-                        timelineContainer.innerHTML = `
+            // Fetch events for the selected language
+            fetch(`ajax/get_language_events.php?language_id=${languageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const events = data.events || [];
+                    
+                    // Clear loading state
+                    container.innerHTML = '';
+                    
+                    if (events.length === 0) {
+                        container.innerHTML = `
                             <div class="no-events">
-                                <p>Erro ao carregar eventos para ${languageName}</p>
+                                <p>Não há eventos programados para ${languageName}</p>
                             </div>
                         `;
+                        return;
+                    }
+                    
+                    // Create timeline container
+                    const timeline = document.createElement('div');
+                    timeline.className = 'timeline';
+                    container.appendChild(timeline);
+                    
+                    // Add events to timeline
+                    events.forEach(event => {
+                        // Get current day and time
+                        const currentDay = (new Date()).getDay() || 7; // JS returns 0-6 (0 is Sunday), we need 1-7 (1 is Monday)
+                        const currentHour = (new Date()).getHours();
+                        
+                        // Check if event is happening now
+                        const isNow = (currentDay === parseInt(event.day_of_week) && currentHour === parseInt(event.time_hour));
+                        const isPast = (currentDay === parseInt(event.day_of_week) && currentHour > parseInt(event.time_hour));
+                        
+                        // Create event element
+                        const eventElem = document.createElement('div');
+                        eventElem.className = 'timeline-event';
+                        
+                        // Create flag HTML
+                        let flagHtml = '';
+                        if (event.flag_emoji) {
+                            flagHtml = `<span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">${event.flag_emoji}</span>`;
+                        } else if (event.flag_code) {
+                            flagHtml = `<img src="https://flagcdn.com/32x24/${event.flag_code}.png" class="flag-icon" alt="${event.language_name}">`;
+                        } else {
+                            flagHtml = `<span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>`;
+                        }
+                        
+                        // Get day name
+                        const dayNames = {
+                            1: 'Segunda-feira',
+                            2: 'Terça-feira',
+                            3: 'Quarta-feira',
+                            4: 'Quinta-feira',
+                            5: 'Sexta-feira',
+                            6: 'Sábado',
+                            7: 'Domingo'
+                        };
+                        
+                        // Create social links
+                        let socialLinks = '';
+                        if (event.whatsapp_group_link) {
+                            socialLinks += `<a href="${event.whatsapp_group_link}" target="_blank" class="social-icon whatsapp-icon" title="Grupo de ${event.language_name}"><i class="fab fa-whatsapp"></i></a>`;
+                        }
+                        if (event.instagram_link) {
+                            socialLinks += `<a href="${event.instagram_link}" target="_blank" class="social-icon instagram-icon" title="Perfil de ${event.language_name}"><i class="fab fa-instagram"></i></a>`;
+                        }
+                        
+                        // Create HTML for the event
+                        eventElem.innerHTML = `
+                            <span class="day-info">${dayNames[event.day_of_week]}</span>
+                            <span class="event-time">${event.time_hour}h</span>
+                            <div class="event-title">
+                                ${flagHtml}
+                                <span>${event.language_name}</span>
+                                ${isNow ? '<span class="now-badge">AGORA</span>' : ''}
+                                <div class="event-social-links">
+                                    ${socialLinks}
+                                </div>
+                            </div>
+                            <p class="event-description">${event.description}</p>
+                            <div class="event-actions">
+                                ${event.meet_link ? `
+                                    <a href="${event.meet_link}" target="_blank" class="event-button join-button ${isPast ? 'disabled' : ''}">
+                                        ${isNow ? 'Participar' : (isPast ? '<i class="fas fa-check check-icon"></i> Finalizado' : 'Participar')}
+                                    </a>
+                                ` : ''}
+                                ${event.youtube_link ? `
+                                    <a href="${event.youtube_link}" target="_blank" class="event-button replay-button">
+                                        <i class="fab fa-youtube"></i> Anteriores
+                                    </a>
+                                ` : ''}
+                            </div>
+                        `;
+                        
+                        timeline.appendChild(eventElem);
                     });
-                
-                // Close dropdown
-                dropdownContent.classList.remove('show');
-            });
-        });
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                    container.innerHTML = `
+                        <div class="no-events">
+                            <p>Erro ao carregar eventos para ${languageName}</p>
+                        </div>
+                    `;
+                });
+        }
         
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
