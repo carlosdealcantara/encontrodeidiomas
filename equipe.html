@@ -88,6 +88,10 @@
             z-index: 1000;
             top: 0;
             left: 0;
+            transform: translateZ(0);
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         
         .header-content {
@@ -477,6 +481,10 @@
         
         /* Mobile styles */
         @media (max-width: 768px) {
+            main.container {
+                margin-top: 100px;
+            }
+            
             .section-title {
                 font-size: 2rem;
             }
@@ -492,6 +500,28 @@
             
             .cta-title {
                 font-size: 2rem;
+            }
+            
+            .logo {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .site-title {
+                font-size: 1.2rem;
+            }
+            
+            .site-description {
+                font-size: 0.8rem;
+            }
+            
+            .nav-links {
+                gap: 10px;
+            }
+            
+            .nav-links a {
+                padding: 6px 12px;
+                font-size: 0.9rem;
             }
         }
         
@@ -754,6 +784,40 @@
             max-width: 500px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+        
+        main.container {
+            margin-top: 120px;
+        }
+        
+        /* Mobile devices específico para telas muito pequenas */
+        @media (max-width: 480px) {
+            main.container {
+                margin-top: 120px;
+            }
+            
+            .header-content {
+                justify-content: center;
+                padding: 10px;
+            }
+            
+            .logo-container {
+                margin-bottom: 10px;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            .nav-links a {
+                padding: 5px 10px;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -763,7 +827,7 @@
                 <img src="assets/images/logo.png" alt="Encontro de Idiomas Logo" class="logo">
                 <div>
                     <div class="site-title">Encontro de Idiomas</div>
-                    <div class="site-description">Conectando pessoas através da linguagem</div>
+                    <div class="site-description">Aprenda se divertindo!</div>
                 </div>
             </div>
             <nav class="nav-links">
