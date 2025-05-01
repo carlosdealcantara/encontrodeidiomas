@@ -75,30 +75,41 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f7f7f7;
             color: var(--text-color);
-            margin: 0;
-            padding: 0;
+            background-color: #f7f7f7;
             line-height: 1.6;
-            min-height: 100vh;
+            overflow-x: hidden;
             width: 100%;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
+            will-change: scroll-position;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
         
         .header {
-            background-color: var(--primary-color);
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 1rem 0;
+            position: fixed;
             width: 100%;
-            position: relative;
             z-index: 1000;
+            top: 0;
+            left: 0;
+            transform: translateZ(0);
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         
         .header-content {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
             max-width: 1200px;
             margin: 0 auto;
-            flex-wrap: wrap; /* Permite que o menu quebre para a linha de baixo em telas pequenas */
+            padding: 0 20px;
+            flex-wrap: wrap;
         }
         
         .logo-container {
@@ -108,23 +119,20 @@
         }
         
         .logo {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--white);
         }
         
         .site-title {
-            color: var(--white);
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin: 0;
         }
         
         .site-description {
-            color: var(--white);
-            font-size: 1rem;
+            font-size: 0.9rem;
             opacity: 0.9;
         }
         
@@ -134,12 +142,12 @@
         }
         
         .nav-links a {
-            color: #fff;
+            color: var(--white);
             text-decoration: none;
             padding: 8px 16px;
             border-radius: 20px;
-            transition: background-color 0.3s ease;
-            white-space: nowrap; /* Impede que o texto quebre dentro do link */
+            transition: all 0.3s ease;
+            white-space: nowrap;
         }
         
         .nav-links a:hover {
@@ -155,7 +163,7 @@
         
         .profile {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 120px;
             margin-bottom: 40px;
         }
         
@@ -267,6 +275,7 @@
         @media (max-width: 768px) {
             .profile {
                 padding: 20px;
+                margin-top: 100px;
             }
             
             .logo {
@@ -323,7 +332,7 @@
             
             .profile {
                 padding: 15px;
-                margin-top: 100px; /* Ajustado para o cabeçalho maior em mobile */
+                margin-top: 120px; /* Ajustado para o cabeçalho maior em mobile */
             }
             
             .bio {
@@ -355,7 +364,7 @@
                 <img src="assets/images/logo.png" alt="Encontro de Idiomas Logo" class="logo">
                 <div>
                     <div class="site-title">Encontro de Idiomas</div>
-                    <div class="site-description">Conectando pessoas através da linguagem</div>
+                    <div class="site-description">Aprenda se divertindo!</div>
                 </div>
             </div>
             <nav class="nav-links">
