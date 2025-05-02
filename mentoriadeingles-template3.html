@@ -531,6 +531,102 @@
                 order: 1;
             }
         }
+        
+        /* New Pricing Section */
+        .pricing {
+            padding: 80px 0;
+            background-color: var(--bg-gray);
+        }
+        
+        .pricing-options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .pricing-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 40px 30px;
+            text-align: center;
+            flex: 1;
+            min-width: 280px;
+            max-width: 320px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pricing-card.featured {
+            position: relative;
+            background-color: var(--white);
+            border: 2px solid var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .featured-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .pricing-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+        
+        .price {
+            font-size: 3rem;
+            margin-bottom: 25px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-light);
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--bg-gray);
+            color: var(--text-light);
+        }
+        
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .pricing-features li::before {
+            content: "✓";
+            color: var(--primary);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .pricing-card .btn {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -545,6 +641,7 @@
                         <li><a href="#beneficios">Benefícios</a></li>
                         <li><a href="#sobre">Sobre</a></li>
                         <li><a href="#depoimentos">Depoimentos</a></li>
+                        <li><a href="#planos">Planos</a></li>
                         <li><a href="#contato">Contato</a></li>
                     </ul>
                 </nav>
@@ -688,6 +785,58 @@
         </div>
     </section>
 
+    <!-- NEW Pricing Section -->
+    <section class="pricing" id="planos">
+        <div class="container">
+            <div class="section-heading">
+                <h2>Invista em seu futuro</h2>
+                <p>Escolha o plano que melhor se adapta às suas necessidades e objetivos de aprendizado.</p>
+            </div>
+            <div class="pricing-options">
+                <div class="pricing-card">
+                    <h3>Básico</h3>
+                    <div class="price">R$497<span>/mês</span></div>
+                    <ul class="pricing-features">
+                        <li>4 sessões mensais de 1 hora</li>
+                        <li>Material didático exclusivo</li>
+                        <li>Acesso à plataforma de estudos</li>
+                        <li>Suporte por e-mail</li>
+                        <li>Duração: 3 meses</li>
+                    </ul>
+                    <a href="#contato" class="btn">Selecionar Plano</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="featured-badge">Mais Popular</div>
+                    <h3>Premium</h3>
+                    <div class="price">R$797<span>/mês</span></div>
+                    <ul class="pricing-features">
+                        <li>8 sessões mensais de 1 hora</li>
+                        <li>Material didático exclusivo</li>
+                        <li>Acesso à plataforma de estudos</li>
+                        <li>Suporte via WhatsApp</li>
+                        <li>Sessões de conversação em grupo</li>
+                        <li>Duração: 6 meses</li>
+                    </ul>
+                    <a href="#contato" class="btn">Selecionar Plano</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Master</h3>
+                    <div class="price">R$1297<span>/mês</span></div>
+                    <ul class="pricing-features">
+                        <li>12 sessões mensais de 1 hora</li>
+                        <li>Material didático exclusivo</li>
+                        <li>Acesso à plataforma de estudos</li>
+                        <li>Suporte 24/7 via WhatsApp</li>
+                        <li>Sessões de conversação individual</li>
+                        <li>Simulações de entrevistas e reuniões</li>
+                        <li>Duração: 12 meses</li>
+                    </ul>
+                    <a href="#contato" class="btn">Selecionar Plano</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
     <section class="contact" id="contato">
         <div class="container">
@@ -770,6 +919,7 @@
                         <li><a href="#beneficios">Benefícios</a></li>
                         <li><a href="#sobre">Sobre</a></li>
                         <li><a href="#depoimentos">Depoimentos</a></li>
+                        <li><a href="#planos">Planos</a></li>
                         <li><a href="#contato">Contato</a></li>
                     </ul>
                 </div>

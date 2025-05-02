@@ -9,10 +9,10 @@
             --primary-color: #6c5ce7;
             --secondary-color: #a29bfe;
             --accent-color: #00cec9;
-            --bg-color: #2d3436;
-            --card-bg: #34495e;
-            --text-color: #ecf0f1;
-            --text-dark: #2d3436;
+            --bg-color: #ffffff;
+            --card-bg: #f8f9fa;
+            --text-color: #333333;
+            --text-dark: #1e1e1e;
         }
         
         * {
@@ -65,7 +65,7 @@
         }
         
         .nav-menu a {
-            color: var(--text-color);
+            color: var(--text-dark);
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
@@ -107,7 +107,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: linear-gradient(45deg, rgba(108, 92, 231, 0.1), rgba(0, 206, 201, 0.1));
+            background: linear-gradient(45deg, rgba(108, 92, 231, 0.05), rgba(0, 206, 201, 0.05));
             transform: rotate(45deg);
             z-index: -1;
         }
@@ -129,7 +129,7 @@
         .hero p {
             font-size: 1.2rem;
             margin-bottom: 40px;
-            color: rgba(236, 240, 241, 0.8);
+            color: var(--text-dark);
         }
         
         .cta-button {
@@ -193,6 +193,7 @@
             border-radius: 10px;
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
         
         .feature-card:hover {
@@ -214,7 +215,7 @@
         /* Video Section */
         .video-section {
             padding: 100px 0;
-            background-color: #2c3e50;
+            background-color: #f8f9fa;
         }
         
         .video-wrapper {
@@ -228,7 +229,7 @@
         .video-placeholder {
             width: 100%;
             height: 450px;
-            background-color: #1e2a38;
+            background-color: #eeeeee;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -252,6 +253,7 @@
             border-radius: 10px;
             margin: 20px 0;
             position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
         
         .testimonial-card::before {
@@ -268,6 +270,7 @@
             font-size: 1.1rem;
             margin-bottom: 20px;
             font-style: italic;
+            color: var(--text-dark);
         }
         
         .testimonial-author {
@@ -290,13 +293,13 @@
         
         .author-info p {
             font-size: 0.9rem;
-            color: rgba(236, 240, 241, 0.7);
+            color: var(--text-color);
         }
         
         /* Pricing Section */
         .pricing {
             padding: 100px 0;
-            background-color: #2c3e50;
+            background-color: #f8f9fa;
         }
         
         .pricing-options {
@@ -316,6 +319,8 @@
             min-width: 300px;
             max-width: 350px;
             transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            color: var(--text-dark);
         }
         
         .pricing-card:hover {
@@ -324,10 +329,11 @@
         }
         
         .pricing-card.featured {
-            background: linear-gradient(135deg, #6c5ce7, #34495e);
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
             position: relative;
             z-index: 1;
             transform: scale(1.05);
+            color: white;
         }
         
         .featured-badge {
@@ -364,7 +370,7 @@
         
         .pricing-features li {
             padding: 10px 0;
-            border-bottom: 1px solid rgba(236, 240, 241, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         .pricing-features li:last-child {
@@ -382,6 +388,7 @@
             background-color: var(--card-bg);
             padding: 40px;
             border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
         
         .form-group {
@@ -399,10 +406,10 @@
         .form-group select {
             width: 100%;
             padding: 12px 15px;
-            background-color: rgba(236, 240, 241, 0.1);
-            border: 1px solid rgba(236, 240, 241, 0.3);
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
             border-radius: 5px;
-            color: var(--text-color);
+            color: var(--text-dark);
             transition: border-color 0.3s;
         }
         
