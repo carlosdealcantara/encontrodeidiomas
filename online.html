@@ -88,6 +88,7 @@
             will-change: scroll-position;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
+            padding-top: 80px; /* Add padding to the body to accommodate fixed header */
         }
         
         .header {
@@ -358,7 +359,7 @@
             position: relative;
             padding: 2rem 0;
             overflow: hidden;
-            margin-top: 80px; /* account for fixed header */
+            margin-top: 20px; /* Add padding-top for the first section after header */
         }
         
         .hero::before {
@@ -860,6 +861,12 @@
             .event-social-links {
                 margin-left: 5px;
                 margin-top: 5px;
+            }
+            
+            .social-icon {
+                width: 42px; /* 50% increase from 28px */
+                height: 42px; /* 50% increase from 28px */
+                font-size: 1.35rem; /* 50% increase from 0.9rem */
             }
         }
         
