@@ -866,11 +866,13 @@
                     <h1>Mentoria de Inglês</h1>
                     <p>Aprenda inglês de forma eficiente e personalizada com nossa mentoria exclusiva. Desenvolva fluência, confiança e habilidades práticas para se comunicar em inglês.</p>
                     
-                    <div class="price-banner" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid var(--accent-color); color: var(--primary-color); padding: 15px; border-radius: 10px; margin-bottom: 20px; display: inline-block; font-weight: 700;">
-                        <span style="color: var(--accent-color); font-size: 1.2rem;">✓</span> Cada aula por apenas <span style="color: var(--accent-color); font-size: 1.3rem;">R$15</span>
+                    <div style="background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); color: white; padding: 15px; border-radius: 10px; margin-bottom: 30px; display: inline-block; font-weight: 700; box-shadow: 0 5px 15px rgba(28, 48, 85, 0.3);">
+                        <span style="color: white; font-size: 1.2rem;">✓</span> Cada aula por apenas <span style="color: white; font-size: 1.3rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">R$15</span>
                     </div>
                     
-                    <a href="#contato" class="cta-button">Quero Participar</a>
+                    <div style="display: flex; justify-content: center; width: 100%; margin-top: 10px;">
+                        <a href="#contato" class="cta-button">Quero Participar</a>
+                    </div>
                 </div>
                 <div class="hero-image">
                     <div class="slideshow-container">
@@ -923,12 +925,8 @@
                 <p>Escolha o plano que melhor se adapta às suas necessidades</p>
             </div>
             
-            <div style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid var(--accent-color); border-radius: 10px; padding: 15px 25px; margin: 20px auto 40px; max-width: 600px; text-align: center;">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <span style="color: var(--accent-color); font-size: 2.5rem;">★</span>
-                    <p style="font-size: 1.8rem; margin: 0; color: var(--primary-color); font-weight: 600;">Cada aula por apenas <span style="color: var(--accent-color);">R$15</span>!</p>
-                    <span style="color: var(--accent-color); font-size: 2.5rem;">★</span>
-                </div>
+            <div style="background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); color: white; border-radius: 10px; padding: 15px 25px; margin: 20px auto 40px; max-width: 600px; text-align: center; box-shadow: 0 5px 15px rgba(28, 48, 85, 0.3);">
+                <p style="font-size: 1.8rem; margin: 0; font-weight: 600;">Cada aula por apenas <span style="font-size: 2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">R$15</span>!</p>
             </div>
             
             <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 60px;">
@@ -957,7 +955,7 @@
                 </div>
                 
                 <div class="pricing-card featured">
-                    <div class="featured-badge">Mais Popular</div>
+                    <div style="position: absolute; top: -15px; right: -15px; background: linear-gradient(45deg, #FFD700, #FFA500); color: var(--primary-color); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">Mais Popular</div>
                     <h3 style="font-size: 2rem; margin-bottom: 10px;">Trimestral</h3>
                     <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$700</div>
                     <p style="margin-bottom: 20px;">a cada 3 meses</p>
@@ -1369,7 +1367,35 @@
         if (contactForm) {
             contactForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                
+                // Get form values
+                const name = contactForm.querySelector('input[type="text"]').value;
+                const email = contactForm.querySelector('input[type="email"]').value;
+                const whatsapp = contactForm.querySelector('input[type="tel"]').value;
+                const message = contactForm.querySelector('textarea').value;
+                
+                // Simple validation
+                if (!name || !email || !whatsapp) {
+                    alert('Por favor, preencha os campos obrigatórios: Nome, E-mail e WhatsApp');
+                    return;
+                }
+                
+                // Here you would typically send the data to a server
+                // For now, we're just showing a success message
+                
+                // Success message
                 alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+                
+                // Log the data (for demonstration purposes)
+                console.log({
+                    name,
+                    email,
+                    whatsapp,
+                    message,
+                    date: new Date().toISOString()
+                });
+                
+                // Clear the form
                 contactForm.reset();
             });
         }
