@@ -848,13 +848,13 @@
                 <img src="assets/images/logo.png" alt="Encontro de Idiomas">
                 Encontro de Idiomas
             </div>
-            <ul class="nav-menu">
-                <li><a href="#beneficios">Benefícios</a></li>
+                <ul class="nav-menu">
+                    <li><a href="#beneficios">Benefícios</a></li>
                 <li><a href="#mentoria">A Mentoria</a></li>
                 <li><a href="#depoimentos">Depoimentos</a></li>
                 <li><a href="#precos">Preços</a></li>
-                <li><a href="#contato">Contato</a></li>
-            </ul>
+                    <li><a href="#contato">Contato</a></li>
+                </ul>
         </div>
     </header>
 
@@ -866,13 +866,11 @@
                     <h1>Mentoria de Inglês</h1>
                     <p>Aprenda inglês de forma eficiente e personalizada com nossa mentoria exclusiva. Desenvolva fluência, confiança e habilidades práticas para se comunicar em inglês.</p>
                     
-                    <div style="background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); color: white; padding: 15px; border-radius: 10px; margin-bottom: 30px; display: inline-block; font-weight: 700; box-shadow: 0 5px 15px rgba(28, 48, 85, 0.3);">
-                        <span style="color: white; font-size: 1.2rem;">✓</span> Cada aula por apenas <span style="color: white; font-size: 1.3rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">R$15</span>
+                    <div class="price-banner" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid transparent; border-radius: 10px; margin-bottom: 30px; display: inline-block; font-weight: 700; padding: 15px; background-image: linear-gradient(white, white), linear-gradient(45deg, var(--primary-color), var(--accent-color)); background-origin: border-box; background-clip: content-box, border-box;">
+                        <span style="color: var(--accent-color); font-size: 1.2rem;">✓</span> Cada aula por apenas <span style="color: var(--accent-color); font-size: 1.3rem;">R$15</span>
                     </div>
                     
-                    <div style="display: flex; justify-content: center; width: 100%; margin-top: 10px;">
-                        <a href="#contato" class="cta-button">Quero Participar</a>
-                    </div>
+                    <a href="#contato" class="cta-button" style="margin-left: 15px;">Quero Participar</a>
                 </div>
                 <div class="hero-image">
                     <div class="slideshow-container">
@@ -916,7 +914,7 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Pricing Section -->
     <section id="precos" style="background-color: var(--card-bg);">
         <div class="container">
@@ -925,8 +923,8 @@
                 <p>Escolha o plano que melhor se adapta às suas necessidades</p>
             </div>
             
-            <div style="background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); color: white; border-radius: 10px; padding: 15px 25px; margin: 20px auto 40px; max-width: 600px; text-align: center; box-shadow: 0 5px 15px rgba(28, 48, 85, 0.3);">
-                <p style="font-size: 1.8rem; margin: 0; font-weight: 600;">Cada aula por apenas <span style="font-size: 2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">R$15</span>!</p>
+            <div style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid transparent; border-radius: 10px; padding: 15px 25px; margin: 20px auto 40px; max-width: 600px; text-align: center; background-image: linear-gradient(white, white), linear-gradient(45deg, var(--primary-color), var(--accent-color)); background-origin: border-box; background-clip: content-box, border-box;">
+                <p style="font-size: 1.7rem; margin: 0; color: var(--primary-color); font-weight: 600;">Cada aula por apenas <span style="color: var(--accent-color);">R$15</span>!</p>
             </div>
             
             <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 60px;">
@@ -955,7 +953,7 @@
                 </div>
                 
                 <div class="pricing-card featured">
-                    <div style="position: absolute; top: -15px; right: -15px; background: linear-gradient(45deg, #FFD700, #FFA500); color: var(--primary-color); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">Mais Popular</div>
+                    <div class="featured-badge" style="position: absolute; top: -15px; right: -15px; background: var(--accent-color); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">Mais Popular</div>
                     <h3 style="font-size: 2rem; margin-bottom: 10px;">Trimestral</h3>
                     <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$700</div>
                     <p style="margin-bottom: 20px;">a cada 3 meses</p>
@@ -976,7 +974,7 @@
                             <span style="color: white; margin-right: 10px;">✓</span> Suporte preferencial
                         </li>
                     </ul>
-                    <button id="openModalTrimestral" class="cta-button" style="background: white; color: var(--primary-color); border: none; cursor: pointer;">Ver Detalhes</button>
+                    <button id="openModalTrimestral" class="cta-button" style="background: white; color: var(--primary-color); border: none; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">Ver Detalhes</button>
                 </div>
             </div>
         </div>
@@ -1136,7 +1134,7 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Mentorship Video Section -->
     <section id="mentoria" style="background-color: var(--card-bg);">
         <div class="container">
@@ -1152,7 +1150,7 @@
                         frameborder="0" 
                         allowfullscreen>
                     </iframe>
-                </div>
+                        </div>
             </div>
         </div>
     </section>
@@ -1163,33 +1161,32 @@
             <div class="section-title">
                 <h2>Entre em Contato</h2>
                 <p>Tire suas dúvidas e saiba mais sobre nossa mentoria</p>
-            </div>
-            
+                        </div>
+                        
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 60px;">
                 <div>
                     <h3 style="margin-bottom: 20px; color: var(--primary-color);">Envie sua Mensagem</h3>
-                    <form id="contactForm" style="display: flex; flex-direction: column; gap: 20px;">
-                        <input type="text" placeholder="Seu Nome" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
-                        <input type="email" placeholder="Seu E-mail" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
-                        <input type="tel" placeholder="Seu WhatsApp" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
-                        <textarea placeholder="Sua Mensagem" rows="5" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; resize: vertical;"></textarea>
+                    <form id="contactForm" action="https://formspree.io/f/mzzreyka" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+                        <input type="text" name="name" placeholder="Seu Nome" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
+                        <input type="email" name="email" placeholder="Seu E-mail" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
+                        <textarea name="message" placeholder="Sua Mensagem" rows="5" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; resize: vertical;" required></textarea>
                         <button type="submit" class="cta-button" style="border: none; cursor: pointer;">Enviar Mensagem</button>
                     </form>
                 </div>
-                
+                    
                 <div>
                     <h3 style="margin-bottom: 20px; color: var(--primary-color);">Informações de Contato</h3>
                     <div style="display: flex; flex-direction: column; gap: 20px;">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
                                 📱
-                            </div>
+                    </div>
                             <div>
                                 <h4 style="margin-bottom: 5px;">WhatsApp</h4>
                                 <a href="https://wa.me/5561992666148" style="color: var(--primary-color); text-decoration: none;">+55 61 99266-6148</a>
+                </div>
                             </div>
-                        </div>
-                        
+                            
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
                                 📧
@@ -1197,9 +1194,9 @@
                             <div>
                                 <h4 style="margin-bottom: 5px;">E-mail</h4>
                                 <a href="mailto:carlosdealcantarajr@gmail.com" style="color: var(--primary-color); text-decoration: none;">carlosdealcantarajr@gmail.com</a>
-                            </div>
                         </div>
-                        
+                            </div>
+                            
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
                                 📍
@@ -1207,7 +1204,7 @@
                             <div>
                                 <h4 style="margin-bottom: 5px;">Aulas Online</h4>
                                 <p>Aulas 100% online e ao vivo</p>
-                            </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -1221,7 +1218,7 @@
             <div class="logo" style="margin-bottom: 20px; justify-content: center;">
                 <img src="assets/images/logo.png" alt="Encontro de Idiomas">
                 Encontro de Idiomas
-            </div>
+                </div>
             <p style="margin-bottom: 30px;">Transformando vidas através do ensino de idiomas</p>
             <div style="margin-bottom: 40px;">
                 <a href="#" style="color: var(--primary-color); margin: 0 15px; text-decoration: none;">Instagram</a>
@@ -1242,19 +1239,19 @@
             <div class="profile-section">
                 <img src="assets/images/profile.jpg" alt="Perfil do Professor" class="profile-image">
                 <h2 style="margin-bottom: 10px; color: var(--primary-color);">Detalhes da Mentoria</h2>
-            </div>
-            
+                </div>
+                
             <div style="margin-bottom: 30px;">
                 <h3 style="margin-bottom: 15px; color: var(--primary-color);">Valor Mensal - R$250</h3>
                 <p>Com uma média de 16 aulas por mês, cada aula sai por apenas <strong>R$15</strong>!</p>
                 <p>Este é um dos melhores custo-benefício do mercado para uma mentoria de inglês com aulas ao vivo.</p>
-            </div>
-            
+                </div>
+                
             <div style="margin-bottom: 30px; padding: 20px; background-color: #f5f5f5; border-radius: 10px;">
                 <h3 style="margin-bottom: 15px; color: var(--primary-color);">Vantagem Exclusiva</h3>
                 <p>A mentoria está constantemente evoluindo e melhorando! Em breve, aumentaremos a quantidade de aulas semanais.</p>
                 <p style="font-weight: 600; margin-top: 10px;">Garantia de preço: Ao ingressar agora, você mantém este valor promocional de R$250, desde que não atrase o pagamento da mensalidade, mesmo que o valor aumente para novos alunos no futuro!</p>
-            </div>
+                    </div>
             
             <div style="margin-bottom: 30px;">
                 <h3 style="margin-bottom: 15px; color: var(--primary-color);">O Que Você Recebe</h3>
@@ -1367,35 +1364,7 @@
         if (contactForm) {
             contactForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                
-                // Get form values
-                const name = contactForm.querySelector('input[type="text"]').value;
-                const email = contactForm.querySelector('input[type="email"]').value;
-                const whatsapp = contactForm.querySelector('input[type="tel"]').value;
-                const message = contactForm.querySelector('textarea').value;
-                
-                // Simple validation
-                if (!name || !email || !whatsapp) {
-                    alert('Por favor, preencha os campos obrigatórios: Nome, E-mail e WhatsApp');
-                    return;
-                }
-                
-                // Here you would typically send the data to a server
-                // For now, we're just showing a success message
-                
-                // Success message
                 alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
-                
-                // Log the data (for demonstration purposes)
-                console.log({
-                    name,
-                    email,
-                    whatsapp,
-                    message,
-                    date: new Date().toISOString()
-                });
-                
-                // Clear the form
                 contactForm.reset();
             });
         }
