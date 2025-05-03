@@ -58,6 +58,15 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo img {
+            height: 40px;
+            width: auto;
+            border-radius: 5px;
         }
         
         .nav-menu {
@@ -179,20 +188,11 @@
         
         .video-container iframe {
             position: absolute;
-            width: 900px; /* Wide enough to cover the video width */
-            height: 631px;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%); /* Center the iframe */
-            pointer-events: none; /* Prevents interaction outside video area */
+            left: 0;
+            width: 100%;
+            height: 100%;
             border-radius: 10px;
-        }
-        
-        /* Re-enable pointer events for touch devices */
-        @media (hover: none) {
-            .video-container iframe {
-                pointer-events: auto;
-            }
         }
         
         @media (max-width: 400px) {
@@ -200,11 +200,6 @@
                 width: 90%;
                 height: 0;
                 padding-bottom: 160%; /* Maintain aspect ratio */
-            }
-            
-            .video-container iframe {
-                height: 100%;
-                width: 700px; /* Adjusted for smaller screens but still wide */
             }
         }
         
@@ -848,7 +843,10 @@
     <!-- Header -->
     <header>
         <div class="container nav-container">
-            <div class="logo">Encontro de Idiomas</div>
+            <div class="logo">
+                <img src="assets/images/logo.png" alt="Encontro de Idiomas">
+                Encontro de Idiomas
+            </div>
             <ul class="nav-menu">
                 <li><a href="#beneficios">Benefícios</a></li>
                 <li><a href="#mentoria">A Mentoria</a></li>
@@ -1146,13 +1144,10 @@
             
             <div style="display: flex; justify-content: center; align-items: center; margin-top: 60px;">
                 <div class="video-container">
-                    <!-- YouTube iframe with specific size and position to focus on vertical content -->
                     <iframe 
-                        src="https://www.youtube.com/embed/GGbp8oGMAL0?modestbranding=1&rel=0&showinfo=0&controls=1" 
+                        src="https://www.youtube.com/embed/GGbp8oGMAL0" 
                         frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                        id="youtube-vertical-video">
+                        allowfullscreen>
                     </iframe>
                 </div>
             </div>
@@ -1220,7 +1215,10 @@
     <!-- Footer -->
     <footer style="background-color: var(--card-bg); padding: 60px 0 30px; text-align: center;">
         <div class="container">
-            <div class="logo" style="margin-bottom: 20px;">Encontro de Idiomas</div>
+            <div class="logo" style="margin-bottom: 20px; justify-content: center;">
+                <img src="assets/images/logo.png" alt="Encontro de Idiomas">
+                Encontro de Idiomas
+            </div>
             <p style="margin-bottom: 30px;">Transformando vidas através do ensino de idiomas</p>
             <div style="margin-bottom: 40px;">
                 <a href="#" style="color: var(--primary-color); margin: 0 15px; text-decoration: none;">Instagram</a>
@@ -1317,19 +1315,6 @@
         if (slides.length > 0) {
             showSlides();
         }
-        
-        // Improve vertical video positioning on load
-        window.addEventListener('load', function() {
-            // Give a slight delay to ensure iframe has loaded
-            setTimeout(function() {
-                const videoIframe = document.getElementById('youtube-vertical-video');
-                if (videoIframe) {
-                    // This helps ensure the video is properly centered
-                    videoIframe.style.width = '900px';
-                    videoIframe.style.maxWidth = 'none';
-                }
-            }, 1000);
-        });
         
         // Modal functionality
         const modal = document.getElementById('pricingModal');
