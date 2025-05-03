@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentoria de Inglês | Resultados Garantidos</title>
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --accent-color: #00cec9;
+            --bg-color: #ffffff;
+            --card-bg: #f8f9fa;
+            --text-color: #333333;
+            --text-dark: #1e1e1e;
+            --section-padding: 80px 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        section {
+            padding: var(--section-padding);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            max-width: 600px;
+            margin: 0 auto;
+            color: var(--text-color);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 15px 35px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.6);
+        }
+        
+        /* Header Styles */
+        .header {
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+            padding: 30px 0;
+        }
+        
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            margin-left: 30px;
+        }
+        
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: white;
+            transition: width 0.3s;
+        }
+        
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            color: white;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            z-index: -2;
+        }
+        
+        .hero::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, var(--bg-color), transparent);
+            z-index: -1;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            padding: 120px 0 60px;
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            box-shadow: none;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            color: white;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* About Section */
+        .about {
+            background-color: var(--bg-color);
+        }
+        
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        
+        .about-image-box {
+            position: relative;
+            height: 450px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+        }
+        
+        .about-image-box .placeholder {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+        
+        .subtitle {
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .about-heading h3 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+        }
+        
+        .about-text p {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+        
+        .about-features {
+            margin: 30px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .feature-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 25px;
+            height: 25px;
+            background-color: rgba(108, 92, 231, 0.1);
+            color: var(--primary-color);
+            border-radius: 50%;
+            font-weight: bold;
+        }
+        
+        .feature-text {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        
+        /* Features Section */
+        .features {
+            background-color: #f8f9fa;
+            position: relative;
+        }
+        
+        .features-heading {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 60px;
+        }
+        
+        .features-heading h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+        
+        .features-heading p {
+            color: var(--text-color);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background-color: var(--bg-color);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon-large {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+        
+        .feature-card p {
+            color: var(--text-color);
+        }
+        
+        /* Methodology Section */
+        .methodology {
+            background-color: var(--bg-color);
+            position: relative;
+        }
+        
+        .methodology-timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+        
+        .methodology-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50px;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 50px;
+            padding-left: 100px;
+        }
+        
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 44px;
+            top: 15px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            border: 3px solid var(--bg-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .timeline-number {
+            display: inline-block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .timeline-content h3 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+        
+        .timeline-content p {
+            color: var(--text-color);
+        }
+        
+        .methodology-cta {
+            text-align: center;
+            margin-top: 60px;
+            padding: 40px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .methodology-cta p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+        
+        /* Pricing Section */
+        .pricing {
+            background-color: #f8f9fa;
+        }
+        
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+        
+        .toggle-option {
+            font-weight: 500;
+            color: var(--text-color);
+            margin: 0 15px;
+        }
+        
+        .toggle-option.active {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        
+        .discount {
+            display: inline-block;
+            font-size: 0.8rem;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 5px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .pricing-card {
+            background-color: var(--bg-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pricing-card.featured {
+            border: 2px solid var(--primary-color);
+            transform: scale(1.05);
+            z-index: 1;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .pricing-header {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .pricing-header h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-color);
+        }
+        
+        .hide {
+            display: none;
+        }
+        
+        .pricing-body {
+            padding: 30px;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .pricing-features li {
+            margin-bottom: 15px;
+            color: var(--text-color);
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .feature-check {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .pricing-footer {
+            padding: 0 30px 30px;
+            text-align: center;
+        }
+        
+        .pricing-footer .btn {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="#" class="logo">Mentoria de Inglês</a>
+                <nav>
+                    <ul class="nav-menu">
+                        <li><a href="#sobre">Sobre</a></li>
+                        <li><a href="#metodologia">Metodologia</a></li>
+                        <li><a href="#planos">Planos</a></li>
+                        <li><a href="#depoimentos">Depoimentos</a></li>
+                        <li><a href="#contato">Contato</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Alcance a Fluência em Inglês com Nossa Mentoria Exclusiva</h1>
+                <p>Um programa personalizado e eficiente para você dominar o inglês e transformar sua vida pessoal e profissional.</p>
+                
+                <div class="hero-buttons">
+                    <a href="#planos" class="btn">Conhecer Planos</a>
+                    <a href="#sobre" class="btn btn-outline">Saiba Mais</a>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">97%</div>
+                        <div class="stat-label">Satisfação</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">+500</div>
+                        <div class="stat-label">Alunos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">3x</div>
+                        <div class="stat-label">Mais Rápido</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="sobre" class="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>Sobre Nossa Mentoria</h2>
+                <p>Conheça nossa abordagem única para o ensino de inglês</p>
+            </div>
+            
+            <div class="about-content">
+                <div class="about-image">
+                    <div class="about-image-box">
+                        <div class="placeholder">Imagem da Mentoria</div>
+                    </div>
+                </div>
+                
+                <div class="about-text">
+                    <div class="about-heading">
+                        <span class="subtitle">Por que nos escolher?</span>
+                        <h3>Uma Nova Abordagem para o Ensino de Inglês</h3>
+                    </div>
+                    
+                    <p>Nossa mentoria foi desenvolvida por especialistas com mais de 15 anos de experiência no ensino de inglês. Diferente dos métodos tradicionais, focamos em resultados rápidos e duradouros através de um acompanhamento personalizado.</p>
+                    
+                    <p>Trabalhamos com um método exclusivo que adapta o conteúdo e a abordagem às suas necessidades específicas, objetivos e estilo de aprendizado. Isso garante um progresso consistente e eficiente.</p>
+                    
+                    <div class="about-features">
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-text">Programa 100% personalizado</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-text">Foco em situações reais de uso</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-text">Feedback constante e detalhado</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-text">Flexibilidade de horários</div>
+                        </div>
+                    </div>
+                    
+                    <a href="#planos" class="btn">Ver Planos Disponíveis</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="features-heading">
+                <span class="subtitle">O que oferecemos</span>
+                <h2>Recursos exclusivos da nossa mentoria</h2>
+                <p>Conheça os diferenciais que aceleram seu aprendizado</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-large">🎯</div>
+                    <h3>Avaliação Inicial Detalhada</h3>
+                    <p>Identificamos seu nível atual, pontos fortes e fracos para criar um plano personalizado que maximize seus resultados.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-large">📊</div>
+                    <h3>Métricas de Progresso</h3>
+                    <p>Acompanhamento contínuo da sua evolução com avaliações periódicas para ajustes no programa quando necessário.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-large">💬</div>
+                    <h3>Conversação Intensiva</h3>
+                    <p>Sessões focadas em desenvolver sua fluência verbal com técnicas comprovadas para superar a insegurança ao falar.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-large">📱</div>
+                    <h3>Suporte Contínuo</h3>
+                    <p>Acesso direto ao seu mentor para dúvidas e orientações mesmo fora das sessões programadas.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-large">📚</div>
+                    <h3>Material Exclusivo</h3>
+                    <p>Recursos educacionais desenvolvidos especificamente para atender suas necessidades e objetivos específicos.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-large">🌐</div>
+                    <h3>Plataforma Online</h3>
+                    <p>Ambiente digital intuitivo para acesso aos materiais, exercícios e acompanhamento do seu progresso.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Methodology Section -->
+    <section id="metodologia" class="methodology">
+        <div class="container">
+            <div class="section-title">
+                <h2>Nossa Metodologia</h2>
+                <p>Conheça o processo que garante resultados rápidos e eficientes</p>
+            </div>
+            
+            <div class="methodology-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-number">01</span>
+                        <h3>Diagnóstico Inicial</h3>
+                        <p>Uma avaliação completa do seu nível atual, objetivos específicos e estilo de aprendizagem para criar um plano personalizado.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-number">02</span>
+                        <h3>Plano Personalizado</h3>
+                        <p>Desenvolvimento de um programa exclusivo baseado nas suas necessidades específicas, com metas claras e mensuráveis.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-number">03</span>
+                        <h3>Sessões de Mentoria</h3>
+                        <p>Encontros regulares com seu mentor para trabalhar habilidades específicas, resolver dúvidas e praticar conversação.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-number">04</span>
+                        <h3>Prática Direcionada</h3>
+                        <p>Atividades e exercícios focados nas suas necessidades específicas para reforçar o aprendizado entre as sessões.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-number">05</span>
+                        <h3>Avaliação de Progresso</h3>
+                        <p>Monitoramento constante da sua evolução com ajustes no programa quando necessário para garantir resultados ótimos.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="methodology-cta">
+                <p>Quer conhecer mais detalhes sobre nossa metodologia?</p>
+                <a href="#contato" class="btn">Fale com um Especialista</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="planos" class="pricing">
+        <div class="container">
+            <div class="section-title">
+                <h2>Planos de Mentoria</h2>
+                <p>Escolha a opção que melhor se adapta às suas necessidades</p>
+            </div>
+            
+            <div class="pricing-toggle">
+                <span class="toggle-option active">Mensal</span>
+                <label class="switch">
+                    <input type="checkbox" id="billing-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-option">Trimestral <span class="discount">-10%</span></span>
+            </div>
+            
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Plano Básico</h3>
+                        <div class="price monthly">R$497<span>/mês</span></div>
+                        <div class="price quarterly hide">R$447<span>/mês</span></div>
+                    </div>
+                    
+                    <div class="pricing-body">
+                        <ul class="pricing-features">
+                            <li><span class="feature-check">✓</span> 4 sessões mensais de 1 hora</li>
+                            <li><span class="feature-check">✓</span> Material didático exclusivo</li>
+                            <li><span class="feature-check">✓</span> Acesso à plataforma de estudos</li>
+                            <li><span class="feature-check">✓</span> Suporte por e-mail</li>
+                            <li><span class="feature-check">✓</span> Avaliação mensal de progresso</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="pricing-footer">
+                        <a href="#contato" class="btn">Começar Agora</a>
+                    </div>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="popular-badge">Mais Popular</div>
+                    <div class="pricing-header">
+                        <h3>Plano Premium</h3>
+                        <div class="price monthly">R$797<span>/mês</span></div>
+                        <div class="price quarterly hide">R$717<span>/mês</span></div>
+                    </div>
+                    
+                    <div class="pricing-body">
+                        <ul class="pricing-features">
+                            <li><span class="feature-check">✓</span> 8 sessões mensais de 1 hora</li>
+                            <li><span class="feature-check">✓</span> Material didático exclusivo</li>
+                            <li><span class="feature-check">✓</span> Acesso à plataforma de estudos</li>
+                            <li><span class="feature-check">✓</span> Suporte via WhatsApp</li>
+                            <li><span class="feature-check">✓</span> Sessões de conversação em grupo</li>
+                            <li><span class="feature-check">✓</span> Avaliação quinzenal de progresso</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="pricing-footer">
+                        <a href="#contato" class="btn">Começar Agora</a>
+                    </div>
+                </div>
+                
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Plano Master</h3>
+                        <div class="price monthly">R$1297<span>/mês</span></div>
+                        <div class="price quarterly hide">R$1167<span>/mês</span></div>
+                    </div>
+                    
+                    <div class="pricing-body">
+                        <ul class="pricing-features">
+                            <li><span class="feature-check">✓</span> 12 sessões mensais de 1 hora</li>
+                            <li><span class="feature-check">✓</span> Material didático exclusivo</li>
+                            <li><span class="feature-check">✓</span> Acesso à plataforma de estudos</li>
+                            <li><span class="feature-check">✓</span> Suporte 24/7 via WhatsApp</li>
+                            <li><span class="feature-check">✓</span> Sessões de conversação individual</li>
+                            <li><span class="feature-check">✓</span> Simulações de entrevistas e reuniões</li>
+                            <li><span class="feature-check">✓</span> Acompanhamento semanal de progresso</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="pricing-footer">
+                        <a href="#contato" class="btn">Começar Agora</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html> 
