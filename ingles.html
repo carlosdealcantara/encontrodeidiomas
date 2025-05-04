@@ -870,7 +870,9 @@
                         <div class="price-banner" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid transparent; border-image: linear-gradient(45deg, var(--primary-color), var(--accent-color)) 1; color: var(--primary-color); padding: 15px; border-radius: 10px; font-weight: 700;">
                             <span style="color: var(--accent-color); font-size: 1.2rem;">✓</span> Cada aula por apenas <span style="color: var(--accent-color); font-size: 1.3rem;">R$15</span>
                         </div>
-                        <a href="#contato" class="cta-button">Quero Participar</a>
+                        <div style="margin-right: 30px;">
+                            <a href="#contato" class="cta-button">Quero Participar</a>
+                        </div>
                     </div>
                 </div>
                 <div class="hero-image">
@@ -1167,10 +1169,16 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 60px;">
                 <div>
                     <h3 style="margin-bottom: 20px; color: var(--primary-color);">Envie sua Mensagem</h3>
-                    <form id="contactForm" action="https://formspree.io/f/xnndprqo" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
-                        <input type="text" name="name" placeholder="Seu Nome" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
-                        <input type="email" name="email" placeholder="Seu E-mail" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
-                        <textarea name="message" placeholder="Sua Mensagem" rows="5" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; resize: vertical;" required></textarea>
+                    <div id="success-message" style="display: none; background-color: #dff0d8; color: #3c763d; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        Sua mensagem foi enviada com sucesso! Entraremos em contato em breve.
+                    </div>
+                    <div id="error-message" style="display: none; background-color: #f2dede; color: #a94442; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente.
+                    </div>
+                    <form id="contact-form" style="display: flex; flex-direction: column; gap: 20px;">
+                        <input type="text" id="name" name="name" placeholder="Seu Nome" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
+                        <input type="email" id="email" name="email" placeholder="Seu E-mail" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
+                        <textarea id="message" name="message" placeholder="Sua Mensagem" rows="5" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; resize: vertical;" required></textarea>
                         <button type="submit" class="cta-button" style="border: none; cursor: pointer;">Enviar Mensagem</button>
                     </form>
                 </div>
@@ -1361,12 +1369,48 @@
         });
         
         // Form submission (you can replace with your own logic)
-        const contactForm = document.getElementById('contactForm');
+        const contactForm = document.getElementById('contact-form');
         if (contactForm) {
-            contactForm.addEventListener('submit', (e) => {
+            contactForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
-                contactForm.reset();
+                
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const message = document.getElementById('message').value;
+                
+                // Configuração para o serviço de e-mail (usando formspree como exemplo)
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('email', email);
+                formData.append('message', message);
+                formData.append('_subject', 'Nova mensagem do Encontro de Idiomas');
+                
+                fetch('https://formspree.io/f/xnndprqo', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Mostra mensagem de sucesso
+                        document.getElementById('success-message').style.display = 'block';
+                        document.getElementById('error-message').style.display = 'none';
+                        // Limpa o formulário
+                        document.getElementById('contact-form').reset();
+                    } else {
+                        // Mostra mensagem de erro
+                        document.getElementById('error-message').style.display = 'block';
+                        document.getElementById('success-message').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    // Mostra mensagem de erro
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('success-message').style.display = 'none';
+                    console.error('Erro:', error);
+                });
             });
         }
     </script>
