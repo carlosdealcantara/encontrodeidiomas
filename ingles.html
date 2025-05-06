@@ -890,115 +890,48 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section id="depoimentos">
+    <section class="testimonials" id="depoimentos">
         <div class="container">
             <div class="section-title">
                 <h2>Depoimentos de Alunos</h2>
-                <p>Veja o que dizem os participantes da nossa mentoria</p>
+                <p>Histórias reais de transformação através da nossa mentoria de inglês</p>
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 60px;">
-                <div style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <div style="font-size: 3rem; color: var(--accent-color); margin-bottom: 20px;">"</div>
-                    <p style="font-style: italic; margin-bottom: 20px;">A mentoria transformou minha relação com o inglês. Em poucos meses, consegui ganhar confiança para falar e me comunicar em situações reais.</p>
-                    <div style="font-weight: 600; color: var(--primary-color);">Marina S.</div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">★★★★★</div>
+                    <p class="testimonial-text">"A mentoria transformou completamente minha relação com o inglês. Em apenas 4 meses, passei de um nível básico para conseguir conduzir reuniões com clientes internacionais. O método é prático e eficiente."</p>
+                    <div class="testimonial-author">
+                        <div class="author-image"></div>
+                        <div class="author-info">
+                            <h4>Fernanda Oliveira</h4>
+                            <p>Analista de Marketing</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <div style="font-size: 3rem; color: var(--accent-color); margin-bottom: 20px;">"</div>
-                    <p style="font-style: italic; margin-bottom: 20px;">O sistema de estudo em duplas foi uma revelação! Superei minha timidez e agora consigo me expressar muito melhor em inglês. Recomendo demais!</p>
-                    <div style="font-weight: 600; color: var(--primary-color);">Pedro L.</div>
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">★★★★★</div>
+                    <p class="testimonial-text">"Depois de tentar vários cursos tradicionais sem sucesso, encontrei na mentoria o acompanhamento personalizado que precisava. Agora me comunico com confiança e consegui uma promoção na empresa."</p>
+                    <div class="testimonial-author">
+                        <div class="author-image"></div>
+                        <div class="author-info">
+                            <h4>Ricardo Mendes</h4>
+                            <p>Engenheiro de Software</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <div style="font-size: 3rem; color: var(--accent-color); margin-bottom: 20px;">"</div>
-                    <p style="font-style: italic; margin-bottom: 20px;">A comunidade no WhatsApp faz toda diferença. Receber conteúdos diários e poder praticar a qualquer momento acelerou muito meu aprendizado.</p>
-                    <div style="font-weight: 600; color: var(--primary-color);">Carla M.</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="precos" style="background-color: var(--card-bg);">
-        <div class="container">
-            <div class="section-title">
-                <h2>Investimento</h2>
-                <p>Escolha o plano que melhor se adapta às suas necessidades</p>
-            </div>
-            
-            <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 60px;">
-                <div class="pricing-card">
-                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Mensal</h3>
-                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$250</div>
-                    <p style="margin-bottom: 20px;">por mês</p>
-                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 16 aulas por mês em média
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Apenas R$15 por aula
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Comunidade exclusiva
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Materiais e bônus
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Suporte ilimitado
-                        </li>
-                    </ul>
-                    <button id="openModal" class="cta-button" style="border: none; cursor: pointer;">Ver Detalhes</button>
-                </div>
-                
-                <div class="pricing-card featured">
-                    <div class="featured-badge" style="position: absolute; top: -10px; right: -10px; background: var(--accent-color); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">Mais Popular</div>
-                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Trimestral</h3>
-                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$700</div>
-                    <p style="margin-bottom: 20px;">a cada 3 meses</p>
-                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> 16 aulas por mês em média
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Economia de R$50
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Comunidade exclusiva
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Materiais e bônus
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Suporte ilimitado
-                        </li>
-                    </ul>
-                    <button id="openModalTrimestral" class="cta-button" style="background: white; color: var(--primary-color); border: none; cursor: pointer;">Ver Detalhes</button>
-                </div>
-
-                <div class="pricing-card">
-                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Expresso</h3>
-                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$999</div>
-                    <p style="margin-bottom: 20px;">a cada 3 meses</p>
-                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 180 minutos de aula particular
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Economia de R$200
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Comunidade exclusiva
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Materiais e bônus extras
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Suporte ilimitado e preferencial
-                        </li>
-                    </ul>
-                    <button id="openModalExpresso" class="cta-button" style="border: none; cursor: pointer;">Ver Detalhes</button>
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">★★★★★</div>
+                    <p class="testimonial-text">"A flexibilidade da mentoria foi essencial para mim. Consegui conciliar com minha rotina agitada e ainda assim evoluir rapidamente. O suporte constante fez toda a diferença no meu aprendizado."</p>
+                    <div class="testimonial-author">
+                        <div class="author-image"></div>
+                        <div class="author-info">
+                            <h4>Carolina Souza</h4>
+                            <p>Médica</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1050,54 +983,6 @@
                 <div class="video-container">
                     <div class="video-placeholder">
                         <p>Vídeo Explicativo da Metodologia</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials" id="depoimentos">
-        <div class="container">
-            <div class="section-title">
-                <h2>O Que Nossos Alunos Dizem</h2>
-                <p>Histórias reais de transformação através da nossa mentoria de inglês</p>
-            </div>
-            
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"A mentoria transformou completamente minha relação com o inglês. Em apenas 4 meses, passei de um nível básico para conseguir conduzir reuniões com clientes internacionais. O método é prático e eficiente."</p>
-                    <div class="testimonial-author">
-                        <div class="author-image"></div>
-                        <div class="author-info">
-                            <h4>Fernanda Oliveira</h4>
-                            <p>Analista de Marketing</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="testimonial-card">
-                    <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"Depois de tentar vários cursos tradicionais sem sucesso, encontrei na mentoria o acompanhamento personalizado que precisava. Agora me comunico com confiança e consegui uma promoção na empresa."</p>
-                    <div class="testimonial-author">
-                        <div class="author-image"></div>
-                        <div class="author-info">
-                            <h4>Ricardo Mendes</h4>
-                            <p>Engenheiro de Software</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="testimonial-card">
-                    <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"A flexibilidade da mentoria foi essencial para mim. Consegui conciliar com minha rotina agitada e ainda assim evoluir rapidamente. O suporte constante fez toda a diferença no meu aprendizado."</p>
-                    <div class="testimonial-author">
-                        <div class="author-image"></div>
-                        <div class="author-info">
-                            <h4>Carolina Souza</h4>
-                            <p>Médica</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1175,6 +1060,94 @@
                         allowfullscreen>
                     </iframe>
                         </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="precos" style="background-color: var(--card-bg);">
+        <div class="container">
+            <div class="section-title">
+                <h2>Investimento</h2>
+                <p>Escolha o plano que melhor se adapta às suas necessidades</p>
+            </div>
+            
+            <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 60px;">
+                <div class="pricing-card">
+                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Mensal</h3>
+                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$250</div>
+                    <p style="margin-bottom: 20px;">por mês</p>
+                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 16 aulas por mês em média
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Apenas R$15 por aula
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Comunidade exclusiva
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Materiais e bônus
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Suporte ilimitado
+                        </li>
+                    </ul>
+                    <button id="openModal" class="cta-button" style="border: none; cursor: pointer;">Ver Detalhes</button>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="featured-badge" style="position: absolute; top: -10px; right: -10px; background: var(--accent-color); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">Mais Popular</div>
+                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Trimestral</h3>
+                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$700</div>
+                    <p style="margin-bottom: 20px;">a cada 3 meses</p>
+                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: white; margin-right: 10px;">✓</span> 16 aulas por mês em média
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: white; margin-right: 10px;">✓</span> Economia de R$50
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: white; margin-right: 10px;">✓</span> Comunidade exclusiva
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: white; margin-right: 10px;">✓</span> Materiais e bônus
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: white; margin-right: 10px;">✓</span> Suporte ilimitado
+                        </li>
+                    </ul>
+                    <button id="openModalTrimestral" class="cta-button" style="background: white; color: var(--primary-color); border: none; cursor: pointer;">Ver Detalhes</button>
+                </div>
+
+                <div class="pricing-card">
+                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Expresso</h3>
+                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$999</div>
+                    <p style="margin-bottom: 20px;">a cada 3 meses</p>
+                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 16 aulas por mês em média
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 180 minutos de aula particular
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Economia de R$200
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Comunidade exclusiva
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Materiais e bônus extras
+                        </li>
+                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Suporte ilimitado e preferencial
+                        </li>
+                    </ul>
+                    <button id="openModalExpresso" class="cta-button" style="border: none; cursor: pointer;">Ver Detalhes</button>
+                </div>
             </div>
         </div>
     </section>
