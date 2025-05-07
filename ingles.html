@@ -1,9 +1,80 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mentoria de Inglês | Encontro de Idiomas</title>
+    <title>Mentoria de Inglês | Aulas de Inglês Online | Encontro de Idiomas</title>
+    <meta name="description" content="Aprenda inglês de forma eficiente e personalizada com nossa metodologia exclusiva. Aulas online, professores qualificados e suporte contínuo. Conquiste fluência no inglês!">
+    <meta name="keywords" content="aulas de inglês, curso de inglês, mentoria inglês, professor de inglês online, aulas de inglês online, aprender inglês, inglês para negócios, curso de conversação em inglês, inglês fluente, como aprender inglês rápido">
+    <meta name="author" content="Encontro de Idiomas">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Mentoria de Inglês | Encontro de Idiomas">
+    <meta property="og:description" content="Aprenda inglês de forma eficiente com mentoria personalizada. Desenvolva fluência e confiança para se comunicar em inglês.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://encontrodeidiomas.com/">
+    <meta property="og:image" content="assets/images/logo.png">
+    <link rel="canonical" href="https://encontrodeidiomas.com/">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="assets/images/logo.png" as="image">
+    <link rel="preload" href="assets/images/slide1.jpg" as="image">
+    <link rel="preload" href="assets/images/videoaula.jpg" as="image">
+    <link rel="alternate" href="https://encontrodeidiomas.com/en/" hreflang="en">
+    <link rel="alternate" href="https://encontrodeidiomas.com/" hreflang="pt-BR">
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://www.youtube.com">
+    <link rel="preconnect" href="https://www.google-analytics.com">
+    <meta name="theme-color" content="#1c3055">
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "Encontro de Idiomas",
+      "description": "Mentoria de inglês com metodologia exclusiva. Aprenda inglês de forma eficiente e personalizada.",
+      "url": "https://encontrodeidiomas.com",
+      "logo": "https://encontrodeidiomas.com/assets/images/logo.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+55-61-99266-6148",
+        "contactType": "customer service",
+        "availableLanguage": ["Portuguese", "English"]
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "BR"
+      },
+      "offers": {
+        "@type": "Offer",
+        "category": "Aulas de inglês online",
+        "priceCurrency": "BRL",
+        "price": "250"
+      },
+      "sameAs": [
+        "https://www.facebook.com/encontrodeidiomas",
+        "https://www.instagram.com/encontrodeidiomas",
+        "https://www.youtube.com/channel/encontrodeidiomas"
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      "name": "Mentoria de Inglês",
+      "description": "Aprenda inglês de forma eficiente e personalizada com nossa metodologia exclusiva.",
+      "provider": {
+        "@type": "Organization",
+        "name": "Encontro de Idiomas",
+        "sameAs": "https://encontrodeidiomas.com"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "250",
+        "priceCurrency": "BRL",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+    </script>
     <style>
         :root {
             --primary-color: #1c3055; /* Updated blue */
@@ -803,6 +874,18 @@
             font-size: 0.9rem;
         }
         
+        /* Accessibility */
+        .visually-hidden {
+            border: 0;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+        
         /* Media Queries */
         @media (max-width: 768px) {
             .hero-grid,
@@ -846,16 +929,18 @@
     <header>
         <div class="container nav-container">
             <div class="logo">
-                <img src="assets/images/logo.png" alt="Encontro de Idiomas">
-                Encontro de Idiomas
+                <img src="assets/images/logo.png" alt="Encontro de Idiomas" width="40" height="40">
+                <span>Encontro de Idiomas</span>
             </div>
-                <ul class="nav-menu">
-                    <li><a href="#beneficios">Benefícios</a></li>
-                <li><a href="#mentoria">A Mentoria</a></li>
-                <li><a href="#depoimentos">Depoimentos</a></li>
-                <li><a href="#precos">Preços</a></li>
-                    <li><a href="#contato">Contato</a></li>
-                </ul>
+                <nav aria-label="Navegação principal">
+                    <ul class="nav-menu" role="menubar">
+                        <li role="none"><a href="#depoimentos" role="menuitem">Depoimentos</a></li>
+                        <li role="none"><a href="#metodologia" role="menuitem">Metodologia</a></li>
+                        <li role="none"><a href="#beneficios" role="menuitem">Benefícios</a></li>
+                        <li role="none"><a href="#precos" role="menuitem">Investimento</a></li>
+                        <li role="none"><a href="#contato" role="menuitem">Contato</a></li>
+                    </ul>
+                </nav>
         </div>
     </header>
 
@@ -997,7 +1082,7 @@
             
             <div class="benefits-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 60px;">
                 <div class="benefit-card" style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <img src="assets/images/turma.jpg" alt="Aulas ao Vivo" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="assets/images/videoaula.jpg" alt="Aulas ao Vivo" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="color: var(--primary-color); margin-bottom: 15px;">Aulas ao Vivo</h3>
                     <p>Aulas em chamadas de vídeo ao vivo com a turma, permitindo interação direta e prática conversacional.</p>
                 </div>
@@ -1051,26 +1136,6 @@
                     <li>Forma conexões e amizades entre os participantes</li>
                 </ul>
                 <p style="margin-top: 15px;">Os alunos estão adorando esta dinâmica, e os resultados têm sido extraordinários! Junte-se a nós e experimente esta forma revolucionária de aprender inglês!</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Mentorship Video Section -->
-    <section id="mentoria" style="background-color: var(--card-bg);">
-        <div class="container">
-            <div class="section-title">
-                <h2>Conheça Nossa Mentoria</h2>
-                <p>Assista ao vídeo e descubra como funciona nossa comunidade exclusiva de WhatsApp</p>
-            </div>
-            
-            <div style="display: flex; justify-content: center; align-items: center; margin-top: 60px;">
-                <div class="video-container">
-                    <iframe 
-                        src="https://www.youtube.com/embed/GGbp8oGMAL0" 
-                        frameborder="0" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
             </div>
         </div>
     </section>
@@ -1180,10 +1245,26 @@
                     <div id="error-message" style="display: none; background-color: #f2dede; color: #a94442; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
                         Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente.
                     </div>
-                    <form id="contact-form" style="display: flex; flex-direction: column; gap: 20px;">
-                        <input type="text" id="name" name="name" placeholder="Seu Nome" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
-                        <input type="email" id="email" name="email" placeholder="Seu E-mail" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd;" required>
-                        <textarea id="message" name="message" placeholder="Sua Mensagem" rows="5" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; resize: vertical;" required></textarea>
+                    <form id="contact-form" style="display: flex; flex-direction: column; gap: 20px;" role="form" aria-labelledby="form-title">
+                        <h3 id="form-title" style="margin-bottom: 20px; color: var(--primary-color);">Envie sua Mensagem</h3>
+                        <div id="success-message" style="display: none; background-color: #dff0d8; color: #3c763d; padding: 15px; border-radius: 5px; margin-bottom: 20px;" role="alert" aria-live="assertive">
+                            Sua mensagem foi enviada com sucesso! Entraremos em contato em breve.
+                        </div>
+                        <div id="error-message" style="display: none; background-color: #f2dede; color: #a94442; padding: 15px; border-radius: 5px; margin-bottom: 20px;" role="alert" aria-live="assertive">
+                            Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente.
+                        </div>
+                        <div class="form-group">
+                            <label for="name" class="visually-hidden">Seu Nome</label>
+                            <input type="text" id="name" name="name" placeholder="Seu Nome" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; width: 100%;" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="visually-hidden">Seu E-mail</label>
+                            <input type="email" id="email" name="email" placeholder="Seu E-mail" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; width: 100%;" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="message" class="visually-hidden">Sua Mensagem</label>
+                            <textarea id="message" name="message" placeholder="Sua Mensagem" rows="5" style="padding: 15px; border-radius: 5px; border: 1px solid #ddd; resize: vertical; width: 100%;" required aria-required="true"></textarea>
+                        </div>
                         <button type="submit" class="cta-button" style="border: none; cursor: pointer;">Enviar Mensagem</button>
                     </form>
                 </div>
@@ -1411,7 +1492,7 @@
     </div>
 
     <!-- JavaScript -->
-    <script>
+    <script defer>
         // Slideshow functionality
         let slideIndex = 0;
         const slides = document.querySelectorAll('.slide');
