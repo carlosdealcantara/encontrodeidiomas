@@ -1356,7 +1356,7 @@
                 <a href="https://youtube.com/@encontrodeidiomasingles" style="color: var(--primary-color); margin: 0 15px; text-decoration: none;" target="_blank" rel="noopener">YouTube</a>
             </div>
             <div style="font-size: 0.9rem; color: var(--text-color);">
-                &copy; 2023 Encontro de Idiomas. Todos os direitos reservados.
+                &copy; <span id="current-year"></span> Encontro de Idiomas. Todos os direitos reservados.
             </div>
         </div>
     </footer>
@@ -1528,6 +1528,9 @@
 
     <!-- JavaScript -->
     <script defer>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
         // Slideshow functionality
         let slideIndex = 0;
         const slides = document.querySelectorAll('.slide');
