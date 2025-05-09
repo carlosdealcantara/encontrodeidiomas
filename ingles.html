@@ -934,6 +934,9 @@
                 max-width: 300px; /* Increased from 260px to make banner longer on mobile */
                 height: auto !important;
                 padding: 10px 15px !important;
+                justify-content: center !important; /* Center the content */
+                text-align: center !important; /* Center text if flexbox fails */
+                box-sizing: border-box !important; /* Make sure padding is included in width */
             }
             
             .hero-content > div > div:last-child {
@@ -972,7 +975,7 @@
                     <p>Aprenda inglês de forma eficiente e personalizada com nossa mentoria exclusiva. Desenvolva fluência, confiança e habilidades práticas para se comunicar em inglês.</p>
                     
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 30px;">
-                        <div class="price-banner" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid transparent; border-image: linear-gradient(45deg, var(--primary-color), var(--accent-color)) 1; color: var(--primary-color); padding: 10px 15px; border-radius: 30px; font-weight: 700; display: flex; align-items: center; height: 50px;">
+                        <div class="price-banner" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid transparent; border-image: linear-gradient(45deg, var(--primary-color), var(--accent-color)) 1; color: var(--primary-color); padding: 10px 20px; border-radius: 30px; font-weight: 700; display: flex; align-items: center; justify-content: center; height: 50px;">
                             <span style="color: var(--accent-color); font-size: 1.2rem; margin-right: 5px;">✓</span> Cada aula por apenas <span style="color: var(--accent-color); font-size: 1.3rem; margin-left: 5px;">R$15</span>
                         </div>
                         <div style="margin-right: 30px;">
