@@ -943,6 +943,21 @@
                 margin-right: 0 !important;
                 margin-top: 10px;
             }
+            
+            /* Fix benefit card images on mobile */
+            .benefit-card img {
+                height: auto !important; /* Remove fixed height constraint */
+                max-height: 220px !important; /* Add maximum height */
+                object-fit: contain !important; /* Ensure the whole image is visible without cropping */
+            }
+            
+            /* Also fix iframe container for YouTube video */
+            .benefit-card div iframe, 
+            .benefit-card div {
+                height: auto !important;
+                min-height: 200px !important;
+                max-height: 220px !important;
+            }
         }
     </style>
 </head>
@@ -1104,13 +1119,13 @@
             
             <div class="benefits-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 60px;">
                 <div class="benefit-card" style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <img src="assets/images/videoaula.jpg" alt="Aulas ao Vivo" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="assets/images/videoaula.jpg" alt="Aulas ao Vivo" style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="color: var(--primary-color); margin-bottom: 15px;">Aulas ao Vivo</h3>
                     <p>Aulas em chamadas de vídeo ao vivo com a turma, permitindo interação direta e prática conversacional.</p>
                 </div>
                 
                 <div class="benefit-card" style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <img src="assets/images/replay.jpg" alt="Replay das Aulas" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="assets/images/replay.jpg" alt="Replay das Aulas" style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="color: var(--primary-color); margin-bottom: 15px;">Replay das Aulas</h3>
                     <p>Disponibilização do replay das aulas para que você possa revisar o conteúdo quando e onde quiser.</p>
                 </div>
@@ -1129,19 +1144,19 @@
                 </div>
                 
                 <div class="benefit-card" style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <img src="assets/images/audio.jpg" alt="Áudio-aulas" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="assets/images/audio.jpg" alt="Áudio-aulas" style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="color: var(--primary-color); margin-bottom: 15px;">Áudio-aulas</h3>
                     <p>Áudio-aulas nos grupos para praticar a compreensão auditiva e treinar seu ouvido para o inglês.</p>
                 </div>
                 
                 <div class="benefit-card" style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <img src="assets/images/ebook.jpg" alt="Materiais Autorais" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="assets/images/ebook.jpg" alt="Materiais Autorais" style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="color: var(--primary-color); margin-bottom: 15px;">Materiais Autorais</h3>
                     <p>Materiais autorais e bônus exclusivos desenvolvidos especialmente para os participantes da mentoria.</p>
                 </div>
                 
                 <div class="benefit-card" style="background-color: var(--card-bg); padding: 30px; border-radius: 10px; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <img src="assets/images/suporte.jpg" alt="Suporte Ilimitado" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="assets/images/suporte.jpg" alt="Suporte Ilimitado" style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="color: var(--primary-color); margin-bottom: 15px;">Suporte Ilimitado</h3>
                     <p>Suporte ilimitado nos grupos para tirar dúvidas e receber feedback personalizado sobre seu progresso.</p>
                 </div>
