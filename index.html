@@ -250,6 +250,8 @@
             letter-spacing: 1px;
             box-shadow: 0 5px 15px rgba(28, 48, 85, 0.4);
             transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
         }
         
         .cta-button:hover {
@@ -478,6 +480,7 @@
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
         
         .pricing-card h3 {
@@ -487,13 +490,24 @@
         
         .pricing-card .price {
             font-size: 3rem;
-            margin-bottom: 30px;
+            margin-bottom: 5px;
             font-weight: 700;
         }
         
         .pricing-card .price span {
             font-size: 1rem;
             font-weight: 400;
+        }
+        
+        .pricing-tag {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .pricing-card.featured .pricing-tag {
+            color: white;
         }
         
         .pricing-features {
@@ -505,14 +519,72 @@
         .pricing-features li {
             padding: 10px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
         }
         
         .pricing-features li:last-child {
             border-bottom: none;
         }
         
+        .pricing-features .feature-check {
+            color: var(--accent-color);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .pricing-features .highlight-feature {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
         .pricing-card.featured .pricing-features li {
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .pricing-card.featured .pricing-features .feature-check {
+            color: white;
+        }
+        
+        .feature-inactive {
+            color: #999;
+            opacity: 0.7;
+            position: relative;
+        }
+        
+        .feature-inactive::before {
+            content: "✗";
+            margin-right: 10px;
+            color: #999;
+            font-size: 1.2rem;
+        }
+        
+        .pricing-card.featured .feature-inactive {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .pricing-card.featured .feature-inactive::before {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 15px 35px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(28, 48, 85, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .featured-btn {
+            background: white;
+            color: var(--primary-color);
         }
         
         /* Methodology Section */
@@ -970,6 +1042,88 @@
                 max-height: 220px !important;
             }
         }
+
+        /* New pricing modal styles */
+        .pricing-modal-header {
+            margin-bottom: 30px;
+        }
+
+        .pricing-modal-header h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .pricing-highlight-box {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .pricing-highlight-box h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .pricing-guarantee {
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .pricing-features-section {
+            margin-bottom: 30px;
+        }
+
+        .pricing-features-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .pricing-features-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 5px 20px;
+        }
+
+        .pricing-features-list li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .pricing-features-list li:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        .pricing-features-list .feature-check {
+            color: var(--accent-color);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .pricing-features-list .highlight-feature {
+            color: #ff3131;
+        }
+
+        .pricing-features-list .feature-not-included {
+            color: #999;
+        }
+
+        .pricing-features-list .feature-not-included span {
+            color: #999;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .pricing-modal-cta {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -1196,81 +1350,66 @@
                 <p>Escolha o plano que melhor se adapta às suas necessidades</p>
             </div>
             
-            <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 60px;">
+            <div class="pricing-options">
                 <div class="pricing-card">
-                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Mensal</h3>
-                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$250</div>
-                    <p style="margin-bottom: 20px;">por mês</p>
-                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 16 aulas por mês
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Apenas R$15 por aula
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Comunidade exclusiva
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Materiais e bônus
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Suporte ilimitado
-                        </li>
+                    <h3>Mensal</h3>
+                    <div class="price">R$250<span>/mês</span></div>
+                    <div class="pricing-tag">Cada aula por apenas R$15</div>
+                    <ul class="pricing-features">
+                        <li><span class="feature-check">✓</span> 16 aulas em grupo por mês</li>
+                        <li><span class="feature-check">✓</span> Comunidade exclusiva</li>
+                        <li><span class="feature-check">✓</span> Replay das aulas</li>
+                        <li><span class="feature-check">✓</span> Áudio-aulas nos grupos</li>
+                        <li><span class="feature-check">✓</span> Materiais e bônus extras</li>
+                        <li><span class="feature-check">✓</span> Sistema de estudo em duplas</li>
+                        <li><span class="feature-check">✓</span> Suporte ilimitado a dúvidas</li>
+                        <li><span class="feature-check">✓</span> Reconhecimento por dedicação</li>
+                        <li class="feature-inactive">Economia no valor total</li>
+                        <li class="feature-inactive">180 min de aula particular</li>
+                        <li class="feature-inactive">Suporte VIP prioritário</li>
                     </ul>
-                    <button id="openModal" class="cta-button" style="border: none; cursor: pointer;">Ver Detalhes</button>
+                    <button id="openModal" class="cta-button">Ver Detalhes</button>
                 </div>
                 
                 <div class="pricing-card featured">
-                    <div class="featured-badge" style="position: absolute; top: -10px; right: -10px; background: var(--accent-color); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">Mais Popular</div>
-                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Trimestral</h3>
-                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$700</div>
-                    <p style="margin-bottom: 20px;">a cada 3 meses</p>
-                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> 16 aulas por mês
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Economia de R$50
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Comunidade exclusiva
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Materiais e bônus
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: white; margin-right: 10px;">✓</span> Suporte ilimitado
-                        </li>
+                    <div class="featured-badge">Mais Popular</div>
+                    <h3>Trimestral</h3>
+                    <div class="price">R$700<span>/trimestre</span></div>
+                    <div class="pricing-tag">Economia de R$50</div>
+                    <ul class="pricing-features">
+                        <li><span class="feature-check">✓</span> 16 aulas em grupo por mês</li>
+                        <li><span class="feature-check">✓</span> Comunidade exclusiva</li>
+                        <li><span class="feature-check">✓</span> Replay das aulas</li>
+                        <li><span class="feature-check">✓</span> Áudio-aulas nos grupos</li>
+                        <li><span class="feature-check">✓</span> Materiais e bônus extras</li>
+                        <li><span class="feature-check">✓</span> Sistema de estudo em duplas</li>
+                        <li><span class="feature-check">✓</span> Suporte ilimitado a dúvidas</li>
+                        <li><span class="feature-check">✓</span> Reconhecimento por dedicação</li>
+                        <li><span class="feature-check">✓</span> Economia de R$50 no total</li>
+                        <li class="feature-inactive">180 min de aula particular</li>
+                        <li class="feature-inactive">Suporte VIP prioritário</li>
                     </ul>
-                    <button id="openModalTrimestral" class="cta-button" style="background: white; color: var(--primary-color); border: none; cursor: pointer;">Ver Detalhes</button>
+                    <button id="openModalTrimestral" class="cta-button featured-btn">Ver Detalhes</button>
                 </div>
 
                 <div class="pricing-card">
-                    <h3 style="font-size: 2rem; margin-bottom: 10px;">Expresso</h3>
-                    <div style="font-size: 3rem; font-weight: 700; margin: 20px 0;">R$999</div>
-                    <p style="margin-bottom: 20px;">a cada 3 meses</p>
-                    <ul style="list-style: none; margin-bottom: 30px; text-align: left;">
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 16 aulas por mês
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> 180 minutos de aula particular
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Economia de R$200
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Comunidade exclusiva
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Materiais e bônus extras
-                        </li>
-                        <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                            <span style="color: var(--accent-color); margin-right: 10px;">✓</span> Suporte ilimitado e preferencial
-                        </li>
+                    <h3>Expresso</h3>
+                    <div class="price">R$999<span>/trimestre</span></div>
+                    <div class="pricing-tag">Completo e personalizado</div>
+                    <ul class="pricing-features">
+                        <li><span class="feature-check">✓</span> 16 aulas em grupo por mês</li>
+                        <li><span class="feature-check">✓</span> Comunidade exclusiva</li>
+                        <li><span class="feature-check">✓</span> Replay das aulas</li>
+                        <li><span class="feature-check">✓</span> Áudio-aulas nos grupos</li>
+                        <li><span class="feature-check">✓</span> Materiais e bônus extras</li>
+                        <li><span class="feature-check">✓</span> Sistema de estudo em duplas</li>
+                        <li><span class="feature-check">✓</span> Suporte ilimitado a dúvidas</li>
+                        <li><span class="feature-check">✓</span> Reconhecimento por dedicação</li>
+                        <li><span class="feature-check highlight-feature">✓</span> <strong>Economia de R$200 no total</strong></li>
+                        <li><span class="feature-check highlight-feature">✓</span> <strong>180 minutos de aula particular</strong></li>
+                        <li><span class="feature-check highlight-feature">✓</span> <strong>Suporte VIP prioritário</strong></li>
                     </ul>
-                    <button id="openModalExpresso" class="cta-button" style="border: none; cursor: pointer;">Ver Detalhes</button>
+                    <button id="openModalExpresso" class="cta-button">Ver Detalhes</button>
                 </div>
             </div>
         </div>
@@ -1382,49 +1521,50 @@
                 <h2 style="margin-bottom: 10px; color: var(--primary-color);">Detalhes do Plano Mensal</h2>
             </div>
             
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Valor Mensal - R$250</h3>
+            <div class="pricing-modal-header">
+                <h3>Valor Mensal - R$250</h3>
                 <p>Com uma média de 16 aulas por mês, cada aula sai por apenas <strong>R$15</strong>!</p>
                 <p>Este é um dos melhores custo-benefício do mercado para uma mentoria de inglês com aulas ao vivo.</p>
             </div>
             
-            <div style="margin-bottom: 30px; padding: 20px; background-color: #f5f5f5; border-radius: 10px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Vantagem Exclusiva</h3>
+            <div class="pricing-highlight-box">
+                <h3>Vantagem Exclusiva</h3>
                 <p>A mentoria está constantemente evoluindo e melhorando! Em breve, aumentaremos a quantidade de aulas semanais.</p>
-                <p style="font-weight: 600; margin-top: 10px;">Garantia de preço: Ao ingressar agora, você mantém este valor promocional de R$250, desde que não atrase o pagamento da mensalidade, mesmo que o valor aumente para novos alunos no futuro!</p>
+                <p class="pricing-guarantee">Garantia de preço: Ao ingressar agora, você mantém este valor promocional de R$250, desde que não atrase o pagamento da mensalidade, mesmo que o valor aumente para novos alunos no futuro!</p>
             </div>
             
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">O Que Você Recebe</h3>
-                <ul style="list-style: none;">
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Aulas em chamadas de vídeo ao vivo com a turma
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Disponibilização do replay das aulas
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Comunidade exclusiva no WhatsApp
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Áudio-aulas nos grupos
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Conversação, networking, dinâmicas, conteúdos e dicas
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Materiais autorais e bônus
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Suporte ilimitado nos grupos
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Sistema de estudo em duplas
-                    </li>
+            <div class="pricing-features-section">
+                <h3>O Que Você Recebe</h3>
+                <ul class="pricing-features-list">
+                    <li><span class="feature-check">✓</span> 16 aulas em grupo por mês</li>
+                    <li><span class="feature-check">✓</span> Disponibilização do replay das aulas</li>
+                    <li><span class="feature-check">✓</span> Comunidade exclusiva no WhatsApp</li>
+                    <li><span class="feature-check">✓</span> Áudio-aulas nos grupos</li>
+                    <li><span class="feature-check">✓</span> Conversação, networking, dinâmicas, conteúdos e dicas</li>
+                    <li><span class="feature-check">✓</span> Materiais autorais e bônus extras</li>
+                    <li><span class="feature-check">✓</span> Sistema de estudo em duplas</li>
+                    <li><span class="feature-check">✓</span> Suporte ilimitado a dúvidas nos grupos</li>
+                    <li><span class="feature-check">✓</span> Reconhecimento por dedicação</li>
+                    <li class="feature-not-included"><span>✗</span> Economia em relação ao preço mensal</li>
+                    <li class="feature-not-included"><span>✗</span> 180 minutos de aula particular</li>
+                    <li class="feature-not-included"><span>✗</span> Avaliações trimestrais</li>
+                    <li class="feature-not-included"><span>✗</span> Suporte VIP prioritário</li>
                 </ul>
             </div>
             
-            <div style="text-align: center;">
+            <div class="pricing-highlight-box" style="margin-top: 20px;">
+                <h3>Sobre o Sistema de Reconhecimento por Dedicação</h3>
+                <p>Um sistema exclusivo de gamificação que reconhece e valoriza sua participação e comprometimento com o aprendizado:</p>
+                <ul style="margin-top: 10px; list-style-type: disc; padding-left: 20px;">
+                    <li>Tarefas diárias personalizadas para reforçar seu aprendizado</li>
+                    <li>Acompanhamento semanal com resultados das atividades realizadas</li>
+                    <li>Reconhecimento do seu esforço e dedicação no processo de aprendizagem</li>
+                    <li>Visualização clara do seu progresso ao longo do tempo</li>
+                </ul>
+                <p style="margin-top: 10px;">Este sistema foi desenvolvido para incentivar a prática contínua e celebrar suas conquistas no processo de aprendizado.</p>
+            </div>
+            
+            <div class="pricing-modal-cta">
                 <a href="#contato" class="cta-button" id="closeModalAndContact">Quero Garantir Minha Vaga</a>
             </div>
         </div>
@@ -1440,49 +1580,50 @@
                 <h2 style="margin-bottom: 10px; color: var(--primary-color);">Detalhes do Plano Trimestral</h2>
             </div>
             
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Valor Trimestral - R$700</h3>
+            <div class="pricing-modal-header">
+                <h3>Valor Trimestral - R$700</h3>
                 <p>O plano trimestral inclui todas as vantagens do plano mensal com economia de R$50 no total!</p>
                 <p>Além disso, você tem direito a 16 aulas por mês.</p>
             </div>
             
-            <div style="margin-bottom: 30px; padding: 20px; background-color: #f5f5f5; border-radius: 10px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Vantagens Exclusivas</h3>
+            <div class="pricing-highlight-box">
+                <h3>Vantagens Exclusivas</h3>
                 <p>Com o plano trimestral, você tem acesso prioritário a todos os materiais e benefícios adicionais.</p>
-                <p style="font-weight: 600; margin-top: 10px;">As aulas particulares exclusivas permitem um atendimento personalizado para suas necessidades específicas de aprendizado!</p>
+                <p class="pricing-guarantee">As aulas particulares exclusivas permitem um atendimento personalizado para suas necessidades específicas de aprendizado!</p>
             </div>
             
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">O Que Você Recebe</h3>
-                <ul style="list-style: none;">
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> 16 aulas por mês
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Economia de R$50 no total
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Aulas em chamadas de vídeo ao vivo com a turma
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Comunidade exclusiva no WhatsApp
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Materiais e bônus extras exclusivos
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Disponibilização do replay das aulas
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Áudio-aulas nos grupos
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Suporte ilimitado e preferencial
-                    </li>
+            <div class="pricing-features-section">
+                <h3>O Que Você Recebe</h3>
+                <ul class="pricing-features-list">
+                    <li><span class="feature-check">✓</span> 16 aulas em grupo por mês</li>
+                    <li><span class="feature-check">✓</span> Disponibilização do replay das aulas</li>
+                    <li><span class="feature-check">✓</span> Comunidade exclusiva no WhatsApp</li>
+                    <li><span class="feature-check">✓</span> Áudio-aulas nos grupos</li>
+                    <li><span class="feature-check">✓</span> Conversação, networking, dinâmicas, conteúdos e dicas</li>
+                    <li><span class="feature-check">✓</span> Materiais e bônus extras exclusivos</li>
+                    <li><span class="feature-check">✓</span> Sistema de estudo em duplas</li>
+                    <li><span class="feature-check">✓</span> Suporte ilimitado a dúvidas nos grupos</li>
+                    <li><span class="feature-check">✓</span> Reconhecimento por dedicação</li>
+                    <li><span class="feature-check highlight-feature">✓</span> <strong>Economia de R$50 no total</strong></li>
+                    <li class="feature-not-included"><span>✗</span> 180 minutos de aula particular</li>
+                    <li class="feature-not-included"><span>✗</span> Avaliações trimestrais</li>
+                    <li class="feature-not-included"><span>✗</span> Suporte VIP prioritário</li>
                 </ul>
             </div>
             
-            <div style="text-align: center;">
+            <div class="pricing-highlight-box" style="margin-top: 20px;">
+                <h3>Sobre o Sistema de Reconhecimento por Dedicação</h3>
+                <p>Um sistema exclusivo de gamificação que reconhece e valoriza sua participação e comprometimento com o aprendizado:</p>
+                <ul style="margin-top: 10px; list-style-type: disc; padding-left: 20px;">
+                    <li>Tarefas diárias personalizadas para reforçar seu aprendizado</li>
+                    <li>Acompanhamento semanal com resultados das atividades realizadas</li>
+                    <li>Reconhecimento do seu esforço e dedicação no processo de aprendizagem</li>
+                    <li>Visualização clara do seu progresso ao longo do tempo</li>
+                </ul>
+                <p style="margin-top: 10px;">Este sistema foi desenvolvido para incentivar a prática contínua e celebrar suas conquistas no processo de aprendizado.</p>
+            </div>
+            
+            <div class="pricing-modal-cta">
                 <a href="#contato" class="cta-button" id="closeModalTrimestralAndContact">Quero Garantir Minha Vaga</a>
             </div>
         </div>
@@ -1498,40 +1639,51 @@
                 <h2 style="margin-bottom: 10px; color: var(--primary-color);">Detalhes do Plano Expresso</h2>
             </div>
             
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Valor Expresso - R$999</h3>
+            <div class="pricing-modal-header">
+                <h3>Valor Expresso - R$999</h3>
                 <p>O plano expresso inclui todas as vantagens do plano trimestral com economia total de R$200!</p>
                 <p>Além disso, você tem direito a 180 minutos de aula particular, distribuídos da forma que preferir.</p>
             </div>
             
-            <div style="margin-bottom: 30px; padding: 20px; background-color: #f5f5f5; border-radius: 10px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Vantagens Exclusivas</h3>
+            <div class="pricing-highlight-box">
+                <h3>Vantagens Exclusivas</h3>
                 <p>Com o plano expresso, você tem acesso prioritário a todos os materiais e benefícios adicionais.</p>
-                <p style="font-weight: 600; margin-top: 10px;">As aulas particulares exclusivas permitem um atendimento personalizado para suas necessidades específicas de aprendizado!</p>
+                <p class="pricing-guarantee">As aulas particulares exclusivas permitem um atendimento personalizado para suas necessidades específicas de aprendizado!</p>
             </div>
             
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary-color);">O Que Você Recebe</h3>
-                <ul style="list-style: none;">
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> 180 minutos de aula particular
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Economia total de R$200
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Acesso a conteúdos premium
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Avaliações trimestrais
-                    </li>
-                    <li style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <span style="color: var(--accent-color); margin-right: 10px; font-size: 1.2rem;">✓</span> Suporte VIP prioritário
-                    </li>
+            <div class="pricing-features-section">
+                <h3>O Que Você Recebe</h3>
+                <ul class="pricing-features-list">
+                    <li><span class="feature-check">✓</span> 16 aulas em grupo por mês</li>
+                    <li><span class="feature-check">✓</span> Disponibilização do replay das aulas</li>
+                    <li><span class="feature-check">✓</span> Comunidade exclusiva no WhatsApp</li>
+                    <li><span class="feature-check">✓</span> Áudio-aulas nos grupos</li>
+                    <li><span class="feature-check">✓</span> Conversação, networking, dinâmicas, conteúdos e dicas</li>
+                    <li><span class="feature-check">✓</span> Materiais e bônus extras exclusivos</li>
+                    <li><span class="feature-check">✓</span> Sistema de estudo em duplas</li>
+                    <li><span class="feature-check">✓</span> Suporte ilimitado a dúvidas nos grupos</li>
+                    <li><span class="feature-check">✓</span> Reconhecimento por dedicação</li>
+                    <li><span class="feature-check highlight-feature">✓</span> <strong>Economia total de R$200</strong></li>
+                    <li><span class="feature-check highlight-feature">✓</span> <strong>180 minutos de aula particular</strong></li>
+                    <li><span class="feature-check highlight-feature">✓</span> <strong>Acesso a conteúdos premium</strong></li>
+                    <li><span class="feature-check highlight-feature">✓</span> <strong>Avaliações trimestrais</strong></li>
+                    <li><span class="feature-check highlight-feature">✓</span> <strong>Suporte VIP prioritário</strong></li>
                 </ul>
             </div>
             
-            <div style="text-align: center;">
+            <div class="pricing-highlight-box" style="margin-top: 20px;">
+                <h3>Sobre o Sistema de Reconhecimento por Dedicação</h3>
+                <p>Um sistema exclusivo de gamificação que reconhece e valoriza sua participação e comprometimento com o aprendizado:</p>
+                <ul style="margin-top: 10px; list-style-type: disc; padding-left: 20px;">
+                    <li>Tarefas diárias personalizadas para reforçar seu aprendizado</li>
+                    <li>Acompanhamento semanal com resultados das atividades realizadas</li>
+                    <li>Reconhecimento do seu esforço e dedicação no processo de aprendizagem</li>
+                    <li>Visualização clara do seu progresso ao longo do tempo</li>
+                </ul>
+                <p style="margin-top: 10px;">Este sistema foi desenvolvido para incentivar a prática contínua e celebrar suas conquistas no processo de aprendizado.</p>
+            </div>
+            
+            <div class="pricing-modal-cta">
                 <a href="#contato" class="cta-button" id="closeModalExpressoAndContact">Quero Garantir Minha Vaga</a>
             </div>
         </div>
