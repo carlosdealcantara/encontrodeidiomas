@@ -338,6 +338,33 @@ $page_styles = <<<EOT
     color: #666;
 }
 
+/* No hosts message */
+.no-hosts-message {
+    text-align: center;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #f5f5f7;
+    border-radius: 10px;
+    max-width: 500px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.no-hosts-message p {
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.no-hosts-message a {
+    color: var(--accent-red);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.no-hosts-message a:hover {
+    text-decoration: underline;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .hosts-grid {
@@ -638,21 +665,131 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Function to filter hosts by language
+    // Enhanced function to filter hosts by language
     function filterHostsByLanguage(language) {
+        console.log(`Filtering hosts by language: ${language}`);
+        let visibleCount = 0;
+        
         hostCards.forEach(card => {
-            if (language === 'all') {
+            const cardLanguages = card.getAttribute('data-languages');
+            
+            if (language === 'all' || (cardLanguages && cardLanguages.toLowerCase().includes(language.toLowerCase()))) {
                 card.style.display = 'block';
+                card.classList.add('visible');
+                visibleCount++;
             } else {
-                const languages = card.getAttribute('data-languages');
-                if (languages && languages.includes(language)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+                card.style.display = 'none';
+                card.classList.remove('visible');
             }
         });
+        
+        console.log(`Found ${visibleCount} visible cards after filtering by language: ${language}`);
+        
+        // Verificar se existe algum card visível após o filtro
+        if (visibleCount === 0) {
+            // Se não houver cards visíveis, exiba uma mensagem
+            let noResults = document.querySelector('.no-hosts-message');
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.className = 'no-hosts-message';
+                noResults.innerHTML = `
+                    <p>Não há anfitriões para este idioma ainda.</p>
+                    <p>Que tal <a href="contato.php">se tornar um?</a></p>
+                `;
+                noResults.style.textAlign = 'center';
+                noResults.style.padding = '30px';
+                noResults.style.backgroundColor = 'white';
+                noResults.style.borderRadius = '10px';
+                noResults.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                noResults.style.margin = '20px auto';
+                noResults.style.maxWidth = '500px';
+                noResults.style.display = 'block';
+                
+                const hostGrid = document.querySelector('.hosts-grid');
+                if (hostGrid) {
+                    hostGrid.prepend(noResults);
+                }
+            }
+        } else {
+            // Se houver cards visíveis, remova a mensagem caso exista
+            const noResults = document.querySelector('.no-hosts-message');
+            if (noResults) {
+                noResults.remove();
+            }
+        }
+        
+        // Atualizar a URL com o filtro selecionado
+        const urlParams = new URLSearchParams(window.location.search);
+        if (language === 'all') {
+            urlParams.delete('idioma');
+        } else {
+            urlParams.set('idioma', language);
+        }
+        history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+        
+        // Scroll to the top of the host grid
+        setTimeout(() => {
+            const headerHeight = document.querySelector('header').offsetHeight || 0;
+            const hostGrid = document.querySelector('.hosts-grid');
+            if (hostGrid) {
+                const y = hostGrid.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        }, 100);
     }
+    
+    // Check URL parameters on page load and apply filters accordingly
+    function parseURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idioma = urlParams.get('idioma');
+        
+        if (idioma) {
+            // Find the matching button in dropdown
+            const dropdownButtons = document.querySelectorAll('.language-button[data-language]');
+            const selectedButton = Array.from(dropdownButtons).find(button => 
+                button.getAttribute('data-language').toLowerCase() === idioma.toLowerCase()
+            );
+            
+            if (selectedButton) {
+                // Update dropdown UI
+                const languageText = selectedButton.querySelector('span:not(.flag-icon)').textContent;
+                selectedLanguageText.textContent = languageText;
+                
+                const flagElement = selectedButton.querySelector('.flag-icon');
+                if (flagElement) {
+                    if (flagElement.tagName === 'IMG') {
+                        selectedLanguageFlag.innerHTML = '';
+                        const newFlag = document.createElement('img');
+                        newFlag.src = flagElement.src;
+                        newFlag.alt = flagElement.alt;
+                        newFlag.className = 'flag-icon';
+                        newFlag.style.width = '24px';
+                        newFlag.style.height = '18px';
+                        newFlag.style.borderRadius = '3px';
+                        selectedLanguageFlag.appendChild(newFlag);
+                    } else {
+                        selectedLanguageFlag.innerHTML = flagElement.innerHTML;
+                    }
+                }
+                
+                // Apply filter
+                setTimeout(() => {
+                    filterHostsByLanguage(idioma);
+                    
+                    // Update filter buttons UI
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.getAttribute('data-filter') === idioma) {
+                            btn.classList.add('active');
+                        }
+                    });
+                }, 50);
+            }
+        }
+    }
+    
+    // Parse URL on page load
+    parseURL();
 });
 </script>
 
