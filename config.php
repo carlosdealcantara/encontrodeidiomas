@@ -52,7 +52,20 @@ function getHosts() {
     $conn = connectDB();
     $stmt = $conn->prepare("SELECT * FROM hosts WHERE active = 1 ORDER BY full_name");
     $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $hosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Debug hosts
+    /*
+    foreach ($hosts as $index => $host) {
+        if (!empty($host['languages'])) {
+            error_log("Host {$host['full_name']} has languages: {$host['languages']}");
+        } else {
+            error_log("Host {$host['full_name']} has NO languages set");
+        }
+    }
+    */
+    
+    return $hosts;
 }
 
 function getEventsByLanguage($languageId) {

@@ -6,9 +6,16 @@ require_once 'config.php';
 $hosts = getHosts();
 $languages = getLanguages();
 
-// Debug: Print language data
-//echo "<pre>Languages: " . print_r($languages, true) . "</pre>";
-//echo "<pre>Hosts: " . print_r($hosts, true) . "</pre>";
+// Debug print for troubleshooting
+// Uncomment these lines to check the database values directly
+/*
+echo "<pre style='background:#fff;position:fixed;top:0;left:0;z-index:9999;padding:20px;max-height:100vh;overflow:auto;'>";
+echo "Languages from DB:<br>";
+print_r($languages);
+echo "<br><br>Hosts from DB:<br>";
+print_r($hosts);
+echo "</pre>";
+*/
 
 // Create a map of language IDs to names for easy lookup
 $languageMap = [];
@@ -17,7 +24,7 @@ foreach ($languages as $language) {
 }
 
 // Debug: Print language map
-//echo "<pre>Language Map: " . print_r($languageMap, true) . "</pre>";
+// echo "<pre>Language Map: " . print_r($languageMap, true) . "</pre>";
 
 // Additional styles for this page
 $page_styles = <<<EOT
@@ -109,25 +116,30 @@ $page_styles = <<<EOT
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 15px;
+    margin: 12px 0 18px 0;
+    padding: 5px 0;
+    min-height: 36px; /* Ensure minimum height even if no languages are present */
 }
 
 .language-tag {
     display: inline-block;
     background-color: #f0f2f5;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    color: var(--text-color);
-    font-weight: 500;
-    margin-bottom: 5px;
-    border: 1px solid rgba(0,0,0,0.05);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 6px;
+    margin-right: 5px;
+    border: 1px solid rgba(0,0,0,0.09);
     transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .language-tag:hover {
     background-color: #e6e9ec;
     transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .host-bio {
@@ -392,6 +404,30 @@ $page_styles = <<<EOT
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     }
 }
+
+.prominent-languages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0 15px 0;
+}
+
+.prominent-language-tag {
+    display: inline-block;
+    background-color: var(--accent-red);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.prominent-language-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
 EOT;
 
 include 'includes/header.php';
@@ -528,13 +564,35 @@ include 'includes/header.php';
                         <?php 
                         // Get host languages
                         $hostLanguages = [];
+                        
+                        // Direct query to get host languages (uncomment for debugging)
+                        /*
+                        if (!empty($host['id'])) {
+                            $conn = connectDB();
+                            $stmt = $conn->prepare("SELECT languages FROM hosts WHERE id = :id");
+                            $stmt->bindParam(':id', $host['id'], PDO::PARAM_INT);
+                            $stmt->execute();
+                            $rawLangs = $stmt->fetchColumn();
+                            echo "<!-- Host {$host['full_name']} (ID: {$host['id']}): Direct DB query language value: {$rawLangs} -->";
+                        }
+                        */
+                        
                         if (!empty($host['languages'])) {
+                            // Debug host language data
+                            // echo "<!-- Host: {$host['full_name']}, Raw languages: {$host['languages']} -->";
+                            
                             $languageIds = explode(',', $host['languages']);
                             foreach ($languageIds as $langId) {
-                                if (isset($languageMap[trim($langId)])) {
-                                    $hostLanguages[] = $languageMap[trim($langId)];
+                                $langId = trim($langId);
+                                if (isset($languageMap[$langId])) {
+                                    $hostLanguages[] = $languageMap[$langId];
+                                    // echo "<!-- Found language: {$languageMap[$langId]} for ID: {$langId} -->";
+                                } else {
+                                    // echo "<!-- Missing language mapping for ID: {$langId} -->";
                                 }
                             }
+                        } else {
+                            // echo "<!-- No languages found for host: {$host['full_name']} -->";
                         }
                         
                         // Get first language for badge
@@ -611,10 +669,47 @@ include 'includes/header.php';
                             <div class="host-info">
                                 <h3 class="host-name"><?= $host['full_name'] ?></h3>
                                 
+                                <!-- Large language buttons at the top, similar to the screenshot -->
+                                <div class="prominent-languages">
+                                    <?php 
+                                    if (empty($hostLanguages)) {
+                                        // If no languages found, default to Português
+                                        echo '<span class="prominent-language-tag" style="background-color: #009c3b;">Português</span>';
+                                    } else {
+                                        foreach ($hostLanguages as $index => $lang): 
+                                            $langColor = 'var(--accent-red)';
+                                            switch(strtolower($lang)) {
+                                                case 'inglês': $langColor = 'var(--accent-red)'; break;
+                                                case 'espanhol': $langColor = 'var(--accent-red)'; break;
+                                                case 'português': $langColor = '#009c3b'; break;
+                                                default: $langColor = 'var(--accent-blue)';
+                                            }
+                                            if ($index <= 1): // Only show the first 2 languages in the prominent area
+                                        ?>
+                                            <span class="prominent-language-tag" style="background-color: <?= $langColor ?>;"><?= $lang ?></span>
+                                        <?php endif; endforeach;
+                                    }
+                                    ?>
+                                </div>
+                                
                                 <div class="host-languages">
-                                    <?php foreach ($hostLanguages as $lang): ?>
-                                        <span class="language-tag"><?= $lang ?></span>
-                                    <?php endforeach; ?>
+                                    <?php 
+                                    // Debug language data
+                                    /*
+                                    echo "<div style='font-size:10px;color:#999;margin-bottom:10px;'>Debug: ";
+                                    echo "Raw languages: {$host['languages']}, ";
+                                    echo "Processed: " . implode(', ', $hostLanguages);
+                                    echo "</div>";
+                                    */
+                                    
+                                    if (empty($hostLanguages)) {
+                                        echo "<span class='language-tag'>Português</span>"; // Default if no languages found
+                                    } else {
+                                        foreach ($hostLanguages as $lang): ?>
+                                            <span class="language-tag"><?= $lang ?></span>
+                                        <?php endforeach;
+                                    }
+                                    ?>
                                 </div>
                                 
                                 <p class="host-bio">
@@ -785,6 +880,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterHostsByLanguage(language) {
         console.log(`Filtering hosts by language: ${language}`);
         let visibleCount = 0;
+        
+        // First, check what languages are available
+        const availableLanguages = new Set();
+        hostCards.forEach(card => {
+            const cardLanguages = card.getAttribute('data-languages');
+            if (cardLanguages) {
+                cardLanguages.split(' ').forEach(lang => {
+                    if (lang) availableLanguages.add(lang);
+                });
+            }
+        });
+        console.log(`Available languages for filtering: ${[...availableLanguages].join(', ')}`);
         
         hostCards.forEach(card => {
             const cardLanguages = card.getAttribute('data-languages');
