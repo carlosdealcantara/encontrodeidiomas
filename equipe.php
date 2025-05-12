@@ -6,11 +6,18 @@ require_once 'config.php';
 $hosts = getHosts();
 $languages = getLanguages();
 
+// Debug: Print language data
+//echo "<pre>Languages: " . print_r($languages, true) . "</pre>";
+//echo "<pre>Hosts: " . print_r($hosts, true) . "</pre>";
+
 // Create a map of language IDs to names for easy lookup
 $languageMap = [];
 foreach ($languages as $language) {
     $languageMap[$language['id']] = $language['name'];
 }
+
+// Debug: Print language map
+//echo "<pre>Language Map: " . print_r($languageMap, true) . "</pre>";
 
 // Additional styles for this page
 $page_styles = <<<EOT
@@ -500,9 +507,12 @@ include 'includes/header.php';
                         
                         // Get social media links
                         $socialLinks = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
+                        
+                        // Prepare language data string for filtering
+                        $languagesDataAttr = strtolower(implode(' ', $hostLanguages));
                         ?>
                         
-                        <div class="host-card" data-languages="<?= strtolower(implode(' ', $hostLanguages)) ?>">
+                        <div class="host-card" data-languages="<?= $languagesDataAttr ?>">
                             <?php if (!empty($primaryLanguage)): ?>
                                 <div class="host-badge"><?= $primaryLanguage ?></div>
                             <?php endif; ?>
@@ -559,6 +569,12 @@ include 'includes/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Debugging - Check data attributes on all host cards
+    console.log("Host language data:");
+    document.querySelectorAll('.host-card').forEach(card => {
+        console.log(`Host: ${card.querySelector('.host-name').textContent}, Languages: ${card.getAttribute('data-languages')}`);
+    });
+    
     // Original filter functionality (keep for compatibility)
     const filterButtons = document.querySelectorAll('.filter-button');
     const hostCards = document.querySelectorAll('.host-card');
@@ -653,13 +669,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Close dropdown
             dropdownContent.classList.remove('show');
             
+            // Log for debugging
+            console.log(`Selected language: ${language}`);
+            console.log(`Available host languages: ${Array.from(hostCards).map(card => card.getAttribute('data-languages')).join(', ')}`);
+            
             // Filter hosts
             filterHostsByLanguage(language);
             
             // Update the original filter buttons UI (for compatibility)
             filterButtons.forEach(btn => {
+                btn.classList.remove('active');
                 if (btn.getAttribute('data-filter') === language) {
-                    btn.click();
+                    btn.classList.add('active');
                 }
             });
         });
@@ -672,8 +693,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         hostCards.forEach(card => {
             const cardLanguages = card.getAttribute('data-languages');
+            const hostName = card.querySelector('.host-name').textContent;
             
-            if (language === 'all' || (cardLanguages && cardLanguages.toLowerCase().includes(language.toLowerCase()))) {
+            const isMatch = language === 'all' || (cardLanguages && cardLanguages.toLowerCase().includes(language.toLowerCase()));
+            console.log(`Host: ${hostName}, Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}`);
+            
+            if (isMatch) {
                 card.style.display = 'block';
                 card.classList.add('visible');
                 visibleCount++;
@@ -696,14 +721,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p>Não há anfitriões para este idioma ainda.</p>
                     <p>Que tal <a href="contato.php">se tornar um?</a></p>
                 `;
-                noResults.style.textAlign = 'center';
-                noResults.style.padding = '30px';
-                noResults.style.backgroundColor = 'white';
-                noResults.style.borderRadius = '10px';
-                noResults.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-                noResults.style.margin = '20px auto';
-                noResults.style.maxWidth = '500px';
-                noResults.style.display = 'block';
                 
                 const hostGrid = document.querySelector('.hosts-grid');
                 if (hostGrid) {
