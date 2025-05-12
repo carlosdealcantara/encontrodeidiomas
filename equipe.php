@@ -25,6 +25,10 @@ $page_styles = <<<EOT
     padding: 60px 0;
 }
 
+:root {
+    --accent-purple: #6f42c1;
+}
+
 .page-title {
     text-align: center;
     margin-bottom: 40px;
@@ -64,18 +68,19 @@ $page_styles = <<<EOT
     overflow: hidden;
     box-shadow: var(--shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 20px;
 }
 
 .host-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 .host-badge {
     position: absolute;
     top: 15px;
     right: 15px;
-    background-color: var(--accent-blue);
+    background-color: var(--accent-red);
     color: var(--white);
     padding: 5px 12px;
     border-radius: 15px;
@@ -112,8 +117,17 @@ $page_styles = <<<EOT
     background-color: #f0f2f5;
     padding: 4px 10px;
     border-radius: 12px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-color);
+    font-weight: 500;
+    margin-bottom: 5px;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.language-tag:hover {
+    background-color: #e6e9ec;
+    transform: translateY(-2px);
 }
 
 .host-bio {
@@ -489,6 +503,27 @@ include 'includes/header.php';
             
             <div class="hosts-container">
                 <div class="hosts-grid">
+                    <!-- Become a host card -->
+                    <div class="host-card" data-languages="outros">
+                        <div class="host-badge" style="background-color: var(--accent-purple);">Seja Anfitrião</div>
+                        <img src="assets/images/MaisIdiomasCidades.png" alt="Novo idioma" class="host-image">
+                        <div class="host-info">
+                            <h3 class="host-name">Torne-se anfitrião!</h3>
+                            <div class="host-languages">
+                                <span class="language-tag">Qualquer idioma</span>
+                                <span class="language-tag">Voluntário</span>
+                            </div>
+                            <p class="host-bio">
+                                Gostaria de praticar ou ensinar um idioma? Seja para um idioma já disponível ou para um novo, você pode se tornar anfitrião voluntário! Compartilhe seu conhecimento e ajude a expandir nossa comunidade de aprendizado.
+                            </p>
+                            <div class="host-contact">
+                                <a href="contato.php" class="contact-btn email" title="Entre em contato">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <?php foreach ($hosts as $host): ?>
                         <?php 
                         // Get host languages
@@ -504,6 +539,59 @@ include 'includes/header.php';
                         
                         // Get first language for badge
                         $primaryLanguage = !empty($hostLanguages) ? $hostLanguages[0] : '';
+                        $badgeText = $primaryLanguage;
+                        
+                        // Special handling for hosts with multiple main languages
+                        if (count($hostLanguages) > 1) {
+                            if (strtolower($host['full_name']) === 'daniel' && in_array('Russo', $hostLanguages) && in_array('Polonês', $hostLanguages)) {
+                                $badgeText = 'Russo, Polonês & Sérvio';
+                            } elseif (strtolower($host['full_name']) === 'carlos daniel' && in_array('Francês', $hostLanguages) && in_array('Alemão', $hostLanguages)) {
+                                $badgeText = 'Francês & Alemão';
+                            }
+                        }
+                        
+                        // Get badge color based on language
+                        $badgeColor = 'var(--accent-red)'; // Default red color
+                        
+                        if (!empty($primaryLanguage)) {
+                            switch(strtolower($primaryLanguage)) {
+                                case 'inglês':
+                                    $badgeColor = 'var(--accent-red)';
+                                    break;
+                                case 'espanhol':
+                                    $badgeColor = 'var(--accent-red)';
+                                    break;
+                                case 'francês':
+                                    $badgeColor = '#0055a4'; // French flag blue
+                                    break;  
+                                case 'alemão':
+                                    $badgeColor = '#dd0000'; // German flag red
+                                    break;
+                                case 'italiano':
+                                    $badgeColor = '#009246'; // Italian flag green
+                                    break;
+                                case 'libras':
+                                    $badgeColor = '#009c3b'; // Brazilian flag green
+                                    break;  
+                                case 'português':
+                                    $badgeColor = '#009c3b'; // Brazilian flag green
+                                    break;
+                                case 'russo':
+                                    $badgeColor = '#0039a6'; // Russian flag blue
+                                    break;
+                                case 'polonês':
+                                    $badgeColor = '#dc143c'; // Polish flag red
+                                    break;
+                                case 'coreano':
+                                    $badgeColor = '#003478'; // Korean flag blue
+                                    break;
+                                case 'chinês':
+                                    $badgeColor = '#de2910'; // Chinese flag red
+                                    break;
+                                default:
+                                    $badgeColor = 'var(--accent-red)';
+                            }
+                        }
                         
                         // Get social media links
                         $socialLinks = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
@@ -514,7 +602,7 @@ include 'includes/header.php';
                         
                         <div class="host-card" data-languages="<?= $languagesDataAttr ?>">
                             <?php if (!empty($primaryLanguage)): ?>
-                                <div class="host-badge"><?= $primaryLanguage ?></div>
+                                <div class="host-badge" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
                             <?php endif; ?>
                             
                             <img src="<?= !empty($host['profile_picture']) ? (strpos($host['profile_picture'], 'assets/') === 0 ? $host['profile_picture'] : 'assets/images/' . $host['profile_picture']) : 'assets/images/HostSemFoto.png' ?>" 
@@ -572,7 +660,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Debugging - Check data attributes on all host cards
     console.log("Host language data:");
     document.querySelectorAll('.host-card').forEach(card => {
-        console.log(`Host: ${card.querySelector('.host-name').textContent}, Languages: ${card.getAttribute('data-languages')}`);
+        const hostName = card.querySelector('.host-name').textContent;
+        const languages = card.getAttribute('data-languages');
+        const badge = card.querySelector('.host-badge') ? card.querySelector('.host-badge').textContent : 'No badge';
+        console.log(`Host: ${hostName}, Badge: ${badge}, Languages data-attr: ${languages}`);
+        
+        // Log visible language tags
+        const languageTags = Array.from(card.querySelectorAll('.language-tag')).map(tag => tag.textContent);
+        console.log(`  Language tags: ${languageTags.join(', ')}`);
     });
     
     // Original filter functionality (keep for compatibility)
