@@ -19,12 +19,16 @@ echo "</pre>";
 
 // Create a map of language IDs to names for easy lookup
 $languageMap = [];
+$languageMapInt = []; // Integer key map
 foreach ($languages as $language) {
-    $languageMap[$language['id']] = $language['name'];
+    $id = $language['id'];
+    $languageMap[$id] = $language['name']; // Original key (likely string)
+    $languageMapInt[(int)$id] = $language['name']; // Integer key
 }
 
 // Debug: Print language map
 // echo "<pre>Language Map: " . print_r($languageMap, true) . "</pre>";
+// echo "<pre>Int Language Map: " . print_r($languageMapInt, true) . "</pre>";
 
 // Additional styles for this page
 $page_styles = <<<EOT
@@ -561,34 +565,21 @@ include 'includes/header.php';
                         // Get host languages
                         $hostLanguages = [];
                         
-                        // Direct query to get host languages (uncomment for debugging)
-                        /*
-                        if (!empty($host['id'])) {
-                            $conn = connectDB();
-                            $stmt = $conn->prepare("SELECT languages FROM hosts WHERE id = :id");
-                            $stmt->bindParam(':id', $host['id'], PDO::PARAM_INT);
-                            $stmt->execute();
-                            $rawLangs = $stmt->fetchColumn();
-                            echo "<!-- Host {$host['full_name']} (ID: {$host['id']}): Direct DB query language value: {$rawLangs} -->";
-                        }
-                        */
-                        
                         if (!empty($host['languages'])) {
-                            // Debug host language data
-                            // echo "<!-- Host: {$host['full_name']}, Raw languages: {$host['languages']} -->";
-                            
+                            // Split language IDs by comma
                             $languageIds = explode(',', $host['languages']);
+                            
                             foreach ($languageIds as $langId) {
                                 $langId = trim($langId);
+                                $numericLangId = (int)$langId;
+                                
+                                // Try string lookup first, then numeric lookup
                                 if (isset($languageMap[$langId])) {
                                     $hostLanguages[] = $languageMap[$langId];
-                                    // echo "<!-- Found language: {$languageMap[$langId]} for ID: {$langId} -->";
-                                } else {
-                                    // echo "<!-- Missing language mapping for ID: {$langId} -->";
+                                } elseif (isset($languageMapInt[$numericLangId])) {
+                                    $hostLanguages[] = $languageMapInt[$numericLangId];
                                 }
                             }
-                        } else {
-                            // echo "<!-- No languages found for host: {$host['full_name']} -->";
                         }
                         
                         // Get first language for badge
@@ -652,6 +643,12 @@ include 'includes/header.php';
                         
                         // Prepare language data string for filtering
                         $languagesDataAttr = strtolower(implode(' ', $hostLanguages));
+                        
+                        // Debug: track language data for filtering
+                        $debugLog = "<!-- Host: {$host['full_name']} | Raw Languages: {$host['languages']} | ";
+                        $debugLog .= "Processed: " . implode(',', $hostLanguages) . " | ";
+                        $debugLog .= "Data Attribute: $languagesDataAttr -->";
+                        echo $debugLog;
                         ?>
                         
                         <div class="host-card" data-languages="<?= $languagesDataAttr ?>">

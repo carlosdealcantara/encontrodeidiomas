@@ -68,6 +68,48 @@ function getHosts() {
     return $hosts;
 }
 
+// Debug version of getHosts to specifically check languages column
+function getHostsDebug() {
+    $conn = connectDB();
+    
+    // First check if the languages column exists in the hosts table
+    try {
+        $stmt = $conn->prepare("DESCRIBE hosts");
+        $stmt->execute();
+        $columns = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $hasLanguagesColumn = in_array('languages', $columns);
+        
+        if (!$hasLanguagesColumn) {
+            return ["ERROR" => "Languages column does not exist in hosts table!"];
+        }
+    } catch (PDOException $e) {
+        return ["ERROR" => "Could not check table structure: " . $e->getMessage()];
+    }
+    
+    // Get the hosts with languages column
+    try {
+        $stmt = $conn->prepare("SELECT id, full_name, languages FROM hosts WHERE active = 1 ORDER BY full_name");
+        $stmt->execute();
+        $hosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Check language data
+        foreach ($hosts as &$host) {
+            $host['has_languages'] = !empty($host['languages']);
+            $host['languages_raw'] = $host['languages'];
+            
+            if (!empty($host['languages'])) {
+                $host['language_ids'] = explode(',', $host['languages']);
+            } else {
+                $host['language_ids'] = [];
+            }
+        }
+        
+        return $hosts;
+    } catch (PDOException $e) {
+        return ["ERROR" => "Could not fetch hosts: " . $e->getMessage()];
+    }
+}
+
 function getEventsByLanguage($languageId) {
     $conn = connectDB();
     $stmt = $conn->prepare("
