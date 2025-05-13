@@ -428,6 +428,68 @@ $page_styles = <<<EOT
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
+/* Category tabs */
+.category-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.category-tab {
+    flex: 1;
+    padding: 15px 20px;
+    background-color: #f5f5f7;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.category-tab:hover {
+    background-color: #e8e8e8;
+}
+
+.category-tab.active {
+    background-color: var(--accent-red);
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .category-tabs {
+        flex-direction: column;
+        border-radius: 15px;
+    }
+    
+    .category-tab {
+        padding: 12px;
+    }
+}
+
+/* Hosts Grid */
+.host-region {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.host-region i {
+    color: var(--accent-red);
+    font-size: 0.85rem;
+}
+
 EOT;
 
 include 'includes/header.php';
@@ -437,10 +499,17 @@ include 'includes/header.php';
     <div class="container">
         <div class="page-title">
             <h1>Nossa Equipe</h1>
-            <p>Conheça os anfitriões e organizadores que fazem acontecer os encontros de idiomas.</p>
+            <p>Conheça as pessoas que fazem o Encontro de Idiomas acontecer, desde nossos anfitriões até a equipe de desenvolvedores e criadores de conteúdo.</p>
         </div>
         
         <div class="team-section">
+            <!-- Category filter tabs -->
+            <div class="category-tabs">
+                <button class="category-tab active" data-category="online">Anfitriões Online</button>
+                <button class="category-tab" data-category="presencial">Presenciais</button>
+                <button class="category-tab" data-category="tecnica">Equipe Técnica</button>
+            </div>
+            
             <!-- Original filter controls (hidden) -->
             <div class="filter-controls">
                 <button class="filter-button active" data-filter="all">Todos</button>
@@ -540,7 +609,7 @@ include 'includes/header.php';
             <div class="hosts-container">
                 <div class="hosts-grid">
                     <!-- Become a host card -->
-                    <div class="host-card" data-languages="outros">
+                    <div class="host-card" data-languages="outros" data-categories="online presencial tecnica">
                         <div class="host-badge" style="background-color: var(--accent-purple);">Seja Anfitrião</div>
                         <img src="assets/images/MaisIdiomasCidades.png" alt="Novo idioma" class="host-image">
                         <div class="host-info">
@@ -636,19 +705,34 @@ include 'includes/header.php';
                         // Get social media links
                         $socialLinks = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
                         
+                        // Process categories for filtering
+                        $categories = [];
+                        if (!empty($host['category'])) {
+                            $categories = array_map('trim', explode(',', $host['category']));
+                        }
+                        
+                        // Default to "Online" if no category is set
+                        if (empty($categories)) {
+                            $categories[] = 'Online';
+                        }
+                        
+                        // Create category data attribute
+                        $categoriesAttr = strtolower(implode(' ', $categories));
+                        
                         // Prepare language data string for filtering
                         // Convert all language names to lowercase for consistent matching
                         $languageNamesFormatted = array_map('mb_strtolower', $hostLanguages);
                         $languagesDataAttr = implode(' ', $languageNamesFormatted);
                         
                         // Debug: track language data for filtering
-                        $debugLog = "<!-- Host: {$host['full_name']} | Raw Languages: {$host['languages']} | ";
+                        $debugLog = "<!-- Host: {$host['full_name']} | Categories: " . implode(',', $categories) . " | ";
+                        $debugLog .= "Raw Languages: {$host['languages']} | ";
                         $debugLog .= "Processed: " . implode(',', $hostLanguages) . " | ";
                         $debugLog .= "Data Attribute: $languagesDataAttr -->";
                         echo $debugLog;
                         ?>
                         
-                        <div class="host-card" data-languages="<?= $languagesDataAttr ?>">
+                        <div class="host-card" data-languages="<?= $languagesDataAttr ?>" data-categories="<?= $categoriesAttr ?>">
                             <?php if (!empty($primaryLanguage)): ?>
                                 <div class="host-badge" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
                             <?php endif; ?>
@@ -658,6 +742,12 @@ include 'includes/header.php';
                                  
                             <div class="host-info">
                                 <h3 class="host-name"><?= $host['full_name'] ?></h3>
+                                
+                                <?php if (!empty($host['region'])): ?>
+                                <div class="host-region">
+                                    <i class="fas fa-map-marker-alt"></i> <?= $host['region'] ?>
+                                </div>
+                                <?php endif; ?>
                                 
                                 <div class="host-languages">
                                     <?php 
@@ -716,17 +806,91 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.host-card').forEach(card => {
         const hostName = card.querySelector('.host-name').textContent;
         const languages = card.getAttribute('data-languages');
+        const categories = card.getAttribute('data-categories');
         const badge = card.querySelector('.host-badge') ? card.querySelector('.host-badge').textContent : 'No badge';
-        console.log(`Host: ${hostName}, Badge: ${badge}, Languages data-attr: ${languages}`);
+        console.log(`Host: ${hostName}, Badge: ${badge}, Categories: ${categories}, Languages data-attr: ${languages}`);
         
         // Log visible language tags
         const languageTags = Array.from(card.querySelectorAll('.language-tag')).map(tag => tag.textContent);
         console.log(`  Language tags: ${languageTags.join(', ')}`);
     });
     
+    // Category tabs functionality
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    let currentCategory = 'online'; // Default category
+    
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            categoryTabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Get category value
+            currentCategory = this.getAttribute('data-category');
+            
+            // Filter hosts by category
+            filterHostsByCategory(currentCategory);
+            
+            // Update URL with category parameter
+            updateURL();
+        });
+    });
+    
+    // Function to filter hosts by category
+    function filterHostsByCategory(category) {
+        console.log(`Filtering hosts by category: ${category}`);
+        let visibleCount = 0;
+        
+        const hostCards = document.querySelectorAll('.host-card');
+        hostCards.forEach(card => {
+            const categories = card.getAttribute('data-categories');
+            const hostName = card.querySelector('.host-name').textContent;
+            
+            // Check if host belongs to selected category
+            const isMatch = categories && categories.includes(category.toLowerCase());
+            console.log(`Host: ${hostName}, Categories: ${categories}, Filter: ${category}, Match: ${isMatch}`);
+            
+            if (isMatch) {
+                card.style.display = 'block';
+                card.classList.add('category-visible');
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+                card.classList.remove('category-visible');
+            }
+        });
+        
+        console.log(`Found ${visibleCount} visible cards after filtering by category: ${category}`);
+        
+        // Show message if no hosts match the selected category
+        if (visibleCount === 0) {
+            let noResults = document.querySelector('.no-hosts-category');
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.className = 'no-hosts-message no-hosts-category';
+                noResults.innerHTML = `
+                    <p>Não há anfitriões nesta categoria ainda.</p>
+                    <p>Que tal <a href="contato.php">se tornar um?</a></p>
+                `;
+                
+                const hostGrid = document.querySelector('.hosts-grid');
+                if (hostGrid) {
+                    hostGrid.prepend(noResults);
+                }
+            }
+        } else {
+            // Remove no results message if it exists
+            const noResults = document.querySelector('.no-hosts-category');
+            if (noResults) {
+                noResults.remove();
+            }
+        }
+    }
+    
     // Original filter functionality (keep for compatibility)
     const filterButtons = document.querySelectorAll('.filter-button');
-    const hostCards = document.querySelectorAll('.host-card');
     
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -834,16 +998,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     btn.classList.add('active');
                 }
             });
+            
+            // Update URL with language param while maintaining category param
+            const urlParams = new URLSearchParams(window.location.search);
+            if (language === 'all') {
+                urlParams.delete('idioma');
+            } else {
+                urlParams.set('idioma', language);
+            }
+            
+            // Maintain category parameter if present
+            if (currentCategory !== 'online') {
+                urlParams.set('categoria', currentCategory);
+            }
+            
+            history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
     });
     
-    // Enhanced function to filter hosts by language
+    // Function to update URL with current filters
+    function updateURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Update category parameter
+        if (currentCategory !== 'online') { // Only set if not default
+            urlParams.set('categoria', currentCategory);
+        } else {
+            urlParams.delete('categoria');
+        }
+        
+        // Keep language parameter if it exists
+        const currentLang = urlParams.get('idioma');
+        if (!currentLang) {
+            urlParams.delete('idioma');
+        }
+        
+        // Update URL without reloading page
+        const newUrl = urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname;
+        history.replaceState(null, '', newUrl);
+    }
+    
+    // Function to filter hosts by language
     function filterHostsByLanguage(language, normalizedLang) {
         console.log(`Filtering hosts by language: ${language} (normalized: ${normalizedLang})`);
         let visibleCount = 0;
         
         // First, check what languages are available
         const availableLanguages = new Set();
+        const hostCards = document.querySelectorAll('.host-card');
         hostCards.forEach(card => {
             const cardLanguages = card.getAttribute('data-languages');
             if (cardLanguages) {
@@ -869,6 +1071,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const cardLanguages = card.getAttribute('data-languages');
             const hostName = card.querySelector('.host-name').textContent;
             
+            // Check if this card is already hidden by category filter
+            const isVisibleByCategory = card.classList.contains('category-visible') || 
+                                        (currentCategory === 'online' && !card.classList.contains('category-filtered'));
+            
             let isMatch = (language === 'all');
             
             // Enhanced language matching that handles accents and special characters
@@ -886,9 +1092,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            console.log(`Host: ${hostName}, Raw Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}`);
+            console.log(`Host: ${hostName}, Raw Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}, Visible by Category: ${isVisibleByCategory}`);
             
-            if (isMatch) {
+            // Only show if matches BOTH language AND category filters
+            if (isMatch && isVisibleByCategory) {
                 card.style.display = 'block';
                 card.classList.add('visible');
                 visibleCount++;
@@ -949,7 +1156,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function parseURL() {
         const urlParams = new URLSearchParams(window.location.search);
         const idioma = urlParams.get('idioma');
+        const categoria = urlParams.get('categoria');
         
+        // Handle category parameter first
+        if (categoria) {
+            const categoryTab = document.querySelector(`.category-tab[data-category="${categoria}"]`);
+            if (categoryTab) {
+                // Manually click the appropriate tab
+                categoryTab.click();
+            }
+        } else {
+            // If no category specified, apply default category filter
+            filterHostsByCategory(currentCategory);
+        }
+        
+        // Then handle language parameter
         if (idioma) {
             // Find the matching button in dropdown
             const dropdownButtons = document.querySelectorAll('.language-button[data-language]');
@@ -1012,8 +1233,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Parse URL on page load
-    parseURL();
+    // Apply default category filter on page load
+    setTimeout(() => {
+        // Apply default filter (online) when page loads
+        filterHostsByCategory('online');
+        
+        // Then check URL parameters for any specific filters
+        parseURL();
+    }, 100);
 });
 </script>
 
