@@ -467,7 +467,7 @@ include 'includes/header.php';
                     <div class="no-results" id="no-results">
                         Nenhum idioma encontrado.
                     </div>
-                    <button class="language-button" data-language="all">
+                    <button class="language-button" data-language="all" data-normalized="all">
                         <div class="language-info">
                             <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
                             <span>Todos os idiomas</span>
@@ -517,7 +517,7 @@ include 'includes/header.php';
                                 $flagEmoji = '🚩';
                         }
                     ?>
-                    <button class="language-button" data-language="<?= strtolower($language['name']) ?>">
+                    <button class="language-button" data-language="<?= strtolower($language['name']) ?>" data-normalized="<?= strtolower(str_replace(['á','ã','â','é','ê','í','ó','ô','ú','ç','ñ'], ['a','a','a','e','e','i','o','o','u','c','n'], $language['name'])) ?>">
                         <div class="language-info">
                             <?php if (!empty($flagUrl)): ?>
                                 <img src="<?= $flagUrl ?>" class="flag-icon" alt="<?= $language['name'] ?>">
@@ -528,7 +528,7 @@ include 'includes/header.php';
                         </div>
                     </button>
                     <?php endforeach; ?>
-                    <button class="language-button" data-language="outros">
+                    <button class="language-button" data-language="outros" data-normalized="outros">
                         <div class="language-info">
                             <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🚩</span>
                             <span>Seu idioma aqui!</span>
@@ -562,22 +562,17 @@ include 'includes/header.php';
                     
                     <?php foreach ($hosts as $host): ?>
                         <?php 
-                        // Get host languages
+                        // Process languages in hosts' data
                         $hostLanguages = [];
                         
                         if (!empty($host['languages'])) {
-                            // Split language IDs by comma
-                            $languageIds = explode(',', $host['languages']);
+                            // In this case, languages are stored as text names separated by commas
+                            $languageNames = explode(',', $host['languages']);
                             
-                            foreach ($languageIds as $langId) {
-                                $langId = trim($langId);
-                                $numericLangId = (int)$langId;
-                                
-                                // Try string lookup first, then numeric lookup
-                                if (isset($languageMap[$langId])) {
-                                    $hostLanguages[] = $languageMap[$langId];
-                                } elseif (isset($languageMapInt[$numericLangId])) {
-                                    $hostLanguages[] = $languageMapInt[$numericLangId];
+                            foreach ($languageNames as $langName) {
+                                $langName = trim($langName);
+                                if (!empty($langName)) {
+                                    $hostLanguages[] = $langName;
                                 }
                             }
                         }
@@ -642,7 +637,9 @@ include 'includes/header.php';
                         $socialLinks = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
                         
                         // Prepare language data string for filtering
-                        $languagesDataAttr = strtolower(implode(' ', $hostLanguages));
+                        // Convert all language names to lowercase for consistent matching
+                        $languageNamesFormatted = array_map('mb_strtolower', $hostLanguages);
+                        $languagesDataAttr = implode(' ', $languageNamesFormatted);
                         
                         // Debug: track language data for filtering
                         $debugLog = "<!-- Host: {$host['full_name']} | Raw Languages: {$host['languages']} | ";
@@ -795,6 +792,7 @@ document.addEventListener('DOMContentLoaded', function() {
     languageButtons.forEach(button => {
         button.addEventListener('click', function() {
             const language = this.getAttribute('data-language');
+            const normalizedLang = this.getAttribute('data-normalized') || language; // Get normalized version if available
             const languageText = this.querySelector('span:not(.flag-icon)').textContent;
             
             // Update selected language text
@@ -823,10 +821,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Log for debugging
             console.log(`Selected language: ${language}`);
+            console.log(`Normalized language: ${normalizedLang}`);
             console.log(`Available host languages: ${Array.from(hostCards).map(card => card.getAttribute('data-languages')).join(', ')}`);
             
             // Filter hosts
-            filterHostsByLanguage(language);
+            filterHostsByLanguage(language, normalizedLang);
             
             // Update the original filter buttons UI (for compatibility)
             filterButtons.forEach(btn => {
@@ -839,8 +838,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Enhanced function to filter hosts by language
-    function filterHostsByLanguage(language) {
-        console.log(`Filtering hosts by language: ${language}`);
+    function filterHostsByLanguage(language, normalizedLang) {
+        console.log(`Filtering hosts by language: ${language} (normalized: ${normalizedLang})`);
         let visibleCount = 0;
         
         // First, check what languages are available
@@ -855,12 +854,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         console.log(`Available languages for filtering: ${[...availableLanguages].join(', ')}`);
         
+        // Fix for special characters in language names
+        const normalizeString = (str) => {
+            return str.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
+        };
+        
+        // Use the provided normalized language for more accurate filtering
+        const filterToUse = normalizedLang || language;
+        const normalizedFilter = normalizeString(filterToUse);
+        console.log(`Normalized filter: ${normalizedFilter}`);
+        
         hostCards.forEach(card => {
             const cardLanguages = card.getAttribute('data-languages');
             const hostName = card.querySelector('.host-name').textContent;
             
-            const isMatch = language === 'all' || (cardLanguages && cardLanguages.toLowerCase().includes(language.toLowerCase()));
-            console.log(`Host: ${hostName}, Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}`);
+            let isMatch = (language === 'all');
+            
+            // Enhanced language matching that handles accents and special characters
+            if (!isMatch && cardLanguages) {
+                const normalizedCardLanguages = normalizeString(cardLanguages);
+                console.log(`Host: ${hostName}, Normalized languages: ${normalizedCardLanguages}`);
+                
+                // Try exact match first (more reliable)
+                if (normalizedCardLanguages.split(' ').includes(normalizedFilter)) {
+                    isMatch = true;
+                } 
+                // Then try substring match (as fallback)
+                else if (normalizedCardLanguages.includes(normalizedFilter)) {
+                    isMatch = true;
+                }
+            }
+            
+            console.log(`Host: ${hostName}, Raw Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}`);
             
             if (isMatch) {
                 card.style.display = 'block';
@@ -927,9 +953,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (idioma) {
             // Find the matching button in dropdown
             const dropdownButtons = document.querySelectorAll('.language-button[data-language]');
-            const selectedButton = Array.from(dropdownButtons).find(button => 
+            
+            // Try to find an exact match first
+            let selectedButton = Array.from(dropdownButtons).find(button => 
                 button.getAttribute('data-language').toLowerCase() === idioma.toLowerCase()
             );
+            
+            // If no exact match, check the normalized language values (for accented characters)
+            if (!selectedButton) {
+                // First normalize the URL parameter
+                const normalizeString = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const normalizedIdioma = normalizeString(idioma);
+                
+                selectedButton = Array.from(dropdownButtons).find(button => {
+                    const normalizedButtonLang = normalizeString(button.getAttribute('data-language'));
+                    return normalizedButtonLang === normalizedIdioma;
+                });
+            }
             
             if (selectedButton) {
                 // Update dropdown UI
@@ -953,9 +993,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
+                // Get the normalized language version
+                const normalizedLang = selectedButton.getAttribute('data-normalized') || selectedButton.getAttribute('data-language');
+                
                 // Apply filter
                 setTimeout(() => {
-                    filterHostsByLanguage(idioma);
+                    filterHostsByLanguage(idioma, normalizedLang);
                     
                     // Update filter buttons UI
                     filterButtons.forEach(btn => {
