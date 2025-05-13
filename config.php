@@ -35,6 +35,28 @@ function getLanguages() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getRegions() {
+    $conn = connectDB();
+    $stmt = $conn->prepare("SELECT DISTINCT region FROM hosts WHERE region IS NOT NULL AND region != '' AND active = 1 ORDER BY region");
+    $stmt->execute();
+    $regions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Return as array of objects for consistency with other filter functions
+    $result = [];
+    foreach ($regions as $region) {
+        $result[] = ['id' => $region, 'name' => $region];
+    }
+    
+    return $result;
+}
+
+function getRoles() {
+    $conn = connectDB();
+    $stmt = $conn->prepare("SELECT * FROM roles WHERE active = 1 ORDER BY name");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 function getEvents() {
     $conn = connectDB();
     $stmt = $conn->prepare("
