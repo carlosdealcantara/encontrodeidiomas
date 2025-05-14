@@ -5,8 +5,6 @@ $title = "Nossa Equipe";
 require_once 'config.php';
 $hosts = getHosts();
 $languages = getLanguages();
-$regions = getRegions();
-$roles = getRoles();
 
 // Debug print for troubleshooting
 // Uncomment these lines to check the database values directly
@@ -193,26 +191,6 @@ $page_styles = <<<EOT
 /* Filter controls - Hide the original filter */
 .filter-controls {
     display: none;
-}
-
-/* Filter Dropdowns */
-.filter-dropdown {
-    display: none;
-    flex-direction: column;
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto 20px;
-}
-
-.filter-dropdown.active-dropdown {
-    display: flex;
-}
-
-@media (min-width: 769px) {
-    .filter-dropdown {
-        max-width: 400px;
-    }
 }
 
 /* Language Dropdown Styles */
@@ -512,6 +490,46 @@ $page_styles = <<<EOT
     font-size: 0.85rem;
 }
 
+.dropdown-content .region-button,
+.dropdown-content .role-button {
+    border-radius: 0;
+    margin: 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    width: 100%;
+    text-align: left;
+    padding: 12px 20px;
+    transition: background 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.dropdown-content .region-button:hover,
+.dropdown-content .role-button:hover {
+    background-color: #f5f5f5;
+    transform: none;
+    box-shadow: none;
+}
+
+.region-info,
+.role-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.region-icon,
+.role-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    text-align: center;
+}
+
 EOT;
 
 include 'includes/header.php';
@@ -527,27 +545,41 @@ include 'includes/header.php';
         <div class="team-section">
             <!-- Category filter tabs -->
             <div class="category-tabs">
-                <button class="category-tab active" data-category="online" data-dropdown="language-dropdown">Anfitriões Online</button>
-                <button class="category-tab" data-category="presencial" data-dropdown="region-dropdown">Presenciais</button>
-                <button class="category-tab" data-category="tecnica" data-dropdown="role-dropdown">Equipe Técnica</button>
+                <button class="category-tab active" data-category="online">Anfitriões Online</button>
+                <button class="category-tab" data-category="presencial">Presenciais</button>
+                <button class="category-tab" data-category="tecnica">Equipe Técnica</button>
             </div>
             
-            <!-- Language Dropdown - For Online Hosts -->
-            <div class="filter-dropdown language-dropdown active-dropdown">
-                <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um idioma:</p>
+            <!-- Original filter controls (hidden) -->
+            <div class="filter-controls">
+                <button class="filter-button active" data-filter="all">Todos</button>
+                <?php foreach ($languages as $language): ?>
+                    <button class="filter-button" data-filter="<?= strtolower($language['name']) ?>"><?= $language['name'] ?></button>
+                <?php endforeach; ?>
+            </div>
+            
+            <!-- Language Dropdown -->
+            <div class="mobile-dropdown">
+                <!-- Dropdown label changes based on category -->
+                <p class="dropdown-label language-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um idioma:</p>
+                <p class="dropdown-label region-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; display: none;">Selecione uma cidade:</p>
+                <p class="dropdown-label role-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; display: none;">Selecione um papel:</p>
+                
                 <button class="dropdown-button">
                     <div class="dropdown-flag-container">
                         <span id="selected-language-flag" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
-                        <span id="selected-language">Todos os idiomas</span>
+                        <span id="selected-option">Todos os idiomas</span>
                     </div>
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <div class="dropdown-content">
+                
+                <!-- Language Dropdown Content -->
+                <div class="dropdown-content language-dropdown">
                     <div class="search-filter">
                         <i class="fas fa-search search-icon"></i>
                         <input type="text" class="search-input" id="language-search" placeholder="Buscar idioma...">
                     </div>
-                    <div class="no-results" id="no-results-language">
+                    <div class="no-results" id="no-language-results">
                         Nenhum idioma encontrado.
                     </div>
                     <button class="language-button" data-language="all" data-normalized="all">
@@ -618,130 +650,96 @@ include 'includes/header.php';
                         </div>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Region Dropdown - For In-Person Hosts -->
-            <div class="filter-dropdown region-dropdown">
-                <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione uma cidade:</p>
-                <button class="dropdown-button">
-                    <div class="dropdown-flag-container">
-                        <span id="selected-region-icon" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌎</span>
-                        <span id="selected-region">Todas as cidades</span>
-                    </div>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div class="dropdown-content">
+                
+                <!-- Region Dropdown Content -->
+                <div class="dropdown-content region-dropdown" style="display: none;">
                     <div class="search-filter">
                         <i class="fas fa-search search-icon"></i>
                         <input type="text" class="search-input" id="region-search" placeholder="Buscar cidade...">
                     </div>
-                    <div class="no-results" id="no-results-region">
+                    <div class="no-results" id="no-region-results">
                         Nenhuma cidade encontrada.
                     </div>
                     <button class="region-button" data-region="all">
-                        <div class="language-info">
-                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌎</span>
+                        <div class="region-info">
+                            <span class="region-icon">🌎</span>
                             <span>Todas as cidades</span>
                         </div>
                     </button>
                     
-                    <?php foreach ($regions as $region): 
-                        // Define icon based on region
-                        $icon = '🏙️';
-                        if (strpos($region['name'], 'Brasília') !== false) {
-                            $icon = '🏛️';
-                        } elseif (strpos($region['name'], 'São Paulo') !== false) {
-                            $icon = '🏙️';
-                        } elseif (strpos($region['name'], 'Rio') !== false) {
-                            $icon = '🏖️';
+                    <!-- Get unique regions from hosts -->
+                    <?php 
+                    $regions = [];
+                    foreach ($hosts as $host) {
+                        if (!empty($host['region']) && !in_array($host['region'], $regions) && strpos($host['category'], 'Presencial') !== false) {
+                            $regions[] = $host['region'];
                         }
+                    }
+                    sort($regions);
+                    
+                    // Add Brasília, São Paulo, and Other Regions if not already in the list
+                    if (!in_array('Brasília - DF', $regions)) $regions[] = 'Brasília - DF';
+                    if (!in_array('São Paulo - SP', $regions)) $regions[] = 'São Paulo - SP';
+                    
+                    foreach ($regions as $region): 
+                        $icon = '🏙️';
+                        if (strpos($region, 'Brasília') !== false) $icon = '🏛️';
+                        elseif (strpos($region, 'São Paulo') !== false) $icon = '🏙️';
                     ?>
-                    <button class="region-button" data-region="<?= strtolower($region['id']) ?>">
-                        <div class="language-info">
-                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;"><?= $icon ?></span>
-                            <span><?= $region['name'] ?></span>
+                    <button class="region-button" data-region="<?= strtolower(str_replace(' ', '-', $region)) ?>">
+                        <div class="region-info">
+                            <span class="region-icon"><?= $icon ?></span>
+                            <span><?= $region ?></span>
                         </div>
                     </button>
                     <?php endforeach; ?>
                     
-                    <button class="region-button" data-region="outras">
-                        <div class="language-info">
-                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">📍</span>
+                    <button class="region-button" data-region="outras-regioes">
+                        <div class="region-info">
+                            <span class="region-icon">📍</span>
                             <span>Outras regiões</span>
                         </div>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Role Dropdown - For Technical Team -->
-            <div class="filter-dropdown role-dropdown">
-                <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um papel:</p>
-                <button class="dropdown-button">
-                    <div class="dropdown-flag-container">
-                        <span id="selected-role-icon" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👥</span>
-                        <span id="selected-role">Todos os papéis</span>
-                    </div>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div class="dropdown-content">
+                
+                <!-- Role Dropdown Content -->
+                <div class="dropdown-content role-dropdown" style="display: none;">
                     <div class="search-filter">
                         <i class="fas fa-search search-icon"></i>
                         <input type="text" class="search-input" id="role-search" placeholder="Buscar papel...">
                     </div>
-                    <div class="no-results" id="no-results-role">
+                    <div class="no-results" id="no-role-results">
                         Nenhum papel encontrado.
                     </div>
                     <button class="role-button" data-role="all">
-                        <div class="language-info">
-                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">👥</span>
+                        <div class="role-info">
+                            <span class="role-icon">👥</span>
                             <span>Todos os papéis</span>
                         </div>
                     </button>
                     
-                    <?php foreach ($roles as $role): 
-                        // Define icon based on role
-                        $icon = '💼';
-                        switch(strtolower($role['name'])) {
-                            case 'desenvolvimento':
-                                $icon = '💻';
-                                break;
-                            case 'design':
-                                $icon = '🎨';
-                                break;
-                            case 'marketing':
-                                $icon = '📢';
-                                break;
-                            case 'gestão de conteúdo':
-                                $icon = '📝';
-                                break;
-                            case 'administração':
-                                $icon = '📊';
-                                break;
-                        }
-                    ?>
-                    <button class="role-button" data-role="<?= strtolower($role['id']) ?>">
-                        <div class="language-info">
-                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;"><?= $icon ?></span>
-                            <span><?= $role['name'] ?></span>
+                    <!-- Predefined roles -->
+                    <button class="role-button" data-role="desenvolvimento">
+                        <div class="role-info">
+                            <span class="role-icon">💻</span>
+                            <span>Desenvolvimento</span>
                         </div>
                     </button>
-                    <?php endforeach; ?>
                     
-                    <button class="role-button" data-role="outro">
-                        <div class="language-info">
-                            <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">✨</span>
+                    <button class="role-button" data-role="design">
+                        <div class="role-info">
+                            <span class="role-icon">🎨</span>
+                            <span>Design</span>
+                        </div>
+                    </button>
+                    
+                    <button class="role-button" data-role="fazer-parte">
+                        <div class="role-info">
+                            <span class="role-icon">✨</span>
                             <span>Faça parte!</span>
                         </div>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Original filter controls (hidden) -->
-            <div class="filter-controls">
-                <button class="filter-button active" data-filter="all">Todos</button>
-                <?php foreach ($languages as $language): ?>
-                    <button class="filter-button" data-filter="<?= strtolower($language['name']) ?>"><?= $language['name'] ?></button>
-                <?php endforeach; ?>
             </div>
             
             <div class="hosts-container">
@@ -788,13 +786,9 @@ include 'includes/header.php';
                         $primaryLanguage = !empty($hostLanguages) ? $hostLanguages[0] : '';
                         $badgeText = $primaryLanguage;
                         
-                        // Special handling for hosts with multiple main languages
-                        if (count($hostLanguages) > 1) {
-                            if (strtolower($host['full_name']) === 'daniel' && in_array('Russo', $hostLanguages) && in_array('Polonês', $hostLanguages)) {
-                                $badgeText = 'Russo, Polonês & Sérvio';
-                            } elseif (strtolower($host['full_name']) === 'carlos daniel' && in_array('Francês', $hostLanguages) && in_array('Alemão', $hostLanguages)) {
-                                $badgeText = 'Francês & Alemão';
-                            }
+                        // Use special badge from database if available
+                        if (!empty($host['special_badge'])) {
+                            $badgeText = $host['special_badge'];
                         }
                         
                         // Get badge color based on language
@@ -857,6 +851,18 @@ include 'includes/header.php';
                         // Create category data attribute
                         $categoriesAttr = strtolower(implode(' ', $categories));
                         
+                        // Process roles for filtering
+                        $roles = [];
+                        if (!empty($host['role'])) {
+                            $roles = array_map('trim', explode(',', $host['role']));
+                        }
+                        
+                        // Create role data attribute
+                        $rolesAttr = strtolower(implode(' ', $roles));
+                        
+                        // Process region for filtering
+                        $regionAttr = !empty($host['region']) ? strtolower(str_replace(' ', '-', $host['region'])) : '';
+                        
                         // Prepare language data string for filtering
                         // Convert all language names to lowercase for consistent matching
                         $languageNamesFormatted = array_map('mb_strtolower', $hostLanguages);
@@ -864,13 +870,19 @@ include 'includes/header.php';
                         
                         // Debug: track language data for filtering
                         $debugLog = "<!-- Host: {$host['full_name']} | Categories: " . implode(',', $categories) . " | ";
+                        $debugLog .= "Region: {$host['region']} | Roles: " . implode(',', $roles) . " | ";
                         $debugLog .= "Raw Languages: {$host['languages']} | ";
                         $debugLog .= "Processed: " . implode(',', $hostLanguages) . " | ";
                         $debugLog .= "Data Attribute: $languagesDataAttr -->";
                         echo $debugLog;
                         ?>
                         
-                        <div class="host-card" data-languages="<?= $languagesDataAttr ?>" data-categories="<?= $categoriesAttr ?>">
+                        <div class="host-card" 
+                             data-languages="<?= $languagesDataAttr ?>" 
+                             data-categories="<?= $categoriesAttr ?>"
+                             data-region="<?= $regionAttr ?>"
+                             data-roles="<?= $rolesAttr ?>"
+                        >
                             <?php if (!empty($primaryLanguage)): ?>
                                 <div class="host-badge" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
                             <?php endif; ?>
@@ -956,25 +968,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Category tabs functionality
     const categoryTabs = document.querySelectorAll('.category-tab');
     let currentCategory = 'online'; // Default category
-    let currentFilterType = 'language'; // Default filter type (language, region, role)
-    let currentRegion = 'all'; // Default region
-    let currentRole = 'all'; // Default role
-    
-    // Function to switch between dropdown filters
-    function switchDropdown(dropdownId) {
-        // Hide all dropdowns
-        document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-            dropdown.classList.remove('active-dropdown');
-        });
-        
-        // Show the selected dropdown
-        const targetDropdown = document.querySelector(`.${dropdownId}`);
-        if (targetDropdown) {
-            targetDropdown.classList.add('active-dropdown');
-            currentFilterType = dropdownId.replace('-dropdown', '');
-            console.log(`Switched to ${currentFilterType} filter`);
-        }
-    }
     
     categoryTabs.forEach(tab => {
         tab.addEventListener('click', function() {
@@ -984,12 +977,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add active class to clicked tab
             this.classList.add('active');
             
-            // Get category value and dropdown to show
+            // Get category value
             currentCategory = this.getAttribute('data-category');
-            const dropdownToShow = this.getAttribute('data-dropdown');
             
-            // Switch dropdown based on category
-            switchDropdown(dropdownToShow);
+            // Show the appropriate dropdown based on category
+            updateDropdownForCategory(currentCategory);
             
             // Filter hosts by category
             filterHostsByCategory(currentCategory);
@@ -998,6 +990,43 @@ document.addEventListener('DOMContentLoaded', function() {
             updateURL();
         });
     });
+    
+    // Function to show the appropriate dropdown based on category
+    function updateDropdownForCategory(category) {
+        // Hide all dropdown content and labels
+        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
+        
+        document.querySelectorAll('.dropdown-label').forEach(label => {
+            label.style.display = 'none';
+        });
+        
+        // Reset selected option text
+        const selectedOption = document.getElementById('selected-option');
+        const selectedIcon = document.getElementById('selected-language-flag');
+        
+        // Show the appropriate dropdown based on category
+        if (category === 'online') {
+            // Show language dropdown
+            document.querySelector('.language-dropdown').style.display = 'block';
+            document.querySelector('.language-label').style.display = 'block';
+            selectedOption.textContent = 'Todos os idiomas';
+            selectedIcon.textContent = '🌍';
+        } else if (category === 'presencial') {
+            // Show region dropdown
+            document.querySelector('.region-dropdown').style.display = 'block';
+            document.querySelector('.region-label').style.display = 'block';
+            selectedOption.textContent = 'Todas as cidades';
+            selectedIcon.textContent = '🌎';
+        } else if (category === 'tecnica') {
+            // Show role dropdown
+            document.querySelector('.role-dropdown').style.display = 'block';
+            document.querySelector('.role-label').style.display = 'block';
+            selectedOption.textContent = 'Todos os papéis';
+            selectedIcon.textContent = '��';
+        }
+    }
     
     // Function to filter hosts by category
     function filterHostsByCategory(category) {
@@ -1024,18 +1053,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         console.log(`Found ${visibleCount} visible cards after filtering by category: ${category}`);
-        
-        // Apply secondary filter based on current filter type
-        if (currentFilterType === 'language' && currentCategory === 'online') {
-            // Re-apply language filter for online hosts
-            filterHostsByLanguage(currentLanguage, currentNormalizedLanguage);
-        } else if (currentFilterType === 'region' && currentCategory === 'presencial') {
-            // Apply region filter for in-person hosts
-            filterHostsByRegion(currentRegion);
-        } else if (currentFilterType === 'role' && currentCategory === 'tecnica') {
-            // Apply role filter for technical team
-            filterHostsByRole(currentRole);
-        }
         
         // Show message if no hosts match the selected category
         if (visibleCount === 0) {
@@ -1085,20 +1102,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const dropdownButton = document.querySelector('.dropdown-button');
     const dropdownContent = document.querySelector('.dropdown-content');
     const languageButtons = document.querySelectorAll('.language-button');
-    const selectedLanguageText = document.getElementById('selected-language');
+    const selectedLanguageText = document.getElementById('selected-option');
     const selectedLanguageFlag = document.getElementById('selected-language-flag');
     const searchInput = document.getElementById('language-search');
-    const noResults = document.getElementById('no-results');
+    const noResults = document.getElementById('no-language-results');
     
     // Toggle dropdown when button is clicked
     dropdownButton.addEventListener('click', function() {
-        dropdownContent.classList.toggle('show');
+        // Get the currently visible dropdown based on category
+        let visibleDropdown;
+        if (currentCategory === 'online') {
+            visibleDropdown = document.querySelector('.language-dropdown');
+        } else if (currentCategory === 'presencial') {
+            visibleDropdown = document.querySelector('.region-dropdown');
+        } else if (currentCategory === 'tecnica') {
+            visibleDropdown = document.querySelector('.role-dropdown');
+        }
+        
+        if (visibleDropdown) {
+            visibleDropdown.classList.toggle('show');
+        }
     });
     
     // Close dropdown when clicking outside
     window.addEventListener('click', function(event) {
         if (!event.target.closest('.mobile-dropdown')) {
-            dropdownContent.classList.remove('show');
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
         }
     });
     
@@ -1200,23 +1231,10 @@ document.addEventListener('DOMContentLoaded', function() {
             urlParams.delete('categoria');
         }
         
-        // Update secondary filter parameter based on category
-        if (currentCategory === 'online' && currentLanguage !== 'all') {
-            urlParams.set('idioma', currentLanguage);
-        } else {
+        // Keep language parameter if it exists
+        const currentLang = urlParams.get('idioma');
+        if (!currentLang) {
             urlParams.delete('idioma');
-        }
-        
-        if (currentCategory === 'presencial' && currentRegion !== 'all') {
-            urlParams.set('regiao', currentRegion);
-        } else {
-            urlParams.delete('regiao');
-        }
-        
-        if (currentCategory === 'tecnica' && currentRole !== 'all') {
-            urlParams.set('papel', currentRole);
-        } else {
-            urlParams.delete('papel');
         }
         
         // Update URL without reloading page
@@ -1227,83 +1245,122 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to filter hosts by language
     function filterHostsByLanguage(language, normalizedLang) {
         console.log(`Filtering hosts by language: ${language} (normalized: ${normalizedLang})`);
-        
-        // Update current language values
-        currentLanguage = language;
-        currentNormalizedLanguage = normalizedLang || language;
-        
         let visibleCount = 0;
         
-        // Only apply to hosts that match the current category
-        const hostCards = document.querySelectorAll('.host-card.category-visible');
+        // First, check what languages are available
+        const availableLanguages = new Set();
+        const hostCards = document.querySelectorAll('.host-card');
+        hostCards.forEach(card => {
+            const cardLanguages = card.getAttribute('data-languages');
+            if (cardLanguages) {
+                cardLanguages.split(' ').forEach(lang => {
+                    if (lang) availableLanguages.add(lang);
+                });
+            }
+        });
+        console.log(`Available languages for filtering: ${[...availableLanguages].join(', ')}`);
         
-        if (language === 'all') {
-            // Show all hosts in the current category
-            hostCards.forEach(card => {
+        // Fix for special characters in language names
+        const normalizeString = (str) => {
+            return str.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
+        };
+        
+        // Use the provided normalized language for more accurate filtering
+        const filterToUse = normalizedLang || language;
+        const normalizedFilter = normalizeString(filterToUse);
+        console.log(`Normalized filter: ${normalizedFilter}`);
+        
+        hostCards.forEach(card => {
+            const cardLanguages = card.getAttribute('data-languages');
+            const hostName = card.querySelector('.host-name').textContent;
+            
+            // Check if this card is already hidden by category filter
+            const isVisibleByCategory = card.classList.contains('category-visible') || 
+                                        (currentCategory === 'online' && !card.classList.contains('category-filtered'));
+            
+            let isMatch = (language === 'all');
+            
+            // Enhanced language matching that handles accents and special characters
+            if (!isMatch && cardLanguages) {
+                const normalizedCardLanguages = normalizeString(cardLanguages);
+                console.log(`Host: ${hostName}, Normalized languages: ${normalizedCardLanguages}`);
+                
+                // Try exact match first (more reliable)
+                if (normalizedCardLanguages.split(' ').includes(normalizedFilter)) {
+                    isMatch = true;
+                } 
+                // Then try substring match (as fallback)
+                else if (normalizedCardLanguages.includes(normalizedFilter)) {
+                    isMatch = true;
+                }
+            }
+            
+            console.log(`Host: ${hostName}, Raw Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}, Visible by Category: ${isVisibleByCategory}`);
+            
+            // Only show if matches BOTH language AND category filters
+            if (isMatch && isVisibleByCategory) {
                 card.style.display = 'block';
                 card.classList.add('visible');
                 visibleCount++;
-            });
-        } else {
-            // Fix for special characters in language names
-            const normalizeString = (str) => {
-                return str.toLowerCase()
-                    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
-            };
-            
-            // Use the provided normalized language for more accurate filtering
-            const filterToUse = normalizedLang || language;
-            const normalizedFilter = normalizeString(filterToUse);
-            console.log(`Normalized filter: ${normalizedFilter}`);
-            
-            hostCards.forEach(card => {
-                const cardLanguages = card.getAttribute('data-languages');
-                const hostName = card.querySelector('.host-name').textContent;
-                
-                let isMatch = false;
-                
-                // Enhanced language matching that handles accents and special characters
-                if (cardLanguages) {
-                    const normalizedCardLanguages = normalizeString(cardLanguages);
-                    console.log(`Host: ${hostName}, Normalized languages: ${normalizedCardLanguages}`);
-                    
-                    // Try exact match first (more reliable)
-                    if (normalizedCardLanguages.split(' ').includes(normalizedFilter)) {
-                        isMatch = true;
-                    } 
-                    // Then try substring match (as fallback)
-                    else if (normalizedCardLanguages.includes(normalizedFilter)) {
-                        isMatch = true;
-                    }
-                }
-                
-                console.log(`Host: ${hostName}, Match: ${isMatch}`);
-                
-                if (isMatch) {
-                    card.style.display = 'block';
-                    card.classList.add('visible');
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                    card.classList.remove('visible');
-                }
-            });
-        }
+            } else {
+                card.style.display = 'none';
+                card.classList.remove('visible');
+            }
+        });
         
         console.log(`Found ${visibleCount} visible cards after filtering by language: ${language}`);
         
-        // Show message if no hosts match the filter
-        showNoResultsMessage(visibleCount);
+        // Verificar se existe algum card visível após o filtro
+        if (visibleCount === 0) {
+            // Se não houver cards visíveis, exiba uma mensagem
+            let noResults = document.querySelector('.no-hosts-message');
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.className = 'no-hosts-message';
+                noResults.innerHTML = `
+                    <p>Não há anfitriões para este idioma ainda.</p>
+                    <p>Que tal <a href="contato.php">se tornar um?</a></p>
+                `;
+                
+                const hostGrid = document.querySelector('.hosts-grid');
+                if (hostGrid) {
+                    hostGrid.prepend(noResults);
+                }
+            }
+        } else {
+            // Se houver cards visíveis, remova a mensagem caso exista
+            const noResults = document.querySelector('.no-hosts-message');
+            if (noResults) {
+                noResults.remove();
+            }
+        }
         
-        // Update URL
-        updateURL();
+        // Atualizar a URL com o filtro selecionado
+        const urlParams = new URLSearchParams(window.location.search);
+        if (language === 'all') {
+            urlParams.delete('idioma');
+        } else {
+            urlParams.set('idioma', language);
+        }
+        history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+        
+        // Scroll to the top of the host grid
+        setTimeout(() => {
+            const headerHeight = document.querySelector('header').offsetHeight || 0;
+            const hostGrid = document.querySelector('.hosts-grid');
+            if (hostGrid) {
+                const y = hostGrid.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        }, 100);
     }
     
     // Check URL parameters on page load and apply filters accordingly
     function parseURL() {
         const urlParams = new URLSearchParams(window.location.search);
-        const categoria = urlParams.get('categoria');
         const idioma = urlParams.get('idioma');
+        const categoria = urlParams.get('categoria');
         const regiao = urlParams.get('regiao');
         const papel = urlParams.get('papel');
         
@@ -1313,115 +1370,215 @@ document.addEventListener('DOMContentLoaded', function() {
             if (categoryTab) {
                 // Manually click the appropriate tab
                 categoryTab.click();
+                
+                // Handle secondary filters based on category
+                if (categoria === 'presencial' && regiao) {
+                    // Find and click the appropriate region button
+                    setTimeout(() => {
+                        const regionButton = document.querySelector(`.region-button[data-region="${regiao}"]`);
+                        if (regionButton) {
+                            regionButton.click();
+                        }
+                    }, 150);
+                } else if (categoria === 'tecnica' && papel) {
+                    // Find and click the appropriate role button
+                    setTimeout(() => {
+                        const roleButton = document.querySelector(`.role-button[data-role="${papel}"]`);
+                        if (roleButton) {
+                            roleButton.click();
+                        }
+                    }, 150);
+                } else if (categoria === 'online' && idioma) {
+                    // Handle language filter as before (already implemented)
+                    setTimeout(() => {
+                        handleLanguageParameter(idioma);
+                    }, 150);
+                }
             }
         } else {
             // If no category specified, apply default category filter
             filterHostsByCategory(currentCategory);
-        }
-        
-        // Then handle secondary filter parameters based on category
-        if (categoria === 'online' && idioma) {
-            // Find and click the language button
-            const languageButton = findButton(languageButtons, 'data-language', idioma);
-            if (languageButton) languageButton.click();
-        } else if (categoria === 'presencial' && regiao) {
-            // Find and click the region button
-            const regionButton = findButton(regionButtons, 'data-region', regiao);
-            if (regionButton) regionButton.click();
-        } else if (categoria === 'tecnica' && papel) {
-            // Find and click the role button
-            const roleButton = findButton(roleButtons, 'data-role', papel);
-            if (roleButton) roleButton.click();
+            
+            // Check for language parameter if default category is online
+            if (idioma) {
+                handleLanguageParameter(idioma);
+            }
         }
     }
     
-    // Helper function to find a button by attribute value
-    function findButton(buttons, attrName, value) {
-        // First try exact match
-        let button = Array.from(buttons).find(btn => 
-            btn.getAttribute(attrName).toLowerCase() === value.toLowerCase()
+    // Helper function to handle language parameter
+    function handleLanguageParameter(idioma) {
+        // Find the matching button in dropdown
+        const dropdownButtons = document.querySelectorAll('.language-button[data-language]');
+        
+        // Try to find an exact match first
+        let selectedButton = Array.from(dropdownButtons).find(button => 
+            button.getAttribute('data-language').toLowerCase() === idioma.toLowerCase()
         );
         
-        // If no exact match, try with normalization for accented characters
-        if (!button) {
-            const normalizeString = str => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const normalizedValue = normalizeString(value);
+        // If no exact match, check the normalized language values (for accented characters)
+        if (!selectedButton) {
+            // First normalize the URL parameter
+            const normalizeString = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const normalizedIdioma = normalizeString(idioma);
             
-            button = Array.from(buttons).find(btn => {
-                const normalizedAttr = normalizeString(btn.getAttribute(attrName));
-                return normalizedAttr === normalizedValue;
+            selectedButton = Array.from(dropdownButtons).find(button => {
+                const normalizedButtonLang = normalizeString(button.getAttribute('data-language'));
+                return normalizedButtonLang === normalizedIdioma;
             });
         }
         
-        return button;
+        if (selectedButton) {
+            // Update dropdown UI
+            const languageText = selectedButton.querySelector('span:not(.flag-icon)').textContent;
+            document.getElementById('selected-option').textContent = languageText;
+            
+            const flagElement = selectedButton.querySelector('.flag-icon');
+            if (flagElement) {
+                if (flagElement.tagName === 'IMG') {
+                    document.getElementById('selected-language-flag').innerHTML = '';
+                    const newFlag = document.createElement('img');
+                    newFlag.src = flagElement.src;
+                    newFlag.alt = flagElement.alt;
+                    newFlag.className = 'flag-icon';
+                    newFlag.style.width = '24px';
+                    newFlag.style.height = '18px';
+                    newFlag.style.borderRadius = '3px';
+                    document.getElementById('selected-language-flag').appendChild(newFlag);
+                } else {
+                    document.getElementById('selected-language-flag').innerHTML = flagElement.innerHTML;
+                }
+            }
+            
+            // Get the normalized language version
+            const normalizedLang = selectedButton.getAttribute('data-normalized') || selectedButton.getAttribute('data-language');
+            
+            // Apply filter
+            filterHostsByLanguage(idioma, normalizedLang);
+            
+            // Update filter buttons UI
+            const filterButtons = document.querySelectorAll('.filter-button');
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-filter') === idioma) {
+                    btn.classList.add('active');
+                }
+            });
+        }
     }
 
-    // Initialize variables for tracking current filter states
-    let currentLanguage = 'all';
-    let currentNormalizedLanguage = 'all';
+    // Apply default category filter on page load
+    setTimeout(() => {
+        // Apply default filter (online) when page loads
+        filterHostsByCategory('online');
+        
+        // Then check URL parameters for any specific filters
+        parseURL();
+    }, 100);
+
+    // Add event listeners to dropdown buttons
+    document.querySelectorAll('.region-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const region = this.getAttribute('data-region');
+            const regionText = this.querySelector('span:not(.region-icon)').textContent;
+            const iconElement = this.querySelector('.region-icon');
+            
+            // Update selected text
+            document.getElementById('selected-option').textContent = regionText;
+            
+            // Update selected icon
+            if (iconElement) {
+                document.getElementById('selected-language-flag').textContent = iconElement.textContent;
+            }
+            
+            // Close dropdown
+            document.querySelector('.dropdown-content').classList.remove('show');
+            
+            // Filter hosts by region
+            filterHostsByRegion(region);
+            
+            // Update URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (region === 'all') {
+                urlParams.delete('regiao');
+            } else {
+                urlParams.set('regiao', region);
+            }
+            
+            // Maintain category parameter
+            urlParams.set('categoria', 'presencial');
+            
+            history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+        });
+    });
     
+    document.querySelectorAll('.role-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const role = this.getAttribute('data-role');
+            const roleText = this.querySelector('span:not(.role-icon)').textContent;
+            const iconElement = this.querySelector('.role-icon');
+            
+            // Update selected text
+            document.getElementById('selected-option').textContent = roleText;
+            
+            // Update selected icon
+            if (iconElement) {
+                document.getElementById('selected-language-flag').textContent = iconElement.textContent;
+            }
+            
+            // Close dropdown
+            document.querySelector('.dropdown-content').classList.remove('show');
+            
+            // Filter hosts by role
+            filterHostsByRole(role);
+            
+            // Update URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (role === 'all') {
+                urlParams.delete('papel');
+            } else {
+                urlParams.set('papel', role);
+            }
+            
+            // Maintain category parameter
+            urlParams.set('categoria', 'tecnica');
+            
+            history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+        });
+    });
+
     // Function to filter hosts by region
     function filterHostsByRegion(region) {
         console.log(`Filtering hosts by region: ${region}`);
         let visibleCount = 0;
         
-        // Only apply to hosts that match the current category
-        const hostCards = document.querySelectorAll('.host-card.category-visible');
-        
-        if (region === 'all') {
-            // Show all hosts in the current category
-            hostCards.forEach(card => {
+        const hostCards = document.querySelectorAll('.host-card');
+        hostCards.forEach(card => {
+            const cardRegion = card.getAttribute('data-region');
+            const hostName = card.querySelector('.host-name').textContent;
+            
+            // Check if card belongs to selected region or all regions
+            const isMatch = region === 'all' || cardRegion === region;
+            // Also match the "become a host" card for all regions
+            const isSpecialCard = hostName.includes('Torne-se anfitrião');
+            
+            // Also check if card belongs to the selected category (Presencial)
+            const isInCategory = card.getAttribute('data-categories').includes('presencial');
+            
+            console.log(`Host: ${hostName}, Region: ${cardRegion}, Filter: ${region}, Match: ${isMatch}, In Category: ${isInCategory}`);
+            
+            if ((isMatch || isSpecialCard) && isInCategory) {
                 card.style.display = 'block';
                 card.classList.add('visible');
                 visibleCount++;
-            });
-        } else {
-            // Filter by region
-            hostCards.forEach(card => {
-                const hostName = card.querySelector('.host-name').textContent;
-                const regionElement = card.querySelector('.host-region');
-                let hostRegion = regionElement ? regionElement.textContent.trim().toLowerCase() : '';
-                
-                // Clean up region text (remove icon)
-                hostRegion = hostRegion.replace(/[\u{1F300}-\u{1F6FF}]/gu, '').trim();
-                
-                // Normalize strings for comparison
-                const normalizeString = (str) => {
-                    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                };
-                
-                const normalizedHostRegion = normalizeString(hostRegion);
-                const normalizedFilterRegion = normalizeString(region);
-                
-                // Check if region matches
-                const isMatch = region === 'all' || 
-                               normalizedHostRegion.includes(normalizedFilterRegion) ||
-                               (region === 'outras' && !normalizedHostRegion.includes('brasilia') && 
-                                                      !normalizedHostRegion.includes('sao paulo'));
-                
-                console.log(`Host: ${hostName}, Region: ${hostRegion}, Filter: ${region}, Match: ${isMatch}`);
-                
-                if (isMatch) {
-                    card.style.display = 'block';
-                    card.classList.add('visible');
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                    card.classList.remove('visible');
-                }
-            });
-        }
+            } else {
+                card.style.display = 'none';
+                card.classList.remove('visible');
+            }
+        });
         
-        console.log(`Found ${visibleCount} visible cards after filtering by region: ${region}`);
-        
-        // Update current region
-        currentRegion = region;
-        
-        // Show message if no hosts match the filter
-        showNoResultsMessage(visibleCount);
-        
-        // Update URL
-        updateURL();
+        // Show "no results" message if needed
+        showNoResultsMessage(visibleCount, 'region');
     }
     
     // Function to filter hosts by role
@@ -1429,68 +1586,50 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`Filtering hosts by role: ${role}`);
         let visibleCount = 0;
         
-        // Only apply to hosts that match the current category
-        const hostCards = document.querySelectorAll('.host-card.category-visible');
-        
-        if (role === 'all') {
-            // Show all hosts in the current category
-            hostCards.forEach(card => {
+        const hostCards = document.querySelectorAll('.host-card');
+        hostCards.forEach(card => {
+            const cardRoles = card.getAttribute('data-roles');
+            const hostName = card.querySelector('.host-name').textContent;
+            
+            // Check if card has selected role
+            const isMatch = role === 'all' || (cardRoles && cardRoles.includes(role));
+            // Also match the "become a host" card for all roles
+            const isSpecialCard = hostName.includes('Torne-se anfitrião') || role === 'fazer-parte';
+            
+            // Also check if card belongs to the selected category (Técnica)
+            const isInCategory = card.getAttribute('data-categories').includes('tecnica');
+            
+            console.log(`Host: ${hostName}, Roles: ${cardRoles}, Filter: ${role}, Match: ${isMatch}, In Category: ${isInCategory}`);
+            
+            if ((isMatch || isSpecialCard) && isInCategory) {
                 card.style.display = 'block';
                 card.classList.add('visible');
                 visibleCount++;
-            });
-        } else {
-            // Filter by role
-            hostCards.forEach(card => {
-                const hostName = card.querySelector('.host-name').textContent;
-                const roleId = card.getAttribute('data-role');
-                
-                // Check if role matches
-                const isMatch = role === 'all' || 
-                               (roleId && roleId === role) || 
-                               (role === 'outro' && (!roleId || roleId === ''));
-                
-                console.log(`Host: ${hostName}, Role ID: ${roleId}, Filter: ${role}, Match: ${isMatch}`);
-                
-                if (isMatch) {
-                    card.style.display = 'block';
-                    card.classList.add('visible');
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                    card.classList.remove('visible');
-                }
-            });
-        }
+            } else {
+                card.style.display = 'none';
+                card.classList.remove('visible');
+            }
+        });
         
-        console.log(`Found ${visibleCount} visible cards after filtering by role: ${role}`);
-        
-        // Update current role
-        currentRole = role;
-        
-        // Show message if no hosts match the filter
-        showNoResultsMessage(visibleCount);
-        
-        // Update URL
-        updateURL();
+        // Show "no results" message if needed
+        showNoResultsMessage(visibleCount, 'role');
     }
     
     // Helper function to show "no results" message
-    function showNoResultsMessage(visibleCount) {
+    function showNoResultsMessage(visibleCount, filterType) {
         if (visibleCount === 0) {
-            let noResults = document.querySelector('.no-hosts-filter');
+            let noResults = document.querySelector(`.no-hosts-${filterType}`);
             if (!noResults) {
                 noResults = document.createElement('div');
-                noResults.className = 'no-hosts-message no-hosts-filter';
+                noResults.className = `no-hosts-message no-hosts-${filterType}`;
                 
-                let message = 'Nenhum anfitrião encontrado com os filtros selecionados.';
-                
-                if (currentCategory === 'online') {
-                    message = 'Nenhum anfitrião encontrado para este idioma.';
-                } else if (currentCategory === 'presencial') {
-                    message = 'Nenhum anfitrião encontrado nesta região.';
-                } else if (currentCategory === 'tecnica') {
-                    message = 'Nenhum membro da equipe encontrado para este papel.';
+                let message = '';
+                if (filterType === 'region') {
+                    message = 'Não há anfitriões presenciais nesta região ainda.';
+                } else if (filterType === 'role') {
+                    message = 'Não há membros da equipe técnica neste papel ainda.';
+                } else {
+                    message = 'Nenhum resultado encontrado.';
                 }
                 
                 noResults.innerHTML = `
@@ -1505,73 +1644,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             // Remove no results message if it exists
-            const noResults = document.querySelector('.no-hosts-filter');
+            const noResults = document.querySelector(`.no-hosts-${filterType}`);
             if (noResults) {
                 noResults.remove();
             }
         }
     }
-
-    // Region selection
-    const regionButtons = document.querySelectorAll('.region-button');
-    const selectedRegionText = document.getElementById('selected-region');
-    const selectedRegionIcon = document.getElementById('selected-region-icon');
-    
-    regionButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const region = this.getAttribute('data-region');
-            const regionText = this.querySelector('span:not(.flag-icon)').textContent;
-            
-            // Update selected region text
-            selectedRegionText.textContent = regionText;
-            
-            // Update selected region icon
-            const iconElement = this.querySelector('.flag-icon');
-            selectedRegionIcon.innerHTML = iconElement.innerHTML;
-            
-            // Close dropdown
-            const dropdown = this.closest('.dropdown-content');
-            if (dropdown) dropdown.classList.remove('show');
-            
-            // Filter hosts by region
-            filterHostsByRegion(region);
-        });
-    });
-    
-    // Role selection
-    const roleButtons = document.querySelectorAll('.role-button');
-    const selectedRoleText = document.getElementById('selected-role');
-    const selectedRoleIcon = document.getElementById('selected-role-icon');
-    
-    roleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const role = this.getAttribute('data-role');
-            const roleText = this.querySelector('span:not(.flag-icon)').textContent;
-            
-            // Update selected role text
-            selectedRoleText.textContent = roleText;
-            
-            // Update selected role icon
-            const iconElement = this.querySelector('.flag-icon');
-            selectedRoleIcon.innerHTML = iconElement.innerHTML;
-            
-            // Close dropdown
-            const dropdown = this.closest('.dropdown-content');
-            if (dropdown) dropdown.classList.remove('show');
-            
-            // Filter hosts by role
-            filterHostsByRole(role);
-        });
-    });
-    
-    // Apply default category filter on page load
-    setTimeout(() => {
-        // Apply default filter (online) when page loads
-        filterHostsByCategory('online');
-        
-        // Then check URL parameters for any specific filters
-        parseURL();
-    }, 100);
 });
 </script>
 
