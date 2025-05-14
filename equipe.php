@@ -6,25 +6,6 @@ require_once 'config.php';
 $hosts = getHosts();
 $languages = getLanguages();
 
-// Filter Portuguese language from hosts except Tarsis
-foreach ($hosts as $key => $host) {
-    // Skip Tarsis - keep Portuguese for them
-    if (stripos($host['full_name'], 'Tarsis') !== false) {
-        continue;
-    }
-    
-    // Remove Portuguese from language lists
-    if (!empty($host['languages'])) {
-        $languageList = explode(',', $host['languages']);
-        $filteredLanguages = array_filter($languageList, function($lang) {
-            return stripos(trim($lang), 'Português') === false;
-        });
-        
-        // Update the host's languages
-        $hosts[$key]['languages'] = implode(', ', $filteredLanguages);
-    }
-}
-
 // Debug print for troubleshooting
 // Uncomment these lines to check the database values directly
 /*
@@ -688,7 +669,7 @@ include 'includes/header.php';
                     </div>
                     <button class="region-button" data-region="all">
                         <div class="region-info">
-                            <span class="region-icon">🌎</span>
+                            <span class="region-icon">🏙️</span>
                             <span>Todas as cidades</span>
                         </div>
                     </button>
@@ -711,7 +692,6 @@ include 'includes/header.php';
                         $icon = '🏙️';
                         if (strpos($region, 'Brasília') !== false) $icon = '🏛️';
                         elseif (strpos($region, 'São Paulo') !== false) $icon = '🏙️';
-                        elseif (strpos($region, 'Outras regiões') !== false) $icon = '📍';
                     ?>
                     <button class="region-button" data-region="<?= strtolower(str_replace(' ', '-', $region)) ?>">
                         <div class="region-info">
@@ -932,7 +912,7 @@ include 'includes/header.php';
                                         echo "<span class='language-tag'>Português</span>"; // Default if no languages found
                                     } else {
                                         foreach ($hostLanguages as $lang): ?>
-                                            <span class="language-tag"><?= $lang ?></span>
+                                        <span class="language-tag"><?= $lang ?></span>
                                         <?php endforeach;
                                     }
                                     ?>
@@ -1046,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.region-dropdown').style.display = 'block';
             document.querySelector('.region-label').style.display = 'block';
             selectedOption.textContent = 'Todas as cidades';
-            selectedIcon.textContent = '🌎';
+            selectedIcon.textContent = '🏙️';
         } else if (category === 'tecnica') {
             // Show role dropdown
             document.querySelector('.role-dropdown').style.display = 'block';
@@ -1061,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`Filtering hosts by category: ${category}`);
         let visibleCount = 0;
         
-        const hostCards = document.querySelectorAll('.host-card');
+    const hostCards = document.querySelectorAll('.host-card');
         hostCards.forEach(card => {
             const categories = card.getAttribute('data-categories');
             const hostName = card.querySelector('.host-name').textContent;
@@ -1181,17 +1161,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Search functionality for language dropdown
+    // Improved search functionality for language dropdown with accent-insensitive search
     document.getElementById('language-search').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const normalizedSearchTerm = normalizeString(searchTerm);
+        const searchTerm = this.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         let resultsFound = false;
         
         languageButtons.forEach(button => {
-            const languageName = button.querySelector('span:not(.flag-icon)').textContent;
-            const normalizedLanguageName = normalizeString(languageName);
-            
-            if (normalizedLanguageName.includes(normalizedSearchTerm)) {
+            const languageName = button.querySelector('span:not(.flag-icon)').textContent
+                                .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (languageName.includes(searchTerm)) {
                 button.style.display = 'flex';
                 resultsFound = true;
             } else {
@@ -1207,17 +1185,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Search functionality for region dropdown
+    // Improved search functionality for region dropdown with accent-insensitive search
     document.getElementById('region-search').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const normalizedSearchTerm = normalizeString(searchTerm);
+        const searchTerm = this.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         let resultsFound = false;
         
         document.querySelectorAll('.region-button').forEach(button => {
-            const regionName = button.querySelector('span:not(.region-icon)').textContent;
-            const normalizedRegionName = normalizeString(regionName);
-            
-            if (normalizedRegionName.includes(normalizedSearchTerm)) {
+            const regionName = button.querySelector('span:not(.region-icon)').textContent
+                              .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (regionName.includes(searchTerm)) {
                 button.style.display = 'flex';
                 resultsFound = true;
             } else {
@@ -1233,17 +1209,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Search functionality for role dropdown
+    // Improved search functionality for role dropdown with accent-insensitive search
     document.getElementById('role-search').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const normalizedSearchTerm = normalizeString(searchTerm);
+        const searchTerm = this.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         let resultsFound = false;
         
         document.querySelectorAll('.role-button').forEach(button => {
-            const roleName = button.querySelector('span:not(.role-icon)').textContent;
-            const normalizedRoleName = normalizeString(roleName);
-            
-            if (normalizedRoleName.includes(normalizedSearchTerm)) {
+            const roleName = button.querySelector('span:not(.role-icon)').textContent
+                            .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (roleName.includes(searchTerm)) {
                 button.style.display = 'flex';
                 resultsFound = true;
             } else {
@@ -1258,13 +1232,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('no-role-results').style.display = 'block';
         }
     });
-    
-    // Helper function to normalize text (remove accents)
-    function normalizeString(str) {
-        if (!str) return '';
-        return str.toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
-    }
     
     // Language selection
     languageButtons.forEach(button => {
@@ -1365,7 +1332,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // First, check what languages are available
         const availableLanguages = new Set();
         const hostCards = document.querySelectorAll('.host-card');
-        hostCards.forEach(card => {
+            hostCards.forEach(card => {
             const cardLanguages = card.getAttribute('data-languages');
             if (cardLanguages) {
                 cardLanguages.split(' ').forEach(lang => {
@@ -1419,11 +1386,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Only show if card matches both the language filter and is in the "online" category (or is the special card)
             if ((isMatch && isOnlineCategory) || isSpecialCard) {
-                card.style.display = 'block';
+                    card.style.display = 'block';
                 card.classList.add('visible');
                 visibleCount++;
-            } else {
-                card.style.display = 'none';
+                    } else {
+                        card.style.display = 'none';
                 card.classList.remove('visible');
             }
         });
@@ -1593,6 +1560,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Then check URL parameters for any specific filters
         parseURL();
+        
+        // Ensure all dropdowns are closed on page load
+        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
     }, 100);
 
     // Add event listeners to dropdown buttons
