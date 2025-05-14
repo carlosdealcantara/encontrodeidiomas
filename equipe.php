@@ -530,6 +530,13 @@ $page_styles = <<<EOT
     text-align: center;
 }
 
+/* Ensure all dropdowns are hidden by default */
+.language-dropdown, 
+.region-dropdown, 
+.role-dropdown {
+    display: none;
+}
+
 EOT;
 
 include 'includes/header.php';
@@ -1024,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.role-dropdown').style.display = 'block';
             document.querySelector('.role-label').style.display = 'block';
             selectedOption.textContent = 'Todos os papéis';
-            selectedIcon.textContent = '��';
+            selectedIcon.textContent = '👥';
         }
     }
     
@@ -1100,15 +1107,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Dropdown functionality
     const dropdownButton = document.querySelector('.dropdown-button');
-    const dropdownContent = document.querySelector('.dropdown-content');
     const languageButtons = document.querySelectorAll('.language-button');
-    const selectedLanguageText = document.getElementById('selected-option');
+    const selectedOption = document.getElementById('selected-option');
     const selectedLanguageFlag = document.getElementById('selected-language-flag');
     const searchInput = document.getElementById('language-search');
-    const noResults = document.getElementById('no-language-results');
+    const noLanguageResults = document.getElementById('no-language-results');
     
     // Toggle dropdown when button is clicked
-    dropdownButton.addEventListener('click', function() {
+    dropdownButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         // Get the currently visible dropdown based on category
         let visibleDropdown;
         if (currentCategory === 'online') {
@@ -1120,7 +1129,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (visibleDropdown) {
+            // Hide other dropdowns first
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                if (dropdown !== visibleDropdown) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            // Toggle the current dropdown
             visibleDropdown.classList.toggle('show');
+            
+            // Focus search input if dropdown is shown
+            if (visibleDropdown.classList.contains('show')) {
+                const searchInput = visibleDropdown.querySelector('.search-input');
+                if (searchInput) {
+                    setTimeout(() => {
+                        searchInput.focus();
+                    }, 100);
+                }
+            }
         }
     });
     
@@ -1133,8 +1160,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Search functionality
-    searchInput.addEventListener('input', function() {
+    // Search functionality for language dropdown
+    document.getElementById('language-search').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         let resultsFound = false;
         
@@ -1150,21 +1177,70 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show/hide no results message
         if (resultsFound) {
-            noResults.style.display = 'none';
+            noLanguageResults.style.display = 'none';
         } else {
-            noResults.style.display = 'block';
+            noLanguageResults.style.display = 'block';
+        }
+    });
+    
+    // Search functionality for region dropdown
+    document.getElementById('region-search').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        let resultsFound = false;
+        
+        document.querySelectorAll('.region-button').forEach(button => {
+            const regionName = button.querySelector('span:not(.region-icon)').textContent.toLowerCase();
+            if (regionName.includes(searchTerm)) {
+                button.style.display = 'flex';
+                resultsFound = true;
+            } else {
+                button.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        if (resultsFound) {
+            document.getElementById('no-region-results').style.display = 'none';
+        } else {
+            document.getElementById('no-region-results').style.display = 'block';
+        }
+    });
+    
+    // Search functionality for role dropdown
+    document.getElementById('role-search').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        let resultsFound = false;
+        
+        document.querySelectorAll('.role-button').forEach(button => {
+            const roleName = button.querySelector('span:not(.role-icon)').textContent.toLowerCase();
+            if (roleName.includes(searchTerm)) {
+                button.style.display = 'flex';
+                resultsFound = true;
+            } else {
+                button.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        if (resultsFound) {
+            document.getElementById('no-role-results').style.display = 'none';
+        } else {
+            document.getElementById('no-role-results').style.display = 'block';
         }
     });
     
     // Language selection
     languageButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const language = this.getAttribute('data-language');
             const normalizedLang = this.getAttribute('data-normalized') || language; // Get normalized version if available
             const languageText = this.querySelector('span:not(.flag-icon)').textContent;
             
             // Update selected language text
-            selectedLanguageText.textContent = languageText;
+            selectedOption.textContent = languageText;
             
             // Update selected language flag
             const flagElement = this.querySelector('.flag-icon');
@@ -1185,18 +1261,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Close dropdown
-            dropdownContent.classList.remove('show');
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
             
             // Log for debugging
             console.log(`Selected language: ${language}`);
             console.log(`Normalized language: ${normalizedLang}`);
-            console.log(`Available host languages: ${Array.from(hostCards).map(card => card.getAttribute('data-languages')).join(', ')}`);
+            console.log(`Available host languages: ${Array.from(document.querySelectorAll('.host-card')).map(card => card.getAttribute('data-languages')).join(', ')}`);
             
             // Filter hosts
             filterHostsByLanguage(language, normalizedLang);
             
             // Update the original filter buttons UI (for compatibility)
-            filterButtons.forEach(btn => {
+            document.querySelectorAll('.filter-button').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.getAttribute('data-filter') === language) {
                     btn.classList.add('active');
@@ -1262,6 +1340,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Fix for special characters in language names
         const normalizeString = (str) => {
+            if (!str) return '';
             return str.toLowerCase()
                 .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
         };
@@ -1273,11 +1352,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         hostCards.forEach(card => {
             const cardLanguages = card.getAttribute('data-languages');
+            const cardCategories = card.getAttribute('data-categories') || '';
             const hostName = card.querySelector('.host-name').textContent;
             
-            // Check if this card is already hidden by category filter
-            const isVisibleByCategory = card.classList.contains('category-visible') || 
-                                        (currentCategory === 'online' && !card.classList.contains('category-filtered'));
+            // Make sure the card belongs to the "online" category
+            const isOnlineCategory = cardCategories.includes('online');
+            
+            // Special handling for the "become host" card - always show it
+            const isSpecialCard = hostName.includes('Torne-se anfitrião');
             
             let isMatch = (language === 'all');
             
@@ -1296,10 +1378,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            console.log(`Host: ${hostName}, Raw Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}, Visible by Category: ${isVisibleByCategory}`);
+            console.log(`Host: ${hostName}, Category: ${cardCategories}, Raw Languages: ${cardLanguages}, Filter: ${language}, Match: ${isMatch}, Online: ${isOnlineCategory}`);
             
-            // Only show if matches BOTH language AND category filters
-            if (isMatch && isVisibleByCategory) {
+            // Only show if card matches both the language filter and is in the "online" category (or is the special card)
+            if ((isMatch && isOnlineCategory) || isSpecialCard) {
                 card.style.display = 'block';
                 card.classList.add('visible');
                 visibleCount++;
@@ -1478,7 +1560,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add event listeners to dropdown buttons
     document.querySelectorAll('.region-button').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const region = this.getAttribute('data-region');
             const regionText = this.querySelector('span:not(.region-icon)').textContent;
             const iconElement = this.querySelector('.region-icon');
@@ -1492,7 +1577,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Close dropdown
-            document.querySelector('.dropdown-content').classList.remove('show');
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+            
+            // Log for debugging
+            console.log(`Selected region: ${region}`);
+            console.log(`Available host regions: ${Array.from(document.querySelectorAll('.host-card')).map(card => card.getAttribute('data-region')).join(', ')}`);
             
             // Filter hosts by region
             filterHostsByRegion(region);
@@ -1513,7 +1604,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.querySelectorAll('.role-button').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const role = this.getAttribute('data-role');
             const roleText = this.querySelector('span:not(.role-icon)').textContent;
             const iconElement = this.querySelector('.role-icon');
@@ -1527,7 +1621,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Close dropdown
-            document.querySelector('.dropdown-content').classList.remove('show');
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+            
+            // Log for debugging
+            console.log(`Selected role: ${role}`);
+            console.log(`Available host roles: ${Array.from(document.querySelectorAll('.host-card')).map(card => card.getAttribute('data-roles')).join(', ')}`);
             
             // Filter hosts by role
             filterHostsByRole(role);
