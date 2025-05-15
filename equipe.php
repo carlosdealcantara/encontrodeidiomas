@@ -1271,6 +1271,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Close dropdown
             document.querySelectorAll('.dropdown-content').forEach(dropdown => {
                 dropdown.classList.remove('show');
+                dropdown.style.display = 'none';
             });
             
             // Log for debugging
@@ -1297,9 +1298,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 urlParams.set('idioma', language);
             }
             
-            // Maintain category parameter if present
+            // Maintain only the relevant category parameter
             if (currentCategory !== 'online') {
                 urlParams.set('categoria', currentCategory);
+            } else {
+                urlParams.delete('categoria');
+            }
+            
+            // Remove params that don't apply to current category
+            if (currentCategory !== 'presencial') {
+                urlParams.delete('regiao');
+            }
+            
+            if (currentCategory !== 'tecnica') {
+                urlParams.delete('papel');
             }
             
             history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
@@ -1317,10 +1329,17 @@ document.addEventListener('DOMContentLoaded', function() {
             urlParams.delete('categoria');
         }
         
-        // Keep language parameter if it exists
-        const currentLang = urlParams.get('idioma');
-        if (!currentLang) {
+        // Clear parameters that don't belong to the current category
+        if (currentCategory !== 'online') {
             urlParams.delete('idioma');
+        }
+        
+        if (currentCategory !== 'presencial') {
+            urlParams.delete('regiao');
+        }
+        
+        if (currentCategory !== 'tecnica') {
+            urlParams.delete('papel');
         }
         
         // Update URL without reloading page
@@ -1593,6 +1612,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Close dropdown
             document.querySelectorAll('.dropdown-content').forEach(dropdown => {
                 dropdown.classList.remove('show');
+                dropdown.style.display = 'none';
             });
             
             // Log for debugging
@@ -1610,8 +1630,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 urlParams.set('regiao', region);
             }
             
-            // Maintain category parameter
+            // Always set category to presencial
             urlParams.set('categoria', 'presencial');
+            
+            // Remove irrelevant parameters
+            urlParams.delete('idioma');
+            urlParams.delete('papel');
             
             history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
@@ -1637,6 +1661,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Close dropdown
             document.querySelectorAll('.dropdown-content').forEach(dropdown => {
                 dropdown.classList.remove('show');
+                dropdown.style.display = 'none';
             });
             
             // Log for debugging
@@ -1654,8 +1679,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 urlParams.set('papel', role);
             }
             
-            // Maintain category parameter
+            // Always set category to tecnica
             urlParams.set('categoria', 'tecnica');
+            
+            // Remove irrelevant parameters
+            urlParams.delete('idioma');
+            urlParams.delete('regiao');
             
             history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
