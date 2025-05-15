@@ -749,6 +749,58 @@ include 'includes/header.php';
                 </div>
             </div>
             
+            <!-- TEST DROPDOWN - New implementation for debugging -->
+            <div class="test-section" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #333;">Dropdown de Teste</p>
+                
+                <div class="test-dropdown">
+                    <!-- Test dropdown button -->
+                    <button id="test-dropdown-btn" class="dropdown-button">
+                        <div class="dropdown-flag-container">
+                            <span id="test-selected-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🌍</span>
+                            <span id="test-selected-text">Opção Selecionada</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    
+                    <!-- Test dropdown content -->
+                    <div id="test-dropdown-content" class="dropdown-content" style="display: none;">
+                        <div class="search-filter">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="test-search" class="search-input" placeholder="Buscar...">
+                        </div>
+                        
+                        <button class="test-option" data-value="option1">
+                            <div class="option-info">
+                                <span class="option-icon">🌍</span>
+                                <span>Opção 1</span>
+                            </div>
+                        </button>
+                        
+                        <button class="test-option" data-value="option2">
+                            <div class="option-info">
+                                <span class="option-icon">🏙️</span>
+                                <span>Opção 2</span>
+                            </div>
+                        </button>
+                        
+                        <button class="test-option" data-value="option3">
+                            <div class="option-info">
+                                <span class="option-icon">👥</span>
+                                <span>Opção 3</span>
+                            </div>
+                        </button>
+                        
+                        <button class="test-option" data-value="option4">
+                            <div class="option-info">
+                                <span class="option-icon">📢</span>
+                                <span>Opção 4</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="hosts-container">
                 <div class="hosts-grid">
                     <!-- Become a host card -->
@@ -1607,6 +1659,78 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 100);
 
+    // TEST DROPDOWN IMPLEMENTATION
+    document.addEventListener('DOMContentLoaded', function() {
+        const testDropdownBtn = document.getElementById('test-dropdown-btn');
+        const testDropdownContent = document.getElementById('test-dropdown-content');
+        const testOptions = document.querySelectorAll('.test-option');
+        const testSelectedText = document.getElementById('test-selected-text');
+        const testSelectedIcon = document.getElementById('test-selected-icon');
+        const testSearch = document.getElementById('test-search');
+        
+        // Toggle dropdown on button click
+        testDropdownBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Check if it's already open
+            const isOpen = testDropdownContent.classList.contains('show');
+            
+            // First close dropdown
+            testDropdownContent.classList.remove('show');
+            
+            // If it wasn't open, then open it
+            if (!isOpen) {
+                testDropdownContent.classList.add('show');
+                // Focus search
+                setTimeout(() => {
+                    testSearch.focus();
+                }, 100);
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.test-dropdown')) {
+                testDropdownContent.classList.remove('show');
+            }
+        });
+        
+        // Option selection
+        testOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.querySelector('span:not(.option-icon)').textContent;
+                const icon = this.querySelector('.option-icon').textContent;
+                
+                // Update selected text and icon
+                testSelectedText.textContent = text;
+                testSelectedIcon.textContent = icon;
+                
+                // Close dropdown
+                testDropdownContent.classList.remove('show');
+                
+                console.log(`Test dropdown: selected ${value}`);
+            });
+        });
+        
+        // Search functionality
+        testSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            testOptions.forEach(option => {
+                const text = option.querySelector('span:not(.option-icon)').textContent
+                              .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+    });
+
     // Add event listeners to dropdown buttons
     document.querySelectorAll('.region-button').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -1695,7 +1819,7 @@ document.addEventListener('DOMContentLoaded', function() {
             history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
     });
-
+    
     // Function to filter hosts by region
     function filterHostsByRegion(region) {
         console.log(`Filtering hosts by region: ${region}`);
