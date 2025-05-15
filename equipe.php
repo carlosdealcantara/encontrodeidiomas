@@ -995,6 +995,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update URL with category parameter
             updateURL();
+            
+            // Ensure all dropdowns are closed when switching tabs
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
         });
     });
     
@@ -1016,19 +1021,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show the appropriate dropdown based on category
         if (category === 'online') {
-            // Show language dropdown
+            // Show language dropdown container but keep it closed
             document.querySelector('.language-dropdown').style.display = 'block';
             document.querySelector('.language-label').style.display = 'block';
             selectedOption.textContent = 'Todos os idiomas';
             selectedIcon.textContent = '🌍';
         } else if (category === 'presencial') {
-            // Show region dropdown
+            // Show region dropdown container but keep it closed
             document.querySelector('.region-dropdown').style.display = 'block';
             document.querySelector('.region-label').style.display = 'block';
             selectedOption.textContent = 'Todas as cidades';
             selectedIcon.textContent = '🏙️';
         } else if (category === 'tecnica') {
-            // Show role dropdown
+            // Show role dropdown container but keep it closed
             document.querySelector('.role-dropdown').style.display = 'block';
             document.querySelector('.role-label').style.display = 'block';
             selectedOption.textContent = 'Todos os papéis';
@@ -1130,18 +1135,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (visibleDropdown) {
-            // Hide other dropdowns first
+            // Toggle the current dropdown
+            const isCurrentlyOpen = visibleDropdown.classList.contains('show');
+            
+            // Close all dropdowns first
             document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                if (dropdown !== visibleDropdown) {
-                    dropdown.classList.remove('show');
-                }
+                dropdown.classList.remove('show');
             });
             
-            // Toggle the current dropdown
-            visibleDropdown.classList.toggle('show');
-            
-            // Focus search input if dropdown is shown
-            if (visibleDropdown.classList.contains('show')) {
+            // If it wasn't open before, open it now
+            if (!isCurrentlyOpen) {
+                visibleDropdown.classList.add('show');
+                
+                // Focus search input if dropdown is shown
                 const searchInput = visibleDropdown.querySelector('.search-input');
                 if (searchInput) {
                     setTimeout(() => {
@@ -1149,6 +1155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 100);
                 }
             }
+            // If it was open, it's now closed (no need to do anything else)
         }
     });
     
@@ -1454,32 +1461,29 @@ document.addEventListener('DOMContentLoaded', function() {
         if (categoria) {
             const categoryTab = document.querySelector(`.category-tab[data-category="${categoria}"]`);
             if (categoryTab) {
-                // Manually click the appropriate tab
-                categoryTab.click();
+                // Set active class but don't trigger click event
+                categoryTabs.forEach(t => t.classList.remove('active'));
+                categoryTab.classList.add('active');
+                currentCategory = categoria;
+                
+                // Update UI for this category
+                updateDropdownForCategory(categoria);
+                filterHostsByCategory(categoria);
                 
                 // Handle secondary filters based on category
                 if (categoria === 'presencial' && regiao) {
-                    // Find and click the appropriate region button
-                    setTimeout(() => {
-                        const regionButton = document.querySelector(`.region-button[data-region="${regiao}"]`);
-                        if (regionButton) {
-                            regionButton.click();
-                        }
-                    }, 150);
+                    // Apply region filter without opening dropdown
+                    applyRegionFilter(regiao);
                 } else if (categoria === 'tecnica' && papel) {
-                    // Find and click the appropriate role button
-                    setTimeout(() => {
-                        const roleButton = document.querySelector(`.role-button[data-role="${papel}"]`);
-                        if (roleButton) {
-                            roleButton.click();
-                        }
-                    }, 150);
+                    // Apply role filter without opening dropdown
+                    applyRoleFilter(papel);
                 } else if (categoria === 'online' && idioma) {
-                    // Handle language filter as before (already implemented)
-                    setTimeout(() => {
-                        handleLanguageParameter(idioma);
-                    }, 150);
+                    // Apply language filter without opening dropdown
+                    applyLanguageFilter(idioma);
                 }
+            } else {
+                // If invalid category, apply default category filter
+                filterHostsByCategory(currentCategory);
             }
         } else {
             // If no category specified, apply default category filter
@@ -1487,14 +1491,18 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check for language parameter if default category is online
             if (idioma) {
-                handleLanguageParameter(idioma);
+                applyLanguageFilter(idioma);
             }
         }
+        
+        // Ensure all dropdowns are closed
+        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
     }
     
-    // Helper function to handle language parameter
-    function handleLanguageParameter(idioma) {
-        // Find the matching button in dropdown
+    // Helper functions to apply filters without opening dropdowns
+    function applyLanguageFilter(idioma) {
         const dropdownButtons = document.querySelectorAll('.language-button[data-language]');
         
         // Try to find an exact match first
@@ -1504,7 +1512,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // If no exact match, check the normalized language values (for accented characters)
         if (!selectedButton) {
-            // First normalize the URL parameter
             const normalizeString = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const normalizedIdioma = normalizeString(idioma);
             
@@ -1515,7 +1522,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (selectedButton) {
-            // Update dropdown UI
+            // Update dropdown UI without opening it
             const languageText = selectedButton.querySelector('span:not(.flag-icon)').textContent;
             document.getElementById('selected-option').textContent = languageText;
             
@@ -1541,15 +1548,48 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Apply filter
             filterHostsByLanguage(idioma, normalizedLang);
+        }
+    }
+    
+    function applyRegionFilter(region) {
+        const regionButtons = document.querySelectorAll('.region-button');
+        const selectedButton = Array.from(regionButtons).find(button => 
+            button.getAttribute('data-region') === region
+        );
+        
+        if (selectedButton) {
+            // Update dropdown UI without opening it
+            const regionText = selectedButton.querySelector('span:not(.region-icon)').textContent;
+            document.getElementById('selected-option').textContent = regionText;
             
-            // Update filter buttons UI
-            const filterButtons = document.querySelectorAll('.filter-button');
-            filterButtons.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-filter') === idioma) {
-                    btn.classList.add('active');
-                }
-            });
+            const iconElement = selectedButton.querySelector('.region-icon');
+            if (iconElement) {
+                document.getElementById('selected-language-flag').textContent = iconElement.textContent;
+            }
+            
+            // Apply filter
+            filterHostsByRegion(region);
+        }
+    }
+    
+    function applyRoleFilter(role) {
+        const roleButtons = document.querySelectorAll('.role-button');
+        const selectedButton = Array.from(roleButtons).find(button => 
+            button.getAttribute('data-role') === role
+        );
+        
+        if (selectedButton) {
+            // Update dropdown UI without opening it
+            const roleText = selectedButton.querySelector('span:not(.role-icon)').textContent;
+            document.getElementById('selected-option').textContent = roleText;
+            
+            const iconElement = selectedButton.querySelector('.role-icon');
+            if (iconElement) {
+                document.getElementById('selected-language-flag').textContent = iconElement.textContent;
+            }
+            
+            // Apply filter
+            filterHostsByRole(role);
         }
     }
 
