@@ -749,91 +749,6 @@ include 'includes/header.php';
                 </div>
             </div>
             
-            <!-- TEST DROPDOWN - New implementation for debugging -->
-            <div class="test-section" style="margin-top: 20px; padding: 15px; background: #f5f5f7; border-radius: 10px;">
-                <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #333;">Dropdown de Teste (Versão Melhorada)</p>
-                
-                <div class="mobile-dropdown test-mobile-dropdown">
-                    <p class="dropdown-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione uma opção:</p>
-                    
-                    <button id="test-dropdown-btn" class="dropdown-button">
-                        <div class="dropdown-flag-container">
-                            <span id="test-selected-icon" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
-                            <span id="test-selected-text">Selecione uma opção</span>
-                        </div>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    
-                    <!-- Test dropdown content -->
-                    <div id="test-dropdown-content" class="dropdown-content" style="display: block;">
-                        <div class="search-filter">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="test-search" class="search-input" placeholder="Buscar...">
-                        </div>
-                        
-                        <div class="no-results" id="test-no-results" style="display: none;">
-                            Nenhuma opção encontrada.
-                        </div>
-                        
-                        <button class="language-button test-option" data-value="option1">
-                            <div class="language-info">
-                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
-                                <span>Todas as opções</span>
-                            </div>
-                        </button>
-                        
-                        <button class="language-button test-option" data-value="option2">
-                            <div class="language-info">
-                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏙️</span>
-                                <span>São Paulo</span>
-                            </div>
-                        </button>
-                        
-                        <button class="language-button test-option" data-value="option3">
-                            <div class="language-info">
-                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏛️</span>
-                                <span>Brasília</span>
-                            </div>
-                        </button>
-                        
-                        <button class="language-button test-option" data-value="option4">
-                            <div class="language-info">
-                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">📍</span>
-                                <span>Outras regiões</span>
-                            </div>
-                        </button>
-                        
-                        <?php
-                        // Add actual options from the database for testing
-                        foreach ($languages as $language): 
-                            // Map common languages to flags/emojis as in the original dropdown
-                            $flagEmoji = '🚩';
-                            
-                            switch(strtolower($language['name'])) {
-                                case 'inglês': $flagEmoji = '🇺🇸'; break;
-                                case 'espanhol': $flagEmoji = '🇪🇸'; break;
-                                case 'francês': $flagEmoji = '🇫🇷'; break;
-                                case 'português': $flagEmoji = '🇧🇷'; break;
-                                case 'alemão': $flagEmoji = '🇩🇪'; break;
-                                case 'italiano': $flagEmoji = '🇮🇹'; break;
-                                case 'coreano': $flagEmoji = '🇰🇷'; break;
-                                case 'chinês': $flagEmoji = '🇨🇳'; break;
-                                case 'russo': $flagEmoji = '🇷🇺'; break;
-                                case 'polonês': $flagEmoji = '🇵🇱'; break;
-                                case 'libras': $flagEmoji = '👋'; break;
-                            }
-                        ?>
-                        <button class="language-button test-option" data-value="<?= strtolower($language['name']) ?>" data-normalized="<?= strtolower(str_replace(['á','ã','â','é','ê','í','ó','ô','ú','ç','ñ'], ['a','a','a','e','e','i','o','o','u','c','n'], $language['name'])) ?>">
-                            <div class="language-info">
-                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;"><?= $flagEmoji ?></span>
-                                <span><?= $language['name'] ?></span>
-                            </div>
-                        </button>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </div>
-            
             <div class="hosts-container">
                 <div class="hosts-grid">
                     <!-- Become a host card -->
@@ -1080,11 +995,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update URL with category parameter
             updateURL();
-            
-            // Ensure all dropdowns are closed when switching tabs
-            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                dropdown.classList.remove('show');
-            });
         });
     });
     
@@ -1106,20 +1016,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show the appropriate dropdown based on category
         if (category === 'online') {
-            // Show language dropdown container but keep it closed
-            document.querySelector('.language-dropdown').style.display = 'block';
+            // Show language dropdown label but keep dropdown hidden until clicked
+            document.querySelector('.language-dropdown').style.display = 'none';
             document.querySelector('.language-label').style.display = 'block';
             selectedOption.textContent = 'Todos os idiomas';
             selectedIcon.textContent = '🌍';
         } else if (category === 'presencial') {
-            // Show region dropdown container but keep it closed
-            document.querySelector('.region-dropdown').style.display = 'block';
+            // Show region dropdown label but keep dropdown hidden until clicked
+            document.querySelector('.region-dropdown').style.display = 'none';
             document.querySelector('.region-label').style.display = 'block';
             selectedOption.textContent = 'Todas as cidades';
             selectedIcon.textContent = '🏙️';
         } else if (category === 'tecnica') {
-            // Show role dropdown container but keep it closed
-            document.querySelector('.role-dropdown').style.display = 'block';
+            // Show role dropdown label but keep dropdown hidden until clicked
+            document.querySelector('.role-dropdown').style.display = 'none';
             document.querySelector('.role-label').style.display = 'block';
             selectedOption.textContent = 'Todos os papéis';
             selectedIcon.textContent = '👥';
@@ -1220,17 +1130,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (visibleDropdown) {
-            // Toggle the current dropdown
-            const isCurrentlyOpen = visibleDropdown.classList.contains('show');
+            // Check if this dropdown is already shown
+            const isCurrentlyShown = visibleDropdown.classList.contains('show');
             
-            // Close all dropdowns first
+            // Hide all dropdowns first
             document.querySelectorAll('.dropdown-content').forEach(dropdown => {
                 dropdown.classList.remove('show');
+                dropdown.style.display = 'none';
             });
             
-            // If it wasn't open before, open it now
-            if (!isCurrentlyOpen) {
+            // Toggle the current dropdown only if it wasn't already showing
+            if (!isCurrentlyShown) {
                 visibleDropdown.classList.add('show');
+                visibleDropdown.style.display = 'block';
                 
                 // Focus search input if dropdown is shown
                 const searchInput = visibleDropdown.querySelector('.search-input');
@@ -1240,7 +1152,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 100);
                 }
             }
-            // If it was open, it's now closed (no need to do anything else)
         }
     });
     
@@ -1249,6 +1160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!event.target.closest('.mobile-dropdown')) {
             document.querySelectorAll('.dropdown-content').forEach(dropdown => {
                 dropdown.classList.remove('show');
+                dropdown.style.display = 'none';
             });
         }
     });
@@ -1546,29 +1458,32 @@ document.addEventListener('DOMContentLoaded', function() {
         if (categoria) {
             const categoryTab = document.querySelector(`.category-tab[data-category="${categoria}"]`);
             if (categoryTab) {
-                // Set active class but don't trigger click event
-                categoryTabs.forEach(t => t.classList.remove('active'));
-                categoryTab.classList.add('active');
-                currentCategory = categoria;
-                
-                // Update UI for this category
-                updateDropdownForCategory(categoria);
-                filterHostsByCategory(categoria);
+                // Manually click the appropriate tab
+                categoryTab.click();
                 
                 // Handle secondary filters based on category
                 if (categoria === 'presencial' && regiao) {
-                    // Apply region filter without opening dropdown
-                    applyRegionFilter(regiao);
+                    // Find and click the appropriate region button
+                    setTimeout(() => {
+                        const regionButton = document.querySelector(`.region-button[data-region="${regiao}"]`);
+                        if (regionButton) {
+                            regionButton.click();
+                        }
+                    }, 150);
                 } else if (categoria === 'tecnica' && papel) {
-                    // Apply role filter without opening dropdown
-                    applyRoleFilter(papel);
+                    // Find and click the appropriate role button
+                    setTimeout(() => {
+                        const roleButton = document.querySelector(`.role-button[data-role="${papel}"]`);
+                        if (roleButton) {
+                            roleButton.click();
+                        }
+                    }, 150);
                 } else if (categoria === 'online' && idioma) {
-                    // Apply language filter without opening dropdown
-                    applyLanguageFilter(idioma);
+                    // Handle language filter as before (already implemented)
+                    setTimeout(() => {
+                        handleLanguageParameter(idioma);
+                    }, 150);
                 }
-            } else {
-                // If invalid category, apply default category filter
-                filterHostsByCategory(currentCategory);
             }
         } else {
             // If no category specified, apply default category filter
@@ -1576,18 +1491,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check for language parameter if default category is online
             if (idioma) {
-                applyLanguageFilter(idioma);
+                handleLanguageParameter(idioma);
             }
         }
-        
-        // Ensure all dropdowns are closed
-        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-            dropdown.classList.remove('show');
-        });
     }
     
-    // Helper functions to apply filters without opening dropdowns
-    function applyLanguageFilter(idioma) {
+    // Helper function to handle language parameter
+    function handleLanguageParameter(idioma) {
+        // Find the matching button in dropdown
         const dropdownButtons = document.querySelectorAll('.language-button[data-language]');
         
         // Try to find an exact match first
@@ -1597,6 +1508,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // If no exact match, check the normalized language values (for accented characters)
         if (!selectedButton) {
+            // First normalize the URL parameter
             const normalizeString = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const normalizedIdioma = normalizeString(idioma);
             
@@ -1607,7 +1519,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (selectedButton) {
-            // Update dropdown UI without opening it
+            // Update dropdown UI
             const languageText = selectedButton.querySelector('span:not(.flag-icon)').textContent;
             document.getElementById('selected-option').textContent = languageText;
             
@@ -1633,48 +1545,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Apply filter
             filterHostsByLanguage(idioma, normalizedLang);
-        }
-    }
-    
-    function applyRegionFilter(region) {
-        const regionButtons = document.querySelectorAll('.region-button');
-        const selectedButton = Array.from(regionButtons).find(button => 
-            button.getAttribute('data-region') === region
-        );
-        
-        if (selectedButton) {
-            // Update dropdown UI without opening it
-            const regionText = selectedButton.querySelector('span:not(.region-icon)').textContent;
-            document.getElementById('selected-option').textContent = regionText;
             
-            const iconElement = selectedButton.querySelector('.region-icon');
-            if (iconElement) {
-                document.getElementById('selected-language-flag').textContent = iconElement.textContent;
-            }
-            
-            // Apply filter
-            filterHostsByRegion(region);
-        }
-    }
-    
-    function applyRoleFilter(role) {
-        const roleButtons = document.querySelectorAll('.role-button');
-        const selectedButton = Array.from(roleButtons).find(button => 
-            button.getAttribute('data-role') === role
-        );
-        
-        if (selectedButton) {
-            // Update dropdown UI without opening it
-            const roleText = selectedButton.querySelector('span:not(.role-icon)').textContent;
-            document.getElementById('selected-option').textContent = roleText;
-            
-            const iconElement = selectedButton.querySelector('.role-icon');
-            if (iconElement) {
-                document.getElementById('selected-language-flag').textContent = iconElement.textContent;
-            }
-            
-            // Apply filter
-            filterHostsByRole(role);
+            // Update filter buttons UI
+            const filterButtons = document.querySelectorAll('.filter-button');
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-filter') === idioma) {
+                    btn.classList.add('active');
+                }
+            });
         }
     }
 
@@ -1689,124 +1568,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ensure all dropdowns are closed on page load
         document.querySelectorAll('.dropdown-content').forEach(dropdown => {
             dropdown.classList.remove('show');
+            dropdown.style.display = 'none';
         });
     }, 100);
-
-    // TEST DROPDOWN IMPLEMENTATION - IMPROVED VERSION
-    document.addEventListener('DOMContentLoaded', function() {
-        const testDropdownBtn = document.getElementById('test-dropdown-btn');
-        const testDropdownContent = document.getElementById('test-dropdown-content');
-        const testOptions = document.querySelectorAll('.test-option');
-        const testSelectedText = document.getElementById('test-selected-text');
-        const testSelectedIcon = document.getElementById('test-selected-icon');
-        const testSearch = document.getElementById('test-search');
-        const testNoResults = document.getElementById('test-no-results');
-        
-        // First, make sure the dropdown is hidden on page load
-        testDropdownContent.style.display = 'none';
-        
-        // Toggle dropdown on button click
-        testDropdownBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log('Test dropdown button clicked');
-            
-            // Toggle the dropdown
-            if (testDropdownContent.classList.contains('show')) {
-                testDropdownContent.classList.remove('show');
-                console.log('Test dropdown closed');
-            } else {
-                testDropdownContent.classList.add('show');
-                testDropdownContent.style.display = 'block';
-                console.log('Test dropdown opened');
-                
-                // Focus search input
-                setTimeout(() => {
-                    testSearch.focus();
-                }, 100);
-            }
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            // Only if the dropdown is open and the click is outside the dropdown
-            if (testDropdownContent.classList.contains('show') && !e.target.closest('.test-mobile-dropdown')) {
-                testDropdownContent.classList.remove('show');
-                console.log('Test dropdown closed by outside click');
-            }
-        });
-        
-        // Option selection
-        testOptions.forEach(option => {
-            option.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const value = this.getAttribute('data-value');
-                const text = this.querySelector('span:not(.flag-icon)').textContent;
-                const icon = this.querySelector('.flag-icon').textContent;
-                
-                // Update selected text and icon
-                testSelectedText.textContent = text;
-                testSelectedIcon.textContent = icon;
-                
-                // Close dropdown
-                testDropdownContent.classList.remove('show');
-                
-                console.log(`Test dropdown: selected ${value} (${text})`);
-            });
-        });
-        
-        // Improved search functionality
-        testSearch.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            let resultsFound = false;
-            
-            testOptions.forEach(option => {
-                const text = option.querySelector('span:not(.flag-icon)').textContent
-                             .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                
-                if (text.includes(searchTerm)) {
-                    option.style.display = 'flex';
-                    resultsFound = true;
-                } else {
-                    option.style.display = 'none';
-                }
-            });
-            
-            // Show/hide no results message
-            if (resultsFound) {
-                testNoResults.style.display = 'none';
-            } else {
-                testNoResults.style.display = 'block';
-            }
-        });
-        
-        // Style updates for dropdown
-        function updateTestDropdownStyles() {
-            // Apply CSS class to make it look and behave like the original
-            if (testDropdownContent.classList.contains('show')) {
-                testDropdownContent.style.display = 'block';
-                // Apply animation
-                testDropdownContent.style.animation = 'fadeInDown 0.3s ease-out';
-            } else {
-                testDropdownContent.style.display = 'none';
-            }
-        }
-        
-        // Observer for class changes
-        const observer = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (mutation.attributeName === 'class') {
-                    updateTestDropdownStyles();
-                }
-            });
-        });
-        
-        // Start observing class changes
-        observer.observe(testDropdownContent, { attributes: true });
-    });
 
     // Add event listeners to dropdown buttons
     document.querySelectorAll('.region-button').forEach(button => {
@@ -1896,7 +1660,7 @@ document.addEventListener('DOMContentLoaded', function() {
             history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
     });
-    
+
     // Function to filter hosts by region
     function filterHostsByRegion(region) {
         console.log(`Filtering hosts by region: ${region}`);
