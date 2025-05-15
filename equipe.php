@@ -750,53 +750,86 @@ include 'includes/header.php';
             </div>
             
             <!-- TEST DROPDOWN - New implementation for debugging -->
-            <div class="test-section" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #333;">Dropdown de Teste</p>
+            <div class="test-section" style="margin-top: 20px; padding: 15px; background: #f5f5f7; border-radius: 10px;">
+                <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #333;">Dropdown de Teste (Versão Melhorada)</p>
                 
-                <div class="test-dropdown">
-                    <!-- Test dropdown button -->
+                <div class="mobile-dropdown test-mobile-dropdown">
+                    <p class="dropdown-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione uma opção:</p>
+                    
                     <button id="test-dropdown-btn" class="dropdown-button">
                         <div class="dropdown-flag-container">
-                            <span id="test-selected-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center;">🌍</span>
-                            <span id="test-selected-text">Opção Selecionada</span>
+                            <span id="test-selected-icon" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
+                            <span id="test-selected-text">Selecione uma opção</span>
                         </div>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     
                     <!-- Test dropdown content -->
-                    <div id="test-dropdown-content" class="dropdown-content" style="display: none;">
+                    <div id="test-dropdown-content" class="dropdown-content" style="display: block;">
                         <div class="search-filter">
                             <i class="fas fa-search search-icon"></i>
                             <input type="text" id="test-search" class="search-input" placeholder="Buscar...">
                         </div>
                         
-                        <button class="test-option" data-value="option1">
-                            <div class="option-info">
-                                <span class="option-icon">🌍</span>
-                                <span>Opção 1</span>
+                        <div class="no-results" id="test-no-results" style="display: none;">
+                            Nenhuma opção encontrada.
+                        </div>
+                        
+                        <button class="language-button test-option" data-value="option1">
+                            <div class="language-info">
+                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
+                                <span>Todas as opções</span>
                             </div>
                         </button>
                         
-                        <button class="test-option" data-value="option2">
-                            <div class="option-info">
-                                <span class="option-icon">🏙️</span>
-                                <span>Opção 2</span>
+                        <button class="language-button test-option" data-value="option2">
+                            <div class="language-info">
+                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏙️</span>
+                                <span>São Paulo</span>
                             </div>
                         </button>
                         
-                        <button class="test-option" data-value="option3">
-                            <div class="option-info">
-                                <span class="option-icon">👥</span>
-                                <span>Opção 3</span>
+                        <button class="language-button test-option" data-value="option3">
+                            <div class="language-info">
+                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🏛️</span>
+                                <span>Brasília</span>
                             </div>
                         </button>
                         
-                        <button class="test-option" data-value="option4">
-                            <div class="option-info">
-                                <span class="option-icon">📢</span>
-                                <span>Opção 4</span>
+                        <button class="language-button test-option" data-value="option4">
+                            <div class="language-info">
+                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">📍</span>
+                                <span>Outras regiões</span>
                             </div>
                         </button>
+                        
+                        <?php
+                        // Add actual options from the database for testing
+                        foreach ($languages as $language): 
+                            // Map common languages to flags/emojis as in the original dropdown
+                            $flagEmoji = '🚩';
+                            
+                            switch(strtolower($language['name'])) {
+                                case 'inglês': $flagEmoji = '🇺🇸'; break;
+                                case 'espanhol': $flagEmoji = '🇪🇸'; break;
+                                case 'francês': $flagEmoji = '🇫🇷'; break;
+                                case 'português': $flagEmoji = '🇧🇷'; break;
+                                case 'alemão': $flagEmoji = '🇩🇪'; break;
+                                case 'italiano': $flagEmoji = '🇮🇹'; break;
+                                case 'coreano': $flagEmoji = '🇰🇷'; break;
+                                case 'chinês': $flagEmoji = '🇨🇳'; break;
+                                case 'russo': $flagEmoji = '🇷🇺'; break;
+                                case 'polonês': $flagEmoji = '🇵🇱'; break;
+                                case 'libras': $flagEmoji = '👋'; break;
+                            }
+                        ?>
+                        <button class="language-button test-option" data-value="<?= strtolower($language['name']) ?>" data-normalized="<?= strtolower(str_replace(['á','ã','â','é','ê','í','ó','ô','ú','ç','ñ'], ['a','a','a','e','e','i','o','o','u','c','n'], $language['name'])) ?>">
+                            <div class="language-info">
+                                <span class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;"><?= $flagEmoji ?></span>
+                                <span><?= $language['name'] ?></span>
+                            </div>
+                        </button>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
@@ -1659,7 +1692,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 100);
 
-    // TEST DROPDOWN IMPLEMENTATION
+    // TEST DROPDOWN IMPLEMENTATION - IMPROVED VERSION
     document.addEventListener('DOMContentLoaded', function() {
         const testDropdownBtn = document.getElementById('test-dropdown-btn');
         const testDropdownContent = document.getElementById('test-dropdown-content');
@@ -1667,22 +1700,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const testSelectedText = document.getElementById('test-selected-text');
         const testSelectedIcon = document.getElementById('test-selected-icon');
         const testSearch = document.getElementById('test-search');
+        const testNoResults = document.getElementById('test-no-results');
+        
+        // First, make sure the dropdown is hidden on page load
+        testDropdownContent.style.display = 'none';
         
         // Toggle dropdown on button click
         testDropdownBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
-            // Check if it's already open
-            const isOpen = testDropdownContent.classList.contains('show');
+            console.log('Test dropdown button clicked');
             
-            // First close dropdown
-            testDropdownContent.classList.remove('show');
-            
-            // If it wasn't open, then open it
-            if (!isOpen) {
+            // Toggle the dropdown
+            if (testDropdownContent.classList.contains('show')) {
+                testDropdownContent.classList.remove('show');
+                console.log('Test dropdown closed');
+            } else {
                 testDropdownContent.classList.add('show');
-                // Focus search
+                testDropdownContent.style.display = 'block';
+                console.log('Test dropdown opened');
+                
+                // Focus search input
                 setTimeout(() => {
                     testSearch.focus();
                 }, 100);
@@ -1691,17 +1730,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.test-dropdown')) {
+            // Only if the dropdown is open and the click is outside the dropdown
+            if (testDropdownContent.classList.contains('show') && !e.target.closest('.test-mobile-dropdown')) {
                 testDropdownContent.classList.remove('show');
+                console.log('Test dropdown closed by outside click');
             }
         });
         
         // Option selection
         testOptions.forEach(option => {
-            option.addEventListener('click', function() {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 const value = this.getAttribute('data-value');
-                const text = this.querySelector('span:not(.option-icon)').textContent;
-                const icon = this.querySelector('.option-icon').textContent;
+                const text = this.querySelector('span:not(.flag-icon)').textContent;
+                const icon = this.querySelector('.flag-icon').textContent;
                 
                 // Update selected text and icon
                 testSelectedText.textContent = text;
@@ -1710,25 +1754,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Close dropdown
                 testDropdownContent.classList.remove('show');
                 
-                console.log(`Test dropdown: selected ${value}`);
+                console.log(`Test dropdown: selected ${value} (${text})`);
             });
         });
         
-        // Search functionality
+        // Improved search functionality
         testSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            let resultsFound = false;
             
             testOptions.forEach(option => {
-                const text = option.querySelector('span:not(.option-icon)').textContent
-                              .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const text = option.querySelector('span:not(.flag-icon)').textContent
+                             .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 
                 if (text.includes(searchTerm)) {
                     option.style.display = 'flex';
+                    resultsFound = true;
                 } else {
                     option.style.display = 'none';
                 }
             });
+            
+            // Show/hide no results message
+            if (resultsFound) {
+                testNoResults.style.display = 'none';
+            } else {
+                testNoResults.style.display = 'block';
+            }
         });
+        
+        // Style updates for dropdown
+        function updateTestDropdownStyles() {
+            // Apply CSS class to make it look and behave like the original
+            if (testDropdownContent.classList.contains('show')) {
+                testDropdownContent.style.display = 'block';
+                // Apply animation
+                testDropdownContent.style.animation = 'fadeInDown 0.3s ease-out';
+            } else {
+                testDropdownContent.style.display = 'none';
+            }
+        }
+        
+        // Observer for class changes
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.attributeName === 'class') {
+                    updateTestDropdownStyles();
+                }
+            });
+        });
+        
+        // Start observing class changes
+        observer.observe(testDropdownContent, { attributes: true });
     });
 
     // Add event listeners to dropdown buttons
