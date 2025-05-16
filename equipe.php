@@ -855,6 +855,13 @@ include 'includes/header.php';
                             $categories[] = 'Online';
                         }
                         
+                        // Add Técnica category if technical_status is 'ativo'
+                        if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo') {
+                            if (!in_array('Técnica', $categories) && !in_array('tecnica', $categories)) {
+                                $categories[] = 'Técnica';
+                            }
+                        }
+                        
                         // Check for Técnica spelled with or without accent
                         $hasTecnica = false;
                         foreach ($categories as $category) {
@@ -874,9 +881,11 @@ include 'includes/header.php';
                         // Normalize for tecnica (with and without accent)
                         $categoriesAttr = str_replace('técnica', 'tecnica', $categoriesAttr);
                         
-                        // Process roles for filtering
+                        // Process roles for filtering - use technical_roles field if technical team member
                         $roles = [];
-                        if (!empty($host['role'])) {
+                        if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_roles'])) {
+                            $roles = array_map('trim', explode(',', $host['technical_roles']));
+                        } else if (!empty($host['role'])) {
                             $roles = array_map('trim', explode(',', $host['role']));
                         }
                         
@@ -936,8 +945,18 @@ include 'includes/header.php';
                                     ?>
                                 </div>
                                 
+                                <?php if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_skills'])): ?>
+                                <div class="host-languages">
+                                    <?php 
+                                    $skills = array_map('trim', explode(',', $host['technical_skills']));
+                                    foreach ($skills as $skill): ?>
+                                    <span class="language-tag"><?= $skill ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
+                                
                                 <p class="host-bio">
-                                    <?= $host['description'] ?>
+                                    <?= !empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_description']) ? $host['technical_description'] : $host['description'] ?>
                                 </p>
                                 
                                 <div class="host-contact">

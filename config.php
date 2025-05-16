@@ -50,7 +50,7 @@ function getEvents() {
 
 function getHosts() {
     $conn = connectDB();
-    $stmt = $conn->prepare("SELECT * FROM hosts WHERE active = 1 ORDER BY full_name");
+    $stmt = $conn->prepare("SELECT * FROM hosts WHERE active = 1 AND status = 'ativo' ORDER BY full_name");
     $stmt->execute();
     $hosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
