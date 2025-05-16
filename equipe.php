@@ -855,8 +855,24 @@ include 'includes/header.php';
                             $categories[] = 'Online';
                         }
                         
+                        // Check for Técnica spelled with or without accent
+                        $hasTecnica = false;
+                        foreach ($categories as $category) {
+                            if (strtolower($category) === 'técnica' || strtolower($category) === 'tecnica') {
+                                $hasTecnica = true;
+                                break;
+                            }
+                        }
+                        
+                        // If it contains Técnica but no explicit Técnica category, add it
+                        if (!$hasTecnica && strpos(strtolower(implode(' ', $categories)), 'técnica') !== false) {
+                            $categories[] = 'Técnica';
+                        }
+                        
                         // Create category data attribute
                         $categoriesAttr = strtolower(implode(' ', $categories));
+                        // Normalize for tecnica (with and without accent)
+                        $categoriesAttr = str_replace('técnica', 'tecnica', $categoriesAttr);
                         
                         // Process roles for filtering
                         $roles = [];
@@ -880,7 +896,9 @@ include 'includes/header.php';
                         $debugLog .= "Region: {$host['region']} | Roles: " . implode(',', $roles) . " | ";
                         $debugLog .= "Raw Languages: {$host['languages']} | ";
                         $debugLog .= "Processed: " . implode(',', $hostLanguages) . " | ";
-                        $debugLog .= "Data Attribute: $languagesDataAttr -->";
+                        $debugLog .= "Data Attribute: $languagesDataAttr | ";
+                        $debugLog .= "Categories Attr: $categoriesAttr | ";
+                        $debugLog .= "Roles Attr: $rolesAttr -->";
                         echo $debugLog;
                         ?>
                         
@@ -1041,16 +1059,25 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`Filtering hosts by category: ${category}`);
         let visibleCount = 0;
         
-    const hostCards = document.querySelectorAll('.host-card');
+        const hostCards = document.querySelectorAll('.host-card');
         hostCards.forEach(card => {
-            const categories = card.getAttribute('data-categories');
+            const categories = card.getAttribute('data-categories') || '';
             const hostName = card.querySelector('.host-name').textContent;
             
+            // Special handling for the "become host" card - always show it
+            const isSpecialCard = hostName.includes('Torne-se anfitrião');
+            
             // Check if host belongs to selected category
-            const isMatch = categories && categories.includes(category.toLowerCase());
+            // Instead of checking for exact inclusion, we need to check if the category appears as a word in the categories string
+            // This handles cases like "Online,Presencial,Técnica" where .includes('tecnica') would match
+            // but we need to make sure it's a whole word match
+            const isMatch = category === 'all' || 
+                            new RegExp(`\\b${category.toLowerCase()}\\b`).test(categories) || 
+                            (category === 'tecnica' && categories.includes('tecnica'));
+            
             console.log(`Host: ${hostName}, Categories: ${categories}, Filter: ${category}, Match: ${isMatch}`);
             
-            if (isMatch) {
+            if (isMatch || isSpecialCard) {
                 card.style.display = 'block';
                 card.classList.add('category-visible');
                 visibleCount++;
@@ -1731,18 +1758,27 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const hostCards = document.querySelectorAll('.host-card');
         hostCards.forEach(card => {
-            const cardRoles = card.getAttribute('data-roles');
+            const cardRoles = card.getAttribute('data-roles') || '';
             const hostName = card.querySelector('.host-name').textContent;
+            const cardCategories = card.getAttribute('data-categories') || '';
             
             // Check if card has selected role
-            const isMatch = role === 'all' || (cardRoles && cardRoles.includes(role));
+            const isMatch = role === 'all' || 
+                           (cardRoles && (
+                               // Check for exact role match
+                               cardRoles.includes(role) ||
+                               // For desenvolvimento/design, check for substring match too
+                               (role === 'desenvolvimento' && cardRoles.includes('desenvolv')) ||
+                               (role === 'design' && cardRoles.includes('design'))
+                           ));
+            
             // Also match the "become a host" card for all roles
             const isSpecialCard = hostName.includes('Torne-se anfitrião') || role === 'fazer-parte';
             
             // Also check if card belongs to the selected category (Técnica)
-            const isInCategory = card.getAttribute('data-categories').includes('tecnica');
+            const isInCategory = cardCategories.includes('tecnica');
             
-            console.log(`Host: ${hostName}, Roles: ${cardRoles}, Filter: ${role}, Match: ${isMatch}, In Category: ${isInCategory}`);
+            console.log(`Host: ${hostName}, Roles: ${cardRoles}, Categories: ${cardCategories}, Filter: ${role}, Match: ${isMatch}, In Tecnica: ${isInCategory}`);
             
             if ((isMatch || isSpecialCard) && isInCategory) {
                 card.style.display = 'block';
