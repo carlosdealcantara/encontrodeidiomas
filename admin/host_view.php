@@ -438,7 +438,12 @@ $title = "Detalhes do Anfitrião - Admin";
         
         <div class="host-card">
             <div class="host-header">
-                <img src="<?= !empty($host['profile_picture']) ? '../' . str_replace('assets/', 'assets/', $host['profile_picture']) : '../assets/images/HostSemFoto.png' ?>" alt="<?= htmlspecialchars($host['full_name']) ?>" class="host-avatar">
+                <img src="<?= !empty($host['profile_picture']) 
+                    ? '../' . (strpos($host['profile_picture'], 'assets/') === 0 
+                        ? $host['profile_picture'] 
+                        : 'assets/images/' . $host['profile_picture']) 
+                    : '../assets/images/HostSemFoto.png' ?>" 
+                    alt="<?= htmlspecialchars($host['full_name']) ?>" class="host-avatar">
                 
                 <div class="host-info">
                     <h2 class="host-name"><?= htmlspecialchars($host['full_name']) ?></h2>
@@ -477,7 +482,9 @@ $title = "Detalhes do Anfitrião - Admin";
                         <div class="detail-label">Foto de Perfil</div>
                         <div class="detail-value">
                             <?php if(!empty($host['profile_picture'])): ?>
-                                <img src="<?= '../' . str_replace('assets/', 'assets/', $host['profile_picture']) ?>" 
+                                <img src="<?= '../' . (strpos($host['profile_picture'], 'assets/') === 0 
+                                    ? $host['profile_picture'] 
+                                    : 'assets/images/' . $host['profile_picture']) ?>" 
                                     alt="<?= htmlspecialchars($host['full_name']) ?>" 
                                     style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;">
                             <?php else: ?>
