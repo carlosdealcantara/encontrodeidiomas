@@ -1357,7 +1357,7 @@ include 'includes/header.php';
                                         <?php elseif (!empty($event['flag_code'])): ?>
                                             <img src="https://flagcdn.com/32x24/<?= strtolower($event['flag_code']) ?>.png" class="flag-icon" alt="<?= $event['language_name'] ?>">
                                         <?php endif; ?>
-                                        <span><?= $event['language_name'] ?></span>
+                                        <span><?= !empty($event['title']) ? $event['title'] : $event['language_name'] ?></span>
                                         
                                         <?php 
                                         // Check if event is happening now

@@ -38,7 +38,7 @@ function getLanguages() {
 function getEvents() {
     $conn = connectDB();
     $stmt = $conn->prepare("
-        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.description, 
+        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.title, e.description, 
                e.meet_link, e.youtube_link, e.whatsapp_group_link, e.instagram_link, e.active,
                l.name as language_name, l.flag_code, l.flag_emoji 
         FROM events e 
@@ -52,7 +52,7 @@ function getEvents() {
 
 function getHosts() {
     $conn = connectDB();
-    $stmt = $conn->prepare("SELECT * FROM hosts WHERE active = 1 AND status = 'ativo' ORDER BY full_name");
+    $stmt = $conn->prepare("SELECT * FROM hosts WHERE status = 'ativo' ORDER BY full_name");
     $stmt->execute();
     $hosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -90,7 +90,7 @@ function getHostsDebug() {
     
     // Get the hosts with languages column
     try {
-        $stmt = $conn->prepare("SELECT id, full_name, languages FROM hosts WHERE active = 1 ORDER BY full_name");
+        $stmt = $conn->prepare("SELECT id, full_name, languages FROM hosts WHERE status = 'ativo' ORDER BY full_name");
         $stmt->execute();
         $hosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -115,7 +115,7 @@ function getHostsDebug() {
 function getEventsByLanguage($languageId) {
     $conn = connectDB();
     $stmt = $conn->prepare("
-        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.description, 
+        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.title, e.description, 
                e.meet_link, e.youtube_link, e.whatsapp_group_link, e.instagram_link, e.active,
                l.name as language_name, l.flag_code, l.flag_emoji 
         FROM events e 
