@@ -38,7 +38,7 @@ function getLanguages() {
 function getEvents() {
     $conn = connectDB();
     $stmt = $conn->prepare("
-        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.online_description, e.description, 
+        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.description, 
                e.meet_link, e.youtube_link, e.whatsapp_group_link, e.instagram_link, e.active,
                l.name as language_name, l.flag_code, l.flag_emoji 
         FROM events e 
@@ -115,7 +115,7 @@ function getHostsDebug() {
 function getEventsByLanguage($languageId) {
     $conn = connectDB();
     $stmt = $conn->prepare("
-        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.online_description, e.description, 
+        SELECT e.id, e.language_id, e.day_of_week, e.time_hour, e.description, 
                e.meet_link, e.youtube_link, e.whatsapp_group_link, e.instagram_link, e.active,
                l.name as language_name, l.flag_code, l.flag_emoji 
         FROM events e 
