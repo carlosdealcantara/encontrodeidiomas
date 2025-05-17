@@ -116,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [
                 'full_name' => $_POST['full_name'],
                 'profile_picture' => $profilePicture,
-                'general_description' => $_POST['general_description'],
                 'online_description' => $_POST['online_description'],
                 'inperson_description' => $_POST['inperson_description'],
                 'languages' => $_POST['languages'],
@@ -139,7 +138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $sql = "UPDATE hosts SET 
                         full_name = :full_name,
                         profile_picture = :profile_picture,
-                        general_description = :general_description,
                         online_description = :online_description,
                         inperson_description = :inperson_description,
                         languages = :languages,
@@ -162,14 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     // Insert new host
                     $sql = "INSERT INTO hosts (
-                        full_name, profile_picture, general_description, online_description, 
-                        inperson_description, languages, region, category, role, 
+                        full_name, profile_picture, online_description, inperson_description, 
+                        languages, region, category, role, 
                         social_media_links, status, active, technical_status, 
                         technical_roles, technical_skills, technical_description, 
                         special_badge, created_at, updated_at
                     ) VALUES (
-                        :full_name, :profile_picture, :general_description, :online_description,
-                        :inperson_description, :languages, :region, :category, :role,
+                        :full_name, :profile_picture, :online_description, :inperson_description,
+                        :languages, :region, :category, :role,
                         :social_media_links, :status, :active, :technical_status,
                         :technical_roles, :technical_skills, :technical_description,
                         :special_badge, NOW(), NOW()
@@ -572,11 +570,6 @@ $title = $pageTitle . " - Admin";
                                 <label class="form-check-label" for="active">Ativo no Sistema</label>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="general_description">Descrição Geral</label>
-                        <textarea class="form-control" id="general_description" name="general_description" rows="4"><?= htmlspecialchars($host['general_description']) ?></textarea>
                     </div>
                 </div>
                 

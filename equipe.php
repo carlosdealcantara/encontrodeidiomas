@@ -914,7 +914,7 @@ include 'includes/header.php';
                         $hasOnlineDesc = !empty($host['online_description']);
                         $hasInpersonDesc = !empty($host['inperson_description']);
                         $hasTechDesc = !empty($host['technical_description']);
-                        $dataAttributes = sprintf(
+                        $generalDataAttributes = sprintf(
                             'data-has-online-desc="%s" data-has-inperson-desc="%s" data-has-tech-desc="%s"',
                             $hasOnlineDesc ? 'true' : 'false',
                             $hasInpersonDesc ? 'true' : 'false',

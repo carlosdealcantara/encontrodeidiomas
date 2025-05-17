@@ -500,13 +500,6 @@ $title = "Detalhes do Anfitrião - Admin";
                         </div>
                     </div>
                     
-                    <div class="detail-item">
-                        <div class="detail-label">Descrição Geral</div>
-                        <div class="detail-value">
-                            <?= !empty($host['general_description']) ? nl2br(htmlspecialchars($host['general_description'])) : '<span class="empty-text">Sem descrição</span>' ?>
-                        </div>
-                    </div>
-                    
                     <?php if (!empty($host['special_badge'])): ?>
                     <div class="detail-item">
                         <div class="detail-label">Badge Especial</div>
