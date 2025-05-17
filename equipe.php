@@ -1000,9 +1000,8 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['online_description'])) {
                                         echo $host['online_description'];
-                                    } elseif (!empty($host['description'])) {
-                                        // Fall back to general description if specialized one is not available
-                                        echo $host['description'];
+                                    } else {
+                                        echo '';
                                     }
                                     ?>
                                 </p>
@@ -1012,9 +1011,8 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['inperson_description'])) {
                                         echo $host['inperson_description'];
-                                    } elseif (!empty($host['description'])) {
-                                        // Fall back to general description if specialized one is not available
-                                        echo $host['description'];
+                                    } else {
+                                        echo '';
                                     }
                                     ?>
                                 </p>
@@ -1024,9 +1022,8 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['technical_description'])) {
                                         echo $host['technical_description'];
-                                    } elseif (!empty($host['description'])) {
-                                        // Fall back to general description if specialized one is not available
-                                        echo $host['description'];
+                                    } else {
+                                        echo '';
                                     }
                                     ?>
                                 </p>
