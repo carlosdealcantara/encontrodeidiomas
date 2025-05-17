@@ -927,6 +927,7 @@ include 'includes/header.php';
                              data-categories="<?= $categoriesAttr ?>"
                              data-region="<?= $regionAttr ?>"
                              data-roles="<?= $rolesAttr ?>"
+                             data-category-context="online"
                         >
                             <?php if (!empty($primaryLanguage)): ?>
                                 <div class="host-badge" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
@@ -938,13 +939,15 @@ include 'includes/header.php';
                             <div class="host-info">
                                 <h3 class="host-name"><?= $host['full_name'] ?></h3>
                                 
-                                <?php if (!empty($host['region'])): ?>
-                                <div class="host-region">
+                                <!-- Region information - only shown in presencial tab -->
+                                <div class="host-region context-presencial" style="display: none;">
+                                    <?php if (!empty($host['region'])): ?>
                                     <i class="fas fa-map-marker-alt"></i> <?= $host['region'] ?>
+                                    <?php endif; ?>
                                 </div>
-                                <?php endif; ?>
                                 
-                                <div class="host-languages">
+                                <!-- Language tags - shown in online tab -->
+                                <div class="host-languages context-online">
                                     <?php 
                                     if (empty($hostLanguages)) {
                                         echo "<span class='language-tag'>Português</span>"; // Default if no languages found
@@ -956,8 +959,19 @@ include 'includes/header.php';
                                     ?>
                                 </div>
                                 
+                                <!-- Technical skills - only shown in technical tab -->
+                                <div class="host-languages context-tecnica" style="display: none;">
+                                    <?php if (!empty($host['technical_roles'])): ?>
+                                        <?php $roles = array_map('trim', explode(',', $host['technical_roles'])); ?>
+                                        <?php foreach ($roles as $role): ?>
+                                            <span class="language-tag"><?= $role ?></span>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <!-- Technical skills - only shown in technical tab -->
                                 <?php if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_skills'])): ?>
-                                <div class="host-languages">
+                                <div class="host-languages context-tecnica" style="display: none;">
                                     <?php 
                                     $skills = array_map('trim', explode(',', $host['technical_skills']));
                                     foreach ($skills as $skill): ?>
@@ -966,29 +980,52 @@ include 'includes/header.php';
                                 </div>
                                 <?php endif; ?>
                                 
-                                <p class="host-bio" <?= $dataAttributes ?>>
-                                    <?php
-                                    // Display the appropriate description based on category tab
-                                    if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && 
-                                        in_array('tecnica', explode(' ', strtolower($categoriesAttr))) && 
-                                        !empty($host['technical_description'])) {
-                                        echo $host['technical_description'];
-                                    } 
-                                    else if (in_array('presencial', explode(' ', strtolower($categoriesAttr))) && 
-                                             !empty($host['inperson_description'])) {
-                                        echo $host['inperson_description'];
-                                    }
-                                    else if (in_array('online', explode(' ', strtolower($categoriesAttr))) && 
-                                             !empty($host['online_description'])) {
+                                <!-- Description fields - each shown only in relevant context -->
+                                <?php
+                                // Set data attributes to indicate which descriptions are available
+                                $hasOnlineDesc = !empty($host['online_description']);
+                                $hasInpersonDesc = !empty($host['inperson_description']);
+                                $hasTechDesc = !empty($host['technical_description']);
+                                $generalDataAttributes = sprintf(
+                                    'data-has-online-desc="%s" data-has-inperson-desc="%s" data-has-tech-desc="%s"',
+                                    $hasOnlineDesc ? 'true' : 'false',
+                                    $hasInpersonDesc ? 'true' : 'false',
+                                    $hasTechDesc ? 'true' : 'false'
+                                );
+                                ?>
+                                
+                                <!-- Online description - only shown in online tab -->
+                                <p class="host-bio context-online" <?= $generalDataAttributes ?>>
+                                    <?php 
+                                    if (!empty($host['online_description'])) {
                                         echo $host['online_description'];
-                                    }
-                                    else {
-                                        // Fallback to general description or any available description
+                                    } else {
                                         echo !empty($host['general_description']) ? $host['general_description'] : 
-                                             (!empty($host['description']) ? $host['description'] : 
-                                              (!empty($host['online_description']) ? $host['online_description'] : 
-                                               (!empty($host['inperson_description']) ? $host['inperson_description'] : 
-                                                (!empty($host['technical_description']) ? $host['technical_description'] : ''))));
+                                             (!empty($host['description']) ? $host['description'] : '');
+                                    }
+                                    ?>
+                                </p>
+                                
+                                <!-- In-person description - only shown in presencial tab -->
+                                <p class="host-bio context-presencial" style="display: none;" <?= $generalDataAttributes ?>>
+                                    <?php 
+                                    if (!empty($host['inperson_description'])) {
+                                        echo $host['inperson_description'];
+                                    } else {
+                                        echo !empty($host['general_description']) ? $host['general_description'] : 
+                                             (!empty($host['description']) ? $host['description'] : '');
+                                    }
+                                    ?>
+                                </p>
+                                
+                                <!-- Technical description - only shown in technical tab -->
+                                <p class="host-bio context-tecnica" style="display: none;" <?= $generalDataAttributes ?>>
+                                    <?php 
+                                    if (!empty($host['technical_description'])) {
+                                        echo $host['technical_description'];
+                                    } else {
+                                        echo !empty($host['general_description']) ? $host['general_description'] : 
+                                             (!empty($host['description']) ? $host['description'] : '');
                                     }
                                     ?>
                                 </p>
@@ -1015,6 +1052,13 @@ include 'includes/header.php';
                                     <?php if (!empty($socialLinks['whatsapp'])): ?>
                                         <a href="https://wa.me/<?= $socialLinks['whatsapp'] ?>" target="_blank" class="contact-btn whatsapp" title="WhatsApp">
                                             <i class="fab fa-whatsapp"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                    
+                                    <!-- Show GitHub only for technical team members -->
+                                    <?php if (!empty($socialLinks['github']) && !empty($host['technical_status']) && $host['technical_status'] === 'ativo'): ?>
+                                        <a href="<?= $socialLinks['github'] ?>" target="_blank" class="contact-btn github context-tecnica" style="display: none;" title="GitHub">
+                                            <i class="fab fa-github"></i>
                                         </a>
                                     <?php endif; ?>
                                 </div>
@@ -1130,25 +1174,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log(`Host: ${hostName}, Categories: ${categories}, Filter: ${category}, Match: ${isMatch}`);
             
-            // Additional check to make sure we have the appropriate description for this category
-            let hasAppropriateDesc = true;
-            if (category === 'online') {
-                // Check if we have any online description data
-                const onlineDescEl = card.querySelector('.host-bio[data-has-online-desc="true"]');
-                hasAppropriateDesc = onlineDescEl !== null || isSpecialCard;
-            } else if (category === 'presencial') {
-                // Check if we have any in-person description data
-                const inpersonDescEl = card.querySelector('.host-bio[data-has-inperson-desc="true"]');
-                hasAppropriateDesc = inpersonDescEl !== null || isSpecialCard;
-            } else if (category === 'tecnica') {
-                // Check if we have any technical description data
-                const techDescEl = card.querySelector('.host-bio[data-has-tech-desc="true"]');
-                hasAppropriateDesc = techDescEl !== null || isSpecialCard;
-            }
-            
-            if ((isMatch && hasAppropriateDesc) || isSpecialCard) {
+            if (isMatch || isSpecialCard) {
                 card.style.display = 'block';
                 card.classList.add('category-visible');
+                
+                // Update card's context to match the current category tab
+                card.setAttribute('data-category-context', category);
+                
+                // Show/hide context-specific elements
+                updateContextElements(card, category);
+                
                 visibleCount++;
             } else {
                 card.style.display = 'none';
@@ -1182,6 +1217,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+    
+    // Function to update context-specific elements visibility
+    function updateContextElements(card, context) {
+        // Hide all context-specific elements
+        card.querySelectorAll('[class*="context-"]').forEach(element => {
+            element.style.display = 'none';
+        });
+        
+        // Show elements for the current context
+        card.querySelectorAll(`.context-${context}`).forEach(element => {
+            element.style.display = element.tagName === 'DIV' ? 'flex' : 'block';
+        });
+    }
+    
+    // Initialize all cards with the default context (online)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add to existing DOMContentLoaded or create a new one
+        document.querySelectorAll('.host-card').forEach(card => {
+            updateContextElements(card, 'online');
+        });
+    });
     
     // Original filter functionality (keep for compatibility)
     const filterButtons = document.querySelectorAll('.filter-button');
