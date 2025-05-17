@@ -914,7 +914,7 @@ include 'includes/header.php';
                         $hasOnlineDesc = !empty($host['online_description']);
                         $hasInpersonDesc = !empty($host['inperson_description']);
                         $hasTechDesc = !empty($host['technical_description']);
-                        $dataAttributes = sprintf(
+                        $generalDataAttributes = sprintf(
                             'data-has-online-desc="%s" data-has-inperson-desc="%s" data-has-tech-desc="%s"',
                             $hasOnlineDesc ? 'true' : 'false',
                             $hasInpersonDesc ? 'true' : 'false',
@@ -928,6 +928,7 @@ include 'includes/header.php';
                              data-region="<?= $regionAttr ?>"
                              data-roles="<?= $rolesAttr ?>"
                              data-category-context="online"
+                             <?= $generalDataAttributes ?>
                         >
                             <?php if (!empty($primaryLanguage)): ?>
                                 <div class="host-badge" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
@@ -965,7 +966,7 @@ include 'includes/header.php';
                                         <?php $roles = array_map('trim', explode(',', $host['technical_roles'])); ?>
                                         <?php foreach ($roles as $role): ?>
                                             <span class="language-tag"><?= $role ?></span>
-                                    <?php endforeach; ?>
+                                        <?php endforeach; ?>
                                     <?php endif; ?>
                                 </div>
                                 
@@ -981,27 +982,12 @@ include 'includes/header.php';
                                 <?php endif; ?>
                                 
                                 <!-- Description fields - each shown only in relevant context -->
-                                <?php
-                                // Set data attributes to indicate which descriptions are available
-                                $hasOnlineDesc = !empty($host['online_description']);
-                                $hasInpersonDesc = !empty($host['inperson_description']);
-                                $hasTechDesc = !empty($host['technical_description']);
-                                $generalDataAttributes = sprintf(
-                                    'data-has-online-desc="%s" data-has-inperson-desc="%s" data-has-tech-desc="%s"',
-                                    $hasOnlineDesc ? 'true' : 'false',
-                                    $hasInpersonDesc ? 'true' : 'false',
-                                    $hasTechDesc ? 'true' : 'false'
-                                );
-                                ?>
                                 
                                 <!-- Online description - only shown in online tab -->
                                 <p class="host-bio context-online" <?= $generalDataAttributes ?>>
                                     <?php 
                                     if (!empty($host['online_description'])) {
                                         echo $host['online_description'];
-                                    } else {
-                                        echo !empty($host['general_description']) ? $host['general_description'] : 
-                                             (!empty($host['description']) ? $host['description'] : '');
                                     }
                                     ?>
                                 </p>
@@ -1011,9 +997,6 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['inperson_description'])) {
                                         echo $host['inperson_description'];
-                                    } else {
-                                        echo !empty($host['general_description']) ? $host['general_description'] : 
-                                             (!empty($host['description']) ? $host['description'] : '');
                                     }
                                     ?>
                                 </p>
@@ -1023,9 +1006,6 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['technical_description'])) {
                                         echo $host['technical_description'];
-                                    } else {
-                                        echo !empty($host['general_description']) ? $host['general_description'] : 
-                                             (!empty($host['description']) ? $host['description'] : '');
                                     }
                                     ?>
                                 </p>
@@ -1156,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`Filtering hosts by category: ${category}`);
         let visibleCount = 0;
         
-    const hostCards = document.querySelectorAll('.host-card');
+        const hostCards = document.querySelectorAll('.host-card');
         hostCards.forEach(card => {
             const categories = card.getAttribute('data-categories') || '';
             const hostName = card.querySelector('.host-name').textContent;
