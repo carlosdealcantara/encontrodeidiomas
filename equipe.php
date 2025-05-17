@@ -928,6 +928,7 @@ include 'includes/header.php';
                              data-region="<?= $regionAttr ?>"
                              data-roles="<?= $rolesAttr ?>"
                              data-category-context="online"
+                             <?= $generalDataAttributes ?>
                         >
                             <?php if (!empty($primaryLanguage)): ?>
                                 <div class="host-badge" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
@@ -999,8 +1000,9 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['online_description'])) {
                                         echo $host['online_description'];
-                                    } else {
-                                        echo '';
+                                    } elseif (!empty($host['description'])) {
+                                        // Fall back to general description if specialized one is not available
+                                        echo $host['description'];
                                     }
                                     ?>
                                 </p>
@@ -1010,8 +1012,9 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['inperson_description'])) {
                                         echo $host['inperson_description'];
-                                    } else {
-                                        echo '';
+                                    } elseif (!empty($host['description'])) {
+                                        // Fall back to general description if specialized one is not available
+                                        echo $host['description'];
                                     }
                                     ?>
                                 </p>
@@ -1021,8 +1024,9 @@ include 'includes/header.php';
                                     <?php 
                                     if (!empty($host['technical_description'])) {
                                         echo $host['technical_description'];
-                                    } else {
-                                        echo '';
+                                    } elseif (!empty($host['description'])) {
+                                        // Fall back to general description if specialized one is not available
+                                        echo $host['description'];
                                     }
                                     ?>
                                 </p>
