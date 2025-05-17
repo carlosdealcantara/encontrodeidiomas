@@ -216,7 +216,7 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
                 <img src="assets/images/logo.png" alt="Encontro de Idiomas" class="logo">
                 <div class="site-info">
                     <div class="site-title">Encontro de Idiomas</div>
-                    <div class="site-description">Pratique idiomas gratuitamente</div>
+                    <div class="site-description">Aprenda se divertindo!</div>
                 </div>
             </div>
             

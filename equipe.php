@@ -1000,8 +1000,7 @@ include 'includes/header.php';
                                     if (!empty($host['online_description'])) {
                                         echo $host['online_description'];
                                     } else {
-                                        echo !empty($host['general_description']) ? $host['general_description'] : 
-                                             (!empty($host['description']) ? $host['description'] : '');
+                                        echo !empty($host['description']) ? $host['description'] : '';
                                     }
                                     ?>
                                 </p>
@@ -1012,8 +1011,7 @@ include 'includes/header.php';
                                     if (!empty($host['inperson_description'])) {
                                         echo $host['inperson_description'];
                                     } else {
-                                        echo !empty($host['general_description']) ? $host['general_description'] : 
-                                             (!empty($host['description']) ? $host['description'] : '');
+                                        echo !empty($host['description']) ? $host['description'] : '';
                                     }
                                     ?>
                                 </p>
@@ -1024,8 +1022,7 @@ include 'includes/header.php';
                                     if (!empty($host['technical_description'])) {
                                         echo $host['technical_description'];
                                     } else {
-                                        echo !empty($host['general_description']) ? $host['general_description'] : 
-                                             (!empty($host['description']) ? $host['description'] : '');
+                                        echo !empty($host['description']) ? $host['description'] : '';
                                     }
                                     ?>
                                 </p>

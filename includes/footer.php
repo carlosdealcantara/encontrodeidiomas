@@ -129,7 +129,7 @@
                     <img src="assets/images/logo.png" alt="Encontro de Idiomas" class="footer-logo">
                     <div class="site-info">
                         <div class="footer-title">Encontro de Idiomas</div>
-                        <div class="footer-tagline">Aprenda se divertindo!</div>
+                        <div class="footer-tagline">Pratique idiomas gratuitamente</div>
                     </div>
                 </div>
                 
