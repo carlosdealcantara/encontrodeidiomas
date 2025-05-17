@@ -438,12 +438,7 @@ $title = "Detalhes do Anfitrião - Admin";
         
         <div class="host-card">
             <div class="host-header">
-                <img src="<?= !empty($host['profile_picture']) 
-                    ? '../' . (strpos($host['profile_picture'], 'assets/') === 0 
-                        ? $host['profile_picture'] 
-                        : 'assets/images/' . $host['profile_picture']) 
-                    : '../assets/images/HostSemFoto.png' ?>" 
-                    alt="<?= htmlspecialchars($host['full_name']) ?>" class="host-avatar">
+                <img src="<?= !empty($host['profile_picture']) ? '../' . $host['profile_picture'] : '../assets/images/HostSemFoto.png' ?>" alt="<?= htmlspecialchars($host['full_name']) ?>" class="host-avatar">
                 
                 <div class="host-info">
                     <h2 class="host-name"><?= htmlspecialchars($host['full_name']) ?></h2>
@@ -482,9 +477,7 @@ $title = "Detalhes do Anfitrião - Admin";
                         <div class="detail-label">Foto de Perfil</div>
                         <div class="detail-value">
                             <?php if(!empty($host['profile_picture'])): ?>
-                                <img src="<?= '../' . (strpos($host['profile_picture'], 'assets/') === 0 
-                                    ? $host['profile_picture'] 
-                                    : 'assets/images/' . $host['profile_picture']) ?>" 
+                                <img src="<?= !empty($host['profile_picture']) ? '../' . $host['profile_picture'] : '../assets/images/HostSemFoto.png' ?>" 
                                     alt="<?= htmlspecialchars($host['full_name']) ?>" 
                                     style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;">
                             <?php else: ?>
@@ -497,6 +490,13 @@ $title = "Detalhes do Anfitrião - Admin";
                         <div class="detail-label">Caminho da Foto</div>
                         <div class="detail-value">
                             <?= !empty($host['profile_picture']) ? htmlspecialchars($host['profile_picture']) : '<span class="empty-text">Sem foto</span>' ?>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Descrição Geral</div>
+                        <div class="detail-value">
+                            <?= !empty($host['general_description']) ? nl2br(htmlspecialchars($host['general_description'])) : '<span class="empty-text">Sem descrição</span>' ?>
                         </div>
                     </div>
                     

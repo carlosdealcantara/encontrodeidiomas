@@ -1,5 +1,5 @@
 -- Add new columns to the hosts table
-ALTER TABLE hosts ADD COLUMN region VARCHAR(100) AFTER online_description;
+ALTER TABLE hosts ADD COLUMN region VARCHAR(100) AFTER description;
 ALTER TABLE hosts ADD COLUMN category VARCHAR(100) AFTER region;
 ALTER TABLE hosts ADD COLUMN role VARCHAR(100) AFTER category;
 ALTER TABLE hosts ADD COLUMN special_badge VARCHAR(255) AFTER role;
