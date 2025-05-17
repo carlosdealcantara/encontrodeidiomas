@@ -1,0 +1,32 @@
+# Disable directory browsing
+Options -Indexes
+
+# Protect against access to PHP files in this directory
+<Files ~ "\.php$">
+    # Require a PHP session to access these files
+    # If using Apache authentication, you could use:
+    # AuthType Basic
+    # AuthName "Restricted Area"
+    # AuthUserFile /path/to/.htpasswd
+    # Require valid-user
+
+    # For now, just block direct access to PHP files except login.php
+    <If "%{REQUEST_URI} !~ /admin/login.php$">
+        # Check if the PHP session has admin_logged_in set
+        RewriteEngine On
+        RewriteCond %{HTTP_COOKIE} !admin_logged_in [NC]
+        RewriteRule .* login.php [L,R=302]
+    </If>
+</Files>
+
+# Prevent viewing of .htaccess file
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Prevent viewing of .htpasswd file (if you decide to use it)
+<Files .htpasswd>
+    Order allow,deny
+    Deny from all
+</Files> 
