@@ -33,7 +33,7 @@ $socialLinks = !empty($host['social_media_links']) ? json_decode($host['social_m
 // Get language names
 $languages = [];
 if (!empty($host['languages'])) {
-    $languageIds = explode(',', $host['languages']);
+    $languageValues = explode(',', $host['languages']);
     $allLanguages = getLanguages();
     $languageMap = [];
     
@@ -41,11 +41,20 @@ if (!empty($host['languages'])) {
         $languageMap[$language['id']] = $language['name'];
     }
     
-    foreach ($languageIds as $langId) {
-        $langId = trim($langId);
-        if (isset($languageMap[$langId])) {
-            $languages[] = $languageMap[$langId];
+    // Check if languages are stored as IDs or names
+    $firstValue = trim($languageValues[0]);
+    
+    if (is_numeric($firstValue) && isset($languageMap[$firstValue])) {
+        // Languages are stored as IDs
+        foreach ($languageValues as $langId) {
+            $langId = trim($langId);
+            if (isset($languageMap[$langId])) {
+                $languages[] = $languageMap[$langId];
+            }
         }
+    } else {
+        // Languages are stored directly as names
+        $languages = array_map('trim', $languageValues);
     }
 }
 
@@ -466,6 +475,19 @@ $title = "Detalhes do Anfitrião - Admin";
                     
                     <div class="detail-item">
                         <div class="detail-label">Foto de Perfil</div>
+                        <div class="detail-value">
+                            <?php if(!empty($host['profile_picture'])): ?>
+                                <img src="<?= '../' . str_replace('assets/', 'assets/', $host['profile_picture']) ?>" 
+                                    alt="<?= htmlspecialchars($host['full_name']) ?>" 
+                                    style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;">
+                            <?php else: ?>
+                                <span class="empty-text">Sem foto</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Caminho da Foto</div>
                         <div class="detail-value">
                             <?= !empty($host['profile_picture']) ? htmlspecialchars($host['profile_picture']) : '<span class="empty-text">Sem foto</span>' ?>
                         </div>
