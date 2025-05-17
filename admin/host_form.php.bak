@@ -13,6 +13,7 @@ $host = [
     'id' => '',
     'full_name' => '',
     'profile_picture' => '',
+    'general_description' => '',
     'online_description' => '',
     'inperson_description' => '',
     'languages' => '',
