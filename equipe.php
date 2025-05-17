@@ -909,6 +909,17 @@ include 'includes/header.php';
                         $debugLog .= "Categories Attr: $categoriesAttr | ";
                         $debugLog .= "Roles Attr: $rolesAttr -->";
                         echo $debugLog;
+                        
+                        // Set data attributes to indicate which descriptions are available
+                        $hasOnlineDesc = !empty($host['online_description']);
+                        $hasInpersonDesc = !empty($host['inperson_description']);
+                        $hasTechDesc = !empty($host['technical_description']);
+                        $dataAttributes = sprintf(
+                            'data-has-online-desc="%s" data-has-inperson-desc="%s" data-has-tech-desc="%s"',
+                            $hasOnlineDesc ? 'true' : 'false',
+                            $hasInpersonDesc ? 'true' : 'false',
+                            $hasTechDesc ? 'true' : 'false'
+                        );
                         ?>
                         
                         <div class="host-card" 
@@ -955,8 +966,31 @@ include 'includes/header.php';
                                 </div>
                                 <?php endif; ?>
                                 
-                                <p class="host-bio">
-                                    <?= !empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_description']) ? $host['technical_description'] : $host['description'] ?>
+                                <p class="host-bio" <?= $dataAttributes ?>>
+                                    <?php
+                                    // Display the appropriate description based on category tab
+                                    if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && 
+                                        in_array('tecnica', explode(' ', strtolower($categoriesAttr))) && 
+                                        !empty($host['technical_description'])) {
+                                        echo $host['technical_description'];
+                                    } 
+                                    else if (in_array('presencial', explode(' ', strtolower($categoriesAttr))) && 
+                                             !empty($host['inperson_description'])) {
+                                        echo $host['inperson_description'];
+                                    }
+                                    else if (in_array('online', explode(' ', strtolower($categoriesAttr))) && 
+                                             !empty($host['online_description'])) {
+                                        echo $host['online_description'];
+                                    }
+                                    else {
+                                        // Fallback to general description or any available description
+                                        echo !empty($host['general_description']) ? $host['general_description'] : 
+                                             (!empty($host['description']) ? $host['description'] : 
+                                              (!empty($host['online_description']) ? $host['online_description'] : 
+                                               (!empty($host['inperson_description']) ? $host['inperson_description'] : 
+                                                (!empty($host['technical_description']) ? $host['technical_description'] : ''))));
+                                    }
+                                    ?>
                                 </p>
                                 
                                 <div class="host-contact">
@@ -1096,7 +1130,23 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log(`Host: ${hostName}, Categories: ${categories}, Filter: ${category}, Match: ${isMatch}`);
             
-            if (isMatch || isSpecialCard) {
+            // Additional check to make sure we have the appropriate description for this category
+            let hasAppropriateDesc = true;
+            if (category === 'online') {
+                // Check if we have any online description data
+                const onlineDescEl = card.querySelector('.host-bio[data-has-online-desc="true"]');
+                hasAppropriateDesc = onlineDescEl !== null || isSpecialCard;
+            } else if (category === 'presencial') {
+                // Check if we have any in-person description data
+                const inpersonDescEl = card.querySelector('.host-bio[data-has-inperson-desc="true"]');
+                hasAppropriateDesc = inpersonDescEl !== null || isSpecialCard;
+            } else if (category === 'tecnica') {
+                // Check if we have any technical description data
+                const techDescEl = card.querySelector('.host-bio[data-has-tech-desc="true"]');
+                hasAppropriateDesc = techDescEl !== null || isSpecialCard;
+            }
+            
+            if ((isMatch && hasAppropriateDesc) || isSpecialCard) {
                 card.style.display = 'block';
                 card.classList.add('category-visible');
                 visibleCount++;
