@@ -1379,7 +1379,18 @@ include 'includes/header.php';
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <p class="event-description"><?= $event['description'] ?></p>
+                                    <p class="event-description">
+                                    <?php 
+                                    // Check for online_description first, fall back to description if needed
+                                    if (!empty($event['online_description'])) {
+                                        echo $event['online_description'];
+                                    } elseif (!empty($event['description'])) {
+                                        echo $event['description'];
+                                    } else {
+                                        echo '';
+                                    }
+                                    ?>
+                                    </p>
                                     <div class="event-actions">
                                         <?php if (!empty($event['meet_link'])): ?>
                                             <a href="<?= $event['meet_link'] ?>" target="_blank" class="event-button join-button <?= $isNow ? '' : ($currentDay == $i && $currentHour > $event['time_hour'] ? 'disabled' : '') ?>">
@@ -1704,7 +1715,7 @@ include 'includes/header.php';
                                     ${socialLinks}
                                 </div>
                             </div>
-                            <p class="event-description">${event.description}</p>
+                            <p class="event-description">${event.online_description || event.description || ''}</p>
                             <div class="event-actions">
                                 ${event.meet_link ? `
                                     <a href="${event.meet_link}" target="_blank" class="event-button join-button ${isPast ? 'disabled' : ''}">
