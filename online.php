@@ -288,7 +288,7 @@ body {
 }
 
 .day-events.active {
-    display: block;
+    display: block !important;
 }
 
 @keyframes fadeIn {
@@ -1654,8 +1654,15 @@ include 'includes/header.php';
                 this.classList.add('active');
                 
                 // Toggle day events
-                dayEvents.forEach(events => events.classList.remove('active'));
-                document.getElementById('day-' + day).classList.add('active');
+                dayEvents.forEach(events => {
+                    events.classList.remove('active');
+                    events.style.display = 'none';
+                });
+                const dayElement = document.getElementById('day-' + day);
+                if (dayElement) {
+                    dayElement.classList.add('active');
+                    dayElement.style.display = 'block';
+                }
                 
                 // Update URL parameter for day
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1787,7 +1794,7 @@ include 'includes/header.php';
             });
         });
 
-        // Check URL parameters on page load to set initial state
+        // Function to check URL parameters on page load to set initial state
         function checkURLParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const view = urlParams.get('view');
@@ -1812,25 +1819,67 @@ include 'includes/header.php';
                 // Default to day view
                 dayFilterBtn.click();
                 
-                // If there's a specific day, select it
-                if (day) {
-                    const dayBtn = document.querySelector(`.day-button[data-day="${day}"]`);
+                // Determine which day to select
+                let selectedDay = day;
+                
+                // If no day specified in URL, use current day or find nearest day with events
+                if (!selectedDay) {
+                    const currentDayOfWeek = <?= $currentDayOfWeek ?>; // PHP variable with current day (1-7)
+                    
+                    // Check if current day has events
+                    const currentDayElement = document.getElementById('day-' + currentDayOfWeek);
+                    const hasEvents = currentDayElement && currentDayElement.querySelector('.timeline-event');
+                    
+                    if (hasEvents) {
+                        // Use current day if it has events
+                        selectedDay = currentDayOfWeek;
+                    } else {
+                        // Find the nearest day with events
+                        const availableDays = [];
+                        for (let i = 1; i <= 5; i++) {
+                            const dayElement = document.getElementById('day-' + i);
+                            if (dayElement && dayElement.querySelector('.timeline-event')) {
+                                availableDays.push(i);
+                            }
+                        }
+                        
+                        if (availableDays.length > 0) {
+                            // Find the nearest day with events
+                            if (currentDayOfWeek > 5) {
+                                // If we're on weekend, show the last day of the week
+                                selectedDay = Math.max(...availableDays);
+                            } else {
+                                // If we're on weekday but current day has no events,
+                                // show the next day with events or the last day if we're past all events
+                                const futureDays = availableDays.filter(d => d >= currentDayOfWeek);
+                                selectedDay = futureDays.length > 0 ? Math.min(...futureDays) : Math.max(...availableDays);
+                            }
+                        } else {
+                            // Fallback to current day if no days have events
+                            selectedDay = currentDayOfWeek <= 5 ? currentDayOfWeek : 5;
+                        }
+                    }
+                }
+                
+                // Select the appropriate day button
+                if (selectedDay) {
+                    const dayBtn = document.querySelector(`.day-button[data-day="${selectedDay}"]`);
                     if (dayBtn) {
                         setTimeout(() => {
                             dayBtn.click();
                         }, 100);
                     }
-                } else {
-                    // Select current day by default
-                    const currentDayOfWeek = <?= $currentDayOfWeek ?>; // PHP variable with current day (1-7)
-                    const currentDayButton = document.querySelector(`.day-button[data-day="${currentDayOfWeek}"]`);
-                    if (currentDayButton) {
-                        setTimeout(() => {
-                            currentDayButton.click();
-                        }, 100);
-                    }
                 }
             }
+            
+            // Ensure the active content is visible
+            document.querySelectorAll('.day-events').forEach(el => {
+                if (el.classList.contains('active')) {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
         }
         
         // Call the function to check URL parameters on page load
