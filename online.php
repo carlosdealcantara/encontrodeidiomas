@@ -1527,18 +1527,72 @@ include 'includes/header.php';
             const urlParams = new URLSearchParams(window.location.search);
             urlParams.set('view', 'language');
             urlParams.delete('day'); // Remove day filter when switching to language view
+            
+            // Check if we already have a language_id in the URL
+            const existingLangId = urlParams.get('language_id');
+            
+            if (!existingLangId) {
+                // Find the English language option by default
+                const englishOption = document.querySelector('.language-option[data-language="Inglês"]') || 
+                                      document.querySelector('.language-option[data-language="English"]');
+                
+                if (englishOption) {
+                    // Get the language ID and name
+                    const langId = englishOption.getAttribute('data-language-id');
+                    const langName = englishOption.getAttribute('data-language');
+                    
+                    // Set URL parameters for English
+                    urlParams.set('language_id', langId);
+                    urlParams.set('language_name', langName);
+                }
+            }
+            
             history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
             
-            // Load the default language (English) events if not already loaded
-            if (document.getElementById('language-events-container').innerHTML === '') {
-                const defaultLanguageButton = document.querySelector('.language-option[data-language="Inglês"]') || 
-                                             document.querySelector('.language-option[data-language="English"]') || 
-                                             document.querySelector('.language-option:first-child');
+            // Load the language events if not already loaded
+            if (document.getElementById('language-events-container').innerHTML === '' || !existingLangId) {
+                // Find the default or currently selected language
+                const langId = urlParams.get('language_id');
+                let targetLanguageOption;
                 
-                if (defaultLanguageButton) {
-                    // Simulate click on default language button to load events
-                    const languageId = defaultLanguageButton.getAttribute('data-language-id');
-                    loadLanguageEvents(languageId, defaultLanguageButton.querySelector('span:last-child').textContent);
+                if (langId) {
+                    // Find option with the matching ID
+                    targetLanguageOption = document.querySelector(`.language-option[data-language-id="${langId}"]`);
+                } else {
+                    // Default to English
+                    targetLanguageOption = document.querySelector('.language-option[data-language="Inglês"]') || 
+                                           document.querySelector('.language-option[data-language="English"]') ||
+                                           document.querySelector('.language-option:first-child');
+                }
+                
+                if (targetLanguageOption) {
+                    // Update the dropdown UI to show the selected language
+                    const languageName = targetLanguageOption.getAttribute('data-language');
+                    const flagElem = targetLanguageOption.querySelector('img, span:first-child');
+                    
+                    document.getElementById('selected-language').textContent = languageName;
+                    
+                    if (flagElem) {
+                        if (flagElem.tagName === 'IMG') {
+                            document.getElementById('selected-language-flag').src = flagElem.src;
+                            document.getElementById('selected-language-flag').style.display = 'inline-block';
+                        } else {
+                            // Handle emoji flags
+                            document.getElementById('selected-language-flag').style.display = 'none';
+                        }
+                    }
+                    
+                    // Mark this option as active and update styling
+                    document.querySelectorAll('.language-option').forEach(opt => {
+                        opt.classList.remove('active');
+                        opt.style.background = 'white';
+                    });
+                    targetLanguageOption.classList.add('active');
+                    targetLanguageOption.style.background = 'rgba(227, 29, 28, 0.05)';
+                    
+                    // Load the events for this language
+                    const languageId = targetLanguageOption.getAttribute('data-language-id');
+                    loadLanguageEvents(languageId, languageName);
                 }
             }
         });
@@ -1804,6 +1858,7 @@ include 'includes/header.php';
             
             // Set the view based on URL parameter
             if (view === 'language') {
+                // First switch to language view
                 languageFilterBtn.click();
                 
                 // If there's a specific language ID, select it
@@ -1811,10 +1866,35 @@ include 'includes/header.php';
                     const langOption = document.querySelector(`.language-option[data-language-id="${languageId}"]`);
                     if (langOption) {
                         setTimeout(() => {
-                            langOption.click();
+                            // Instead of clicking (which would trigger another loadLanguageEvents),
+                            // directly update the UI to match this language
+                            const languageName = langOption.getAttribute('data-language');
+                            const flagElem = langOption.querySelector('img, span:first-child');
+                            
+                            document.getElementById('selected-language').textContent = languageName;
+                            
+                            if (flagElem.tagName === 'IMG') {
+                                document.getElementById('selected-language-flag').src = flagElem.src;
+                                document.getElementById('selected-language-flag').style.display = 'inline-block';
+                            } else {
+                                // Handle emoji flags
+                                document.getElementById('selected-language-flag').style.display = 'none';
+                            }
+                            
+                            // Mark this option as active
+                            document.querySelectorAll('.language-option').forEach(opt => {
+                                opt.classList.remove('active');
+                                opt.style.background = 'white';
+                            });
+                            langOption.classList.add('active');
+                            langOption.style.background = 'rgba(227, 29, 28, 0.05)';
+                            
+                            // Load events for this language
+                            loadLanguageEvents(languageId, languageName || langOption.textContent.trim());
                         }, 100);
                     }
                 }
+                // Note: If no language ID, the languageFilterBtn.click() will handle loading default English
             } else {
                 // Default to day view
                 dayFilterBtn.click();
