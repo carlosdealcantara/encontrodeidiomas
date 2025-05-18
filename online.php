@@ -1531,6 +1531,13 @@ include 'includes/header.php';
             }
         });
         
+        // Select current day by default
+        const currentDayOfWeek = <?= $currentDayOfWeek ?>; // PHP variable with current day (1-7)
+        const currentDayButton = document.querySelector(`.day-button[data-day="${currentDayOfWeek}"]`);
+        if (currentDayButton) {
+            currentDayButton.click();
+        }
+        
         // Language dropdown functionality
         const languageDropdownBtn = document.getElementById('language-dropdown-btn');
         const languageDropdown = document.getElementById('language-dropdown');

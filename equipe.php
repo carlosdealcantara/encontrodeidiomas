@@ -1713,6 +1713,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // Apply default filter (online) when page loads
         filterHostsByCategory('online');
         
+        // Automatically select English as the default language
+        const englishButton = Array.from(document.querySelectorAll('.language-button')).find(button => {
+            const language = button.getAttribute('data-language').toLowerCase();
+            return language === 'english' || language === 'inglês' || language === 'ingles';
+        });
+        
+        if (englishButton) {
+            englishButton.click();
+        } else {
+            // Fallback: click the first language button
+            const firstLangButton = document.querySelector('.language-button');
+            if (firstLangButton) {
+                firstLangButton.click();
+            }
+        }
+        
         // Then check URL parameters for any specific filters
         parseURL();
         
