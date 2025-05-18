@@ -1384,20 +1384,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update selected language flag
             const flagElement = this.querySelector('.flag-icon');
-            if (flagElement.tagName === 'IMG') {
-                // If it's an image flag
-                selectedLanguageFlag.innerHTML = '';
-                const newFlag = document.createElement('img');
-                newFlag.src = flagElement.src;
-                newFlag.alt = flagElement.alt;
-                newFlag.className = 'flag-icon';
-                newFlag.style.width = '24px';
-                newFlag.style.height = '18px';
-                newFlag.style.borderRadius = '3px';
-                selectedLanguageFlag.appendChild(newFlag);
-            } else {
-                // If it's an emoji flag
-                selectedLanguageFlag.innerHTML = flagElement.innerHTML;
+            if (flagElement) {
+                if (flagElement.tagName === 'IMG') {
+                    document.getElementById('selected-language-flag').innerHTML = '';
+                    const newFlag = document.createElement('img');
+                    newFlag.src = flagElement.src;
+                    newFlag.alt = flagElement.alt;
+                    newFlag.className = 'flag-icon';
+                    newFlag.style.width = '24px';
+                    newFlag.style.height = '18px';
+                    newFlag.style.borderRadius = '3px';
+                    document.getElementById('selected-language-flag').appendChild(newFlag);
+                } else {
+                    document.getElementById('selected-language-flag').innerHTML = flagElement.innerHTML;
+                }
             }
             
             // Close dropdown
@@ -1630,19 +1630,35 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 150);
                 } else if (categoria === 'online' && idioma) {
-                    // Handle language filter as before (already implemented)
+                    // Handle language filter as before
                     setTimeout(() => {
                         handleLanguageParameter(idioma);
+                    }, 150);
+                } else if (categoria === 'online' && !idioma) {
+                    // If online category with no language specified, show all
+                    setTimeout(() => {
+                        const allLanguagesButton = document.querySelector('.language-button[data-language="all"]');
+                        if (allLanguagesButton) {
+                            allLanguagesButton.click();
+                        }
                     }, 150);
                 }
             }
         } else {
-            // If no category specified, apply default category filter
-            filterHostsByCategory(currentCategory);
+            // If no category specified, apply default category filter (online)
+            filterHostsByCategory('online');
             
             // Check for language parameter if default category is online
             if (idioma) {
                 handleLanguageParameter(idioma);
+            } else {
+                // If no idioma specified, show all languages
+                setTimeout(() => {
+                    const allLanguagesButton = document.querySelector('.language-button[data-language="all"]');
+                    if (allLanguagesButton) {
+                        allLanguagesButton.click();
+                    }
+                }, 150);
             }
         }
     }
@@ -1651,6 +1667,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleLanguageParameter(idioma) {
         // Find the matching button in dropdown
         const dropdownButtons = document.querySelectorAll('.language-button[data-language]');
+        
+        // Special case for "all" languages
+        if (idioma === 'all') {
+            const allButton = document.querySelector('.language-button[data-language="all"]');
+            if (allButton) {
+                allButton.click();
+                return;
+            }
+        }
         
         // Try to find an exact match first
         let selectedButton = Array.from(dropdownButtons).find(button => 
@@ -1713,12 +1738,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Apply default filter (online) when page loads
         filterHostsByCategory('online');
         
-        // Automatically select English as the default language
-        const englishButton = Array.from(document.querySelectorAll('.language-button')).find(button => {
-            const language = button.getAttribute('data-language').toLowerCase();
-            return language === 'english' || language === 'inglês' || language === 'ingles';
-        });
-        
         // Check URL parameters first
         const urlParams = new URLSearchParams(window.location.search);
         const urlCategory = urlParams.get('categoria');
@@ -1730,16 +1749,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // If there are URL parameters, let parseURL() handle them
             parseURL();
         } else {
-            // No URL parameters, apply default selections
-            if (englishButton) {
-                englishButton.click();
-            } else {
-                // Fallback: click the first language button
-                const firstLangButton = document.querySelector('.language-button');
-                if (firstLangButton) {
-                    firstLangButton.click();
-                }
-            }
+            // No URL parameters, apply default selections (all languages in online category)
+            document.querySelector('.language-button[data-language="all"]').click();
         }
         
         // Ensure all dropdowns are closed on page load
