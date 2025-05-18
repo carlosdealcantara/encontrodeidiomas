@@ -1446,7 +1446,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 urlParams.delete('papel');
             }
             
-            history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+            history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
     });
     
@@ -1476,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update URL without reloading page
         const newUrl = urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname;
-        history.replaceState(null, '', newUrl);
+        history.pushState(null, '', newUrl);
     }
     
     // Function to filter hosts by language
@@ -1584,7 +1584,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             urlParams.set('idioma', language);
         }
-        history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+        history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         
         // Scroll to the top of the host grid
         setTimeout(() => {
@@ -1719,18 +1719,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return language === 'english' || language === 'inglês' || language === 'ingles';
         });
         
-        if (englishButton) {
-            englishButton.click();
+        // Check URL parameters first
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlCategory = urlParams.get('categoria');
+        const urlLanguage = urlParams.get('idioma');
+        const urlRegion = urlParams.get('regiao');
+        const urlRole = urlParams.get('papel');
+        
+        if (urlCategory || urlLanguage || urlRegion || urlRole) {
+            // If there are URL parameters, let parseURL() handle them
+            parseURL();
         } else {
-            // Fallback: click the first language button
-            const firstLangButton = document.querySelector('.language-button');
-            if (firstLangButton) {
-                firstLangButton.click();
+            // No URL parameters, apply default selections
+            if (englishButton) {
+                englishButton.click();
+            } else {
+                // Fallback: click the first language button
+                const firstLangButton = document.querySelector('.language-button');
+                if (firstLangButton) {
+                    firstLangButton.click();
+                }
             }
         }
-        
-        // Then check URL parameters for any specific filters
-        parseURL();
         
         // Ensure all dropdowns are closed on page load
         document.querySelectorAll('.dropdown-content').forEach(dropdown => {
@@ -1785,7 +1795,7 @@ document.addEventListener('DOMContentLoaded', function() {
             urlParams.delete('idioma');
             urlParams.delete('papel');
             
-            history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+            history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
     });
     
@@ -1834,7 +1844,7 @@ document.addEventListener('DOMContentLoaded', function() {
             urlParams.delete('idioma');
             urlParams.delete('regiao');
             
-            history.replaceState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+            history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
     });
 

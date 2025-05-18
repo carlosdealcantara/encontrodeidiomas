@@ -1503,6 +1503,12 @@ include 'includes/header.php';
             
             dayView.style.display = 'block';
             languageView.style.display = 'none';
+            
+            // Update URL parameter for view type
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('view', 'day');
+            urlParams.delete('language_id'); // Remove language filter when switching to day view
+            history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
         });
         
         // Language filter button click event
@@ -1516,6 +1522,12 @@ include 'includes/header.php';
             
             languageView.style.display = 'block';
             dayView.style.display = 'none';
+            
+            // Update URL parameter for view type
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('view', 'language');
+            urlParams.delete('day'); // Remove day filter when switching to language view
+            history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
             
             // Load the default language (English) events if not already loaded
             if (document.getElementById('language-events-container').innerHTML === '') {
@@ -1618,6 +1630,12 @@ include 'includes/header.php';
                 // Load events for this language
                 loadLanguageEvents(languageId, languageName);
                 
+                // Update URL parameter for language
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.set('language_id', languageId);
+                urlParams.set('language_name', languageName);
+                history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
+                
                 // Close dropdown
                 languageDropdown.style.display = 'none';
             });
@@ -1638,6 +1656,11 @@ include 'includes/header.php';
                 // Toggle day events
                 dayEvents.forEach(events => events.classList.remove('active'));
                 document.getElementById('day-' + day).classList.add('active');
+                
+                // Update URL parameter for day
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.set('day', day);
+                history.pushState(null, '', urlParams.toString() ? `?${urlParams.toString()}` : window.location.pathname);
             });
         });
         
@@ -1763,6 +1786,55 @@ include 'includes/header.php';
                 });
             });
         });
+
+        // Check URL parameters on page load to set initial state
+        function checkURLParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const view = urlParams.get('view');
+            const day = urlParams.get('day');
+            const languageId = urlParams.get('language_id');
+            const languageName = urlParams.get('language_name');
+            
+            // Set the view based on URL parameter
+            if (view === 'language') {
+                languageFilterBtn.click();
+                
+                // If there's a specific language ID, select it
+                if (languageId) {
+                    const langOption = document.querySelector(`.language-option[data-language-id="${languageId}"]`);
+                    if (langOption) {
+                        setTimeout(() => {
+                            langOption.click();
+                        }, 100);
+                    }
+                }
+            } else {
+                // Default to day view
+                dayFilterBtn.click();
+                
+                // If there's a specific day, select it
+                if (day) {
+                    const dayBtn = document.querySelector(`.day-button[data-day="${day}"]`);
+                    if (dayBtn) {
+                        setTimeout(() => {
+                            dayBtn.click();
+                        }, 100);
+                    }
+                } else {
+                    // Select current day by default
+                    const currentDayOfWeek = <?= $currentDayOfWeek ?>; // PHP variable with current day (1-7)
+                    const currentDayButton = document.querySelector(`.day-button[data-day="${currentDayOfWeek}"]`);
+                    if (currentDayButton) {
+                        setTimeout(() => {
+                            currentDayButton.click();
+                        }, 100);
+                    }
+                }
+            }
+        }
+        
+        // Call the function to check URL parameters on page load
+        checkURLParameters();
     });
 </script>
 </body>
