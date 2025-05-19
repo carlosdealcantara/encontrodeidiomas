@@ -1124,7 +1124,7 @@ include 'includes/header.php';
                                                 break;
                                         }
                                         // Position additional language badges below the primary one
-                                        $topPosition = 65 + ($index * 45); // Start at 65px and add 45px for each badge
+                                        $topPosition = 20 + ($index * 45); // Start at 20px (same as tech badges) and add 45px for each badge
                             ?>
                                 <div class="host-badge context-online" style="background-color: <?= $langBadgeColor ?>; top: <?= $topPosition ?>px; <?= $initialCategory != 'online' ? 'display: none;' : '' ?>"><?= $lang ?></div>
                             <?php 
@@ -1275,16 +1275,91 @@ document.addEventListener('DOMContentLoaded', function() {
         const languageButton = document.querySelector(`.language-button[data-language="${initialLanguage}"]`);
         const normalizedLang = languageButton ? languageButton.getAttribute('data-normalized') || initialLanguage : initialLanguage;
         
+        // Update dropdown display to match the selected language
+        updateDropdownDisplay(initialLanguage);
+        
         // Direct filtering without animation or unnecessary UI updates
         filterHostsByLanguage(initialLanguage, normalizedLang);
     } else if (currentCategory === 'presencial' && initialRegion !== 'all') {
+        // Update dropdown display to match the selected region
+        updateDropdownDisplay(initialRegion, 'region');
+        
         filterHostsByRegion(initialRegion);
     } else if (currentCategory === 'tecnica' && initialRole !== 'all') {
+        // Update dropdown display to match the selected role
+        updateDropdownDisplay(initialRole, 'role');
+        
         filterHostsByRole(initialRole);
+    }
+    
+    // Helper function to update dropdown display for selected filter
+    function updateDropdownDisplay(value, type = 'language') {
+        let button;
+        if (type === 'language') {
+            button = document.querySelector(`.language-button[data-language="${value}"]`);
+        } else if (type === 'region') {
+            button = document.querySelector(`.region-button[data-region="${value}"]`);
+        } else if (type === 'role') {
+            button = document.querySelector(`.role-button[data-role="${value}"]`);
+        }
+        
+        if (button) {
+            // Get text content and icon
+            let text, icon;
+            
+            if (type === 'language') {
+                text = button.querySelector('span:not(.flag-icon)').textContent;
+                icon = button.querySelector('.flag-icon');
+            } else if (type === 'region') {
+                text = button.querySelector('span:not(.region-icon)').textContent;
+                icon = button.querySelector('.region-icon');
+            } else if (type === 'role') {
+                text = button.querySelector('span:not(.role-icon)').textContent;
+                icon = button.querySelector('.role-icon');
+            }
+            
+            // Update dropdown text
+            if (text) {
+                document.getElementById('selected-option').textContent = text;
+            }
+            
+            // Update dropdown icon
+            if (icon) {
+                const selectedIcon = document.getElementById('selected-language-flag');
+                if (icon.tagName === 'IMG') {
+                    selectedIcon.innerHTML = '';
+                    const newIcon = document.createElement('img');
+                    newIcon.src = icon.src;
+                    newIcon.alt = icon.alt;
+                    newIcon.className = 'flag-icon';
+                    newIcon.style.width = '24px';
+                    newIcon.style.height = '18px';
+                    newIcon.style.borderRadius = '3px';
+                    selectedIcon.appendChild(newIcon);
+                } else {
+                    selectedIcon.textContent = icon.textContent;
+                }
+            }
+        }
     }
     
     // Check for secondary URL parameters (idioma, regiao, papel)
     initializeFromURLParams();
+    
+    // Auto-scroll to show filters
+    setTimeout(() => {
+        const filterArea = document.querySelector('.category-tabs');
+        if (filterArea) {
+            const headerHeight = document.querySelector('header').offsetHeight || 0;
+            const pageTitle = document.querySelector('.page-title');
+            const scrollToPosition = pageTitle.offsetTop + pageTitle.offsetHeight - headerHeight;
+            
+            window.scrollTo({
+                top: scrollToPosition,
+                behavior: 'smooth'
+            });
+        }
+    }, 300);
     
     // Debugging - Check data attributes on all host cards
     console.log("Host language data:");
