@@ -959,6 +959,55 @@ include 'includes/header.php';
                                 <div class="host-badge context-online context-presencial" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
                             <?php endif; ?>
                             
+                            <?php 
+                            // Display all languages as badges for online hosts
+                            if (!empty($hostLanguages) && strpos(strtolower($categoriesAttr), 'online') !== false):
+                                // Skip the primary language as it's already displayed
+                                $primaryDisplayed = !empty($host['special_badge']) ? $host['special_badge'] : (!empty($primaryLanguage) ? $primaryLanguage : '');
+                                foreach ($hostLanguages as $index => $lang):
+                                    // Skip the primary language as it's already shown
+                                    if ($lang !== $primaryDisplayed || empty($primaryDisplayed)):
+                                        // Determine badge color for this language
+                                        $langBadgeColor = 'var(--accent-red)'; // Default color
+                                        switch(strtolower($lang)) {
+                                            case 'francês':
+                                                $langBadgeColor = '#0055a4'; // French flag blue
+                                                break;  
+                                            case 'alemão':
+                                                $langBadgeColor = '#dd0000'; // German flag red
+                                                break;
+                                            case 'italiano':
+                                                $langBadgeColor = '#009246'; // Italian flag green
+                                                break;
+                                            case 'libras':
+                                                $langBadgeColor = '#009c3b'; // Brazilian flag green
+                                                break;  
+                                            case 'português':
+                                                $langBadgeColor = '#009c3b'; // Brazilian flag green
+                                                break;
+                                            case 'russo':
+                                                $langBadgeColor = '#0039a6'; // Russian flag blue
+                                                break;
+                                            case 'polonês':
+                                                $langBadgeColor = '#dc143c'; // Polish flag red
+                                                break;
+                                            case 'coreano':
+                                                $langBadgeColor = '#003478'; // Korean flag blue
+                                                break;
+                                            case 'chinês':
+                                                $langBadgeColor = '#de2910'; // Chinese flag red
+                                                break;
+                                        }
+                                        // Position additional language badges below the primary one
+                                        $topPosition = 65 + ($index * 45); // Start at 65px and add 45px for each badge
+                            ?>
+                                <div class="host-badge context-online" style="background-color: <?= $langBadgeColor ?>; top: <?= $topPosition ?>px;"><?= $lang ?></div>
+                            <?php 
+                                    endif;
+                                endforeach;
+                            endif; 
+                            ?>
+                            
                             <?php if (!empty($host['technical_roles']) && strpos(strtolower($categoriesAttr), 'tecnica') !== false): ?>
                                 <?php 
                                 $technicalRoles = array_map('trim', explode(',', $host['technical_roles']));
@@ -994,33 +1043,7 @@ include 'includes/header.php';
                                     <?php endif; ?>
                                 </div>
                                 
-                                <!-- Language tags - shown in online tab -->
-                                <div class="host-languages context-online">
-                                    <?php 
-                                    if (empty($hostLanguages)) {
-                                        echo "<span class='language-tag'>Português</span>"; // Default if no languages found
-                                    } else {
-                                        // Don't display languages that are already shown in the badge
-                                        $badgeLanguage = !empty($host['special_badge']) ? $host['special_badge'] : (!empty($primaryLanguage) ? $primaryLanguage : '');
-                                        $displayedLanguages = [];
-                                        
-                                        foreach ($hostLanguages as $lang): 
-                                            // Only display language if it's different from what's in the badge
-                                            if ($lang !== $badgeLanguage):
-                                            ?>
-                                            <span class="language-tag"><?= $lang ?></span>
-                                            <?php 
-                                            $displayedLanguages[] = $lang;
-                                            endif;
-                                        endforeach;
-                                        
-                                        // If no languages were displayed (all were filtered out), show at least one skill
-                                        if (empty($displayedLanguages) && !empty($hostLanguages[0])) {
-                                            echo "<span class='language-tag'>Português</span>";
-                                        }
-                                    }
-                                    ?>
-                                </div>
+                                <!-- Language tags removed from online tab - languages are now shown as badges -->
                                 
                                 <!-- Technical skills - only shown in technical tab -->
                                 <?php if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_skills'])): ?>
