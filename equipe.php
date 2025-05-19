@@ -15,6 +15,102 @@ if (isset($_GET['categoria'])) {
     }
 }
 
+// Set initial language filter if in online category
+$initialLanguage = 'all'; // Default: all languages
+$initialLanguageName = 'Todos os idiomas';
+$initialLanguageIcon = '🌍';
+
+if ($initialCategory === 'online' && isset($_GET['idioma']) && $_GET['idioma'] !== 'all') {
+    $initialLanguage = $_GET['idioma'];
+    
+    // Find language name from database
+    foreach ($languages as $language) {
+        if (strtolower($language['name']) === strtolower($initialLanguage) || 
+            strtolower(str_replace(['á','ã','â','é','ê','í','ó','ô','ú','ç','ñ'], ['a','a','a','e','e','i','o','o','u','c','n'], $language['name'])) === strtolower($initialLanguage)) {
+            $initialLanguageName = $language['name'];
+            
+            // Set flag icon based on language
+            switch(strtolower($language['name'])) {
+                case 'inglês':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="Inglês">';
+                    break;
+                case 'espanhol':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/es.png" class="flag-icon" alt="Espanhol">';
+                    break;
+                case 'francês':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/fr.png" class="flag-icon" alt="Francês">';
+                    break;
+                case 'português':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/br.png" class="flag-icon" alt="Português">';
+                    break;
+                case 'alemão':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/de.png" class="flag-icon" alt="Alemão">';
+                    break;
+                case 'italiano':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/it.png" class="flag-icon" alt="Italiano">';
+                    break;
+                case 'coreano':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/kr.png" class="flag-icon" alt="Coreano">';
+                    break;
+                case 'chinês':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/cn.png" class="flag-icon" alt="Chinês">';
+                    break;
+                case 'russo':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/ru.png" class="flag-icon" alt="Russo">';
+                    break;
+                case 'polonês':
+                    $initialLanguageIcon = '<img src="https://flagcdn.com/32x24/pl.png" class="flag-icon" alt="Polonês">';
+                    break;
+                case 'libras':
+                    $initialLanguageIcon = '👋';
+                    break;
+                default:
+                    $initialLanguageIcon = '🚩';
+            }
+            break;
+        }
+    }
+    
+    // Default to original value if not found
+    if ($initialLanguageName === 'Todos os idiomas' && $initialLanguage !== 'all') {
+        $initialLanguageName = ucfirst($initialLanguage);
+    }
+}
+
+// Similarly, handle region and role parameters
+$initialRegion = 'all';
+$initialRegionName = 'Todas as cidades';
+$initialRegionIcon = '🏙️';
+
+if ($initialCategory === 'presencial' && isset($_GET['regiao'])) {
+    $initialRegion = $_GET['regiao'];
+    // Would set name & icon based on region
+}
+
+$initialRole = 'all';
+$initialRoleName = 'Todos os papéis';
+$initialRoleIcon = '👥';
+
+if ($initialCategory === 'tecnica' && isset($_GET['papel'])) {
+    $initialRole = $_GET['papel'];
+    
+    // Set name & icon based on role
+    switch($initialRole) {
+        case 'desenvolvimento':
+            $initialRoleName = 'Desenvolvimento';
+            $initialRoleIcon = '💻';
+            break;
+        case 'design':
+            $initialRoleName = 'Design';
+            $initialRoleIcon = '🎨';
+            break;
+        case 'fazer-parte':
+            $initialRoleName = 'Faça parte!';
+            $initialRoleIcon = '✨';
+            break;
+    }
+}
+
 // Debug print for troubleshooting
 // Uncomment these lines to check the database values directly
 /*
@@ -577,14 +673,34 @@ include 'includes/header.php';
             <!-- Language Dropdown -->
             <div class="mobile-dropdown">
                 <!-- Dropdown label changes based on category -->
-                <p class="dropdown-label language-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Selecione um idioma:</p>
-                <p class="dropdown-label region-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; display: none;">Selecione uma cidade:</p>
-                <p class="dropdown-label role-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; display: none;">Selecione um papel:</p>
+                <p class="dropdown-label language-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; <?= $initialCategory !== 'online' ? 'display: none;' : '' ?>">Selecione um idioma:</p>
+                <p class="dropdown-label region-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; <?= $initialCategory !== 'presencial' ? 'display: none;' : '' ?>">Selecione uma cidade:</p>
+                <p class="dropdown-label role-label" style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; <?= $initialCategory !== 'tecnica' ? 'display: none;' : '' ?>">Selecione um papel:</p>
                 
                 <button class="dropdown-button">
                     <div class="dropdown-flag-container">
-                        <span id="selected-language-flag" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">🌍</span>
-                        <span id="selected-option">Todos os idiomas</span>
+                        <span id="selected-language-flag" class="flag-icon" style="font-size: 1.2rem; width: 24px; height: 24px; display: inline-block; text-align: center; box-shadow: none;">
+                            <?php 
+                            if ($initialCategory === 'online') {
+                                echo $initialLanguageIcon;
+                            } elseif ($initialCategory === 'presencial') {
+                                echo $initialRegionIcon;
+                            } elseif ($initialCategory === 'tecnica') {
+                                echo $initialRoleIcon;
+                            }
+                            ?>
+                        </span>
+                        <span id="selected-option">
+                            <?php 
+                            if ($initialCategory === 'online') {
+                                echo $initialLanguageName;
+                            } elseif ($initialCategory === 'presencial') {
+                                echo $initialRegionName;
+                            } elseif ($initialCategory === 'tecnica') {
+                                echo $initialRoleName;
+                            }
+                            ?>
+                        </span>
                     </div>
                     <i class="fas fa-chevron-down"></i>
                 </button>
@@ -961,11 +1077,11 @@ include 'includes/header.php';
                              data-categories="<?= $categoriesAttr ?>"
                              data-region="<?= $regionAttr ?>"
                              data-roles="<?= $rolesAttr ?>"
-                             data-category-context="online"
+                             data-category-context="<?= $initialCategory ?>"
                              <?= $generalDataAttributes ?>
                         >
                             <?php if (!empty($primaryLanguage) && (strpos(strtolower($categoriesAttr), 'online') !== false || strpos(strtolower($categoriesAttr), 'presencial') !== false)): ?>
-                                <div class="host-badge context-online context-presencial" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
+                                <div class="host-badge context-online context-presencial" style="background-color: <?= $badgeColor ?>; <?= ($initialCategory != 'online' && $initialCategory != 'presencial') ? 'display: none;' : '' ?>"><?= $badgeText ?></div>
                             <?php endif; ?>
                             
                             <?php 
@@ -1010,7 +1126,7 @@ include 'includes/header.php';
                                         // Position additional language badges below the primary one
                                         $topPosition = 65 + ($index * 45); // Start at 65px and add 45px for each badge
                             ?>
-                                <div class="host-badge context-online" style="background-color: <?= $langBadgeColor ?>; top: <?= $topPosition ?>px;"><?= $lang ?></div>
+                                <div class="host-badge context-online" style="background-color: <?= $langBadgeColor ?>; top: <?= $topPosition ?>px; <?= $initialCategory != 'online' ? 'display: none;' : '' ?>"><?= $lang ?></div>
                             <?php 
                                     endif;
                                 endforeach;
@@ -1035,7 +1151,7 @@ include 'includes/header.php';
                                     }
                                     $topPosition = 20 + ($index * 45); // Position badges vertically with 45px spacing
                                 ?>
-                                <div class="host-badge context-tecnica" style="display: none; background-color: <?= $roleBadgeColor ?>; top: <?= $topPosition ?>px;"><?= $role ?></div>
+                                <div class="host-badge context-tecnica" style="background-color: <?= $roleBadgeColor ?>; top: <?= $topPosition ?>px; <?= $initialCategory != 'tecnica' ? 'display: none;' : '' ?>"><?= $role ?></div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                             
@@ -1046,7 +1162,7 @@ include 'includes/header.php';
                                 <h3 class="host-name"><?= $host['full_name'] ?></h3>
                                 
                                 <!-- Region information - only shown in presencial tab -->
-                                <div class="host-region context-presencial" style="display: none;">
+                                <div class="host-region context-presencial" style="<?= $initialCategory != 'presencial' ? 'display: none;' : '' ?>">
                                     <?php if (!empty($host['region'])): ?>
                                     <i class="fas fa-map-marker-alt"></i> <?= $host['region'] ?>
                                     <?php endif; ?>
@@ -1056,7 +1172,7 @@ include 'includes/header.php';
                                 
                                 <!-- Technical skills - only shown in technical tab -->
                                 <?php if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_skills'])): ?>
-                                <div class="host-languages context-tecnica" style="display: none;">
+                                <div class="host-languages context-tecnica" style="<?= $initialCategory != 'tecnica' ? 'display: none;' : '' ?>">
                                     <?php 
                                     $skills = array_map('trim', explode(',', $host['technical_skills']));
                                     foreach ($skills as $skill): ?>
@@ -1068,7 +1184,7 @@ include 'includes/header.php';
                                 <!-- Description fields - each shown only in relevant context -->
                                 
                                 <!-- Online description - only shown in online tab -->
-                                <p class="host-bio context-online" <?= $generalDataAttributes ?>>
+                                <p class="host-bio context-online" <?= $generalDataAttributes ?> <?= $initialCategory != 'online' ? 'style="display: none;"' : '' ?>>
                                     <?php 
                                     if (!empty($host['online_description'])) {
                                         echo $host['online_description'];
@@ -1077,7 +1193,7 @@ include 'includes/header.php';
                                 </p>
                                 
                                 <!-- In-person description - only shown in presencial tab -->
-                                <p class="host-bio context-presencial" style="display: none;" <?= $generalDataAttributes ?>>
+                                <p class="host-bio context-presencial" <?= $generalDataAttributes ?> <?= $initialCategory != 'presencial' ? 'style="display: none;"' : '' ?>>
                                     <?php 
                                     if (!empty($host['inperson_description'])) {
                                         echo $host['inperson_description'];
@@ -1086,7 +1202,7 @@ include 'includes/header.php';
                                 </p>
                                 
                                 <!-- Technical description - only shown in technical tab -->
-                                <p class="host-bio context-tecnica" style="display: none;" <?= $generalDataAttributes ?>>
+                                <p class="host-bio context-tecnica" <?= $generalDataAttributes ?> <?= $initialCategory != 'tecnica' ? 'style="display: none;"' : '' ?>>
                                     <?php 
                                     if (!empty($host['technical_description'])) {
                                         echo $host['technical_description'];
@@ -1121,7 +1237,7 @@ include 'includes/header.php';
                                     
                                     <!-- Show GitHub only for technical team members -->
                                     <?php if (!empty($socialLinks['github']) && !empty($host['technical_status']) && $host['technical_status'] === 'ativo'): ?>
-                                        <a href="<?= $socialLinks['github'] ?>" target="_blank" class="contact-btn github context-tecnica" style="display: none;" title="GitHub">
+                                        <a href="<?= $socialLinks['github'] ?>" target="_blank" class="contact-btn github context-tecnica" style="<?= $initialCategory != 'tecnica' ? 'display: none;' : '' ?>" title="GitHub">
                                             <i class="fab fa-github"></i>
                                         </a>
                                     <?php endif; ?>
@@ -1140,11 +1256,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set the initial category based on PHP-rendered HTML
     let currentCategory = '<?= $initialCategory ?>';
     
+    // Initialize filter variables from PHP
+    const initialLanguage = '<?= $initialLanguage ?>';
+    const initialRegion = '<?= $initialRegion ?>';
+    const initialRole = '<?= $initialRole ?>';
+    
+    console.log(`Initial state: category=${currentCategory}, language=${initialLanguage}, region=${initialRegion}, role=${initialRole}`);
+    
     // Initialize dropdowns based on current category
     updateDropdownForCategory(currentCategory);
     
     // Apply initial filtering
     filterHostsByCategory(currentCategory);
+    
+    // Apply specific filter based on URL parameters
+    if (currentCategory === 'online' && initialLanguage !== 'all') {
+        // Find a normalized version of the language if available
+        const languageButton = document.querySelector(`.language-button[data-language="${initialLanguage}"]`);
+        const normalizedLang = languageButton ? languageButton.getAttribute('data-normalized') || initialLanguage : initialLanguage;
+        
+        // Direct filtering without animation or unnecessary UI updates
+        filterHostsByLanguage(initialLanguage, normalizedLang);
+    } else if (currentCategory === 'presencial' && initialRegion !== 'all') {
+        filterHostsByRegion(initialRegion);
+    } else if (currentCategory === 'tecnica' && initialRole !== 'all') {
+        filterHostsByRole(initialRole);
+    }
     
     // Check for secondary URL parameters (idioma, regiao, papel)
     initializeFromURLParams();
@@ -2067,47 +2204,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Check URL parameters and apply filters without setTimeout
     function initializeFromURLParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const idioma = urlParams.get('idioma');
-        const regiao = urlParams.get('regiao');
-        const papel = urlParams.get('papel');
+        // We're already using the PHP variables, so this function is now just for any additional 
+        // initialization needed. The main filtering is already handled above.
+        console.log('URL parameters have been pre-processed on the server side');
         
-        // Handle secondary filters based on current category
-        if (currentCategory === 'presencial' && regiao) {
-            const regionButton = document.querySelector(`.region-button[data-region="${regiao}"]`);
-            if (regionButton) {
-                // Update selected option text
-                const regionText = regionButton.querySelector('span:not(.region-icon)').textContent;
-                const iconElement = regionButton.querySelector('.region-icon');
-                document.getElementById('selected-option').textContent = regionText;
-                if (iconElement) {
-                    document.getElementById('selected-language-flag').textContent = iconElement.textContent;
-                }
-                // Apply region filter
-                filterHostsByRegion(regiao);
-            }
-        } else if (currentCategory === 'tecnica' && papel) {
-            const roleButton = document.querySelector(`.role-button[data-role="${papel}"]`);
-            if (roleButton) {
-                // Update selected option text
-                const roleText = roleButton.querySelector('span:not(.role-icon)').textContent;
-                const iconElement = roleButton.querySelector('.role-icon');
-                document.getElementById('selected-option').textContent = roleText;
-                if (iconElement) {
-                    document.getElementById('selected-language-flag').textContent = iconElement.textContent;
-                }
-                // Apply role filter
-                filterHostsByRole(papel);
-            }
-        } else if (currentCategory === 'online' && idioma) {
-            handleLanguageParameter(idioma);
-        } else if (currentCategory === 'online') {
-            // Default to all languages for online category if no idioma parameter
-            const allLanguagesButton = document.querySelector('.language-button[data-language="all"]');
-            if (allLanguagesButton) {
-                allLanguagesButton.click();
-            }
-        }
+        // Ensure all dropdowns are closed on page load
+        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+            dropdown.classList.remove('show');
+            dropdown.style.display = 'none';
+        });
     }
 });
 </script>
