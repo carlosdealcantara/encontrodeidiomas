@@ -859,7 +859,7 @@ include 'includes/header.php';
                                     break;
                                 case 'design':
                                 case 'designer':
-                                    $techBadgeColor = '#E1306C'; // Designer pink
+                                    $techBadgeColor = 'var(--accent-purple)'; // Changed from #E1306C (pink) to purple
                                     break;
                                 default:
                                     $techBadgeColor = 'var(--accent-purple)';
@@ -959,8 +959,26 @@ include 'includes/header.php';
                                 <div class="host-badge context-online context-presencial" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
                             <?php endif; ?>
                             
-                            <?php if (!empty($primaryTechnicalRole) && strpos(strtolower($categoriesAttr), 'tecnica') !== false): ?>
-                                <div class="host-badge context-tecnica" style="display: none; background-color: <?= $techBadgeColor ?>;"><?= $primaryTechnicalRole ?></div>
+                            <?php if (!empty($host['technical_roles']) && strpos(strtolower($categoriesAttr), 'tecnica') !== false): ?>
+                                <?php 
+                                $technicalRoles = array_map('trim', explode(',', $host['technical_roles']));
+                                foreach ($technicalRoles as $index => $role): 
+                                    $roleBadgeColor = 'var(--accent-purple)'; // Default purple
+                                    switch(strtolower($role)) {
+                                        case 'desenvolvimento':
+                                        case 'developer':
+                                        case 'dev':
+                                            $roleBadgeColor = '#0077B5'; // Developer blue
+                                            break;
+                                        case 'design':
+                                        case 'designer':
+                                            $roleBadgeColor = 'var(--accent-purple)'; // Purple for design
+                                            break;
+                                    }
+                                    $topPosition = 20 + ($index * 45); // Position badges vertically with 45px spacing
+                                ?>
+                                <div class="host-badge context-tecnica" style="display: none; background-color: <?= $roleBadgeColor ?>; top: <?= $topPosition ?>px;"><?= $role ?></div>
+                                <?php endforeach; ?>
                             <?php endif; ?>
                             
                             <img src="<?= !empty($host['profile_picture']) ? (strpos($host['profile_picture'], 'assets/') === 0 ? $host['profile_picture'] : 'assets/images/' . $host['profile_picture']) : 'assets/images/HostSemFoto.png' ?>" 
@@ -987,16 +1005,6 @@ include 'includes/header.php';
                                         <?php endforeach;
                                     }
                                     ?>
-                                </div>
-                                
-                                <!-- Technical skills - only shown in technical tab -->
-                                <div class="host-languages context-tecnica" style="display: none;">
-                                    <?php if (!empty($host['technical_roles'])): ?>
-                                        <?php $roles = array_map('trim', explode(',', $host['technical_roles'])); ?>
-                                        <?php foreach ($roles as $role): ?>
-                                            <span class="language-tag"><?= $role ?></span>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
                                 </div>
                                 
                                 <!-- Technical skills - only shown in technical tab -->
