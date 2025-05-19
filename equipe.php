@@ -1000,9 +1000,24 @@ include 'includes/header.php';
                                     if (empty($hostLanguages)) {
                                         echo "<span class='language-tag'>Português</span>"; // Default if no languages found
                                     } else {
-                                        foreach ($hostLanguages as $lang): ?>
-                                        <span class="language-tag"><?= $lang ?></span>
-                                        <?php endforeach;
+                                        // Don't display languages that are already shown in the badge
+                                        $badgeLanguage = !empty($host['special_badge']) ? $host['special_badge'] : (!empty($primaryLanguage) ? $primaryLanguage : '');
+                                        $displayedLanguages = [];
+                                        
+                                        foreach ($hostLanguages as $lang): 
+                                            // Only display language if it's different from what's in the badge
+                                            if ($lang !== $badgeLanguage):
+                                            ?>
+                                            <span class="language-tag"><?= $lang ?></span>
+                                            <?php 
+                                            $displayedLanguages[] = $lang;
+                                            endif;
+                                        endforeach;
+                                        
+                                        // If no languages were displayed (all were filtered out), show at least one skill
+                                        if (empty($displayedLanguages) && !empty($hostLanguages[0])) {
+                                            echo "<span class='language-tag'>Português</span>";
+                                        }
                                     }
                                     ?>
                                 </div>
@@ -1209,6 +1224,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         console.log(`Found ${visibleCount} visible cards after filtering by category: ${category}`);
+        
+        // Update current category
+        currentCategory = category;
         
         // Show message if no hosts match the selected category
         if (visibleCount === 0) {
@@ -1646,8 +1664,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (categoria) {
             const categoryTab = document.querySelector(`.category-tab[data-category="${categoria}"]`);
             if (categoryTab) {
-                // Manually click the appropriate tab
-                categoryTab.click();
+                // Update tabs UI
+                document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
+                categoryTab.classList.add('active');
+                
+                // Set current category
+                currentCategory = categoria;
+                
+                // Apply category filter
+                filterHostsByCategory(categoria);
+                
+                // Update dropdowns
+                updateDropdownForCategory(categoria);
                 
                 // Handle secondary filters based on category
                 if (categoria === 'presencial' && regiao) {
@@ -1682,13 +1710,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         } else {
-            // If no category specified, apply default category filter (online)
-            filterHostsByCategory('online');
-            
-            // Check for language parameter if default category is online
+            // If no category specified, check if there's a language filter
             if (idioma) {
-                handleLanguageParameter(idioma);
+                // Apply online category and handle language
+                const onlineTab = document.querySelector('.category-tab[data-category="online"]');
+                if (onlineTab) {
+                    onlineTab.click();
+                    setTimeout(() => {
+                        handleLanguageParameter(idioma);
+                    }, 150);
+                }
             } else {
+                // Apply default category filter (online)
+                filterHostsByCategory('online');
                 // If no idioma specified, show all languages
                 setTimeout(() => {
                     const allLanguagesButton = document.querySelector('.language-button[data-language="all"]');
@@ -1772,9 +1806,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Apply default category filter on page load
     setTimeout(() => {
-        // Apply default filter (online) when page loads
-        filterHostsByCategory('online');
-        
         // Check URL parameters first
         const urlParams = new URLSearchParams(window.location.search);
         const urlCategory = urlParams.get('categoria');
@@ -1787,6 +1818,8 @@ document.addEventListener('DOMContentLoaded', function() {
             parseURL();
         } else {
             // No URL parameters, apply default selections (all languages in online category)
+            // Apply default filter (online) when page loads
+            filterHostsByCategory('online');
             document.querySelector('.language-button[data-language="all"]').click();
         }
         
