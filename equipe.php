@@ -6,6 +6,15 @@ require_once 'config.php';
 $hosts = getHosts();
 $languages = getLanguages();
 
+// Set initial category based on URL parameter
+$initialCategory = 'online'; // Default category
+if (isset($_GET['categoria'])) {
+    $allowedCategories = ['online', 'presencial', 'tecnica'];
+    if (in_array($_GET['categoria'], $allowedCategories)) {
+        $initialCategory = $_GET['categoria'];
+    }
+}
+
 // Debug print for troubleshooting
 // Uncomment these lines to check the database values directly
 /*
@@ -552,9 +561,9 @@ include 'includes/header.php';
         <div class="team-section">
             <!-- Category filter tabs -->
             <div class="category-tabs">
-                <button class="category-tab active" data-category="online">Anfitriões Online</button>
-                <button class="category-tab" data-category="presencial">Presenciais</button>
-                <button class="category-tab" data-category="tecnica">Equipe Técnica</button>
+                <button class="category-tab <?= $initialCategory === 'online' ? 'active' : '' ?>" data-category="online">Anfitriões Online</button>
+                <button class="category-tab <?= $initialCategory === 'presencial' ? 'active' : '' ?>" data-category="presencial">Presenciais</button>
+                <button class="category-tab <?= $initialCategory === 'tecnica' ? 'active' : '' ?>" data-category="tecnica">Equipe Técnica</button>
             </div>
             
             <!-- Original filter controls (hidden) -->
@@ -1128,6 +1137,18 @@ include 'includes/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Set the initial category based on PHP-rendered HTML
+    let currentCategory = '<?= $initialCategory ?>';
+    
+    // Initialize dropdowns based on current category
+    updateDropdownForCategory(currentCategory);
+    
+    // Apply initial filtering
+    filterHostsByCategory(currentCategory);
+    
+    // Check for secondary URL parameters (idioma, regiao, papel)
+    initializeFromURLParams();
+    
     // Debugging - Check data attributes on all host cards
     console.log("Host language data:");
     document.querySelectorAll('.host-card').forEach(card => {
@@ -1144,7 +1165,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Category tabs functionality
     const categoryTabs = document.querySelectorAll('.category-tab');
-    let currentCategory = 'online'; // Default category
     
     categoryTabs.forEach(tab => {
         tab.addEventListener('click', function() {
@@ -1827,31 +1847,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Apply default category filter on page load
-    setTimeout(() => {
-        // Check URL parameters first
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlCategory = urlParams.get('categoria');
-        const urlLanguage = urlParams.get('idioma');
-        const urlRegion = urlParams.get('regiao');
-        const urlRole = urlParams.get('papel');
-        
-        if (urlCategory || urlLanguage || urlRegion || urlRole) {
-            // If there are URL parameters, let parseURL() handle them
-            parseURL();
-        } else {
-            // No URL parameters, apply default selections (all languages in online category)
-            // Apply default filter (online) when page loads
-            filterHostsByCategory('online');
-            document.querySelector('.language-button[data-language="all"]').click();
-        }
-        
-        // Ensure all dropdowns are closed on page load
-        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-            dropdown.classList.remove('show');
-            dropdown.style.display = 'none';
-        });
-    }, 100);
+    // Ensure all dropdowns are closed on page load
+    document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+        dropdown.classList.remove('show');
+        dropdown.style.display = 'none';
+    });
 
     // Add event listeners to dropdown buttons
     document.querySelectorAll('.region-button').forEach(button => {
@@ -2061,6 +2061,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const noResults = document.querySelector(`.no-hosts-${filterType}`);
             if (noResults) {
                 noResults.remove();
+            }
+        }
+    }
+
+    // Check URL parameters and apply filters without setTimeout
+    function initializeFromURLParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idioma = urlParams.get('idioma');
+        const regiao = urlParams.get('regiao');
+        const papel = urlParams.get('papel');
+        
+        // Handle secondary filters based on current category
+        if (currentCategory === 'presencial' && regiao) {
+            const regionButton = document.querySelector(`.region-button[data-region="${regiao}"]`);
+            if (regionButton) {
+                // Update selected option text
+                const regionText = regionButton.querySelector('span:not(.region-icon)').textContent;
+                const iconElement = regionButton.querySelector('.region-icon');
+                document.getElementById('selected-option').textContent = regionText;
+                if (iconElement) {
+                    document.getElementById('selected-language-flag').textContent = iconElement.textContent;
+                }
+                // Apply region filter
+                filterHostsByRegion(regiao);
+            }
+        } else if (currentCategory === 'tecnica' && papel) {
+            const roleButton = document.querySelector(`.role-button[data-role="${papel}"]`);
+            if (roleButton) {
+                // Update selected option text
+                const roleText = roleButton.querySelector('span:not(.role-icon)').textContent;
+                const iconElement = roleButton.querySelector('.role-icon');
+                document.getElementById('selected-option').textContent = roleText;
+                if (iconElement) {
+                    document.getElementById('selected-language-flag').textContent = iconElement.textContent;
+                }
+                // Apply role filter
+                filterHostsByRole(papel);
+            }
+        } else if (currentCategory === 'online' && idioma) {
+            handleLanguageParameter(idioma);
+        } else if (currentCategory === 'online') {
+            // Default to all languages for online category if no idioma parameter
+            const allLanguagesButton = document.querySelector('.language-button[data-language="all"]');
+            if (allLanguagesButton) {
+                allLanguagesButton.click();
             }
         }
     }
