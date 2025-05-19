@@ -798,6 +798,13 @@ include 'includes/header.php';
                             $badgeText = $host['special_badge'];
                         }
                         
+                        // Get first technical role for badge in technical tab
+                        $primaryTechnicalRole = '';
+                        if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_roles'])) {
+                            $technicalRoles = array_map('trim', explode(',', $host['technical_roles']));
+                            $primaryTechnicalRole = !empty($technicalRoles) ? $technicalRoles[0] : '';
+                        }
+                        
                         // Get badge color based on language
                         $badgeColor = 'var(--accent-red)'; // Default red color
                         
@@ -838,6 +845,24 @@ include 'includes/header.php';
                                     break;
                                 default:
                                     $badgeColor = 'var(--accent-red)';
+                            }
+                        }
+                        
+                        // Get technical role badge color
+                        $techBadgeColor = 'var(--accent-purple)'; // Default purple for tech roles
+                        if (!empty($primaryTechnicalRole)) {
+                            switch(strtolower($primaryTechnicalRole)) {
+                                case 'desenvolvimento':
+                                case 'developer':
+                                case 'dev':
+                                    $techBadgeColor = '#0077B5'; // Developer blue
+                                    break;
+                                case 'design':
+                                case 'designer':
+                                    $techBadgeColor = '#E1306C'; // Designer pink
+                                    break;
+                                default:
+                                    $techBadgeColor = 'var(--accent-purple)';
                             }
                         }
                         
@@ -930,8 +955,12 @@ include 'includes/header.php';
                              data-category-context="online"
                              <?= $generalDataAttributes ?>
                         >
-                            <?php if (!empty($primaryLanguage)): ?>
-                                <div class="host-badge" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
+                            <?php if (!empty($primaryLanguage) && (strpos(strtolower($categoriesAttr), 'online') !== false || strpos(strtolower($categoriesAttr), 'presencial') !== false)): ?>
+                                <div class="host-badge context-online context-presencial" style="background-color: <?= $badgeColor ?>;"><?= $badgeText ?></div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($primaryTechnicalRole) && strpos(strtolower($categoriesAttr), 'tecnica') !== false): ?>
+                                <div class="host-badge context-tecnica" style="display: none; background-color: <?= $techBadgeColor ?>;"><?= $primaryTechnicalRole ?></div>
                             <?php endif; ?>
                             
                             <img src="<?= !empty($host['profile_picture']) ? (strpos($host['profile_picture'], 'assets/') === 0 ? $host['profile_picture'] : 'assets/images/' . $host['profile_picture']) : 'assets/images/HostSemFoto.png' ?>" 
