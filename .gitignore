@@ -1,0 +1,26 @@
+# Segurança: credenciais e configurações sensíveis
+.env
+config.php
+
+# Python (resquícios do dev - não fazem parte do projeto PHP)
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+
+# Node / npm (caso seja usado)
+node_modules/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
