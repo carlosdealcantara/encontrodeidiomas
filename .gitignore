@@ -1,6 +1,6 @@
 # Segurança: credenciais e configurações sensíveis
 .env
-config.php
+# config.php (removido do ignore pois agora usa .env)
 
 # Python (resquícios do dev - não fazem parte do projeto PHP)
 __pycache__/
