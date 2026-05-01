@@ -49,6 +49,20 @@ if (empty($initialLang)) {
     }
 }
 
+// 3. Prepara dados para o botão de Dropdown inicial (Evita o bug da bandeira quebrada)
+$initialLangName  = 'Carregando...';
+$initialFlagCode  = '';
+$initialFlagEmoji = '';
+
+foreach ($languages as $lang) {
+    if ($lang['id'] == $initialLang) {
+        $initialLangName  = $lang['name'];
+        $initialFlagCode  = $lang['flag_code']  ?? '';
+        $initialFlagEmoji = $lang['flag_emoji'] ?? '';
+        break;
+    }
+}
+
 ob_start();
 
 /**
@@ -336,8 +350,13 @@ include 'includes/header.php';
                     <p style="text-align:center;margin-bottom:10px;font-size:.9rem;font-weight:500;">Selecione um idioma:</p>
                     <button class="dropdown-button" id="lang-dropdown-btn">
                         <div class="dropdown-flag-container">
-                            <img id="selected-language-flag" src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="Bandeira">
-                            <span id="selected-language">Carregando...</span>
+                            <img id="selected-language-flag" 
+                                 src="<?= $initialFlagCode ? "https://flagcdn.com/32x24/{$initialFlagCode}.png" : '' ?>" 
+                                 class="flag-icon" 
+                                 style="<?= $initialFlagCode ? '' : 'display:none;' ?>" 
+                                 alt="Bandeira">
+                            <span id="selected-language-emoji" style="<?= $initialFlagEmoji ? '' : 'display:none;' ?>"><?= $initialFlagEmoji ?></span>
+                            <span id="selected-language"><?= htmlspecialchars($initialLangName) ?></span>
                         </div>
                         <i class="fas fa-chevron-down"></i>
                     </button>
@@ -506,13 +525,27 @@ document.addEventListener('DOMContentLoaded', function() {
             currentLang = this.dataset.languageId;
             const langName = this.dataset.language;
             const flagCode = this.dataset.flagCode;
+            const flagEmoji = this.dataset.flagEmoji;
 
             // Atualiza o botão do dropdown
             document.getElementById('selected-language').textContent = langName;
-            const flagEl = document.getElementById('selected-language-flag');
-            if (flagCode && flagEl) {
-                flagEl.src = `https://flagcdn.com/32x24/${flagCode}.png`;
-                flagEl.style.display = '';
+            
+            const flagImg = document.getElementById('selected-language-flag');
+            const flagEmo = document.getElementById('selected-language-emoji');
+
+            if (flagCode) {
+                flagImg.src = `https://flagcdn.com/32x24/${flagCode}.png`;
+                flagImg.style.display = '';
+                if (flagEmo) flagEmo.style.display = 'none';
+            } else if (flagEmoji) {
+                flagImg.style.display = 'none';
+                if (flagEmo) {
+                    flagEmo.textContent = flagEmoji;
+                    flagEmo.style.display = '';
+                }
+            } else {
+                flagImg.style.display = 'none';
+                if (flagEmo) flagEmo.style.display = 'none';
             }
 
             document.querySelectorAll('.language-button').forEach(b => b.classList.remove('active-lang'));
