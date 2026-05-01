@@ -296,9 +296,9 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 
             <nav class="nav-links" id="main-nav" aria-label="Navegação principal">
                 <a href="index.php"   <?= $current_page === 'index.php'   ? 'class="active" aria-current="page"' : '' ?>>Início</a>
-                <a href="online.php"  <?= $current_page === 'online.php'  ? 'class="active" aria-current="page"' : '' ?>>Online</a>
-                <a href="equipe.php"  <?= $current_page === 'equipe.php'  ? 'class="active" aria-current="page"' : '' ?>>Equipe</a>
-                <a href="links.php"   <?= $current_page === 'links.php'   ? 'class="active" aria-current="page"' : '' ?>>Links</a>
+                <a href="online.php"  <?= $current_page === 'online.php'  ? 'class="active" aria-current="page"' : '' ?>>Encontros Online</a>
+                <a href="equipe.php"  <?= $current_page === 'equipe.php'  ? 'class="active" aria-current="page"' : '' ?>>Nossa Equipe</a>
+                <a href="links.php"   <?= $current_page === 'links.php'   ? 'class="active" aria-current="page"' : '' ?>>Links Úteis</a>
                 <a href="contato.php" <?= $current_page === 'contato.php' ? 'class="active" aria-current="page"' : '' ?>>Contato</a>
             </nav>
         </div>
