@@ -136,6 +136,8 @@ ob_start();
     .contact-btn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:#f0f2f5; color:var(--text-color); transition:var(--transition); }
     .contact-btn:hover { transform:translateY(-3px); background: var(--accent-red); color: white; }
 
+    .cta-section { padding-bottom: 40px; } /* Evita tocar no rodapé */
+
     .host-badge { position:absolute; top:15px; right:15px; background:var(--accent-red); color:#fff; padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:700; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,.2); }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -330,8 +332,8 @@ include 'includes/header.php';
                 <div style="text-align:center;padding:30px;">
                     <i class="fas fa-user-plus" style="font-size:3rem;color:var(--accent-red);margin-bottom:15px;"></i>
                     <h3 style="font-size:1.3rem;margin-bottom:10px;">Torne-se um Anfitrião!</h3>
-                    <p style="color:#666;margin-bottom:20px;">Quer fazer parte da nossa equipe? Entre em contato!</p>
-                    <a href="contato.php" class="cta-button" style="display:inline-block; padding:10px 25px; background:var(--accent-red); color:white; text-decoration:none; border-radius:25px;">Saiba Mais</a>
+                    <p style="color:#666;margin-bottom:20px;">Quer fazer parte da nossa equipe? Conheça as vantagens!</p>
+                    <a href="#seja-host" class="cta-button" style="display:inline-block; padding:10px 25px; background:var(--accent-red); color:white; text-decoration:none; border-radius:25px;">Ver Benefícios</a>
                 </div>
             </div>
         </div>
@@ -346,12 +348,12 @@ include 'includes/header.php';
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-certificate"></i></div>
                     <h4>Certificado</h4>
-                    <p>Receba um certificado oficial de horas complementares e atividade voluntária para seu currículo.</p>
+                    <p>Receba um certificado reconhecido pelo projeto para comprovar sua experiência e horas de dedicação.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
                     <h4>Networking</h4>
-                    <p>Conecte-se com nossa rede global de anfitriões, professores e entusiastas de idiomas.</p>
+                    <p>Faça conexões estratégicas, conheça o projeto por dentro e colabore com outros anfitriões.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-gem"></i></div>
@@ -360,8 +362,8 @@ include 'includes/header.php';
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
-                    <h4>Desenvolvimento</h4>
-                    <p>Pratique liderança, oratória e ganhe fluência máxima guiando grupos reais.</p>
+                    <h4>Suas Iniciativas</h4>
+                    <p>Coloque suas próprias ideias em prática com nosso apoio e suporte técnico para novos projetos.</p>
                 </div>
             </div>
 
