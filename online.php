@@ -348,7 +348,7 @@ include 'includes/header.php';
                                 <?php endif; ?>
                                 <?php if (!empty($ev['youtube_link'])): ?>
                                 <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
-                                    <i class="fas fa-square-play"></i> Anteriores
+                                    <i class="fas fa-play-square"></i> Anteriores
                                 </a>
                                 <?php endif; ?>
                             </div>
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
                             \${actionButton}
-                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fas fa-square-play"></i> Anteriores</a>` : ''}
+                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fas fa-play-square"></i> Anteriores</a>` : ''}
                         </div>`;
                     timeline.appendChild(div);
                 });
