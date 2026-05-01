@@ -518,10 +518,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
+                    const socialLinksHtml = `
+                        <div class="event-social-links">
+                            \${ev.whatsapp_group_link ? `<a href="\${ev.whatsapp_group_link}" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
+                            \${ev.instagram_link ? `<a href="\${ev.instagram_link}" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>` : ''}
+                        </div>
+                    `;
+
                     div.innerHTML = `
                         <span class="event-time">\${evHour}h</span>
                         \${isNow ? '<span class="now-badge">AO VIVO</span>' : ''}
-                        <div class="event-title">\${flagHtml}<span>\${langName}</span></div>
+                        <div class="event-title">
+                            \${flagHtml}
+                            <span>\${langName}</span>
+                            \${socialLinksHtml}
+                        </div>
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
                             \${actionButton}
