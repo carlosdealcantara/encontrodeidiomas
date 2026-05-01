@@ -326,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     const regionDropdown = document.getElementById('region-dropdown');
     regions.forEach(reg => {
+        if (!reg) return;
         const item = document.createElement('div');
         item.className = 'dropdown-item';
         item.dataset.value = reg;
@@ -342,7 +343,8 @@ document.addEventListener('DOMContentLoaded', function() {
             currentTab = this.dataset.tab;
             
             filterGroups.forEach(g => g.classList.remove('active'));
-            document.getElementById('filter-' + currentTab).classList.add('active');
+            const filterGroup = document.getElementById('filter-' + currentTab);
+            if (filterGroup) filterGroup.classList.add('active');
             
             applyFilters();
             updateURL();
@@ -365,49 +367,61 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
     });
 
-    document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const wrapper = this.closest('.filter-group');
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('dropdown-item')) {
+            const item = e.target;
+            const wrapper = item.closest('.filter-group');
             const type = wrapper.id.replace('filter-', '');
-            const value = this.dataset.value;
-            const text = this.textContent;
+            const value = item.dataset.value;
+            const text = item.textContent;
 
             currentFilters[type] = value;
             wrapper.querySelector('.dropdown-button span span').textContent = text;
             
             applyFilters();
             updateURL();
-        });
+        }
     });
 
     function applyFilters() {
+        console.log('Filtrando para aba:', currentTab);
+        let visibleCount = 0;
+
         hostCards.forEach(card => {
-            const cardCats = card.dataset.categories.split(',');
-            const cardLangs = card.dataset.languages.split(',');
-            const cardRegion = card.dataset.region;
-            const cardRoles = card.dataset.roles.split(',');
+            const cardCatsRaw = card.dataset.categories || '';
+            const cardCats = cardCatsRaw.split(',').map(s => s.trim().toLowerCase());
+            
+            const cardLangs = (card.dataset.languages || '').split(',').map(s => s.trim().toLowerCase());
+            const cardRegion = (card.dataset.region || '').trim().toLowerCase();
+            const cardRoles = (card.dataset.roles || '').split(',').map(s => s.trim().toLowerCase());
 
-            let visible = cardCats.includes(currentTab);
+            // Se o usuário quer "ver todos por padrão" (conforme solicitado), 
+            // podemos ajustar para que, se não houver categoria definida, mostre em algum lugar.
+            // Mas seguindo a lógica de abas:
+            let visible = cardCats.includes(currentTab.toLowerCase());
 
+            // Se estivermos em uma aba, aplicamos os sub-filtros
             if (visible) {
                 if (currentTab === 'online' && currentFilters.online !== 'all') {
-                    visible = cardLangs.includes(currentFilters.online);
+                    visible = cardLangs.includes(currentFilters.online.toLowerCase());
                 } else if (currentTab === 'presencial' && currentFilters.presencial !== 'all') {
-                    visible = cardRegion === currentFilters.presencial;
+                    visible = cardRegion === currentFilters.presencial.toLowerCase();
                 } else if (currentTab === 'tecnica' && currentFilters.tecnica !== 'all') {
-                    visible = cardRoles.some(r => r.includes(currentFilters.tecnica));
+                    visible = cardRoles.some(r => r.includes(currentFilters.tecnica.toLowerCase()));
                 }
             }
 
             card.style.display = visible ? 'block' : 'none';
-            
-            // Atualizar contextos internos (bio, tags)
-            card.querySelectorAll('.context-online, .context-presencial, .context-tecnica').forEach(el => {
-                el.style.display = el.classList.contains('context-' + currentTab) ? '' : 'none';
-            });
+            if (visible) {
+                visibleCount++;
+                // Atualizar contextos internos
+                card.querySelectorAll('.context-online, .context-presencial, .context-tecnica').forEach(el => {
+                    el.style.display = el.classList.contains('context-' + currentTab) ? '' : 'none';
+                });
+            }
         });
 
-        // Sempre mostrar o card "Torne-se um anfitrião"
+        console.log('Membros visíveis:', visibleCount);
         becomeHostCard.style.display = 'flex';
     }
 
@@ -415,19 +429,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = new URL(window.location);
         url.searchParams.set('tab', currentTab);
         
-        if (currentFilters[currentTab] !== 'all') {
-            const paramMap = { online: 'idioma', presencial: 'regiao', tecnica: 'papel' };
-            url.searchParams.set(paramMap[currentTab], currentFilters[currentTab]);
-        } else {
-            url.searchParams.delete('idioma');
-            url.searchParams.delete('regiao');
-            url.searchParams.delete('papel');
-        }
+        const paramMap = { online: 'idioma', presencial: 'regiao', tecnica: 'papel' };
+        Object.keys(paramMap).forEach(key => {
+            if (key === currentTab && currentFilters[key] !== 'all') {
+                url.searchParams.set(paramMap[key], currentFilters[key]);
+            } else {
+                url.searchParams.delete(paramMap[key]);
+            }
+        });
         
         window.history.pushState({}, '', url);
     }
 
-    // Aplicar estado inicial
+    // Inicialização
     applyFilters();
 });
 </script>
