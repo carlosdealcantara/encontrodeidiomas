@@ -354,7 +354,9 @@ include 'includes/header.php';
                                  src="<?= $initialFlagCode ? "https://flagcdn.com/32x24/{$initialFlagCode}.png" : '' ?>" 
                                  class="flag-icon" 
                                  style="<?= $initialFlagCode ? '' : 'display:none;' ?>" 
-                                 alt="Bandeira">
+                                 alt="Bandeira"
+                                 loading="eager"
+                                 fetchpriority="high">
                             <span id="selected-language-emoji" style="<?= $initialFlagEmoji ? '' : 'display:none;' ?>"><?= $initialFlagEmoji ?></span>
                             <span id="selected-language"><?= htmlspecialchars($initialLangName) ?></span>
                         </div>
@@ -441,9 +443,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const dayView       = document.getElementById('day-view');
     const langView      = document.getElementById('language-view');
     
-    let currentView = '{$initialView}';
-    let currentDay  = '{$initialDay}';
-    let currentLang = '{$initialLang}';
+    let currentView = '<?= $initialView ?>';
+    let currentDay  = '<?= $initialDay ?>';
+    let currentLang = '<?= $initialLang ?>';
+
+    // Força o carregamento da imagem de bandeira mesmo quando o contêiner
+    // está oculto (display:none impede o browser de carregar a img).
+    // Estratégia: pré-carregar via JS Image() e só então atribuir o src ao elemento.
+    const flagImgEl = document.getElementById('selected-language-flag');
+    if (flagImgEl && flagImgEl.getAttribute('src')) {
+        const cachedSrc = flagImgEl.getAttribute('src');
+        const preloader = new Image();
+        preloader.onload = function() {
+            // Re-atribui para garantir que o browser renderiza quando visível
+            if (flagImgEl.src !== this.src) flagImgEl.src = this.src;
+            flagImgEl.style.display = '';
+        };
+        preloader.onerror = function() {
+            flagImgEl.style.display = 'none';
+        };
+        preloader.src = cachedSrc;
+    }
 
     function updateURL() {
         const url = new URL(window.location);
@@ -458,11 +478,22 @@ document.addEventListener('DOMContentLoaded', function() {
         window.history.replaceState({}, '', url);
     }
 
+    function activateDay(dayNum) {
+        document.querySelectorAll('.day-button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.day-events').forEach(d => d.classList.remove('active'));
+        const btn = document.querySelector(`.day-button[data-day="\${dayNum}"]`);
+        const panel = document.getElementById('day-' + dayNum);
+        if (btn) btn.classList.add('active');
+        if (panel) panel.classList.add('active');
+        currentDay = String(dayNum);
+    }
+
     // Toggle views
     dayFilterBtn.addEventListener('click', function() {
         currentView = 'day';
         dayView.classList.add('active');    langView.classList.remove('active');
         dayFilterBtn.classList.add('active'); langFilterBtn.classList.remove('active');
+        activateDay(currentDay);
         updateURL();
     });
 
@@ -470,16 +501,13 @@ document.addEventListener('DOMContentLoaded', function() {
         currentView = 'language';
         langView.classList.add('active');   dayView.classList.remove('active');
         langFilterBtn.classList.add('active'); dayFilterBtn.classList.remove('active');
-        
-        // Se não tiver idioma selecionado, seleciona o primeiro
-        if (!currentLang) {
-            const first = document.querySelector('.language-button');
-            if (first) first.click();
-        } else {
-            // Se já tem, garante que o botão está marcado como ativo
-            const activeBtn = document.querySelector(`.language-button[data-language-id="\${currentLang}"]`);
-            if (activeBtn) activeBtn.click();
-            else document.querySelector('.language-button').click();
+        // Re-exibe a imagem da bandeira (pode ter ficado oculta se o contêiner estava hidden)
+        const fImg = document.getElementById('selected-language-flag');
+        if (fImg && fImg.getAttribute('src') && fImg.style.display === 'none') {
+            const fEmo = document.getElementById('selected-language-emoji');
+            if (!fEmo || fEmo.style.display === 'none') {
+                fImg.style.display = '';
+            }
         }
         updateURL();
     });
@@ -487,12 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Day buttons
     document.querySelectorAll('.day-button').forEach(btn => {
         btn.addEventListener('click', function() {
-            currentDay = this.dataset.day;
-            document.querySelectorAll('.day-button').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.day-events').forEach(d => d.classList.remove('active'));
-            this.classList.add('active');
-            const target = document.getElementById('day-' + currentDay);
-            if (target) target.classList.add('active');
+            activateDay(this.dataset.day);
             updateURL();
         });
     });
@@ -534,8 +557,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const flagEmo = document.getElementById('selected-language-emoji');
 
             if (flagCode) {
-                flagImg.src = `https://flagcdn.com/32x24/${flagCode}.png`;
-                flagImg.style.display = '';
+                const loader = new Image();
+                loader.onload = function() {
+                    flagImg.src = this.src;
+                    flagImg.style.display = '';
+                };
+                loader.onerror = function() {
+                    flagImg.style.display = 'none';
+                };
+                loader.src = `https://flagcdn.com/32x24/\${flagCode}.png`;
                 if (flagEmo) flagEmo.style.display = 'none';
             } else if (flagEmoji) {
                 flagImg.style.display = 'none';
@@ -552,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active-lang');
             dropContent.classList.remove('show');
 
-            // Troca a visibilidade da timeline (Sem AJAX!)
+            // Troca a visibilidade da timeline
             document.querySelectorAll('.language-events-container').forEach(div => div.style.display = 'none');
             const targetDiv = document.getElementById('lang-events-' + currentLang);
             if (targetDiv) targetDiv.style.display = 'block';
@@ -560,11 +590,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updateURL();
         });
     });
-
-    // Inicialização: PHP já renderizou tudo no estado correto.
-    // JS não precisa disparar cliques — só registra o estado atual para que
-    // as interações futuras do usuário atualizem a URL corretamente.
-    // (Nenhum .click() aqui para evitar race conditions e bugs de estado)
 });
 </script>
 JS;
