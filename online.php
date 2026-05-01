@@ -603,6 +603,25 @@ document.addEventListener('DOMContentLoaded', function() {
             updateURL();
         });
     });
+
+    // Auto-scroll suave para a programação logo após o carregamento
+    // Isso permite que o usuário veja o topo, mas seja levado para a parte útil automaticamente.
+    window.addEventListener('load', function() {
+        // Pequeno delay para garantir que o usuário veja a intro antes de rolar
+        setTimeout(() => {
+            const calendarNav = document.querySelector('.calendar-nav');
+            if (calendarNav && !window.location.hash) {
+                const header = document.querySelector('.header');
+                const headerHeight = header ? header.offsetHeight : 80;
+                const targetY = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+                
+                window.scrollTo({
+                    top: targetY,
+                    behavior: 'smooth'
+                });
+            }
+        }, 800); 
+    });
 });
 </script>
 JS;
