@@ -135,11 +135,16 @@ ob_start();
     .join-button { background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); color:#fff; }
     .replay-button { background:var(--bg-light); color:#f00; border:1px solid #ddd; }
     .event-button:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
-    .join-button.disabled { background:var(--disabled-bg); color:var(--disabled-color); cursor:not-allowed; }
+    .join-button.disabled { background:var(--disabled-bg); color:var(--disabled-color); cursor:not-allowed; border: 1px solid #ddd; }
     .join-button.disabled:hover { transform:none; box-shadow:none; }
     .now-badge { display:inline-block; background:var(--now-badge-bg); color:#fff; font-size:.7rem; font-weight:bold; padding:3px 8px; border-radius:12px; margin-left:10px; animation:pulse 1.5s infinite; }
     @keyframes pulse { 0%{opacity:.7} 50%{opacity:1} 100%{opacity:.7} }
-    .happening-now { border:2px solid var(--highlight-border); background:var(--highlight-bg); }
+    .happening-now { border:2px solid var(--highlight-border); background:var(--highlight-bg); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2); }
+    
+    .wait-button { background:#e0e0e0; color:#666; cursor:not-allowed; border: 1px solid #ccc; }
+    .wait-button i { margin-right: 5px; }
+    .fa-spin-slow { animation: fa-spin 3s infinite linear; }
+    @keyframes fa-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(359deg); } }
     .no-events { text-align:center; padding:30px; background:#fff; border-radius:10px; box-shadow:var(--shadow); margin:20px 0; }
     
     .mobile-dropdown { display:flex; flex-direction:column; position:relative; width:100%; max-width:500px; margin:0 auto 20px; }
@@ -297,12 +302,13 @@ include 'includes/header.php';
                             <?php endif; ?>
                             <div class="event-actions">
                                 <?php if (!empty($ev['meet_link'])): ?>
-                                <a href="<?= htmlspecialchars($ev['meet_link']) ?>" target="_blank"
-                                   class="event-button join-button <?= $isPast ? 'disabled' : '' ?>">
-                                    <?php if ($isNow): ?>Participar
-                                    <?php elseif ($isPast): ?><i class="fas fa-check"></i> Finalizado
-                                    <?php else: ?>Participar<?php endif; ?>
-                                </a>
+                                    <?php if ($isNow): ?>
+                                        <a href="<?= htmlspecialchars($ev['meet_link']) ?>" target="_blank" class="event-button join-button">Participar</a>
+                                    <?php elseif ($isPast): ?>
+                                        <div class="event-button join-button disabled"><i class="fas fa-check"></i> Finalizado</div>
+                                    <?php else: ?>
+                                        <div class="event-button wait-button"><i class="fas fa-clock fa-spin-slow"></i> Aguarde</div>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                                 <?php if (!empty($ev['youtube_link'])): ?>
                                 <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
@@ -443,18 +449,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 timeline.innerHTML = '';
+                const currentDay = new Date().getDay() || 7; // 1-7
+                const currentHour = new Date().getHours();
+
                 events.forEach((ev, i) => {
+                    const evDay = parseInt(ev.day_of_week);
+                    const evHour = parseInt(ev.time_hour);
+                    const isNow = (evDay === currentDay && currentHour === evHour);
+                    const isPast = (evDay < currentDay || (evDay === currentDay && currentHour > evHour));
+                    
                     const div = document.createElement('div');
-                    div.className = 'timeline-event';
+                    div.className = 'timeline-event' + (isNow ? ' happening-now' : '');
                     const flagHtml = flagCode
                         ? `<img src="https://flagcdn.com/32x24/\${flagCode}.png" class="flag-icon" alt="\${langName}">`
                         : '';
+                    
+                    let actionButton = '';
+                    if (ev.meet_link) {
+                        if (isNow) {
+                            actionButton = `<a href="\${ev.meet_link}" target="_blank" class="event-button join-button">Participar</a>`;
+                        } else if (isPast) {
+                            actionButton = `<div class="event-button join-button disabled"><i class="fas fa-check"></i> Finalizado</div>`;
+                        } else {
+                            actionButton = `<div class="event-button wait-button"><i class="fas fa-clock fa-spin-slow"></i> Aguarde</div>`;
+                        }
+                    }
+
                     div.innerHTML = `
-                        <span class="event-time">\${ev.time_hour}h</span>
+                        <span class="event-time">\${evHour}h</span>
+                        \${isNow ? '<span class="now-badge">AO VIVO</span>' : ''}
                         <div class="event-title">\${flagHtml}<span>\${langName}</span></div>
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
-                            \${ev.meet_link ? `<a href="\${ev.meet_link}" target="_blank" class="event-button join-button">Participar</a>` : ''}
+                            \${actionButton}
                             \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fab fa-youtube"></i> Anteriores</a>` : ''}
                         </div>`;
                     timeline.appendChild(div);
