@@ -268,11 +268,15 @@ include 'includes/header.php';
                         <div class="no-events"><p>Nenhum evento neste dia ainda. Em breve!</p></div>
                     <?php else:
                         $currentHour = (int)date('G');
-                        $isToday = ($currentDayOfWeek === $dayNum);
                         foreach ($dayEvents as $ev):
+                            $evDay   = (int)$ev['day_of_week'];
                             $evHour  = (int)$ev['time_hour'];
-                            $isNow   = $isToday && $currentHour >= $evHour && $currentHour < ($evHour + 1);
-                            $isPast  = $isToday && $currentHour >= ($evHour + 1);
+                            
+                            $isToday = ($currentDayOfWeek === $evDay);
+                            $isNow   = $isToday && ($currentHour === $evHour);
+                            $isPast  = ($evDay < $currentDayOfWeek) || ($isToday && $currentHour > $evHour);
+                            $isFuture = ($evDay > $currentDayOfWeek) || ($isToday && $currentHour < $evHour);
+                            
                             $flagCode  = $ev['flag_code'] ?? '';
                             $flagEmoji = $ev['flag_emoji'] ?? '';
                     ?>
@@ -457,6 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const evHour = parseInt(ev.time_hour);
                     const isNow = (evDay === currentDay && currentHour === evHour);
                     const isPast = (evDay < currentDay || (evDay === currentDay && currentHour > evHour));
+                    const isFuture = (evDay > currentDay || (evDay === currentDay && currentHour < evHour));
                     
                     const div = document.createElement('div');
                     div.className = 'timeline-event' + (isNow ? ' happening-now' : '');
@@ -469,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (isNow) {
                             actionButton = `<a href="\${ev.meet_link}" target="_blank" class="event-button join-button">Participar</a>`;
                         } else if (isPast) {
-                            actionButton = `<div class="event-button join-button disabled"><i class="fas fa-check"></i> Finalizado</div>`;
+                            actionButton = `<div class="event-button join-button disabled"><i class="fas fa-check" style="color:#28a745;"></i> Finalizado</div>`;
                         } else {
                             actionButton = `<div class="event-button wait-button"><i class="fas fa-clock fa-spin-slow"></i> Aguarde</div>`;
                         }
