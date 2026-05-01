@@ -341,14 +341,14 @@ include 'includes/header.php';
                                     <?php if ($isNow): ?>
                                         <a href="<?= htmlspecialchars($ev['meet_link']) ?>" target="_blank" class="event-button join-button">Participar</a>
                                     <?php elseif ($isPast): ?>
-                                        <div class="event-button join-button disabled"><i class="fas fa-check"></i> Finalizado</div>
+                                        <div class="event-button join-button disabled"><i class="fa-solid fa-check"></i> Finalizado</div>
                                     <?php else: ?>
-                                        <div class="event-button wait-button"><i class="fas fa-clock fa-spin-slow"></i> Aguarde</div>
+                                        <div class="event-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>
                                     <?php endif; ?>
                                 <?php endif; ?>
                                 <?php if (!empty($ev['youtube_link'])): ?>
                                 <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
-                                    <i class="fas fa-play-square"></i> Anteriores
+                                    <i class="fa-solid fa-circle-play"></i> Anteriores
                                 </a>
                                 <?php endif; ?>
                             </div>
@@ -506,9 +506,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (isNow) {
                             actionButton = `<a href="\${ev.meet_link}" target="_blank" class="event-button join-button">Participar</a>`;
                         } else if (isPast) {
-                            actionButton = `<div class="event-button join-button disabled"><i class="fas fa-check" style="color:#28a745;"></i> Finalizado</div>`;
+                            actionButton = `<div class="event-button join-button disabled"><i class="fa-solid fa-check" style="color:#28a745;"></i> Finalizado</div>`;
                         } else {
-                            actionButton = `<div class="event-button wait-button"><i class="fas fa-clock fa-spin-slow"></i> Aguarde</div>`;
+                            actionButton = `<div class="event-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>`;
                         }
                     }
 
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
                             \${actionButton}
-                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fas fa-play-square"></i> Anteriores</a>` : ''}
+                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fa-solid fa-circle-play"></i> Anteriores</a>` : ''}
                         </div>`;
                     timeline.appendChild(div);
                 });
