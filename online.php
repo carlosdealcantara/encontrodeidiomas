@@ -164,8 +164,12 @@ ob_start();
         font-family: inherit;
     }
     .join-button { background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); color:#fff; }
-    .replay-button { background:var(--bg-light); color:#f00; border:1px solid #ddd; }
-    .replay-button i { font-size: 1.2rem; }
+    .replay-button { background:var(--bg-light); color:var(--accent-blue); border:1px solid #ddd; }
+    .replay-button i { 
+        font-size: 1rem; 
+        transform: scale(1.4, 1.2); 
+        margin-right: 5px;
+    }
     .event-button:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
     .join-button.disabled { background:var(--disabled-bg); color:var(--disabled-color); cursor:not-allowed; border: 1px solid #ddd; }
     .join-button.disabled:hover { transform:none; box-shadow:none; }
@@ -228,7 +232,7 @@ include 'includes/header.php';
     <section id="calendar" class="calendar-section">
         <div class="container">
             <h2 class="section-title">Programação Semanal</h2>
-            <p style="text-align:center;margin-bottom:2rem;">Fuso horário: GMT-3 (Horário de Brasília)<br>As chamadas são gravadas e disponibilizadas no YouTube.</p>
+            <p style="text-align:center;margin-bottom:2rem;">Fuso horário: GMT-3 (Horário de Brasília)<br>As chamadas são gravadas e disponibilizadas no Odysee.</p>
 
             <div class="calendar-nav">
                 <div class="calendar-nav-title">Filtrar por:</div>
@@ -348,7 +352,7 @@ include 'includes/header.php';
                                 <?php endif; ?>
                                 <?php if (!empty($ev['youtube_link'])): ?>
                                 <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
-                                    <i class="fa-solid fa-square-play"></i> Anteriores
+                                    <i class="fa-solid fa-play"></i> Anteriores
                                 </a>
                                 <?php endif; ?>
                             </div>
@@ -506,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (isNow) {
                             actionButton = `<a href="\${ev.meet_link}" target="_blank" class="event-button join-button">Participar</a>`;
                         } else if (isPast) {
-                            actionButton = `<div class="event-button join-button disabled"><i class="fa-solid fa-check" style="color:#28a745;"></i> Finalizado</div>`;
+                            actionButton = `<div class="event-button join-button disabled"><i class="fa-solid fa-check"></i> Finalizado</div>`;
                         } else {
                             actionButton = `<div class="event-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>`;
                         }
@@ -519,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
                             \${actionButton}
-                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fa-solid fa-square-play"></i> Anteriores</a>` : ''}
+                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fa-solid fa-play"></i> Anteriores</a>` : ''}
                         </div>`;
                     timeline.appendChild(div);
                 });

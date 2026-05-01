@@ -46,10 +46,7 @@
                                 <i class="fab fa-tiktok"></i>
                                 <span>TikTok</span>
                             </a>
-                            <a href="https://www.youtube.com/@encontrodeidiomas" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="YouTube">
-                                <i class="fab fa-youtube"></i>
-                                <span>YouTube</span>
-                            </a>
+
                             <a href="https://discord.com/invite/STHkrEhMpP" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Discord">
                                 <i class="fab fa-discord"></i>
                                 <span>Discord</span>
