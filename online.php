@@ -243,9 +243,10 @@ ob_start();
     .event-tags { display: flex; gap: 8px; margin-bottom: 12px; }
     .event-tag { 
         display: inline-block; 
-        background: var(--accent-blue); 
-        color: #fff; 
-        padding: 5px 12px; 
+        background: #fff; 
+        color: var(--accent-blue); 
+        border: 1px solid var(--accent-blue);
+        padding: 4px 11px; 
         border-radius: 6px; 
         font-weight: 600; 
         font-size: 0.85rem;
