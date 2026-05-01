@@ -299,6 +299,8 @@ ob_start();
     
     /* Card de Dia Vazio */
     .empty-day-card {
+        position: relative;
+        z-index: 2;
         background: #fff;
         padding: 40px 30px;
         border-radius: 20px;
