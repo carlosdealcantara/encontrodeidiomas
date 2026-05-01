@@ -18,12 +18,73 @@ foreach ($events as $e) {
 }
 
 $currentDayOfWeek = (int)date('N'); // 1=Seg ... 7=Dom
+$currentHour      = (int)date('G');
 
 // Parâmetros iniciais da URL
 $initialView = $_GET['view'] ?? 'day';
 $initialDay  = $_GET['dia']  ?? $currentDayOfWeek;
-if ($initialDay > 5) $initialDay = 1; // Fallback se for fds e não houver eventos mapeados no loop abaixo
+if ($initialDay > 5 && $initialDay < 7) $initialDay = 1; // Fallback se não houver eventos
 $initialLang = $_GET['idioma'] ?? '';
+
+/**
+ * Renderiza um card de evento único
+ * Centralizado para garantir consistência total entre as views
+ */
+function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
+    $evDay   = (int)$ev['day_of_week'];
+    $evHour  = (int)$ev['time_hour'];
+    
+    $isToday = ($currentDayOfWeek === $evDay);
+    $isNow   = $isToday && ($currentHour === $evHour);
+    $isPast  = ($evDay < $currentDayOfWeek) || ($isToday && $currentHour > $evHour);
+    
+    $flagCode  = $ev['flag_code'] ?? '';
+    $flagEmoji = $ev['flag_emoji'] ?? '';
+    $langName  = $ev['language_name'];
+    ?>
+    <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?>">
+        <span class="event-time"><?= $evHour ?>h</span>
+        <?php if ($isNow): ?>
+        <span class="now-badge">AO VIVO</span>
+        <?php endif; ?>
+        <div class="event-title">
+            <?php if ($flagCode): ?>
+                <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="flag-icon" alt="<?= htmlspecialchars($langName) ?>">
+            <?php elseif ($flagEmoji): ?>
+                <span style="font-size:1.2rem;"><?= $flagEmoji ?></span>
+            <?php endif; ?>
+            <span><?= htmlspecialchars($langName) ?></span>
+            <div class="event-social-links">
+                <?php if (!empty($ev['whatsapp_group_link'])): ?>
+                <a href="<?= htmlspecialchars($ev['whatsapp_group_link']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <?php endif; ?>
+                <?php if (!empty($ev['instagram_link'])): ?>
+                <a href="<?= htmlspecialchars($ev['instagram_link']) ?>" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php if (!empty($ev['description'])): ?>
+        <p class="event-description"><?= htmlspecialchars($ev['description']) ?></p>
+        <?php endif; ?>
+        <div class="event-actions">
+            <?php if (!empty($ev['meet_link'])): ?>
+                <?php if ($isNow): ?>
+                    <a href="<?= htmlspecialchars($ev['meet_link']) ?>" target="_blank" class="event-button join-button">Participar</a>
+                <?php elseif ($isPast): ?>
+                    <div class="event-button join-button disabled"><i class="fa-solid fa-check"></i> Finalizado</div>
+                <?php else: ?>
+                    <div class="event-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>
+                <?php endif; ?>
+            <?php endif; ?>
+            <?php if (!empty($ev['youtube_link'])): ?>
+            <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
+                <i class="fa-solid fa-circle-play"></i> Anteriores
+            </a>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+}
 
 ob_start();
 ?>
@@ -260,7 +321,9 @@ include 'includes/header.php';
                             <i class="fas fa-search search-icon"></i>
                             <input type="text" class="search-input" id="language-search" placeholder="Buscar idioma...">
                         </div>
-                        <?php foreach ($languages as $lang): ?>
+                        <?php foreach ($languages as $lang): 
+                            if (empty($byLanguage[$lang['id']])) continue;
+                        ?>
                         <button class="language-button"
                                 data-language-id="<?= $lang['id'] ?>"
                                 data-language="<?= htmlspecialchars($lang['name']) ?>"
@@ -279,7 +342,16 @@ include 'includes/header.php';
                     </div>
                 </div>
                 <div id="language-events">
-                    <div class="timeline" id="language-timeline"></div>
+                    <?php foreach ($languages as $lang): 
+                        $langEvents = $byLanguage[$lang['id']] ?? [];
+                        if (empty($langEvents)) continue;
+                    ?>
+                    <div id="lang-events-<?= $lang['id'] ?>" class="language-events-container" style="display:none;">
+                        <div class="timeline">
+                            <?php foreach ($langEvents as $ev) renderEventCard($ev, $currentDayOfWeek, $currentHour); ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
@@ -305,61 +377,8 @@ include 'includes/header.php';
                     ?>
                         <div class="no-events"><p>Nenhum evento neste dia ainda. Em breve!</p></div>
                     <?php else:
-                        $currentHour = (int)date('G');
-                        foreach ($dayEvents as $ev):
-                            $evDay   = (int)$ev['day_of_week'];
-                            $evHour  = (int)$ev['time_hour'];
-                            
-                            $isToday = ($currentDayOfWeek === $evDay);
-                            $isNow   = $isToday && ($currentHour === $evHour);
-                            $isPast  = ($evDay < $currentDayOfWeek) || ($isToday && $currentHour > $evHour);
-                            $isFuture = ($evDay > $currentDayOfWeek) || ($isToday && $currentHour < $evHour);
-                            
-                            $flagCode  = $ev['flag_code'] ?? '';
-                            $flagEmoji = $ev['flag_emoji'] ?? '';
-                    ?>
-                        <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?>">
-                            <span class="event-time"><?= $evHour ?>h</span>
-                            <?php if ($isNow): ?>
-                            <span class="now-badge">AO VIVO</span>
-                            <?php endif; ?>
-                            <div class="event-title">
-                                <?php if ($flagCode): ?>
-                                    <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="flag-icon" alt="<?= htmlspecialchars($ev['language_name']) ?>">
-                                <?php elseif ($flagEmoji): ?>
-                                    <span style="font-size:1.2rem;"><?= $flagEmoji ?></span>
-                                <?php endif; ?>
-                                <span><?= htmlspecialchars($ev['language_name']) ?></span>
-                                <div class="event-social-links">
-                                    <?php if (!empty($ev['whatsapp_group_link'])): ?>
-                                    <a href="<?= htmlspecialchars($ev['whatsapp_group_link']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                                    <?php endif; ?>
-                                    <?php if (!empty($ev['instagram_link'])): ?>
-                                    <a href="<?= htmlspecialchars($ev['instagram_link']) ?>" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                            <?php if (!empty($ev['description'])): ?>
-                            <p class="event-description"><?= htmlspecialchars($ev['description']) ?></p>
-                            <?php endif; ?>
-                            <div class="event-actions">
-                                <?php if (!empty($ev['meet_link'])): ?>
-                                    <?php if ($isNow): ?>
-                                        <a href="<?= htmlspecialchars($ev['meet_link']) ?>" target="_blank" class="event-button join-button">Participar</a>
-                                    <?php elseif ($isPast): ?>
-                                        <div class="event-button join-button disabled"><i class="fa-solid fa-check"></i> Finalizado</div>
-                                    <?php else: ?>
-                                        <div class="event-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                                <?php if (!empty($ev['youtube_link'])): ?>
-                                <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
-                                    <i class="fa-solid fa-circle-play"></i> Anteriores
-                                </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; endif; ?>
+                        foreach ($dayEvents as $ev) renderEventCard($ev, $currentDayOfWeek, $currentHour);
+                    endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -456,17 +475,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Language button click → AJAX
+    // Language button click
     document.querySelectorAll('.language-button').forEach(btn => {
         btn.addEventListener('click', function() {
             currentLang = this.dataset.languageId;
             const langName = this.dataset.language;
             const flagCode = this.dataset.flagCode;
 
+            // Atualiza o botão do dropdown
             document.getElementById('selected-language').textContent = langName;
             const flagEl = document.getElementById('selected-language-flag');
             if (flagCode && flagEl) {
-                flagEl.src = `https://flagcdn.com/32x24/\${flagCode}.png`;
+                flagEl.src = `https://flagcdn.com/32x24/${flagCode}.png`;
                 flagEl.style.display = '';
             }
 
@@ -474,84 +494,22 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active-lang');
             dropContent.classList.remove('show');
 
-            loadLanguageEvents(currentLang, langName, flagCode);
+            // Troca a visibilidade da timeline (Sem AJAX!)
+            document.querySelectorAll('.language-events-container').forEach(div => div.style.display = 'none');
+            const targetDiv = document.getElementById('lang-events-' + currentLang);
+            if (targetDiv) targetDiv.style.display = 'block';
+
             updateURL();
         });
     });
 
-    function loadLanguageEvents(langId, langName, flagCode) {
-        const timeline = document.getElementById('language-timeline');
-        timeline.innerHTML = '<p style="text-align:center;padding:30px;">Carregando...</p>';
-
-        fetch(`ajax/get_language_events.php?language_id=\${langId}`)
-            .then(r => r.json())
-            .then(events => {
-                if (!events.length) {
-                    timeline.innerHTML = '<div class="no-events"><p>Nenhum evento para este idioma ainda.</p></div>';
-                    return;
-                }
-                timeline.innerHTML = '';
-                const currentDay = new Date().getDay() || 7; // 1-7
-                const currentHour = new Date().getHours();
-
-                events.forEach((ev, i) => {
-                    const evDay = parseInt(ev.day_of_week);
-                    const evHour = parseInt(ev.time_hour);
-                    const isNow = (evDay === currentDay && currentHour === evHour);
-                    const isPast = (evDay < currentDay || (evDay === currentDay && currentHour > evHour));
-                    const isFuture = (evDay > currentDay || (evDay === currentDay && currentHour < evHour));
-                    
-                    const div = document.createElement('div');
-                    div.className = 'timeline-event' + (isNow ? ' happening-now' : '');
-                    const flagHtml = flagCode
-                        ? `<img src="https://flagcdn.com/32x24/\${flagCode}.png" class="flag-icon" alt="\${langName}">`
-                        : '';
-                    
-                    let actionButton = '';
-                    if (ev.meet_link) {
-                        if (isNow) {
-                            actionButton = `<a href="\${ev.meet_link}" target="_blank" class="event-button join-button">Participar</a>`;
-                        } else if (isPast) {
-                            actionButton = `<div class="event-button join-button disabled"><i class="fa-solid fa-check"></i> Finalizado</div>`;
-                        } else {
-                            actionButton = `<div class="event-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>`;
-                        }
-                    }
-
-                    const socialLinksHtml = `
-                        <div class="event-social-links">
-                            \${ev.whatsapp_group_link ? `<a href="\${ev.whatsapp_group_link}" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
-                            \${ev.instagram_link ? `<a href="\${ev.instagram_link}" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>` : ''}
-                        </div>
-                    `;
-
-                    div.innerHTML = `
-                        <span class="event-time">\${evHour}h</span>
-                        \${isNow ? '<span class="now-badge">AO VIVO</span>' : ''}
-                        <div class="event-title">
-                            \${flagHtml}
-                            <span>\${langName}</span>
-                            \${socialLinksHtml}
-                        </div>
-                        <p class="event-description">\${ev.description || ''}</p>
-                        <div class="event-actions">
-                            \${actionButton}
-                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fa-solid fa-circle-play"></i> Anteriores</a>` : ''}
-                        </div>`;
-                    timeline.appendChild(div);
-                });
-            })
-            .catch(() => {
-                timeline.innerHTML = '<div class="no-events"><p>Erro ao carregar eventos.</p></div>';
-            });
-    }
-
     // Inicialização baseada no estado
     if (currentView === 'language' && currentLang) {
-        const activeBtn = document.querySelector(`.language-button[data-language-id="\${currentLang}"]`);
+        const activeBtn = document.querySelector(`.language-button[data-language-id="${currentLang}"]`);
         if (activeBtn) activeBtn.click();
+        else document.querySelector('.language-button').click();
     } else {
-        const activeDayBtn = document.querySelector(`.day-button[data-day="\${currentDay}"]`);
+        const activeDayBtn = document.querySelector(`.day-button[data-day="${currentDay}"]`);
         if (activeDayBtn) activeDayBtn.click();
         else {
             const firstDay = document.querySelector('.day-button');
