@@ -246,8 +246,8 @@ ob_start();
     .event-tag { 
         display: inline-block; 
         background: #fff; 
-        color: var(--accent-blue); 
-        border: 1px solid var(--accent-blue);
+        color: var(--accent-red); 
+        border: 1px solid var(--accent-red);
         padding: 4px 14px; 
         font-weight: 600; 
         font-size: 0.8rem;
