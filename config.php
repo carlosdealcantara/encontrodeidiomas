@@ -2,10 +2,10 @@
 // Site Configuration
 define('SITE_NAME', 'Encontro de Idiomas');
 define('ADMIN_EMAIL', 'carlosdealcantarajr@gmail.com');
-define('DB_HOST', 'srv1437.hstgr.io');
+define('DB_HOST', 'localhost');
 define('DB_NAME', 'u879045076_central');
 define('DB_USER', 'u879045076_carlos'); 
-define('DB_PASS', '@Car8lafe');
+define('DB_PASS', '#Nadier38');
 define('SITE_URL', 'http://' . $_SERVER['HTTP_HOST']);
 
 // Database connection
