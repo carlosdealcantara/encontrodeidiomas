@@ -368,7 +368,7 @@ include 'includes/header.php';
                         <?php foreach ($languages as $lang): 
                             if (empty($byLanguage[$lang['id']])) continue;
                         ?>
-                        <button class="language-button"
+                        <button class="language-button <?= $lang['id'] == $initialLang ? 'active-lang' : '' ?>"
                                 data-language-id="<?= $lang['id'] ?>"
                                 data-language="<?= htmlspecialchars($lang['name']) ?>"
                                 data-flag-code="<?= htmlspecialchars($lang['flag_code'] ?? '') ?>"
@@ -390,7 +390,7 @@ include 'includes/header.php';
                         $langEvents = $byLanguage[$lang['id']] ?? [];
                         if (empty($langEvents)) continue;
                     ?>
-                    <div id="lang-events-<?= $lang['id'] ?>" class="language-events-container" style="display:none;">
+                    <div id="lang-events-<?= $lang['id'] ?>" class="language-events-container" style="display:<?= $lang['id'] == $initialLang ? 'block' : 'none'; ?>;">
                         <div class="timeline">
                             <?php foreach ($langEvents as $ev) renderEventCard($ev, $currentDayOfWeek, $currentHour); ?>
                         </div>
@@ -561,19 +561,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Inicialização baseada no estado
-    if (currentView === 'language' && currentLang) {
-        const activeBtn = document.querySelector(`.language-button[data-language-id="${currentLang}"]`);
-        if (activeBtn) activeBtn.click();
-        else document.querySelector('.language-button').click();
-    } else {
-        const activeDayBtn = document.querySelector(`.day-button[data-day="${currentDay}"]`);
-        if (activeDayBtn) activeDayBtn.click();
-        else {
-            const firstDay = document.querySelector('.day-button');
-            if (firstDay) firstDay.click();
-        }
-    }
+    // Inicialização: PHP já renderizou tudo no estado correto.
+    // JS não precisa disparar cliques — só registra o estado atual para que
+    // as interações futuras do usuário atualizem a URL corretamente.
+    // (Nenhum .click() aqui para evitar race conditions e bugs de estado)
 });
 </script>
 JS;
