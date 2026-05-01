@@ -19,11 +19,17 @@ foreach ($events as $e) {
 
 $currentDayOfWeek = (int)date('N'); // 1=Seg ... 7=Dom
 
+// Parâmetros iniciais da URL
+$initialView = $_GET['view'] ?? 'day';
+$initialDay  = $_GET['dia']  ?? $currentDayOfWeek;
+if ($initialDay > 5) $initialDay = 1; // Fallback se for fds e não houver eventos mapeados no loop abaixo
+$initialLang = $_GET['idioma'] ?? '';
+
 ob_start();
 ?>
-    /* ---- ONLINE PAGE STYLES (idênticos ao online.html da master) ---- */
+    /* ---- ONLINE PAGE STYLES ---- */
     .hero {
-        min-height: 70vh;
+        min-height: 60vh;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -55,7 +61,7 @@ ob_start();
         to   { opacity:1; transform:translateY(0); }
     }
     .hero h1 {
-        font-size: 4rem;
+        font-size: 3.5rem;
         font-weight: 700;
         margin-bottom: 1rem;
         background: linear-gradient(to right, var(--accent-red), var(--accent-yellow));
@@ -101,7 +107,7 @@ ob_start();
     .view-content { display:none; }
     .view-content.active { display:block; }
     .calendar-days { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:30px; }
-    .day-button { padding:10px 16px; background:#fff; border:none; border-radius:25px; cursor:pointer; font-weight:600; box-shadow:0 4px 10px rgba(0,0,0,.1); transition:all .3s ease; min-width:120px; }
+    .day-button { padding:10px 16px; background:#fff; border:none; border-radius:25px; cursor:pointer; font-weight:600; box-shadow:0 4px 10px rgba(0,0,0,.1); transition:all .3s ease; min-width:120px; font-family: inherit; }
     .day-button:hover { transform:translateY(-3px); }
     .day-button.active { background:var(--accent-red); color:#fff; }
     .day-events { display:none; animation:fadeIn .5s ease; }
@@ -112,7 +118,7 @@ ob_start();
     .timeline-event { position:relative; margin-bottom:2rem; width:45%; background:var(--card-bg); border-radius:var(--border-radius); box-shadow:var(--shadow); padding:20px; transition:var(--transition); cursor:pointer; }
     .timeline-event:hover { transform:translateY(-5px) scale(1.02); }
     .timeline-event:nth-child(odd) { margin-left:auto; }
-    .timeline-event::before { content:''; position:absolute; top:20px; width:20px; height:20px; background:#fff; border:4px solid var(--accent-red); border-radius:50%; }
+    .timeline-event::before { content:''; position:absolute; top:20px; width:20px; height:20px; background:#fff; border:4px solid var(--accent-red); border-radius:50%; z-index: 1; }
     .timeline-event:nth-child(odd)::before  { left:-60px; }
     .timeline-event:nth-child(even)::before { right:-60px; }
     .event-time { display:inline-block; background:var(--accent-blue); color:#fff; padding:5px 15px; border-radius:20px; font-weight:500; margin-bottom:10px; }
@@ -123,9 +129,9 @@ ob_start();
     .whatsapp-icon:hover { color:#25D366; }
     .instagram-icon:hover { color:#E1306C; }
     .flag-icon { width:24px; height:16px; vertical-align:middle; border-radius:2px; object-fit:cover; box-shadow:0 1px 3px rgba(0,0,0,.2); }
-    .event-description { margin:10px 0 15px; opacity:.8; }
+    .event-description { margin:10px 0 15px; opacity:.8; font-size: 0.95rem; }
     .event-actions { display:flex; gap:10px; position:relative; }
-    .event-button { flex:1; padding:10px; border:none; border-radius:25px; cursor:pointer; font-weight:600; transition:var(--transition); text-align:center; text-decoration:none; display:inline-block; }
+    .event-button { flex:1; padding:10px; border:none; border-radius:25px; cursor:pointer; font-weight:600; transition:var(--transition); text-align:center; text-decoration:none; display:inline-block; font-size: 0.9rem; }
     .join-button { background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); color:#fff; }
     .replay-button { background:var(--bg-light); color:#f00; border:1px solid #ddd; }
     .event-button:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
@@ -135,24 +141,26 @@ ob_start();
     @keyframes pulse { 0%{opacity:.7} 50%{opacity:1} 100%{opacity:.7} }
     .happening-now { border:2px solid var(--highlight-border); background:var(--highlight-bg); }
     .no-events { text-align:center; padding:30px; background:#fff; border-radius:10px; box-shadow:var(--shadow); margin:20px 0; }
+    
     .mobile-dropdown { display:flex; flex-direction:column; position:relative; width:100%; max-width:500px; margin:0 auto 20px; }
-    .dropdown-button { display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:var(--accent-red); color:#fff; border:none; border-radius:25px; font-size:16px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(227,29,28,.3); transition:all .3s; }
+    .dropdown-button { display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:var(--accent-red); color:#fff; border:none; border-radius:25px; font-size:16px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(227,29,28,.3); transition:all .3s; font-family: inherit; }
     .dropdown-content { display:none; position:absolute; top:calc(100% + 10px); left:0; width:100%; background:#fff; border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,.15); z-index:100; max-height:350px; overflow-y:auto; padding:8px 0; }
     .dropdown-content.show { display:block; animation:fadeInDown .3s ease-out; }
     @keyframes fadeInDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
-    .language-button { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border:none; border-bottom:1px solid #f0f0f0; width:100%; text-align:left; background:#fff; cursor:pointer; transition:background .2s; }
+    .language-button { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border:none; border-bottom:1px solid #f0f0f0; width:100%; text-align:left; background:#fff; cursor:pointer; transition:background .2s; font-family: inherit; }
     .language-button:hover { background:#f5f5f5; }
     .language-info { display:flex; align-items:center; gap:10px; }
     .search-filter { padding:10px 15px; margin:5px 15px 10px; position:relative; }
-    .search-input { width:100%; padding:10px 15px 10px 35px; border:1px solid #e0e0e0; border-radius:8px; font-size:14px; background:#f5f5f7; }
+    .search-input { width:100%; padding:10px 15px 10px 35px; border:1px solid #e0e0e0; border-radius:8px; font-size:14px; background:#f5f5f7; font-family: inherit; }
     .search-input:focus { border-color:var(--accent-red); outline:none; }
     .search-icon { position:absolute; left:25px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; }
     .dropdown-flag-container { display:flex; align-items:center; gap:10px; }
     #selected-language-flag { width:24px; height:18px; border-radius:3px; }
+
     @media (max-width:768px) {
         .timeline::before { left:20px; }
-        .timeline-event { width:90%; margin-left:50px !important; }
-        .timeline-event::before { left:-30px !important; right:auto !important; }
+        .timeline-event { width:calc(100% - 60px); margin-left:50px !important; }
+        .timeline-event::before { left:-40px !important; right:auto !important; }
         .hero h1 { font-size:2.5rem; }
         .calendar-days { padding:0 10px; gap:8px; }
         .day-button { flex:1 1 calc(50% - 8px); min-width:0; padding:10px 5px; font-size:.9rem; }
@@ -188,19 +196,19 @@ include 'includes/header.php';
             <div class="calendar-nav">
                 <div class="calendar-nav-title">Filtrar por:</div>
                 <div class="view-toggle">
-                    <button class="view-button active" id="day-filter-btn" data-view="day">Dia da Semana</button>
-                    <button class="view-button" id="language-filter-btn" data-view="language">Idioma</button>
+                    <button class="view-button <?= $initialView === 'day' ? 'active' : '' ?>" id="day-filter-btn" data-view="day">Dia da Semana</button>
+                    <button class="view-button <?= $initialView === 'language' ? 'active' : '' ?>" id="language-filter-btn" data-view="language">Idioma</button>
                 </div>
             </div>
 
             <!-- VIEW: IDIOMA -->
-            <div id="language-view" class="view-content">
+            <div id="language-view" class="view-content <?= $initialView === 'language' ? 'active' : '' ?>">
                 <div class="mobile-dropdown">
                     <p style="text-align:center;margin-bottom:10px;font-size:.9rem;font-weight:500;">Selecione um idioma:</p>
                     <button class="dropdown-button" id="lang-dropdown-btn">
                         <div class="dropdown-flag-container">
                             <img id="selected-language-flag" src="https://flagcdn.com/32x24/us.png" class="flag-icon" alt="Bandeira">
-                            <span id="selected-language">Inglês</span>
+                            <span id="selected-language">Carregando...</span>
                         </div>
                         <i class="fas fa-chevron-down"></i>
                     </button>
@@ -233,19 +241,20 @@ include 'includes/header.php';
             </div>
 
             <!-- VIEW: DIA DA SEMANA -->
-            <div id="day-view" class="view-content active">
+            <div id="day-view" class="view-content <?= $initialView === 'day' ? 'active' : '' ?>">
                 <div class="calendar-days">
                     <?php
-                    $dayNames = [1=>'Segunda',2=>'Terça',3=>'Quarta',4=>'Quinta',5=>'Sexta'];
+                    $dayNames = [1=>'Segunda',2=>'Terça',3=>'Quarta',4=>'Quinta',5=>'Sexta',6=>'Sábado',7=>'Domingo'];
                     foreach ($dayNames as $num => $name):
+                        if (empty($byDay[$num])) continue;
                     ?>
-                    <button class="day-button <?= $num === min(array_keys($byDay) ?: [1]) ? 'active' : '' ?>"
+                    <button class="day-button <?= $num == $initialDay ? 'active' : '' ?>"
                             data-day="<?= $num ?>"><?= $name ?></button>
                     <?php endforeach; ?>
                 </div>
 
                 <?php foreach ($dayNames as $dayNum => $dayName): ?>
-                <div id="day-<?= $dayNum ?>" class="day-events">
+                <div id="day-<?= $dayNum ?>" class="day-events <?= ($initialView === 'day' && $dayNum == $initialDay) ? 'active' : '' ?>">
                     <div class="timeline">
                     <?php
                     $dayEvents = $byDay[$dayNum] ?? [];
@@ -253,7 +262,6 @@ include 'includes/header.php';
                     ?>
                         <div class="no-events"><p>Nenhum evento neste dia ainda. Em breve!</p></div>
                     <?php else:
-                        // Detectar hora atual para badge "Ao Vivo"
                         $currentHour = (int)date('G');
                         $isToday = ($currentDayOfWeek === $dayNum);
                         foreach ($dayEvents as $ev):
@@ -321,63 +329,95 @@ document.addEventListener('DOMContentLoaded', function() {
     const langFilterBtn = document.getElementById('language-filter-btn');
     const dayView       = document.getElementById('day-view');
     const langView      = document.getElementById('language-view');
+    
+    let currentView = '{$initialView}';
+    let currentDay  = '{$initialDay}';
+    let currentLang = '{$initialLang}';
+
+    function updateURL() {
+        const url = new URL(window.location);
+        url.searchParams.set('view', currentView);
+        if (currentView === 'day') {
+            url.searchParams.set('dia', currentDay);
+            url.searchParams.delete('idioma');
+        } else {
+            url.searchParams.set('idioma', currentLang);
+            url.searchParams.delete('dia');
+        }
+        window.history.replaceState({}, '', url);
+    }
 
     // Toggle views
     dayFilterBtn.addEventListener('click', function() {
+        currentView = 'day';
         dayView.classList.add('active');    langView.classList.remove('active');
         dayFilterBtn.classList.add('active'); langFilterBtn.classList.remove('active');
+        updateURL();
     });
+
     langFilterBtn.addEventListener('click', function() {
+        currentView = 'language';
         langView.classList.add('active');   dayView.classList.remove('active');
         langFilterBtn.classList.add('active'); dayFilterBtn.classList.remove('active');
-        if (!document.querySelector('.language-button.active-lang')) {
+        
+        // Se não tiver idioma selecionado, seleciona o primeiro
+        if (!currentLang) {
             const first = document.querySelector('.language-button');
             if (first) first.click();
+        } else {
+            // Se já tem, garante que o botão está marcado como ativo
+            const activeBtn = document.querySelector(`.language-button[data-language-id="\${currentLang}"]`);
+            if (activeBtn) activeBtn.click();
+            else document.querySelector('.language-button').click();
         }
+        updateURL();
     });
 
     // Day buttons
     document.querySelectorAll('.day-button').forEach(btn => {
         btn.addEventListener('click', function() {
+            currentDay = this.dataset.day;
             document.querySelectorAll('.day-button').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.day-events').forEach(d => d.classList.remove('active'));
             this.classList.add('active');
-            const target = document.getElementById('day-' + this.dataset.day);
+            const target = document.getElementById('day-' + currentDay);
             if (target) target.classList.add('active');
+            updateURL();
         });
     });
-
-    // Activate first day with events
-    const firstActiveDay = document.querySelector('.day-button.active');
-    if (firstActiveDay) firstActiveDay.click();
 
     // Dropdown toggle
     const dropBtn     = document.getElementById('lang-dropdown-btn');
     const dropContent = document.getElementById('lang-dropdown-content');
-    dropBtn.addEventListener('click', () => dropContent.classList.toggle('show'));
+    if (dropBtn) {
+        dropBtn.addEventListener('click', () => dropContent.classList.toggle('show'));
+    }
     document.addEventListener('click', e => {
-        if (!dropBtn.contains(e.target) && !dropContent.contains(e.target))
+        if (dropBtn && !dropBtn.contains(e.target) && !dropContent.contains(e.target))
             dropContent.classList.remove('show');
     });
 
     // Search filter
-    document.getElementById('language-search').addEventListener('input', function() {
-        const q = this.value.toLowerCase();
-        document.querySelectorAll('.language-button').forEach(btn => {
-            btn.style.display = btn.dataset.language.toLowerCase().includes(q) ? '' : 'none';
+    const langSearch = document.getElementById('language-search');
+    if (langSearch) {
+        langSearch.addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('.language-button').forEach(btn => {
+                btn.style.display = btn.dataset.language.toLowerCase().includes(q) ? '' : 'none';
+            });
         });
-    });
+    }
 
     // Language button click → AJAX
     document.querySelectorAll('.language-button').forEach(btn => {
         btn.addEventListener('click', function() {
-            const langId   = this.dataset.languageId;
+            currentLang = this.dataset.languageId;
             const langName = this.dataset.language;
             const flagCode = this.dataset.flagCode;
 
             document.getElementById('selected-language').textContent = langName;
-            if (flagCode) {
-                const flagEl = document.getElementById('selected-language-flag');
+            const flagEl = document.getElementById('selected-language-flag');
+            if (flagCode && flagEl) {
                 flagEl.src = `https://flagcdn.com/32x24/\${flagCode}.png`;
                 flagEl.style.display = '';
             }
@@ -386,7 +426,8 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active-lang');
             dropContent.classList.remove('show');
 
-            loadLanguageEvents(langId, langName, flagCode);
+            loadLanguageEvents(currentLang, langName, flagCode);
+            updateURL();
         });
     });
 
@@ -422,6 +463,19 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(() => {
                 timeline.innerHTML = '<div class="no-events"><p>Erro ao carregar eventos.</p></div>';
             });
+    }
+
+    // Inicialização baseada no estado
+    if (currentView === 'language' && currentLang) {
+        const activeBtn = document.querySelector(`.language-button[data-language-id="\${currentLang}"]`);
+        if (activeBtn) activeBtn.click();
+    } else {
+        const activeDayBtn = document.querySelector(`.day-button[data-day="\${currentDay}"]`);
+        if (activeDayBtn) activeDayBtn.click();
+        else {
+            const firstDay = document.querySelector('.day-button');
+            if (firstDay) firstDay.click();
+        }
     }
 });
 </script>
