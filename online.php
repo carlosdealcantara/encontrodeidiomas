@@ -146,10 +146,26 @@ ob_start();
     .flag-icon { width:24px; height:16px; vertical-align:middle; border-radius:2px; object-fit:cover; box-shadow:0 1px 3px rgba(0,0,0,.2); }
     .event-description { margin:10px 0 15px; opacity:.8; font-size: 0.95rem; }
     .event-actions { display:flex; gap:10px; position:relative; }
-    .event-button { flex:1; padding:10px; border:none; border-radius:25px; cursor:pointer; font-weight:600; transition:var(--transition); text-align:center; text-decoration:none; display:inline-block; font-size: 0.9rem; }
+    .event-button { 
+        flex:1; 
+        padding:10px 20px; 
+        border:none; 
+        border-radius:25px; 
+        cursor:pointer; 
+        font-weight:600; 
+        transition:var(--transition); 
+        text-align:center; 
+        text-decoration:none; 
+        display:inline-flex; 
+        align-items:center; 
+        justify-content:center; 
+        gap:8px;
+        font-size: 0.9rem; 
+        font-family: inherit;
+    }
     .join-button { background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); color:#fff; }
     .replay-button { background:var(--bg-light); color:#f00; border:1px solid #ddd; }
-    .replay-button i { font-size: 1.1rem; margin-right: 5px; }
+    .replay-button i { font-size: 1.2rem; }
     .event-button:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
     .join-button.disabled { background:var(--disabled-bg); color:var(--disabled-color); cursor:not-allowed; border: 1px solid #ddd; }
     .join-button.disabled:hover { transform:none; box-shadow:none; }
@@ -332,7 +348,7 @@ include 'includes/header.php';
                                 <?php endif; ?>
                                 <?php if (!empty($ev['youtube_link'])): ?>
                                 <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
-                                    <i class="fas fa-play"></i> Anteriores
+                                    <i class="fas fa-square-play"></i> Anteriores
                                 </a>
                                 <?php endif; ?>
                             </div>
@@ -503,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
                             \${actionButton}
-                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fas fa-play"></i> Anteriores</a>` : ''}
+                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fas fa-square-play"></i> Anteriores</a>` : ''}
                         </div>`;
                     timeline.appendChild(div);
                 });
