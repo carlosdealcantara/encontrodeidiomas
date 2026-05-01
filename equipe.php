@@ -197,6 +197,8 @@ include 'includes/header.php';
                             <div class="dropdown-item" data-value="<?= strtolower($lang['name']) ?>">
                                 <?php if (!empty($lang['flag_code'])): ?>
                                     <img src="https://flagcdn.com/20x15/<?= strtolower($lang['flag_code']) ?>.png" alt="">
+                                <?php elseif (!empty($lang['flag_emoji'])): ?>
+                                    <span class="flag-emoji"><?= $lang['flag_emoji'] ?></span>
                                 <?php endif; ?>
                                 <?= htmlspecialchars($lang['name']) ?>
                             </div>
@@ -422,10 +424,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     const regionDropdown = document.getElementById('region-dropdown');
     regions.forEach(reg => {
+        // Pular valores inválidos ou "Não informado"
+        const cleanReg = reg.trim();
+        if (!cleanReg || cleanReg.toLowerCase().includes('informado')) return;
+
         const item = document.createElement('div');
         item.className = 'dropdown-item';
-        item.dataset.value = reg;
-        item.textContent = reg.charAt(0).toUpperCase() + reg.slice(1);
+        item.dataset.value = cleanReg;
+        
+        // Formata: "Brasília - DF" (Garante Sigla em Maiúsculo)
+        let displayText = cleanReg.split(' ').map(word => {
+            // Se for a sigla (ex: df, sp, rj) ou palavras curtas após o hifen
+            if (word.length === 2 && !word.includes('-')) return word.toUpperCase();
+            if (word.includes('-')) {
+                return word.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' - ');
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+
+        item.textContent = displayText;
         regionDropdown.appendChild(item);
     });
 
