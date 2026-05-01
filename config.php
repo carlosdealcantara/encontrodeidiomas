@@ -87,7 +87,7 @@ function getEvents(): array {
     $stmt = $conn->prepare("
         SELECT
             e.id, e.language_id, e.day_of_week, e.time_hour,
-            e.title, e.description, e.meet_link, e.youtube_link,
+            e.title, e.description, e.meet_link, e.replay_link,
             e.whatsapp_group_link, e.instagram_link, e.active,
             l.name AS language_name, l.flag_code, l.flag_emoji
         FROM events e
@@ -104,7 +104,7 @@ function getEventsByLanguage(int $languageId): array {
     $stmt = $conn->prepare("
         SELECT
             e.id, e.language_id, e.day_of_week, e.time_hour,
-            e.title, e.description, e.meet_link, e.youtube_link,
+            e.title, e.description, e.meet_link, e.replay_link,
             e.whatsapp_group_link, e.instagram_link, e.active,
             l.name AS language_name, l.flag_code, l.flag_emoji
         FROM events e

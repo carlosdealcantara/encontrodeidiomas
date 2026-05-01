@@ -118,8 +118,8 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
                     <div class="event-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>
                 <?php endif; ?>
             <?php endif; ?>
-            <?php if (!empty($ev['youtube_link'])): ?>
-            <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
+            <?php if (!empty($ev['replay_link'])): ?>
+            <a href="<?= htmlspecialchars($ev['replay_link']) ?>" target="_blank" class="event-button replay-button">
                 <i class="fa-solid fa-circle-play"></i> Anteriores
             </a>
             <?php endif; ?>
