@@ -254,6 +254,7 @@ ob_start();
         letter-spacing: 0.5px;
         border-radius: 20px;
     }
+    .happening-now .event-tag { background: var(--highlight-bg); }
     .event-title { display:flex; align-items:center; gap:10px; font-size:1.5rem; font-weight:600; margin-bottom:10px; flex-wrap:wrap; }
     .event-social-links { display:flex; gap:5px; margin-left:10px; }
     .social-icon { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; font-size:.85rem; background:#f0f2f5; color:var(--text-color); border:1px solid #ddd; transition:all .3s ease; }
