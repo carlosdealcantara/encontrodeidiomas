@@ -136,7 +136,8 @@ ob_start();
     .contact-btn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:#f0f2f5; color:var(--text-color); transition:var(--transition); }
     .contact-btn:hover { transform:translateY(-3px); background: var(--accent-red); color: white; }
 
-    .cta-section { padding: 15px 0; } /* Espaçamento equidistante */
+    .cta-section { padding: 0 0 10px 0; text-align: center; } 
+    .cta-button-footer { margin-top: 10px; display:inline-block; padding:15px 40px; background:var(--white); color:var(--accent-red); text-decoration:none; font-weight:700; border-radius:50px; }
 
     .host-badge { position:absolute; top:15px; right:15px; background:var(--accent-red); color:#fff; padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:700; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,.2); }
 
@@ -353,7 +354,7 @@ include 'includes/header.php';
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
                     <h4>Networking</h4>
-                    <p>Faça conexões estratégicas, conheça o projeto por dentro e colabore com outros anfitriões.</p>
+                    <p>Conheça os bastidores do projeto, faça conexões estratégicas e colabore com outros anfitriões.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-gem"></i></div>
@@ -362,8 +363,8 @@ include 'includes/header.php';
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
-                    <h4>Liderança e Técnica</h4>
-                    <p>Desenvolva habilidades de liderança e competências técnicas com supervisão próxima e suporte para suas ideias.</p>
+                    <h4>Liderança e Apoio</h4>
+                    <p>Ganhe habilidades de líder e suporte técnico para tirar suas próprias ideias e projetos do papel.</p>
                 </div>
             </div>
 
@@ -375,9 +376,9 @@ include 'includes/header.php';
 
     <section class="cta-section">
         <div class="container">
-            <h2 class="cta-title">Ainda tem dúvidas?</h2>
-            <p class="cta-description">Nossa equipe está pronta para te ajudar a dar os primeiros passos.</p>
-            <a href="contato.php" class="cta-button" style="display:inline-block; padding:15px 40px; background:var(--white); color:var(--accent-red); text-decoration:none; font-weight:700; border-radius:50px;">Fale Conosco</a>
+            <h2 class="cta-title" style="margin-bottom:5px;">Ainda tem dúvidas?</h2>
+            <p class="cta-description" style="margin-bottom:0;">Nossa equipe está pronta para te ajudar a dar os primeiros passos.</p>
+            <a href="contato.php" class="cta-button-footer">Fale Conosco</a>
         </div>
     </section>
 </main>
