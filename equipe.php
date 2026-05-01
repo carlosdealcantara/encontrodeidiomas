@@ -136,7 +136,7 @@ ob_start();
     .contact-btn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:#f0f2f5; color:var(--text-color); transition:var(--transition); }
     .contact-btn:hover { transform:translateY(-3px); background: var(--accent-red); color: white; }
 
-    .cta-section { padding-bottom: 40px; } /* Evita tocar no rodapé */
+    .cta-section { padding: 15px 0; } /* Espaçamento equidistante */
 
     .host-badge { position:absolute; top:15px; right:15px; background:var(--accent-red); color:#fff; padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:700; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,.2); }
 
@@ -362,8 +362,8 @@ include 'includes/header.php';
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
-                    <h4>Suas Iniciativas</h4>
-                    <p>Coloque suas próprias ideias em prática com nosso apoio e suporte técnico para novos projetos.</p>
+                    <h4>Liderança e Técnica</h4>
+                    <p>Desenvolva habilidades de liderança e competências técnicas com supervisão próxima e suporte para suas ideias.</p>
                 </div>
             </div>
 
