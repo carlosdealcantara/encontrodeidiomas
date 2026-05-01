@@ -150,7 +150,12 @@ ob_start();
 
     /* Benefits Section */
     .benefits-section { background:#f8f9fa; padding:80px 0; border-top:1px solid #eee; margin-top: 60px; }
-    .benefits-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:40px; margin-top:50px; }
+    .benefits-grid { 
+        display:grid; 
+        grid-template-columns:repeat(3, 1fr); 
+        gap:40px; 
+        margin-top:50px; 
+    }
     .benefit-item { text-align:center; padding:20px; transition: var(--transition); }
     .benefit-item:hover { transform: translateY(-10px); }
     .benefit-icon { font-size:3rem; color:var(--accent-red); margin-bottom:20px; display: inline-block; }
@@ -353,8 +358,8 @@ include 'includes/header.php';
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-id-card"></i></div>
-                    <h4>Vitrine Profissional</h4>
-                    <p>Tenha um perfil exclusivo para divulgar suas redes, projetos e serviços para milhares de visitantes.</p>
+                    <h4>Vitrine no Site</h4>
+                    <p>Seu card de anfitrião no site será seu espaço de destaque para divulgar suas redes, projetos e serviços para milhares de visitantes.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
