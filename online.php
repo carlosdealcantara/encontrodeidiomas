@@ -167,7 +167,6 @@ ob_start();
     .replay-button { background:var(--bg-light); color:var(--accent-red); border:1px solid #ddd; }
     .replay-button i { 
         font-size: 1rem; 
-        transform: scale(1.4, 1.2); 
         margin-right: 5px;
     }
     .event-button:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
@@ -352,7 +351,7 @@ include 'includes/header.php';
                                 <?php endif; ?>
                                 <?php if (!empty($ev['youtube_link'])): ?>
                                 <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
-                                    <i class="fa-solid fa-play"></i> Anteriores
+                                    <i class="fa-solid fa-square-play"></i> Anteriores
                                 </a>
                                 <?php endif; ?>
                             </div>
@@ -523,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
                             \${actionButton}
-                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fa-solid fa-play"></i> Anteriores</a>` : ''}
+                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fa-solid fa-square-play"></i> Anteriores</a>` : ''}
                         </div>`;
                     timeline.appendChild(div);
                 });
