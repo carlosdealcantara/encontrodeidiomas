@@ -84,8 +84,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?>">
         <div class="event-header-row">
             <div class="event-tags">
-                <span class="event-tag event-tag-day"><?= getDayName($evDay) ?></span>
-                <span class="event-tag event-tag-hour"><?= $evHour ?>h</span>
+                <span class="event-tag"><?= getDayName($evDay) ?> às <?= $evHour ?>h</span>
             </div>
             <?php if ($isNow): ?>
             <span class="now-badge">AO VIVO</span>
@@ -246,15 +245,15 @@ ob_start();
     .event-tags { display: flex; gap: 8px; }
     .event-tag { 
         display: inline-block; 
-        background: var(--accent-blue); 
-        color: #fff; 
-        padding: 5px 14px; 
+        background: #fff; 
+        color: var(--accent-blue); 
+        border: 1px solid var(--accent-blue);
+        padding: 4px 14px; 
         font-weight: 600; 
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         letter-spacing: 0.5px;
+        border-radius: 20px;
     }
-    .event-tag-day { border-radius: 20px; }
-    .event-tag-hour { border-radius: 6px; }
     .event-title { display:flex; align-items:center; gap:10px; font-size:1.5rem; font-weight:600; margin-bottom:10px; flex-wrap:wrap; }
     .event-social-links { display:flex; gap:5px; margin-left:10px; }
     .social-icon { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; font-size:.85rem; background:#f0f2f5; color:var(--text-color); border:1px solid #ddd; transition:all .3s ease; }
