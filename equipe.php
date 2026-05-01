@@ -65,6 +65,8 @@ ob_start();
     .filter-group { display: none; }
     .filter-group.active { display: block; animation: fadeIn .3s ease; }
 
+    .dropdown-wrapper { position: relative; }
+
     .dropdown-button {
         display: flex;
         justify-content: space-between;
@@ -77,6 +79,7 @@ ob_start();
         cursor: pointer;
         font-weight: 600;
         transition: var(--transition);
+        font-family: inherit;
     }
 
     .dropdown-button:hover { border-color: var(--accent-red); }
@@ -86,13 +89,13 @@ ob_start();
         position: absolute;
         background: var(--white);
         width: 100%;
-        max-width: 460px;
         border-radius: 15px;
         box-shadow: 0 10px 25px rgba(0,0,0,.1);
         z-index: 100;
         margin-top: 5px;
         max-height: 300px;
         overflow-y: auto;
+        left: 0;
     }
 
     .dropdown-content.show { display: block; }
@@ -191,7 +194,6 @@ include 'includes/header.php';
                     </button>
                     <div class="dropdown-content" id="region-dropdown">
                         <div class="dropdown-item" data-value="all">Todas as Cidades</div>
-                        <!-- As cidades serão populadas via JS baseadas nos hosts disponíveis -->
                     </div>
                 </div>
             </div>
@@ -215,16 +217,46 @@ include 'includes/header.php';
 
         <div class="host-grid" id="hosts-grid">
             <?php foreach ($hosts as $host):
-                // Mapeamento de colunas da produção
-                $photo = !empty($host['profile_picture']) ? 'assets/images/' . $host['profile_picture'] : 'assets/images/HostSemFoto.png';
-                $categories = strtolower($host['categories'] ?? '');
+                // Mapeamento de colunas da produção (com fallback para colunas comuns)
+                $photo = !empty($host['profile_picture']) ? 'assets/images/' . $host['profile_picture'] : 
+                        (!empty($host['photo']) ? 'assets/images/' . $host['photo'] : 'assets/images/HostSemFoto.png');
+                
+                // Processamento de Categorias (Lógica idêntica ao dev)
+                $rawCats = $host['category'] ?? $host['categories'] ?? '';
+                $categories = array_map('trim', explode(',', $rawCats));
+                
+                // Adiciona 'tecnica' se status técnico estiver ativo
+                if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo') {
+                    if (!in_array('Técnica', $categories) && !in_array('tecnica', $categories)) {
+                        $categories[] = 'tecnica';
+                    }
+                }
+                
+                // Se estiver vazio, assume Online por padrão
+                if (empty(array_filter($categories))) {
+                    $categories[] = 'online';
+                }
+                
+                $categoriesAttr = strtolower(implode(' ', $categories));
+                $categoriesAttr = str_replace('técnica', 'tecnica', $categoriesAttr);
+                
                 $region     = $host['region'] ?? '';
                 $langs      = !empty($host['languages']) ? array_map('trim', explode(',', $host['languages'])) : [];
-                $roles      = !empty($host['technical_roles']) ? array_map('trim', explode(',', $host['technical_roles'])) : [];
-                $skills     = !empty($host['technical_skills']) ? array_map('trim', explode(',', $host['technical_skills'])) : [];
+                
+                // Papéis técnicos
+                $roles = [];
+                if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_roles'])) {
+                    $roles = array_map('trim', explode(',', $host['technical_roles']));
+                } else if (!empty($host['role'])) {
+                    $roles = array_map('trim', explode(',', $host['role']));
+                } else if (!empty($host['roles'])) {
+                    $roles = array_map('trim', explode(',', $host['roles']));
+                }
+                
+                $skills = !empty($host['technical_skills']) ? array_map('trim', explode(',', $host['technical_skills'])) : [];
             ?>
             <div class="host-card" 
-                 data-categories="<?= $categories ?>" 
+                 data-categories="<?= $categoriesAttr ?>" 
                  data-languages="<?= strtolower(implode(',', $langs)) ?>" 
                  data-region="<?= strtolower($region) ?>"
                  data-roles="<?= strtolower(implode(',', $roles)) ?>">
@@ -322,11 +354,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const regions = new Set();
     hostCards.forEach(card => {
         const reg = card.dataset.region;
-        if (reg && reg !== 'all') regions.add(reg);
+        if (reg && reg !== 'all' && reg.trim() !== '') regions.add(reg);
     });
     const regionDropdown = document.getElementById('region-dropdown');
     regions.forEach(reg => {
-        if (!reg) return;
         const item = document.createElement('div');
         item.className = 'dropdown-item';
         item.dataset.value = reg;
@@ -351,24 +382,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Dropdowns
-    document.querySelectorAll('.dropdown-button').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const content = this.nextElementSibling;
+    // Eventos de Dropdown (Global)
+    document.addEventListener('click', function(e) {
+        // Toggle dropdown
+        if (e.target.closest('.dropdown-button')) {
+            const btn = e.target.closest('.dropdown-button');
+            const content = btn.nextElementSibling;
+            
             document.querySelectorAll('.dropdown-content').forEach(c => {
                 if (c !== content) c.classList.remove('show');
             });
             content.classList.toggle('show');
-        });
-    });
-
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
-    });
-
-    document.body.addEventListener('click', function(e) {
-        if (e.target.classList.contains('dropdown-item')) {
+            e.stopPropagation();
+        } 
+        // Seleção de item
+        else if (e.target.classList.contains('dropdown-item')) {
             const item = e.target;
             const wrapper = item.closest('.filter-group');
             const type = wrapper.id.replace('filter-', '');
@@ -378,8 +406,14 @@ document.addEventListener('DOMContentLoaded', function() {
             currentFilters[type] = value;
             wrapper.querySelector('.dropdown-button span span').textContent = text;
             
+            document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
+            
             applyFilters();
             updateURL();
+        }
+        // Fechar ao clicar fora
+        else {
+            document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
         }
     });
 
@@ -389,18 +423,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         hostCards.forEach(card => {
             const cardCatsRaw = card.dataset.categories || '';
-            const cardCats = cardCatsRaw.split(',').map(s => s.trim().toLowerCase());
+            // No dev a separação é por ESPAÇO, mas vamos garantir ambos
+            const cardCats = cardCatsRaw.split(/[\s,]+/).map(s => s.trim().toLowerCase());
             
-            const cardLangs = (card.dataset.languages || '').split(',').map(s => s.trim().toLowerCase());
+            const cardLangs = (card.dataset.languages || '').split(/[\s,]+/).map(s => s.trim().toLowerCase());
             const cardRegion = (card.dataset.region || '').trim().toLowerCase();
-            const cardRoles = (card.dataset.roles || '').split(',').map(s => s.trim().toLowerCase());
+            const cardRoles = (card.dataset.roles || '').split(/[\s,]+/).map(s => s.trim().toLowerCase());
 
-            // Se o usuário quer "ver todos por padrão" (conforme solicitado), 
-            // podemos ajustar para que, se não houver categoria definida, mostre em algum lugar.
-            // Mas seguindo a lógica de abas:
             let visible = cardCats.includes(currentTab.toLowerCase());
 
-            // Se estivermos em uma aba, aplicamos os sub-filtros
             if (visible) {
                 if (currentTab === 'online' && currentFilters.online !== 'all') {
                     visible = cardLangs.includes(currentFilters.online.toLowerCase());
@@ -417,7 +448,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Atualizar contextos internos
                 card.querySelectorAll('.context-online, .context-presencial, .context-tecnica').forEach(el => {
                     el.style.display = el.classList.contains('context-' + currentTab) ? '' : 'none';
+                    if (el.tagName === 'P') el.classList.add('active');
                 });
+            } else {
+                card.querySelectorAll('.host-bio').forEach(p => p.classList.remove('active'));
             }
         });
 
