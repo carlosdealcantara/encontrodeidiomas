@@ -115,8 +115,23 @@ ob_start();
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     .timeline { position:relative; max-width:800px; margin:0 auto; padding:20px 0; }
     .timeline::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:4px; height:100%; background:linear-gradient(to bottom,var(--accent-red),var(--accent-blue)); border-radius:2px; }
-    .timeline-event { position:relative; margin-bottom:2rem; width:45%; background:var(--card-bg); border-radius:var(--border-radius); box-shadow:var(--shadow); padding:20px; transition:var(--transition); cursor:pointer; }
-    .timeline-event:hover { transform:translateY(-5px) scale(1.02); }
+    .timeline-event { 
+        position:relative; 
+        margin-bottom:2rem; 
+        width:45%; 
+        background:var(--card-bg); 
+        border-radius:var(--border-radius); 
+        box-shadow:var(--shadow); 
+        padding:20px; 
+        transition:var(--transition); 
+        cursor:pointer;
+        /* Fix para texto embaçado no hover */
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+    .timeline-event:hover { transform:translateY(-8px); }
     .timeline-event:nth-child(odd) { margin-left:auto; }
     .timeline-event::before { content:''; position:absolute; top:20px; width:20px; height:20px; background:#fff; border:4px solid var(--accent-red); border-radius:50%; z-index: 1; }
     .timeline-event:nth-child(odd)::before  { left:-60px; }
@@ -134,6 +149,7 @@ ob_start();
     .event-button { flex:1; padding:10px; border:none; border-radius:25px; cursor:pointer; font-weight:600; transition:var(--transition); text-align:center; text-decoration:none; display:inline-block; font-size: 0.9rem; }
     .join-button { background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); color:#fff; }
     .replay-button { background:var(--bg-light); color:#f00; border:1px solid #ddd; }
+    .replay-button i { font-size: 1.1rem; margin-right: 5px; }
     .event-button:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
     .join-button.disabled { background:var(--disabled-bg); color:var(--disabled-color); cursor:not-allowed; border: 1px solid #ddd; }
     .join-button.disabled:hover { transform:none; box-shadow:none; }
@@ -316,7 +332,7 @@ include 'includes/header.php';
                                 <?php endif; ?>
                                 <?php if (!empty($ev['youtube_link'])): ?>
                                 <a href="<?= htmlspecialchars($ev['youtube_link']) ?>" target="_blank" class="event-button replay-button">
-                                    <i class="fas fa-play-circle"></i> Anteriores
+                                    <i class="fas fa-play"></i> Anteriores
                                 </a>
                                 <?php endif; ?>
                             </div>
@@ -487,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="event-description">\${ev.description || ''}</p>
                         <div class="event-actions">
                             \${actionButton}
-                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fas fa-play-circle"></i> Anteriores</a>` : ''}
+                            \${ev.youtube_link ? `<a href="\${ev.youtube_link}" target="_blank" class="event-button replay-button"><i class="fas fa-play"></i> Anteriores</a>` : ''}
                         </div>`;
                     timeline.appendChild(div);
                 });
