@@ -82,7 +82,10 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
     $langName  = $ev['language_name'];
     ?>
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?>">
-        <span class="event-time"><?= getDayName($evDay) ?> às <?= $evHour ?>h</span>
+        <div class="event-tags">
+            <span class="event-tag"><?= getDayName($evDay) ?></span>
+            <span class="event-tag"><?= $evHour ?>h</span>
+        </div>
         <?php if ($isNow): ?>
         <span class="now-badge">AO VIVO</span>
         <?php endif; ?>
@@ -237,7 +240,17 @@ ob_start();
     .timeline-event::before { content:''; position:absolute; top:20px; width:20px; height:20px; background:#fff; border:4px solid var(--accent-red); border-radius:50%; z-index: 1; }
     .timeline-event:nth-child(odd)::before  { left:-60px; }
     .timeline-event:nth-child(even)::before { right:-60px; }
-    .event-time { display:inline-block; background:var(--accent-blue); color:#fff; padding:5px 15px; border-radius:20px; font-weight:500; margin-bottom:10px; }
+    .event-tags { display: flex; gap: 8px; margin-bottom: 12px; }
+    .event-tag { 
+        display: inline-block; 
+        background: var(--accent-blue); 
+        color: #fff; 
+        padding: 5px 12px; 
+        border-radius: 6px; 
+        font-weight: 600; 
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
     .event-title { display:flex; align-items:center; gap:10px; font-size:1.5rem; font-weight:600; margin-bottom:10px; flex-wrap:wrap; }
     .event-social-links { display:flex; gap:5px; margin-left:10px; }
     .social-icon { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; font-size:.85rem; background:#f0f2f5; color:var(--text-color); border:1px solid #ddd; transition:all .3s ease; }
