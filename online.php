@@ -164,7 +164,7 @@ ob_start();
         font-family: inherit;
     }
     .join-button { background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); color:#fff; }
-    .replay-button { background:var(--bg-light); color:var(--accent-blue); border:1px solid #ddd; }
+    .replay-button { background:var(--bg-light); color:var(--accent-red); border:1px solid #ddd; }
     .replay-button i { 
         font-size: 1rem; 
         transform: scale(1.4, 1.2); 
