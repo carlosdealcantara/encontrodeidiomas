@@ -297,6 +297,53 @@ ob_start();
     @keyframes fa-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(359deg); } }
     .no-events { text-align:center; padding:30px; background:#fff; border-radius:10px; box-shadow:var(--shadow); margin:20px 0; }
     
+    /* Card de Dia Vazio */
+    .empty-day-card {
+        background: #fff;
+        padding: 40px 30px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 2px dashed #ddd;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+    }
+    .empty-day-card:hover {
+        border-color: var(--accent-red);
+        transform: translateY(-5px);
+    }
+    .empty-day-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    .empty-day-card h3 {
+        font-size: 1.4rem;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+    }
+    .empty-day-card p {
+        color: #666;
+        margin-bottom: 25px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .empty-day-button {
+        display: inline-block;
+        background: var(--accent-red);
+        color: #fff;
+        padding: 12px 25px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .empty-day-button:hover {
+        background: #c11817;
+        transform: scale(1.05);
+        color: #fff;
+    }
+    
     .mobile-dropdown { display:flex; flex-direction:column; position:relative; width:100%; max-width:500px; margin:0 auto 20px; }
     .dropdown-button { display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:var(--accent-red); color:#fff; border:none; border-radius:25px; font-size:16px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(227,29,28,.3); transition:all .3s; font-family: inherit; }
     .dropdown-content { display:none; position:absolute; top:calc(100% + 10px); left:0; width:100%; background:#fff; border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,.15); z-index:100; max-height:350px; overflow-y:auto; padding:8px 0; }
@@ -420,7 +467,7 @@ include 'includes/header.php';
                     <?php
                     $dayNames = [1=>'Segunda',2=>'Terça',3=>'Quarta',4=>'Quinta',5=>'Sexta',6=>'Sábado',7=>'Domingo'];
                     foreach ($dayNames as $num => $name):
-                        if (empty($byDay[$num])) continue;
+                        // Agora mostramos todos os dias, mesmo os vazios
                     ?>
                     <button class="day-button <?= $num == $initialDay ? 'active' : '' ?>"
                             data-day="<?= $num ?>"><?= $name ?></button>
@@ -428,16 +475,24 @@ include 'includes/header.php';
                 </div>
 
                 <?php foreach ($dayNames as $dayNum => $dayName): ?>
-                <div id="day-<?= $dayNum ?>" class="day-events <?= ($initialView === 'day' && $dayNum == $initialDay) ? 'active' : '' ?>">
+                <div id="day-<?= $dayNum ?>" class="day-events <?= $dayNum == $initialDay ? 'active' : '' ?>">
                     <div class="timeline">
-                    <?php
-                    $dayEvents = $byDay[$dayNum] ?? [];
-                    if (empty($dayEvents)):
-                    ?>
-                        <div class="no-events"><p>Nenhum evento neste dia ainda. Em breve!</p></div>
-                    <?php else:
-                        foreach ($dayEvents as $ev) renderEventCard($ev, $currentDayOfWeek, $currentHour);
-                    endif; ?>
+                        <?php 
+                        $dayEvents = $byDay[$dayNum] ?? [];
+                        if (!empty($dayEvents)) {
+                            foreach ($dayEvents as $ev) renderEventCard($ev, $currentDayOfWeek, $currentHour); 
+                        } else {
+                            // Card de incentivo para dias sem eventos (Propaganda)
+                            ?>
+                            <div class="empty-day-card">
+                                <div class="empty-day-icon">🚀</div>
+                                <h3>O idioma que você procura ainda não está aqui?</h3>
+                                <p>Nossa comunidade cresce através da iniciativa de pessoas como você. Que tal ser o próximo anfitrião e sugerir este horário para um novo idioma?</p>
+                                <a href="contato.php" class="empty-day-button">Sugerir Novo Encontro</a>
+                            </div>
+                            <?php
+                        }
+                        ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
