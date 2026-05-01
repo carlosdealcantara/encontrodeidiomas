@@ -22,9 +22,34 @@ $currentHour      = (int)date('G');
 
 // Parâmetros iniciais da URL
 $initialView = $_GET['view'] ?? 'day';
-$initialDay  = $_GET['dia']  ?? $currentDayOfWeek;
-if ($initialDay > 5 && $initialDay < 7) $initialDay = 1; // Fallback se não houver eventos
+
+// 1. Inteligência para o Dia Padrão (Dia atual ou Segunda se for fim de semana)
+$initialDay = $_GET['dia'] ?? $currentDayOfWeek;
+if (!isset($_GET['dia']) && $initialDay > 5) {
+    $initialDay = 1;
+}
+
+// 2. Inteligência para o Idioma Padrão (Inglês como padrão se não especificado)
 $initialLang = $_GET['idioma'] ?? '';
+if (empty($initialLang)) {
+    foreach ($languages as $lang) {
+        if (stripos($lang['name'], 'inglês') !== false) {
+            $initialLang = $lang['id'];
+            break;
+        }
+    }
+    // Fallback caso não encontre "Inglês" no nome, pega o primeiro com eventos
+    if (empty($initialLang) && !empty($languages)) {
+        foreach ($languages as $lang) {
+            if (!empty($byLanguage[$lang['id']])) {
+                $initialLang = $lang['id'];
+                break;
+            }
+        }
+    }
+}
+
+ob_start();
 
 /**
  * Renderiza um card de evento único
