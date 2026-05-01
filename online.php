@@ -82,13 +82,15 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
     $langName  = $ev['language_name'];
     ?>
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?>">
-        <div class="event-tags">
-            <span class="event-tag event-tag-day"><?= getDayName($evDay) ?></span>
-            <span class="event-tag event-tag-hour"><?= $evHour ?>h</span>
+        <div class="event-header-row">
+            <div class="event-tags">
+                <span class="event-tag event-tag-day"><?= getDayName($evDay) ?></span>
+                <span class="event-tag event-tag-hour"><?= $evHour ?>h</span>
+            </div>
+            <?php if ($isNow): ?>
+            <span class="now-badge">AO VIVO</span>
+            <?php endif; ?>
         </div>
-        <?php if ($isNow): ?>
-        <span class="now-badge">AO VIVO</span>
-        <?php endif; ?>
         <div class="event-title">
             <?php if ($flagCode): ?>
                 <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="flag-icon" alt="<?= htmlspecialchars($langName) ?>">
@@ -240,7 +242,8 @@ ob_start();
     .timeline-event::before { content:''; position:absolute; top:20px; width:20px; height:20px; background:#fff; border:4px solid var(--accent-red); border-radius:50%; z-index: 1; }
     .timeline-event:nth-child(odd)::before  { left:-60px; }
     .timeline-event:nth-child(even)::before { right:-60px; }
-    .event-tags { display: flex; gap: 8px; margin-bottom: 12px; }
+    .event-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .event-tags { display: flex; gap: 8px; }
     .event-tag { 
         display: inline-block; 
         background: var(--accent-blue); 
@@ -287,7 +290,7 @@ ob_start();
     .event-button:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
     .join-button.disabled { background:var(--disabled-bg); color:var(--disabled-color); cursor:not-allowed; border: 1px solid #ddd; }
     .join-button.disabled:hover { transform:none; box-shadow:none; }
-    .now-badge { display:inline-block; background:var(--now-badge-bg); color:#fff; font-size:.7rem; font-weight:bold; padding:3px 8px; border-radius:12px; margin-left:10px; animation:pulse 1.5s infinite; }
+    .now-badge { display:inline-block; background:var(--now-badge-bg); color:#fff; font-size:.7rem; font-weight:bold; padding:3px 12px; border-radius:12px; animation:pulse 1.5s infinite; }
     @keyframes pulse { 0%{opacity:.7} 50%{opacity:1} 100%{opacity:.7} }
     .happening-now { border:2px solid var(--highlight-border); background:var(--highlight-bg); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2); }
     
