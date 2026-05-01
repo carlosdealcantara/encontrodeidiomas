@@ -348,13 +348,18 @@ include 'includes/header.php';
             <div class="benefits-grid">
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-certificate"></i></div>
-                    <h4>Certificado</h4>
-                    <p>Receba um certificado reconhecido pelo projeto para comprovar sua experiência e horas de dedicação.</p>
+                    <h4>Certificado e Currículo</h4>
+                    <p>Ganhe experiência prática comprovada e um certificado reconhecido para turbinar seu currículo e LinkedIn.</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon"><i class="fas fa-id-card"></i></div>
+                    <h4>Vitrine Profissional</h4>
+                    <p>Tenha um perfil exclusivo para divulgar suas redes, projetos e serviços para milhares de visitantes.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
-                    <h4>Networking</h4>
-                    <p>Conheça os bastidores do projeto, faça conexões estratégicas e colabore com outros anfitriões.</p>
+                    <h4>Networking e Bastidores</h4>
+                    <p>Conheça o projeto por dentro e faça conexões estratégicas com outros anfitriões e poliglotas.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-gem"></i></div>
@@ -362,9 +367,14 @@ include 'includes/header.php';
                     <p>Acesso exclusivo ao nosso grupo de Hosts, com trocas de experiências e materiais exclusivos.</p>
                 </div>
                 <div class="benefit-item">
+                    <div class="benefit-icon"><i class="fas fa-bullseye"></i></div>
+                    <h4>Liderança e Mentoria</h4>
+                    <p>Desenvolva habilidades de liderança e gestão de grupos com supervisão próxima e mentoria direta.</p>
+                </div>
+                <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
-                    <h4>Liderança e Apoio</h4>
-                    <p>Ganhe habilidades de líder e suporte técnico para tirar suas próprias ideias e projetos do papel.</p>
+                    <h4>Suporte a Ideias</h4>
+                    <p>Coloque suas próprias iniciativas em prática com nosso apoio total e suporte técnico para novos projetos.</p>
                 </div>
             </div>
 
