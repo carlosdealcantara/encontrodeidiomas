@@ -82,7 +82,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
     $langName  = $ev['language_name'];
     ?>
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?>">
-        <span class="event-time"><?= $evHour ?>h</span>
+        <span class="event-time"><?= getDayName($evDay) ?> às <?= $evHour ?>h</span>
         <?php if ($isNow): ?>
         <span class="now-badge">AO VIVO</span>
         <?php endif; ?>
