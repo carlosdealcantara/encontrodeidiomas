@@ -144,6 +144,18 @@ ob_start();
         .category-tabs { flex-direction: column; border-radius: 15px; max-width: 90%; }
         .host-grid { grid-template-columns: 1fr; }
     }
+
+    /* Benefits Section */
+    .benefits-section { background:#f8f9fa; padding:80px 0; border-top:1px solid #eee; margin-top: 60px; }
+    .benefits-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:40px; margin-top:50px; }
+    .benefit-item { text-align:center; padding:20px; transition: var(--transition); }
+    .benefit-item:hover { transform: translateY(-10px); }
+    .benefit-icon { font-size:3rem; color:var(--accent-red); margin-bottom:20px; display: inline-block; }
+    .benefit-item h4 { font-size:1.3rem; margin-bottom:12px; color:var(--primary-color); font-weight: 700; }
+    .benefit-item p { font-size:0.95rem; color:#666; line-height:1.5; }
+    
+    .cta-button-red { display:inline-block; padding:15px 40px; background:var(--accent-red); color:white; text-decoration:none; font-weight:700; border-radius:50px; transition: var(--transition); }
+    .cta-button-red:hover { background: #c11817; transform: scale(1.05); box-shadow: 0 10px 20px rgba(193, 24, 23, 0.2); }
 <?php
 $page_styles = ob_get_clean();
 
@@ -325,11 +337,45 @@ include 'includes/header.php';
         </div>
     </div>
 
+    <section class="benefits-section" id="seja-host">
+        <div class="container">
+            <h2 class="section-title">Por que ser um Anfitrião?</h2>
+            <p class="section-description">Muito mais do que voluntariado, uma oportunidade de crescimento real.</p>
+            
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <div class="benefit-icon"><i class="fas fa-certificate"></i></div>
+                    <h4>Certificado</h4>
+                    <p>Receba um certificado oficial de horas complementares e atividade voluntária para seu currículo.</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
+                    <h4>Networking</h4>
+                    <p>Conecte-se com nossa rede global de anfitriões, professores e entusiastas de idiomas.</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon"><i class="fas fa-gem"></i></div>
+                    <h4>Comunidade VIP</h4>
+                    <p>Acesso exclusivo ao nosso grupo de Hosts, com trocas de experiências e materiais exclusivos.</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
+                    <h4>Desenvolvimento</h4>
+                    <p>Pratique liderança, oratória e ganhe fluência máxima guiando grupos reais.</p>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:50px;">
+                <a href="contato.php" class="cta-button-red">Quero me candidatar</a>
+            </div>
+        </div>
+    </section>
+
     <section class="cta-section">
         <div class="container">
-            <h2 class="cta-title">Quer fazer parte?</h2>
-            <p class="cta-description">Nossa comunidade cresce a cada dia. Seja um anfitrião e ajude pessoas a aprenderem idiomas!</p>
-            <a href="contato.php" class="cta-button" style="display:inline-block; padding:15px 40px; background:var(--white); color:var(--accent-red); text-decoration:none; font-weight:700; border-radius:50px;">Entre em Contato</a>
+            <h2 class="cta-title">Ainda tem dúvidas?</h2>
+            <p class="cta-description">Nossa equipe está pronta para te ajudar a dar os primeiros passos.</p>
+            <a href="contato.php" class="cta-button" style="display:inline-block; padding:15px 40px; background:var(--white); color:var(--accent-red); text-decoration:none; font-weight:700; border-radius:50px;">Fale Conosco</a>
         </div>
     </section>
 </main>

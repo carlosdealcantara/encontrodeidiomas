@@ -488,9 +488,9 @@ include 'includes/header.php';
                             ?>
                             <div class="empty-day-card">
                                 <div class="empty-day-icon">🚀</div>
-                                <h3>O idioma que você procura ainda não está aqui?</h3>
-                                <p>Nossa comunidade cresce através da iniciativa de pessoas como você. Que tal ser o próximo anfitrião e sugerir este horário para um novo idioma?</p>
-                                <a href="contato.php" class="empty-day-button">Sugerir Novo Encontro</a>
+                                <h3>Que tal ser o próximo Anfitrião?</h3>
+                                <p>Se o idioma ou horário que você procura não está aqui, você pode ser a pessoa que faz ele acontecer! Como Host, você ganha <strong>certificado, networking</strong> e acesso à nossa <strong>comunidade exclusiva</strong>.</p>
+                                <a href="equipe.php#seja-host" class="empty-day-button">Quero ser um Host</a>
                             </div>
                             <?php
                         }
