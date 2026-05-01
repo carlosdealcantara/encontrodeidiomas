@@ -347,7 +347,6 @@ include 'includes/header.php';
             <!-- VIEW: IDIOMA -->
             <div id="language-view" class="view-content <?= $initialView === 'language' ? 'active' : '' ?>">
                 <div class="mobile-dropdown">
-                    <p style="text-align:center;margin-bottom:10px;font-size:.9rem;font-weight:500;">Selecione um idioma:</p>
                     <button class="dropdown-button" id="lang-dropdown-btn">
                         <div class="dropdown-flag-container">
                             <img id="selected-language-flag" 
