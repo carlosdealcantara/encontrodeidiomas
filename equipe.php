@@ -132,14 +132,14 @@ ob_start();
     .host-bio { margin-bottom:20px; font-size:.9rem; color:#555; line-height: 1.5; display: none; }
     .host-bio.active { display: block; }
 
-    .host-contact { display:flex; justify-content:center; gap:12px; border-top: 1px solid #eee; padding-top: 15px; }
-    .contact-btn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:#f0f2f5; color:var(--text-color); transition:var(--transition); }
+    .host-contact { display:flex; justify-content:flex-start; gap:12px; margin-top: 10px; }
+    .contact-btn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:#f0f2f5; color:var(--text-color); transition:var(--transition); font-size: 0.9rem; }
     .contact-btn:hover { transform:translateY(-3px); background: var(--accent-red); color: white; }
 
     .cta-section { padding: 0 0 10px 0; text-align: center; } 
     .cta-button-footer { margin-top: 10px; display:inline-block; padding:15px 40px; background:var(--white); color:var(--accent-red); text-decoration:none; font-weight:700; border-radius:50px; }
 
-    .host-badge { position:absolute; top:15px; right:15px; background:var(--accent-red); color:#fff; padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:700; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,.2); }
+    .host-badge { position:absolute; top:12px; right:12px; background:var(--accent-red); color:#fff; padding:5px 14px; border-radius:20px; font-size:.7rem; font-weight:700; z-index: 10; box-shadow: 0 4px 12px rgba(227,29,28,.4); text-transform: uppercase; letter-spacing: 0.5px; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -283,8 +283,11 @@ include 'includes/header.php';
                  data-region="<?= strtolower($region) ?>"
                  data-roles="<?= strtolower(implode(',', $roles)) ?>">
                 
-                <?php if (!empty($host['badge'])): ?>
-                    <span class="host-badge"><?= htmlspecialchars($host['badge']) ?></span>
+                <?php 
+                $badgeText = !empty($langs) ? implode(' / ', $langs) : (!empty($host['badge']) ? $host['badge'] : '');
+                if (!empty($badgeText)): 
+                ?>
+                    <span class="host-badge"><?= htmlspecialchars($badgeText) ?></span>
                 <?php endif; ?>
 
                 <div class="host-image-container">
@@ -301,25 +304,19 @@ include 'includes/header.php';
                     </div>
                     <?php endif; ?>
 
-                    <!-- Tags de Idiomas -->
-                    <div class="host-tags context-online">
-                        <?php foreach ($langs as $l): ?>
-                            <span class="tag"><?= htmlspecialchars($l) ?></span>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <!-- Tags de Skills Técnicas -->
-                    <div class="host-tags context-tecnica">
-                        <?php foreach ($skills as $s): ?>
-                            <span class="tag"><?= htmlspecialchars($s) ?></span>
-                        <?php endforeach; ?>
-                    </div>
-
                     <!-- Biografias Específicas -->
                     <p class="host-bio context-online"><?= htmlspecialchars($host['online_description'] ?? $host['bio'] ?? '') ?></p>
                     <p class="host-bio context-presencial"><?= htmlspecialchars($host['inperson_description'] ?? $host['bio'] ?? '') ?></p>
                     <p class="host-bio context-tecnica"><?= htmlspecialchars($host['bio'] ?? '') ?></p>
 
+                    <!-- Tags de Skills Técnicas (Apenas para equipe técnica) -->
+                    <div class="host-tags context-tecnica" style="margin-top:15px;">
+                        <?php foreach ($skills as $s): ?>
+                            <span class="tag"><?= htmlspecialchars($s) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Redes Sociais e Contato -->
                     <div class="host-contact">
                         <?php if (!empty($host['whatsapp'])): ?>
                             <a href="https://wa.me/<?= preg_replace('/\D/', '', $host['whatsapp']) ?>" target="_blank" class="contact-btn" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
@@ -329,6 +326,9 @@ include 'includes/header.php';
                         <?php endif; ?>
                         <?php if (!empty($host['instagram'])): ?>
                             <a href="<?= htmlspecialchars($host['instagram']) ?>" target="_blank" class="contact-btn" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <?php endif; ?>
+                        <?php if (!empty($host['linkedin'])): ?>
+                            <a href="<?= htmlspecialchars($host['linkedin']) ?>" target="_blank" class="contact-btn" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                         <?php endif; ?>
                     </div>
                 </div>
