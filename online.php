@@ -443,9 +443,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const dayView       = document.getElementById('day-view');
     const langView      = document.getElementById('language-view');
     
-    let currentView = '<?= $initialView ?>';
-    let currentDay  = '<?= $initialDay ?>';
-    let currentLang = '<?= $initialLang ?>';
+    let currentView = '{$initialView}';
+    let currentDay  = '{$initialDay}';
+    let currentLang = '{$initialLang}';
 
     // Força o carregamento da imagem de bandeira mesmo quando o contêiner
     // está oculto (display:none impede o browser de carregar a img).
