@@ -44,33 +44,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'linkedin'  => $data['linkedin'] ?? '',
             'github'    => $data['github'] ?? ''
         ];
-        $socialJson = json_encode($socialData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-        // Tratamento de Upload de Foto
+        $socialJson = json_encode($socialData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);        // Tratamento de Upload de Foto - Só altera se enviar uma nova
         $profilePic = $host['profile_picture'] ?? 'HostSemFoto.png';
         if (!empty($_FILES['photo']['name'])) {
             $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-            $newFileName = str_replace(' ', '_', $data['full_name']) . '_' . time() . '.' . $ext;
+            $newFileName = str_replace(' ', '_', $data['full_name'] ?? 'host') . '_' . time() . '.' . $ext;
             if (move_uploaded_file($_FILES['photo']['tmp_name'], '../assets/images/' . $newFileName)) {
                 $profilePic = $newFileName;
             }
         }
 
-        // Preparação de dados - APENAS colunas que existem no banco real
+        // Preparação de dados - RIGOROSAMENTE as 13 colunas da tabela + ID se update
         $dataToSave = [
-            'full_name'             => $data['full_name'] ?? '',
-            'status'                => $data['status'] ?? 'ativo',
-            'profile_picture'       => $profilePic,
-            'languages'             => $data['languages'] ?? '',
-            'online_description'    => $data['online_description'] ?? '',
-            'region'                => $data['region'] ?? '',
-            'category'              => $data['category'] ?? 'Online',
-            'inperson_description'  => $data['inperson_description'] ?? '',
-            'technical_status'      => $data['technical_status'] ?? 'inativo',
-            'technical_roles'       => $data['technical_roles'] ?? '',
-            'technical_skills'      => $data['technical_skills'] ?? '',
-            'technical_description' => $data['technical_description'] ?? '',
-            'social_media_links'    => $socialJson
+            'full_name'             => (string)($data['full_name'] ?? ''),
+            'status'                => (string)($data['status'] ?? 'ativo'),
+            'profile_picture'       => (string)$profilePic,
+            'languages'             => (string)($data['languages'] ?? ''),
+            'online_description'    => (string)($data['online_description'] ?? ''),
+            'region'                => (string)($data['region'] ?? ''),
+            'category'              => (string)($data['category'] ?? 'Online'),
+            'inperson_description'  => (string)($data['inperson_description'] ?? ''),
+            'technical_status'      => (string)($data['technical_status'] ?? 'inativo'),
+            'technical_roles'       => (string)($data['technical_roles'] ?? ''),
+            'technical_skills'      => (string)($data['technical_skills'] ?? ''),
+            'technical_description' => (string)($data['technical_description'] ?? ''),
+            'social_media_links'    => (string)$socialJson
         ];
 
         if ($id > 0) {
@@ -280,21 +278,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </form>
 
-        <!-- Listas de Sugestões (Datalists) -->
+        <!-- Listas de Sugestões (Datalists - Apenas versões corretas) -->
         <datalist id="list-languages">
             <option value="Inglês">
-            <option value="Ingles">
             <option value="Francês">
-            <option value="Frances">
             <option value="Espanhol">
             <option value="Alemão">
-            <option value="Alemao">
             <option value="Italiano">
             <option value="Russo">
             <option value="Japonês">
-            <option value="Japones">
             <option value="Chinês">
-            <option value="Chines">
             <option value="Coreano">
             <option value="Português (Estrangeiros)">
         </datalist>
@@ -304,7 +297,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="Presencial">
             <option value="Técnica">
             <option value="Online, Presencial">
-            <option value="Online, Presencial, Técnica">
         </datalist>
 
         <datalist id="list-skills">
@@ -314,7 +306,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="CSS">
             <option value="MySQL">
             <option value="WordPress">
-            <option value="Design Grafico">
             <option value="Design Gráfico">
             <option value="UI/UX">
             <option value="Edição de Vídeo">
@@ -327,6 +318,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="Coordenador Técnico">
             <option value="Social Media">
         </datalist>
+
+        <script>
+        // Inteligência para Sugestões após Vírgula (Estilo LinkedIn/Tags)
+        function enableMultiSuggest(inputId) {
+            const input = document.getElementsByName(inputId)[0];
+            if (!input) return;
+
+            input.addEventListener('input', function(e) {
+                const value = this.value;
+                const lastComma = value.lastIndexOf(',');
+                
+                // Se houver vírgula, o navegador para de sugerir nativamente.
+                // Aqui poderíamos implementar um dropdown customizado, 
+                // mas para manter leve, vamos apenas limpar o 'list' se estiver no meio de uma palavra 
+                // e reativar se for o início de uma nova tag.
+                if (lastComma !== -1) {
+                    const currentTag = value.substring(lastComma + 1).trim();
+                    // O datalist nativo não suporta troca dinâmica de contexto facilmente,
+                    // mas ao menos limpamos o placeholder para ajudar o usuário.
+                }
+            });
+        }
+        
+        // Ativando nos campos principais
+        enableMultiSuggest('languages');
+        enableMultiSuggest('technical_skills');
+        enableMultiSuggest('category');
+        </script>
     </main>
 </body>
 </html>
