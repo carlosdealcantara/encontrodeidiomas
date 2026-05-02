@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Tratamento de Redes Sociais (JSON)
         // Converte arrays de checkboxes em string separada por vírgula
-        $languagesStr = isset($data['languages']) && is_array($data['languages']) ? implode(', ', $data['languages']) : ($data['languages'] ?? '');
+        $languagesStr = !empty($data['languages_ordered']) ? $data['languages_ordered'] : (isset($data['languages']) && is_array($data['languages']) ? implode(', ', $data['languages']) : ($data['languages'] ?? ''));
         $skillsStr    = isset($data['technical_skills']) && is_array($data['technical_skills']) ? implode(', ', $data['technical_skills']) : ($data['technical_skills'] ?? '');
         $categoryArr  = isset($data['category']) && is_array($data['category']) ? $data['category'] : [];
         $categoryStr  = implode(', ', $categoryArr);
@@ -119,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title><?= $id > 0 ? 'Editar' : 'Novo' ?> Anfitrião | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root {
             --primary-bg: #0f172a;
@@ -168,6 +169,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 2px 8px rgba(227, 29, 28, 0.3);
         }
         .tag-label:hover { background: #e4e6e9; }
+
+        /* Priority List Styles */
+        .priority-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .priority-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 15px;
+            background: var(--sidebar-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.2s;
+        }
+        .priority-item:active { cursor: grabbing; }
+        .priority-item .handle { color: var(--text-dim); }
+        .priority-item .lang-name { flex: 1; font-weight: 500; }
+        .priority-item .lang-badge {
+            background: var(--accent-red);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .sortable-ghost { opacity: 0.4; background: var(--accent-red) !important; }
     </style>
 </head>
 <body>
@@ -253,10 +289,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $displayName = str_replace(' (Estrangeiros)', '', $lang);
                         ?>
                             <label class="tag-item">
-                                <input type="checkbox" name="languages[]" value="<?= $lang ?>" <?= in_array($lang, $currentLangs) ? 'checked' : '' ?>>
+                                <input type="checkbox" name="languages[]" value="<?= $lang ?>" 
+                                       <?= in_array($lang, $currentLangs) ? 'checked' : '' ?>
+                                       class="lang-checkbox"
+                                       data-name="<?= $displayName ?>">
                                 <span class="tag-label"><?= $displayName ?></span>
                             </label>
                         <?php endforeach; ?>
+                    </div>
+
+                    <div style="margin-top: 25px;">
+                        <label><i class="fas fa-sort-amount-down"></i> Ordem de Prioridade (Arraste para organizar)</label>
+                        <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">O primeiro idioma da lista será o principal exibido no card.</p>
+                        <div id="language-priority-list" class="priority-list">
+                            <!-- Populando via JS -->
+                        </div>
+                        <input type="hidden" name="languages_ordered" id="languages_ordered" value="<?= htmlspecialchars($host['languages']) ?>">
                     </div>
                 </div>
                 <div class="form-group">
@@ -372,6 +420,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Inicialização
     updateSections();
+
+    // --- LÓGICA DE ORDENAÇÃO DE IDIOMAS ---
+    const priorityList = document.getElementById('language-priority-list');
+    const languagesOrderedInput = document.getElementById('languages_ordered');
+    const langCheckboxes = document.querySelectorAll('.lang-checkbox');
+
+    function updateOrderedInput() {
+        const items = priorityList.querySelectorAll('.priority-item');
+        const orderedNames = Array.from(items).map(item => item.dataset.id);
+        languagesOrderedInput.value = orderedNames.join(', ');
+    }
+
+    function createPriorityItem(id, name) {
+        const div = document.createElement('div');
+        div.className = 'priority-item';
+        div.dataset.id = id;
+        div.innerHTML = `
+            <i class="fas fa-grip-lines handle"></i>
+            <span class="lang-name">${name}</span>
+            <span class="lang-badge">Ativo</span>
+        `;
+        return div;
+    }
+
+    function syncCheckboxesWithPriority() {
+        const currentOrdered = languagesOrderedInput.value.split(',').map(s => s.trim()).filter(s => s !== '');
+        
+        // Limpa e repopula baseado na ordem salva ou atual
+        priorityList.innerHTML = '';
+        
+        // Primeiro adiciona os que já estão na ordem salva
+        currentOrdered.forEach(langId => {
+            const cb = Array.from(langCheckboxes).find(c => c.value === langId);
+            if (cb && cb.checked) {
+                const displayName = cb.dataset.name;
+                priorityList.appendChild(createPriorityItem(langId, displayName));
+            }
+        });
+
+        // Adiciona novos que foram marcados mas não estavam na ordem (caso ocorra)
+        langCheckboxes.forEach(cb => {
+            if (cb.checked && !currentOrdered.includes(cb.value)) {
+                priorityList.appendChild(createPriorityItem(cb.value, cb.dataset.name));
+            }
+        });
+
+        updateOrderedInput();
+    }
+
+    langCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (this.checked) {
+                priorityList.appendChild(createPriorityItem(this.value, this.dataset.name));
+            } else {
+                const item = priorityList.querySelector(`[data-id="${this.value}"]`);
+                if (item) item.remove();
+            }
+            updateOrderedInput();
+        });
+    });
+
+    // Inicializa Sortable
+    if (priorityList) {
+        new Sortable(priorityList, {
+            animation: 150,
+            handle: '.handle',
+            ghostClass: 'sortable-ghost',
+            onEnd: updateOrderedInput
+        });
+    }
+
+    // Sincronização inicial
+    syncCheckboxesWithPriority();
     </script>
 </body>
 </html>

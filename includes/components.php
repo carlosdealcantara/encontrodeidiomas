@@ -62,4 +62,113 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
     </div>
     <?php
 }
-?>
+
+/**
+ * Renderiza um card de anfitrião
+ */
+function renderHostCard($host) {
+    // Mapeamento de colunas da produção (com fallback para colunas comuns)
+    $photo = !empty($host['profile_picture']) ? 'assets/images/' . $host['profile_picture'] : 
+            (!empty($host['photo']) ? 'assets/images/' . $host['photo'] : 'assets/images/HostSemFoto.png');
+    
+    // Processamento de Categorias
+    $rawCats = $host['category'] ?? $host['categories'] ?? '';
+    $categories = array_map('trim', explode(',', $rawCats));
+    
+    // Adiciona 'tecnica' se status técnico estiver ativo
+    if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo') {
+        if (!in_array('Técnica', $categories) && !in_array('tecnica', $categories)) {
+            $categories[] = 'tecnica';
+        }
+    }
+    
+    // Se estiver vazio, assume Online por padrão
+    if (empty(array_filter($categories))) {
+        $categories[] = 'online';
+    }
+    
+    $categoriesAttr = strtolower(implode(' ', $categories));
+    $categoriesAttr = str_replace('técnica', 'tecnica', $categoriesAttr);
+    
+    $region = $host['region'] ?? '';
+    $langs = !empty($host['languages']) ? array_map('trim', explode(',', $host['languages'])) : [];
+    
+    // Papéis técnicos
+    $roles = [];
+    if (!empty($host['technical_status']) && $host['technical_status'] === 'ativo' && !empty($host['technical_roles'])) {
+        $roles = array_map('trim', explode(',', $host['technical_roles']));
+    } else if (!empty($host['role'])) {
+        $roles = array_map('trim', explode(',', $host['role']));
+    } else if (!empty($host['roles'])) {
+        $roles = array_map('trim', explode(',', $host['roles']));
+    }
+    
+    $skills = !empty($host['technical_skills']) ? array_map('trim', explode(',', $host['technical_skills'])) : [];
+
+    // Processa Redes Sociais do JSON (Hostinger/Produção)
+    $social = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
+    $whatsapp  = $social['whatsapp']  ?? $host['whatsapp'] ?? '';
+    $email     = $social['email']     ?? $host['email'] ?? '';
+    $instagram = $social['instagram'] ?? $host['instagram'] ?? '';
+    $linkedin  = $social['linkedin']  ?? $host['linkedin'] ?? '';
+    ?>
+    <div class="host-card" 
+         data-categories="<?= $categoriesAttr ?>" 
+         data-languages="<?= strtolower(implode(',', $langs)) ?>" 
+         data-region="<?= strtolower($region) ?>"
+         data-roles="<?= strtolower(implode(',', $roles)) ?>">
+        
+        <div class="host-badges-container">
+            <?php 
+            $displayBadges = !empty($langs) ? $langs : (!empty($host['badge']) ? [$host['badge']] : []);
+            foreach ($displayBadges as $badge): 
+            ?>
+                <span class="host-badge"><?= htmlspecialchars($badge) ?></span>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="host-image-container">
+            <img src="<?= $photo ?>" alt="Foto de <?= htmlspecialchars($host['full_name']) ?>" class="host-image"
+                 onerror="this.src='assets/images/HostSemFoto.png'">
+        </div>
+
+        <div class="host-info">
+            <h2 class="host-name"><?= htmlspecialchars($host['full_name']) ?></h2>
+            
+            <?php if ($region): ?>
+            <div class="host-region context-presencial">
+                <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($region) ?>
+            </div>
+            <?php endif; ?>
+
+            <!-- Biografias Específicas -->
+            <p class="host-bio context-online"><?= htmlspecialchars($host['online_description'] ?? $host['bio'] ?? '') ?></p>
+            <p class="host-bio context-presencial"><?= htmlspecialchars($host['inperson_description'] ?? $host['bio'] ?? '') ?></p>
+            <p class="host-bio context-tecnica"><?= htmlspecialchars($host['bio'] ?? '') ?></p>
+
+            <!-- Tags de Skills Técnicas (Apenas para equipe técnica) -->
+            <div class="host-tags context-tecnica" style="margin-top:15px;">
+                <?php foreach ($skills as $s): ?>
+                    <span class="tag"><?= htmlspecialchars($s) ?></span>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Redes Sociais e Contato -->
+            <div class="host-contact">
+                <?php if (!empty($whatsapp)): ?>
+                    <a href="<?= (strpos($whatsapp, 'http') === 0) ? htmlspecialchars($whatsapp) : 'https://wa.me/' . preg_replace('/\D/', '', $whatsapp) ?>" target="_blank" class="contact-btn" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <?php endif; ?>
+                <?php if (!empty($email)): ?>
+                    <a href="mailto:<?= htmlspecialchars($email) ?>" class="contact-btn" title="Email"><i class="fas fa-envelope"></i></a>
+                <?php endif; ?>
+                <?php if (!empty($instagram)): ?>
+                    <a href="<?= (strpos($instagram, 'http') === 0) ? htmlspecialchars($instagram) : 'https://instagram.com/' . ltrim($instagram, '@') ?>" target="_blank" class="contact-btn" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <?php endif; ?>
+                <?php if (!empty($linkedin)): ?>
+                    <a href="<?= htmlspecialchars($linkedin) ?>" target="_blank" class="contact-btn" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <?php
+}
