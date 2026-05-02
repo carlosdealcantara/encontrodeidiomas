@@ -69,7 +69,7 @@ ob_start();
  * Renderiza um card de evento único
  * Centralizado para garantir consistência total entre as views
  */
-function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
+function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false) {
     $evDay   = (int)$ev['day_of_week'];
     $evHour  = (int)$ev['time_hour'];
     
@@ -81,7 +81,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour) {
     $flagEmoji = $ev['flag_emoji'] ?? '';
     $langName  = $ev['language_name'];
     ?>
-    <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?>">
+    <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?> <?= $isTarget ? 'scroll-target' : '' ?>">
         <div class="event-header-row">
             <div class="event-tags">
                 <span class="event-tag"><?= getDayName($evDay) ?> às <?= $evHour ?>h</span>
@@ -484,10 +484,25 @@ include 'includes/header.php';
                     <div class="timeline">
                         <?php 
                         $dayEvents = $byDay[$dayNum] ?? [];
+                        $focusAssigned = false;
+                        
                         if (!empty($dayEvents)) {
-                            foreach ($dayEvents as $ev) renderEventCard($ev, $currentDayOfWeek, $currentHour); 
+                            foreach ($dayEvents as $ev) {
+                                $isTarget = false;
+                                if (!$focusAssigned) {
+                                    $evHour = (int)$ev['time_hour'];
+                                    $isToday = ($currentDayOfWeek === (int)$ev['day_of_week']);
+                                    $isNow = $isToday && ($currentHour === $evHour);
+                                    $isFuture = ($isToday && $evHour > $currentHour);
+                                    
+                                    if ($isNow || $isFuture) {
+                                        $isTarget = true;
+                                        $focusAssigned = true;
+                                    }
+                                }
+                                renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget); 
+                            }
                         } else {
-                            // Card de incentivo para dias sem eventos (Propaganda)
                             ?>
                             <div class="empty-day-card">
                                 <div class="empty-day-icon">🚀</div>
@@ -551,6 +566,16 @@ document.addEventListener('DOMContentLoaded', function() {
         window.history.replaceState({}, '', url);
     }
 
+    function scrollToRelevantEvent() {
+        if (currentView !== 'day') return;
+        const target = document.querySelector('.day-events.active .scroll-target');
+        if (target) {
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 600); // Delay para garantir que a transição de view terminou
+        }
+    }
+
     function activateDay(dayNum) {
         document.querySelectorAll('.day-button').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.day-events').forEach(d => d.classList.remove('active'));
@@ -590,8 +615,14 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             activateDay(this.dataset.day);
             updateURL();
+            scrollToRelevantEvent();
         });
     });
+
+    // Initial scroll
+    if (currentView === 'day') {
+        scrollToRelevantEvent();
+    }
 
     // Dropdown toggle
     const dropBtn     = document.getElementById('lang-dropdown-btn');
