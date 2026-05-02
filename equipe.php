@@ -314,11 +314,11 @@ include 'includes/header.php';
                 renderHostCard($host);
             endforeach; ?>
 
-            <!-- Card Especial: Torne-se um anfitrião -->
+            <!-- Card Especial: Torne-se um voluntário -->
             <div class="host-card special-card" id="become-host-card" style="border:2px dashed #ddd;display:flex;align-items:center;justify-content:center;min-height:400px;">
                 <div style="text-align:center;padding:30px;">
                     <i class="fas fa-user-plus" style="font-size:3rem;color:var(--accent-red);margin-bottom:15px;"></i>
-                    <h3 style="font-size:1.3rem;margin-bottom:10px;">Torne-se um Anfitrião!</h3>
+                    <h3 style="font-size:1.3rem;margin-bottom:10px;">Torne-se um Voluntário!</h3>
                     <p style="color:#666;margin-bottom:20px;">Quer fazer parte da nossa equipe? Conheça as vantagens!</p>
                     <a href="#seja-host" class="cta-button" style="display:inline-block; padding:10px 25px; background:var(--accent-red); color:white; text-decoration:none; border-radius:25px;">Ver Benefícios</a>
                 </div>
@@ -328,7 +328,7 @@ include 'includes/header.php';
 
     <section class="benefits-section" id="seja-host">
         <div class="container">
-            <h2 class="section-title">Por que ser um Anfitrião?</h2>
+            <h2 class="section-title">Por que ser um Voluntário?</h2>
             <p class="section-description">Muito mais do que voluntariado, uma oportunidade de crescimento real.</p>
             
             <div class="benefits-grid">
@@ -340,17 +340,17 @@ include 'includes/header.php';
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-id-card"></i></div>
                     <h4>Vitrine no Site</h4>
-                    <p>Seu card de anfitrião no site será seu espaço de destaque para divulgar suas redes, projetos e serviços para milhares de visitantes.</p>
+                    <p>Seu perfil em destaque no site será seu espaço para divulgar suas redes, projetos e serviços para milhares de visitantes.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
                     <h4>Networking e Bastidores</h4>
-                    <p>Conheça o projeto por dentro e faça conexões estratégicas com outros anfitriões e poliglotas.</p>
+                    <p>Conheça o projeto por dentro e faça conexões estratégicas com outros voluntários e profissionais.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-gem"></i></div>
                     <h4>Comunidade VIP</h4>
-                    <p>Acesso exclusivo ao nosso grupo de Hosts, com trocas de experiências e materiais exclusivos.</p>
+                    <p>Acesso exclusivo ao nosso grupo de Membros da Equipe, com trocas de experiências e materiais exclusivos.</p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-bullseye"></i></div>
