@@ -33,7 +33,7 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
 
 // Busca todos os encontros com info de idioma e host
 $stmt = $conn->query("
-    SELECT m.*, l.name as language_name, l.flag_code, h.full_name as host_name 
+    SELECT m.*, l.name as language_name, l.flag_code, l.flag_emoji, h.full_name as host_name 
     FROM meetings m
     JOIN languages l ON m.language_id = l.id
     LEFT JOIN hosts h ON m.host_id = h.id
@@ -197,6 +197,8 @@ function getDayLabel($day) {
                             <div class="meeting-info">
                                 <?php if ($m['flag_code']): ?>
                                     <img src="https://flagcdn.com/32x24/<?= $m['flag_code'] ?>.png" class="lang-flag" alt="Bandeira">
+                                <?php elseif ($m['flag_emoji']): ?>
+                                    <span style="font-size: 1.5rem;"><?= $m['flag_emoji'] ?></span>
                                 <?php endif; ?>
                                 <span class="meeting-name"><?= htmlspecialchars($m['language_name']) ?></span>
                             </div>
