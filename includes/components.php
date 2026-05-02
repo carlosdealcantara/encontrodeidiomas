@@ -32,8 +32,11 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
             <?php endif; ?>
             <span><?= htmlspecialchars($langName) ?></span>
             <div class="event-social-links">
-                <?php if (!empty($ev['whatsapp_group_link'])): ?>
-                <a href="<?= htmlspecialchars($ev['whatsapp_group_link']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <?php if (!empty($ev['whatsapp_link'])): ?>
+                <a href="<?= htmlspecialchars($ev['whatsapp_link']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <?php endif; ?>
+                <?php if (!empty($ev['instagram_link'])): ?>
+                <a href="<?= htmlspecialchars($ev['instagram_link']) ?>" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
                 <?php endif; ?>
             </div>
         </div>
@@ -42,13 +45,15 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
             <?php 
             $photo = !empty($ev['host_photo']) ? $ev['host_photo'] : 'favicon.png';
             $isFallback = empty($ev['host_photo']);
-            // Tenta usar a miniatura se existir
             $thumbPath = !empty($ev['host_photo']) ? str_replace('.', '_thumb.', $photo) : $photo;
             $finalPhoto = (file_exists('assets/images/' . $thumbPath)) ? $thumbPath : $photo;
+            
+            // Estilo específico para o fallback para evitar borrão
+            $imgStyle = $isFallback 
+                ? "width: 20px; height: 20px; object-fit: contain; image-rendering: crisp-edges; image-rendering: -webkit-optimize-contrast;" 
+                : "width: 24px; height: 24px; border-radius: 50%; object-fit: cover;";
             ?>
-            <img src="assets/images/<?= $finalPhoto ?>" 
-                 style="width: 24px; height: 24px; border-radius: 50%; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" 
-                 alt="Host">
+            <img src="assets/images/<?= $finalPhoto ?>" style="<?= $imgStyle ?>" alt="Host">
             <span><?= $isFallback ? '<strong>Conversação Livre</strong>' : 'Host: <strong>' . htmlspecialchars($ev['host_name']) . '</strong>' ?></span>
         </div>
 
