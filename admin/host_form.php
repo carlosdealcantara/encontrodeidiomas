@@ -33,70 +33,77 @@ if ($id > 0) {
 
 // Processamento do Formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = $_POST;
-    
-    // Tratamento de Redes Sociais (JSON)
-    $socialData = [
-        'whatsapp' => $data['whatsapp'] ?? '',
-        'email' => $data['email'] ?? '',
-        'instagram' => $data['instagram'] ?? '',
-        'linkedin' => $data['linkedin'] ?? ''
-    ];
-    $socialJson = json_encode($socialData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-    // Tratamento de Upload de Foto
-    $profilePic = $host['profile_picture'];
-    if (!empty($_FILES['photo']['name'])) {
-        $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-        $newFileName = str_replace(' ', '_', $data['full_name']) . '_' . time() . '.' . $ext;
-        move_uploaded_file($_FILES['photo']['tmp_name'], '../assets/images/' . $newFileName);
-        $profilePic = $newFileName;
-    }
-
-    if ($id > 0) {
-        $sql = "UPDATE hosts SET 
-                full_name = :full_name, status = :status, profile_picture = :profile_picture,
-                languages = :languages, online_description = :online_description, special_badge = :special_badge,
-                region = :region, category = :category, inperson_description = :inperson_description,
-                role = :role, technical_status = :technical_status, technical_roles = :technical_roles,
-                technical_skills = :technical_skills, technical_description = :technical_description,
-                social_media_links = :social_media_links
-                WHERE id = :id";
-        $stmt = $conn->prepare($sql);
-        $dataToSave = [
-            'full_name' => $data['full_name'], 'status' => $data['status'], 'profile_picture' => $profilePic,
-            'languages' => $data['languages'], 'online_description' => $data['online_description'], 
-            'special_badge' => $data['special_badge'], 'region' => $data['region'], 'category' => $data['category'],
-            'inperson_description' => $data['inperson_description'], 'role' => $data['role'],
-            'technical_status' => $data['technical_status'], 'technical_roles' => $data['technical_roles'],
-            'technical_skills' => $data['technical_skills'], 'technical_description' => $data['technical_description'],
-            'social_media_links' => $socialJson, 'id' => $id
+    try {
+        $data = $_POST;
+        
+        // Tratamento de Redes Sociais (JSON)
+        $socialData = [
+            'whatsapp'  => $data['whatsapp'] ?? '',
+            'email'     => $data['email'] ?? '',
+            'instagram' => $data['instagram'] ?? '',
+            'linkedin'  => $data['linkedin'] ?? '',
+            'github'    => $data['github'] ?? ''
         ];
-    } else {
-        $sql = "INSERT INTO hosts (
-                full_name, status, profile_picture, languages, online_description, special_badge,
-                region, category, inperson_description, role, technical_status, technical_roles,
-                technical_skills, technical_description, social_media_links
-                ) VALUES (
-                :full_name, :status, :profile_picture, :languages, :online_description, :special_badge,
-                :region, :category, :inperson_description, :role, :technical_status, :technical_roles,
-                :technical_skills, :technical_description, :social_media_links
-                )";
-        $stmt = $conn->prepare($sql);
+        $socialJson = json_encode($socialData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        // Tratamento de Upload de Foto
+        $profilePic = $host['profile_picture'] ?? 'HostSemFoto.png';
+        if (!empty($_FILES['photo']['name'])) {
+            $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+            $newFileName = str_replace(' ', '_', $data['full_name']) . '_' . time() . '.' . $ext;
+            if (move_uploaded_file($_FILES['photo']['tmp_name'], '../assets/images/' . $newFileName)) {
+                $profilePic = $newFileName;
+            }
+        }
+
+        // Preparação de dados com Fallbacks para evitar erros de colunas vazias
         $dataToSave = [
-            'full_name' => $data['full_name'], 'status' => $data['status'], 'profile_picture' => $profilePic,
-            'languages' => $data['languages'], 'online_description' => $data['online_description'], 
-            'special_badge' => $data['special_badge'], 'region' => $data['region'], 'category' => $data['category'],
-            'inperson_description' => $data['inperson_description'], 'role' => $data['role'],
-            'technical_status' => $data['technical_status'], 'technical_roles' => $data['technical_roles'],
-            'technical_skills' => $data['technical_skills'], 'technical_description' => $data['technical_description'],
-            'social_media_links' => $socialJson
+            'full_name'             => $data['full_name'] ?? '',
+            'status'                => $data['status'] ?? 'ativo',
+            'profile_picture'       => $profilePic,
+            'languages'             => $data['languages'] ?? '',
+            'online_description'    => $data['online_description'] ?? '',
+            'special_badge'         => $data['special_badge'] ?? '',
+            'region'                => $data['region'] ?? '',
+            'category'              => $data['category'] ?? 'Online',
+            'inperson_description'  => $data['inperson_description'] ?? '',
+            'role'                  => $data['role'] ?? '',
+            'technical_status'      => $data['technical_status'] ?? 'inativo',
+            'technical_roles'       => $data['technical_roles'] ?? '',
+            'technical_skills'      => $data['technical_skills'] ?? '',
+            'technical_description' => $data['technical_description'] ?? '',
+            'social_media_links'    => $socialJson
         ];
+
+        if ($id > 0) {
+            $sql = "UPDATE hosts SET 
+                    full_name = :full_name, status = :status, profile_picture = :profile_picture,
+                    languages = :languages, online_description = :online_description, special_badge = :special_badge,
+                    region = :region, category = :category, inperson_description = :inperson_description,
+                    role = :role, technical_status = :technical_status, technical_roles = :technical_roles,
+                    technical_skills = :technical_skills, technical_description = :technical_description,
+                    social_media_links = :social_media_links
+                    WHERE id = :id";
+            $dataToSave['id'] = $id;
+        } else {
+            $sql = "INSERT INTO hosts (
+                    full_name, status, profile_picture, languages, online_description, special_badge,
+                    region, category, inperson_description, role, technical_status, technical_roles,
+                    technical_skills, technical_description, social_media_links
+                    ) VALUES (
+                    :full_name, :status, :profile_picture, :languages, :online_description, :special_badge,
+                    :region, :category, :inperson_description, :role, :technical_status, :technical_roles,
+                    :technical_skills, :technical_description, :social_media_links
+                    )";
+        }
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($dataToSave);
+        header('Location: hosts.php?msg=Dados salvos com sucesso');
+        exit;
+    } catch (Exception $e) {
+        $error = "Erro ao salvar: " . $e->getMessage();
     }
-    
-    $stmt->execute($dataToSave);
-    header('Location: hosts.php?msg=Dados salvos com sucesso');
-    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -153,6 +160,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p style="color: var(--text-dim);">Preencha todos os campos para manter a vitrine do site atualizada.</p>
         </div>
 
+        <?php if (isset($error)): ?>
+            <div style="background: rgba(227, 29, 28, 0.1); border: 1px solid var(--accent-red); color: #ff9494; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <i class="fas fa-exclamation-triangle"></i> <?= $error ?>
+            </div>
+        <?php endif; ?>
+
         <form method="POST" enctype="multipart/form-data" class="form-card">
             <!-- Informações Básicas -->
             <div class="section-title"><i class="fas fa-id-card"></i> Informações Básicas</div>
@@ -180,6 +193,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <option value="inativo" <?= $host['status'] === 'inativo' ? 'selected' : '' ?>>Inativo</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>Badge Especial (Destaque no card)</label>
+                    <input type="text" name="special_badge" value="<?= htmlspecialchars($host['special_badge'] ?? '') ?>" placeholder="Ex: Fundador, Coordenador">
+                </div>
             </div>
 
             <!-- Online -->
@@ -189,8 +206,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" name="languages" value="<?= htmlspecialchars($host['languages']) ?>">
             </div>
             <div class="form-group">
-                <label>Descrição Curta</label>
+                <label>Descrição Online (Resumo)</label>
                 <textarea name="online_description" rows="3"><?= htmlspecialchars($host['online_description']) ?></textarea>
+            </div>
+
+            <!-- Presencial -->
+            <div class="section-title"><i class="fas fa-map-marker-alt"></i> Encontros Presenciais</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Região / Cidade</label>
+                    <input type="text" name="region" value="<?= htmlspecialchars($host['region'] ?? '') ?>" placeholder="Ex: Brasília - DF">
+                </div>
+                <div class="form-group">
+                    <label>Categorias (separadas por vírgula)</label>
+                    <input type="text" name="category" value="<?= htmlspecialchars($host['category'] ?? 'Online') ?>">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Papéis / Funções (ex: Host, Co-host)</label>
+                <input type="text" name="role" value="<?= htmlspecialchars($host['role'] ?? '') ?>">
+            </div>
+            <div class="form-group">
+                <label>Descrição Presencial</label>
+                <textarea name="inperson_description" rows="3"><?= htmlspecialchars($host['inperson_description'] ?? '') ?></textarea>
             </div>
 
             <!-- Redes Sociais -->
@@ -212,6 +250,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label>LinkedIn URL</label>
                     <input type="text" name="linkedin" value="<?= htmlspecialchars($social['linkedin'] ?? '') ?>">
                 </div>
+                <div class="form-group">
+                    <label>GitHub URL (Técnico)</label>
+                    <input type="text" name="github" value="<?= htmlspecialchars($social['github'] ?? '') ?>">
+                </div>
             </div>
 
             <!-- Técnico -->
@@ -228,6 +270,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label>Habilidades (ex: PHP, Design)</label>
                     <input type="text" name="technical_skills" value="<?= htmlspecialchars($host['technical_skills']) ?>">
                 </div>
+                <div class="form-group">
+                    <label>Papéis Técnicos (ex: Dev, UI/UX)</label>
+                    <input type="text" name="technical_roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descrição Técnica</label>
+                <textarea name="technical_description" rows="3"><?= htmlspecialchars($host['technical_description'] ?? '') ?></textarea>
             </div>
 
             <div style="margin-top: 40px; display: flex; gap: 20px;">
