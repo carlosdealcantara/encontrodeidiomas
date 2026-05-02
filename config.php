@@ -97,7 +97,9 @@ function getMeetings(): array {
         $stmt = $conn->prepare("
             SELECT 
                 m.*, 
-                l.name AS language_name, l.flag_code, l.flag_emoji, l.whatsapp_link, l.instagram_link,
+                l.name AS language_name, l.flag_code, l.flag_emoji,
+                COALESCE(NULLIF(m.whatsapp_group_link, ''), l.whatsapp_link) AS final_whatsapp,
+                l.instagram_link AS final_instagram,
                 COALESCE(h.full_name, h_auto.full_name) AS host_name,
                 COALESCE(h.profile_picture, h_auto.profile_picture) AS host_photo
             FROM meetings m
