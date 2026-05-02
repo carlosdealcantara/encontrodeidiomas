@@ -78,21 +78,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id > 0) {
             $sql = "UPDATE hosts SET 
                     full_name = :full_name, status = :status, profile_picture = :profile_picture,
-                    languages = :languages, online_description = :online_description, special_badge = :special_badge,
+                    languages = :languages, online_description = :online_description,
                     region = :region, category = :category, inperson_description = :inperson_description,
-                    role = :role, technical_status = :technical_status, technical_roles = :technical_roles,
+                    technical_status = :technical_status, technical_roles = :technical_roles,
                     technical_skills = :technical_skills, technical_description = :technical_description,
                     social_media_links = :social_media_links
                     WHERE id = :id";
             $dataToSave['id'] = $id;
         } else {
             $sql = "INSERT INTO hosts (
-                    full_name, status, profile_picture, languages, online_description, special_badge,
-                    region, category, inperson_description, role, technical_status, technical_roles,
+                    full_name, status, profile_picture, languages, online_description,
+                    region, category, inperson_description, technical_status, technical_roles,
                     technical_skills, technical_description, social_media_links
                     ) VALUES (
-                    :full_name, :status, :profile_picture, :languages, :online_description, :special_badge,
-                    :region, :category, :inperson_description, :role, :technical_status, :technical_roles,
+                    :full_name, :status, :profile_picture, :languages, :online_description,
+                    :region, :category, :inperson_description, :technical_status, :technical_roles,
                     :technical_skills, :technical_description, :social_media_links
                     )";
         }
@@ -193,17 +193,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <option value="inativo" <?= $host['status'] === 'inativo' ? 'selected' : '' ?>>Inativo</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Badge Especial (Destaque no card)</label>
-                    <input type="text" name="special_badge" value="<?= htmlspecialchars($host['special_badge'] ?? '') ?>" placeholder="Ex: Fundador, Coordenador">
-                </div>
             </div>
 
             <!-- Online -->
             <div class="section-title"><i class="fas fa-globe"></i> Encontros Online</div>
             <div class="form-group">
                 <label>Idiomas (ex: Inglês, Francês)</label>
-                <input type="text" name="languages" value="<?= htmlspecialchars($host['languages']) ?>">
+                <input type="text" name="languages" list="list-languages" value="<?= htmlspecialchars($host['languages']) ?>">
+                <datalist id="list-languages">
+                    <option value="Inglês">
+                    <option value="Francês">
+                    <option value="Espanhol">
+                    <option value="Alemão">
+                    <option value="Italiano">
+                    <option value="Russo">
+                    <option value="Japonês">
+                    <option value="Chinês">
+                    <option value="Português (Estrangeiros)">
+                </datalist>
             </div>
             <div class="form-group">
                 <label>Descrição Online (Resumo)</label>
@@ -219,7 +226,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="form-group">
                     <label>Categorias (separadas por vírgula)</label>
-                    <input type="text" name="category" value="<?= htmlspecialchars($host['category'] ?? 'Online') ?>">
+                    <input type="text" name="category" list="list-categories" value="<?= htmlspecialchars($host['category'] ?? 'Online') ?>">
+                    <datalist id="list-categories">
+                        <option value="Online">
+                        <option value="Presencial">
+                        <option value="Técnica">
+                        <option value="Online, Presencial">
+                    </datalist>
                 </div>
             </div>
             <div class="form-group">
@@ -268,11 +281,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="form-group">
                     <label>Habilidades (ex: PHP, Design)</label>
-                    <input type="text" name="technical_skills" value="<?= htmlspecialchars($host['technical_skills']) ?>">
+                    <input type="text" name="technical_skills" list="list-skills" value="<?= htmlspecialchars($host['technical_skills']) ?>">
+                    <datalist id="list-skills">
+                        <option value="PHP">
+                        <option value="JavaScript">
+                        <option value="HTML">
+                        <option value="CSS">
+                        <option value="MySQL">
+                        <option value="WordPress">
+                        <option value="Design">
+                        <option value="UI/UX">
+                    </datalist>
                 </div>
                 <div class="form-group">
                     <label>Papéis Técnicos (ex: Dev, UI/UX)</label>
-                    <input type="text" name="technical_roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>">
+                    <input type="text" name="technical_roles" list="list-roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>">
+                    <datalist id="list-roles">
+                        <option value="Desenvolvimento">
+                        <option value="Design">
+                        <option value="Conteúdo">
+                        <option value="Coordenador Técnico">
+                    </datalist>
                 </div>
             </div>
             <div class="form-group">
