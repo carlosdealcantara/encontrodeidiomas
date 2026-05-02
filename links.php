@@ -141,35 +141,14 @@ include 'includes/header.php';
 
             <div class="links-wrapper">
                 <div class="links">
-                    <a href="https://chat.whatsapp.com/KJl1q7Uy9w1314gkFSdV42" class="link" target="_blank" rel="noopener noreferrer">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>Online - Grupo com os Encontros de Todos os Idiomas</span>
-                    </a>
-
-                    <a href="https://www.instagram.com/p/DBXWzhEMtat/" class="link" target="_blank" rel="noopener noreferrer">
-                        <i class="far fa-calendar-alt"></i>
-                        <span>Online - Agenda dos Encontros</span>
-                    </a>
-
-                    <a href="https://chat.whatsapp.com/LSHuFIfFO7TF1AmI80gIhf" class="link" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-comment-dots"></i>
-                        <span>Inglês - Comunidade</span>
-                    </a>
-
-                    <a href="https://chat.whatsapp.com/Bx7SarMQzscADqcvg05Fk5" class="link" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-globe-americas"></i>
-                        <span>Todos os Outros Idiomas - Comunidade</span>
-                    </a>
-
-                    <a href="https://www.instagram.com/p/Crl2SMSgn8y/" class="link" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-video"></i>
-                        <span>Presencial - Vídeo de Apresentação</span>
-                    </a>
-
-                    <a href="https://chat.whatsapp.com/EvCdZw4MZ7GBsLiy0MkPFi" class="link" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Presencial na Sua Cidade - Comunidade</span>
-                    </a>
+                    <?php 
+                    $usefulLinks = getUsefulLinks();
+                    foreach ($usefulLinks as $ul): ?>
+                        <a href="<?= htmlspecialchars($ul['url']) ?>" class="link" target="_blank" rel="noopener noreferrer">
+                            <i class="<?= $ul['icon'] ?: 'fas fa-link' ?>"></i>
+                            <span><?= htmlspecialchars($ul['title']) ?></span>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
 
                 <div class="social-icons">

@@ -35,11 +35,20 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
                 <?php if (!empty($ev['whatsapp_group_link'])): ?>
                 <a href="<?= htmlspecialchars($ev['whatsapp_group_link']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
                 <?php endif; ?>
-                <?php if (!empty($ev['instagram_link'])): ?>
-                <a href="<?= htmlspecialchars($ev['instagram_link']) ?>" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <?php endif; ?>
             </div>
         </div>
+        
+        <?php if (!empty($ev['host_name'])): ?>
+        <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
+            <?php if (!empty($ev['host_photo'])): ?>
+                <img src="assets/images/<?= htmlspecialchars($ev['host_photo']) ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Host">
+            <?php else: ?>
+                <i class="fas fa-user-circle"></i>
+            <?php endif; ?>
+            <span>Host: <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
+        </div>
+        <?php endif; ?>
+
         <?php if (!empty($ev['description'])): ?>
         <p class="event-description"><?= htmlspecialchars($ev['description']) ?></p>
         <?php endif; ?>

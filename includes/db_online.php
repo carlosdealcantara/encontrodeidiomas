@@ -3,15 +3,15 @@
  * Lógica de processamento de eventos para a página online.php
  */
 
-// Busca eventos do BD, agrupa por dia
-$events     = getEvents();
+// Busca encontros do BD, agrupa por dia
+$meetings   = getMeetings();
 $languages  = getLanguages();
 $byDay      = [];
 $byLanguage = [];
 
-foreach ($events as $e) {
-    $byDay[$e['day_of_week']][]          = $e;
-    $byLanguage[$e['language_id']][]     = $e;
+foreach ($meetings as $m) {
+    $byDay[$m['day_of_week']][]          = $m;
+    $byLanguage[$m['language_id']][]     = $m;
 }
 
 $currentDayOfWeek = (int)date('N'); // 1=Seg ... 7=Dom

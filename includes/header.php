@@ -13,8 +13,8 @@
  */
 
 $current_page   = $current_page   ?? basename($_SERVER['PHP_SELF']);
-$title          = $title          ?? SITE_NAME;
-$og_description = $og_description ?? 'Participe gratuitamente de encontros para praticar inglês, espanhol, francês, alemão, japonês e outros idiomas online e presenciais.';
+$title          = $title          ?? getSetting('site_title', 'Encontro de Idiomas');
+$og_description = $og_description ?? getSetting('site_description', 'Comunidade gratuita para praticar idiomas via videoconferência.');
 $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 ?>
 <!DOCTYPE html>
@@ -274,19 +274,39 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             }
         }
 
+        .global-notice {
+            background: var(--accent-yellow);
+            color: var(--primary-color);
+            text-align: center;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 1001;
+            margin-top: 0;
+        }
+        body.has-notice { padding-top: 120px; }
+
         <?php if (!empty($page_styles)) echo $page_styles; ?>
     </style>
 
     <?php if (!empty($extra_head)) echo $extra_head; ?>
 </head>
 <body>
+    <?php if (getSetting('global_notice_active') === '1'): ?>
+        <div class="global-notice">
+            <i class="fas fa-exclamation-circle"></i> <?= getSetting('global_notice_text') ?>
+        </div>
+        <script>document.body.classList.add('has-notice');</script>
+    <?php endif; ?>
+
     <header class="header">
         <div class="header-content">
             <div class="logo-container">
                 <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo">
                 <div>
-                    <div class="site-title">Encontro de Idiomas</div>
-                    <div class="site-description">Aprenda se divertindo!</div>
+                    <div class="site-title"><?= getSetting('site_title', 'Encontro de Idiomas') ?></div>
+                    <div class="site-description"><?= getSetting('site_description', 'Aprenda se divertindo!') ?></div>
                 </div>
             </div>
 

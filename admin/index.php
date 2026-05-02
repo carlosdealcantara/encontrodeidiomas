@@ -183,10 +183,13 @@ $currentHour = (int)date('H');
             <a href="hosts.php" class="nav-item">
                 <i class="fas fa-users"></i> Anfitriões
             </a>
-            <a href="#" class="nav-item">
+            <a href="meetings.php" class="nav-item">
                 <i class="fas fa-calendar-alt"></i> Encontros
             </a>
-            <a href="#" class="nav-item">
+            <a href="useful_links.php" class="nav-item">
+                <i class="fas fa-link"></i> Links Úteis
+            </a>
+            <a href="settings.php" class="nav-item">
                 <i class="fas fa-cog"></i> Configurações
             </a>
 

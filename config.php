@@ -125,4 +125,46 @@ function getHosts(): array {
     $stmt->execute();
     return $stmt->fetchAll();
 }
+
+// --- Novas Funções Dinâmicas ---
+
+function getSettings(): array {
+    $conn = connectDB();
+    $stmt = $conn->query("SELECT setting_key, setting_value FROM settings");
+    $results = $stmt->fetchAll();
+    $settings = [];
+    foreach ($results as $row) {
+        $settings[$row['setting_key']] = $row['setting_value'];
+    }
+    return $settings;
+}
+
+function getSetting(string $key, $default = ''): string {
+    static $settings = null;
+    if ($settings === null) $settings = getSettings();
+    return $settings[$key] ?? $default;
+}
+
+function getMeetings(): array {
+    $conn = connectDB();
+    $stmt = $conn->prepare("
+        SELECT 
+            m.*, 
+            l.name AS language_name, l.flag_code, l.flag_emoji,
+            h.full_name AS host_name, h.profile_picture AS host_photo
+        FROM meetings m
+        JOIN languages l ON m.language_id = l.id
+        LEFT JOIN hosts h ON m.host_id = h.id
+        WHERE m.active = 1
+        ORDER BY m.day_of_week, m.time_hour
+    ");
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+function getUsefulLinks(): array {
+    $conn = connectDB();
+    $stmt = $conn->query("SELECT * FROM useful_links WHERE active = 1 ORDER BY order_index ASC, title ASC");
+    return $stmt->fetchAll();
+}
 ?>
