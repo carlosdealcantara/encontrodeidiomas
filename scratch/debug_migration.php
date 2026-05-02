@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/../config.php';
 $conn = connectDB();
 
 echo "Checking events table for null language_id...\n";

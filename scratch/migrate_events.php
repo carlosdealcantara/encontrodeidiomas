@@ -12,6 +12,10 @@ function migrateEvents() {
         $events = $stmt->fetchAll();
         
         foreach ($events as $ev) {
+            if (empty($ev['language_id'])) {
+                echo "Pulado: Evento '{$ev['title']}' (ID: {$ev['id']}) não possui language_id.\n";
+                continue;
+            }
             // Verifica se já existe para evitar duplicatas
             $check = $conn->prepare("SELECT id FROM meetings WHERE language_id = ? AND day_of_week = ? AND time_hour = ?");
             $check->execute([$ev['language_id'], $ev['day_of_week'], $ev['time_hour']]);
