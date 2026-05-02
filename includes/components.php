@@ -38,7 +38,6 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
             </div>
         </div>
         
-        <?php if (!empty($ev['host_name'])): ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
             <?php 
             $photo = !empty($ev['host_photo']) ? $ev['host_photo'] : 'favicon.png';
