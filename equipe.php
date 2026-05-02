@@ -105,6 +105,36 @@ ob_start();
 
     .dropdown-content.show { display: block; }
 
+    .dropdown-search-wrapper {
+        padding: 10px 15px;
+        position: sticky;
+        top: 0;
+        background: var(--white);
+        z-index: 10;
+        border-bottom: 1px solid #eee;
+    }
+
+    .dropdown-search-input {
+        width: 100%;
+        padding: 8px 30px 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    .dropdown-search-input:focus { border-color: var(--accent-red); }
+
+    .dropdown-search-icon {
+        position: absolute;
+        right: 25px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        pointer-events: none;
+    }
+
     .dropdown-item {
         padding: 12px 20px;
         cursor: pointer;
@@ -218,9 +248,13 @@ include 'includes/header.php';
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content" id="lang-dropdown">
-                        <div class="dropdown-item" data-value="all">Todos os Idiomas</div>
+                        <div class="dropdown-search-wrapper">
+                            <input type="text" class="dropdown-search-input" placeholder="Buscar idioma...">
+                            <i class="fas fa-search dropdown-search-icon"></i>
+                        </div>
+                        <div class="dropdown-item filterable-item" data-value="all">Todos os Idiomas</div>
                         <?php foreach ($languages as $lang): ?>
-                            <div class="dropdown-item" data-value="<?= strtolower($lang['name']) ?>">
+                            <div class="dropdown-item filterable-item" data-value="<?= strtolower($lang['name']) ?>">
                                 <?php if (!empty($lang['flag_code'])): ?>
                                     <img src="https://flagcdn.com/20x15/<?= strtolower($lang['flag_code']) ?>.png" alt="">
                                 <?php elseif (!empty($lang['flag_emoji'])): ?>
@@ -229,6 +263,7 @@ include 'includes/header.php';
                                 <?= htmlspecialchars($lang['name']) ?>
                             </div>
                         <?php endforeach; ?>
+                        <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;">Outros idiomas...</a>
                     </div>
                 </div>
             </div>
@@ -241,7 +276,13 @@ include 'includes/header.php';
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content" id="region-dropdown">
-                        <div class="dropdown-item" data-value="all">Todas as Cidades</div>
+                        <div class="dropdown-search-wrapper">
+                            <input type="text" class="dropdown-search-input" placeholder="Buscar cidade...">
+                            <i class="fas fa-search dropdown-search-icon"></i>
+                        </div>
+                        <div class="dropdown-item filterable-item" data-value="all">Todas as Cidades</div>
+                        <!-- Itens dinâmicos serão inseridos aqui pelo JS -->
+                        <a href="#seja-host" class="dropdown-item dropdown-item-link other-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;">Outras regiões...</a>
                     </div>
                 </div>
             </div>
@@ -254,10 +295,15 @@ include 'includes/header.php';
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content" id="role-dropdown">
-                        <div class="dropdown-item" data-value="all">Todos os Papéis</div>
-                        <div class="dropdown-item" data-value="desenvolvimento">Desenvolvimento</div>
-                        <div class="dropdown-item" data-value="design">Design</div>
-                        <div class="dropdown-item" data-value="conteudo">Conteúdo</div>
+                        <div class="dropdown-search-wrapper">
+                            <input type="text" class="dropdown-search-input" placeholder="Buscar área...">
+                            <i class="fas fa-search dropdown-search-icon"></i>
+                        </div>
+                        <div class="dropdown-item filterable-item" data-value="all">Todos os Papéis</div>
+                        <div class="dropdown-item filterable-item" data-value="desenvolvimento">Desenvolvimento</div>
+                        <div class="dropdown-item filterable-item" data-value="design">Design</div>
+                        <div class="dropdown-item filterable-item" data-value="conteudo">Conteúdo</div>
+                        <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;">Outras áreas...</a>
                     </div>
                 </div>
             </div>
@@ -376,7 +422,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join(' ');
 
         item.textContent = displayText;
-        regionDropdown.appendChild(item);
+        item.classList.add('filterable-item'); // Marca para o filtro de busca
+
+        const otherLink = regionDropdown.querySelector('.other-link');
+        if (otherLink) {
+            regionDropdown.insertBefore(item, otherLink);
+        } else {
+            regionDropdown.appendChild(item);
+        }
     });
 
     // Alternância de Abas
@@ -410,12 +463,17 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
         } 
         // Seleção de item
-        else if (e.target.classList.contains('dropdown-item')) {
-            const item = e.target;
+        else if (e.target.classList.contains('dropdown-item') || e.target.closest('.dropdown-item')) {
+            const item = e.target.classList.contains('dropdown-item') ? e.target : e.target.closest('.dropdown-item');
+            
+            if (item.classList.contains('dropdown-item-link')) {
+                return; // Deixa o link funcionar normalmente
+            }
+
             const wrapper = item.closest('.filter-group');
             const type = wrapper.id.replace('filter-', '');
             const value = item.dataset.value;
-            const text = item.textContent;
+            const text = item.textContent.trim();
 
             currentFilters[type] = value;
             wrapper.querySelector('.dropdown-button span span').textContent = text;
@@ -427,8 +485,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // Fechar ao clicar fora
         else {
-            document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
+            if (!e.target.closest('.dropdown-search-wrapper')) {
+                document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
+            }
         }
+    });
+
+    // Lógica de busca nos dropdowns
+    document.querySelectorAll('.dropdown-search-input').forEach(input => {
+        input.addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const dropdown = e.target.closest('.dropdown-content');
+            const items = dropdown.querySelectorAll('.filterable-item');
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
     });
 
     function applyFilters() {
