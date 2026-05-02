@@ -1,9 +1,9 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/../config.php';
 
 function setupDatabase() {
     $conn = connectDB();
-    $sql = file_get_contents('schema.sql');
+    $sql = file_get_contents(__DIR__ . '/../schema.sql');
     
     if (!$sql) {
         die("Erro: schema.sql não encontrado.\n");
