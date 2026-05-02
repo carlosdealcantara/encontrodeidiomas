@@ -8,11 +8,8 @@ $current_page   = 'online.php';
 $og_description = 'Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência.';
 $canonical      = 'https://encontrodeidiomas.com.br/online.php';
 
-// CSS Modular
-ob_start(); ?>
-<link rel="stylesheet" href="assets/css/online.css">
-<?php
-$page_styles = ob_get_clean();
+// Arquivos Externos (CSS e JS)
+$extra_head = '<link rel="stylesheet" href="assets/css/online.css">';
 
 include 'includes/header.php';
 ?>
