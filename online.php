@@ -571,8 +571,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = document.querySelector('.day-events.active .scroll-target');
         if (target) {
             setTimeout(() => {
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 600); // Delay para garantir que a transição de view terminou
+                // Cálculo para centralizar o elemento
+                const elementRect = target.getBoundingClientRect();
+                const absoluteElementTop = elementRect.top + window.pageYOffset;
+                const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+                
+                // Rolagem com comportamento suave controlado pelo browser mas com delay maior
+                window.scrollTo({
+                    top: middle,
+                    behavior: 'smooth'
+                });
+            }, 1000); // Delay aumentado para 1 segundo para parecer mais intencional
         }
     }
 
