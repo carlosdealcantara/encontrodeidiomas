@@ -2,18 +2,12 @@
 // ============================================================
 // ENCONTRO DE IDIOMAS - Configuração Central
 // ============================================================
-// Este arquivo lê as credenciais do arquivo .env (nunca
-// armazene senhas diretamente aqui).
-// .env e config.php estão no .gitignore por segurança.
-// ============================================================
-
-// --- Leitor de .env ---
 date_default_timezone_set('America/Sao_Paulo');
 $envFile = __DIR__ . '/.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue; // ignora comentários
+        if (strpos(trim($line), '#') === 0) continue;
         if (strpos($line, '=') !== false) {
             [$key, $value] = explode('=', $line, 2);
             $_ENV[trim($key)] = trim($value);
@@ -22,7 +16,6 @@ if (file_exists($envFile)) {
     }
 }
 
-// --- Constantes de Configuração ---
 define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
 define('DB_NAME',    getenv('DB_NAME')    ?: '');
 define('DB_USER',    getenv('DB_USER')    ?: '');
@@ -33,11 +26,9 @@ define('ADMIN_USER', getenv('ADMIN_USER') ?: 'admin');
 define('ADMIN_PASS', getenv('ADMIN_PASS') ?: 'encontro2023');
 define('SITE_URL',   'https://' . ($_SERVER['HTTP_HOST'] ?? 'encontrodeidiomas.com.br'));
 
-// --- Conexão com o Banco de Dados ---
 function connectDB(): PDO {
     static $conn = null;
-    if ($conn !== null) return $conn; // Singleton: uma conexão por request
-
+    if ($conn !== null) return $conn;
     try {
         $conn = new PDO(
             "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
@@ -51,70 +42,23 @@ function connectDB(): PDO {
         );
         return $conn;
     } catch (PDOException $e) {
-        // Em produção, não exibe detalhes do erro ao usuário
         error_log("Erro de conexão com BD: " . $e->getMessage());
-        die("Serviço temporariamente indisponível. Tente novamente em instantes.");
+        die("Serviço temporariamente indisponível.");
     }
 }
 
-// --- Funções Auxiliares ---
 function sanitize(string $input): string {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
 function getDayName(int $dayNumber): string {
-    $days = [
-        1 => 'Segunda',
-        2 => 'Terça',
-        3 => 'Quarta',
-        4 => 'Quinta',
-        5 => 'Sexta',
-        6 => 'Sábado',
-        7 => 'Domingo',
-    ];
+    $days = [1 => 'Segunda', 2 => 'Terça', 3 => 'Quarta', 4 => 'Quinta', 5 => 'Sexta', 6 => 'Sábado', 7 => 'Domingo'];
     return $days[$dayNumber] ?? '';
 }
-
-// --- Consultas ao Banco de Dados ---
 
 function getLanguages(): array {
     $conn = connectDB();
     $stmt = $conn->prepare("SELECT * FROM languages WHERE active = 1 ORDER BY name");
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-
-function getEvents(): array {
-    $conn = connectDB();
-    $stmt = $conn->prepare("
-        SELECT
-            e.id, e.language_id, e.day_of_week, e.time_hour,
-            e.title, e.description, e.meet_link, e.replay_link,
-            e.whatsapp_group_link, e.instagram_link, e.active,
-            l.name AS language_name, l.flag_code, l.flag_emoji
-        FROM events e
-        JOIN languages l ON e.language_id = l.id
-        WHERE e.active = 1
-        ORDER BY e.day_of_week, e.time_hour
-    ");
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-
-function getEventsByLanguage(int $languageId): array {
-    $conn = connectDB();
-    $stmt = $conn->prepare("
-        SELECT
-            e.id, e.language_id, e.day_of_week, e.time_hour,
-            e.title, e.description, e.meet_link, e.replay_link,
-            e.whatsapp_group_link, e.instagram_link, e.active,
-            l.name AS language_name, l.flag_code, l.flag_emoji
-        FROM events e
-        JOIN languages l ON e.language_id = l.id
-        WHERE e.active = 1 AND e.language_id = :language_id
-        ORDER BY e.day_of_week, e.time_hour
-    ");
-    $stmt->bindParam(':language_id', $languageId, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();
 }
@@ -125,8 +69,6 @@ function getHosts(): array {
     $stmt->execute();
     return $stmt->fetchAll();
 }
-
-// --- Novas Funções Dinâmicas ---
 
 function getSettings(): array {
     try {
@@ -139,7 +81,7 @@ function getSettings(): array {
         }
         return $settings;
     } catch (PDOException $e) {
-        return []; // Retorna vazio se a tabela não existir
+        return [];
     }
 }
 
@@ -156,11 +98,19 @@ function getMeetings(): array {
             SELECT 
                 m.*, 
                 l.name AS language_name, l.flag_code, l.flag_emoji,
-                h.full_name AS host_name, h.profile_picture AS host_photo
+                COALESCE(h.full_name, h_auto.full_name) AS host_name,
+                COALESCE(h.profile_picture, h_auto.profile_picture) AS host_photo
             FROM meetings m
             JOIN languages l ON m.language_id = l.id
             LEFT JOIN hosts h ON m.host_id = h.id
+            LEFT JOIN hosts h_auto ON (
+                m.host_id IS NULL 
+                AND h_auto.status = 'ativo' 
+                AND h_auto.category LIKE '%Online%'
+                AND h_auto.languages LIKE CONCAT('%', l.name, '%')
+            )
             WHERE m.active = 1
+            GROUP BY m.id
             ORDER BY m.day_of_week, m.time_hour
         ");
         $stmt->execute();

@@ -56,10 +56,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $socialJson = json_encode($socialData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);        // Tratamento de Upload de Foto - Só altera se enviar uma nova
         $profilePic = $host['profile_picture'] ?? 'HostSemFoto.png';
         if (!empty($_FILES['photo']['name'])) {
-            $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+            $ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
             $newFileName = str_replace(' ', '_', $data['full_name'] ?? 'host') . '_' . time() . '.' . $ext;
-            if (move_uploaded_file($_FILES['photo']['tmp_name'], '../assets/images/' . $newFileName)) {
+            $targetPath = '../assets/images/' . $newFileName;
+            
+            if (move_uploaded_file($_FILES['photo']['tmp_name'], $targetPath)) {
                 $profilePic = $newFileName;
+                
+                // --- GERAÇÃO DE THUMBNAIL (Otimização) ---
+                try {
+                    $thumbName = str_replace('.', '_thumb.', $newFileName);
+                    $thumbPath = '../assets/images/' . $thumbName;
+                    
+                    // Carrega a imagem original
+                    $img = null;
+                    if ($ext === 'jpg' || $ext === 'jpeg') $img = @imagecreatefromjpeg($targetPath);
+                    elseif ($ext === 'png') $img = @imagecreatefrompng($targetPath);
+                    elseif ($ext === 'webp') $img = @imagecreatefromwebp($targetPath);
+                    
+                    if ($img) {
+                        $width = imagesx($img);
+                        $height = imagesy($img);
+                        $size = min($width, $height);
+                        $thumb = imagecreatetruecolor(80, 80);
+                        
+                        // Crop centralizado e resize
+                        imagecopyresampled($thumb, $img, 0, 0, ($width-$size)/2, ($height-$size)/2, 80, 80, $size, $size);
+                        
+                        // Salva a miniatura como JPEG para ser bem leve
+                        imagejpeg($thumb, $thumbPath, 80);
+                        imagedestroy($img);
+                        imagedestroy($thumb);
+                    }
+                } catch (Exception $e) {
+                    error_log("Erro ao gerar thumbnail: " . $e->getMessage());
+                }
             }
         }
 
