@@ -566,22 +566,42 @@ document.addEventListener('DOMContentLoaded', function() {
         window.history.replaceState({}, '', url);
     }
 
+    function smoothScrollTo(endY, duration) {
+        const startY = window.pageYOffset;
+        const distance = endY - startY;
+        let startTime = null;
+
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const run = ease(timeElapsed, startY, distance, duration);
+            window.scrollTo(0, run);
+            if (timeElapsed < duration) requestAnimationFrame(animation);
+        }
+
+        // Função de easing para suavidade (easeInOutQuad)
+        function ease(t, b, c, d) {
+            t /= d / 2;
+            if (t < 1) return c / 2 * t * t + b;
+            t--;
+            return -c / 2 * (t * (t - 2) - 1) + b;
+        }
+
+        requestAnimationFrame(animation);
+    }
+
     function scrollToRelevantEvent() {
         if (currentView !== 'day') return;
         const target = document.querySelector('.day-events.active .scroll-target');
         if (target) {
             setTimeout(() => {
-                // Cálculo para centralizar o elemento
                 const elementRect = target.getBoundingClientRect();
                 const absoluteElementTop = elementRect.top + window.pageYOffset;
                 const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
                 
-                // Rolagem com comportamento suave controlado pelo browser mas com delay maior
-                window.scrollTo({
-                    top: middle,
-                    behavior: 'smooth'
-                });
-            }, 1000); // Delay aumentado para 1 segundo para parecer mais intencional
+                // Rolagem personalizada mais lenta (1500ms)
+                smoothScrollTo(middle, 1500);
+            }, 1000);
         }
     }
 
