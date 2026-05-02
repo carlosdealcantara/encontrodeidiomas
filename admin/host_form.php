@@ -37,6 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = $_POST;
         
         // Tratamento de Redes Sociais (JSON)
+        // Converte arrays de checkboxes em string separada por vírgula
+        $languagesStr = isset($data['languages']) && is_array($data['languages']) ? implode(', ', $data['languages']) : ($data['languages'] ?? '');
+        $skillsStr    = isset($data['technical_skills']) && is_array($data['technical_skills']) ? implode(', ', $data['technical_skills']) : ($data['technical_skills'] ?? '');
+        $categoryStr  = isset($data['category']) && is_array($data['category']) ? implode(', ', $data['category']) : ($data['category'] ?? 'Online');
+
         $socialData = [
             'whatsapp'  => $data['whatsapp'] ?? '',
             'email'     => $data['email'] ?? '',
@@ -54,19 +59,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Preparação de dados - RIGOROSAMENTE as 13 colunas da tabela + ID se update
+        // Preparação de dados
         $dataToSave = [
             'full_name'             => (string)($data['full_name'] ?? ''),
             'status'                => (string)($data['status'] ?? 'ativo'),
             'profile_picture'       => (string)$profilePic,
-            'languages'             => (string)($data['languages'] ?? ''),
+            'languages'             => (string)$languagesStr,
             'online_description'    => (string)($data['online_description'] ?? ''),
             'region'                => (string)($data['region'] ?? ''),
-            'category'              => (string)($data['category'] ?? 'Online'),
+            'category'              => (string)$categoryStr,
             'inperson_description'  => (string)($data['inperson_description'] ?? ''),
             'technical_status'      => (string)($data['technical_status'] ?? 'inativo'),
             'technical_roles'       => (string)($data['technical_roles'] ?? ''),
-            'technical_skills'      => (string)($data['technical_skills'] ?? ''),
+            'technical_skills'      => (string)$skillsStr,
             'technical_description' => (string)($data['technical_description'] ?? ''),
             'social_media_links'    => (string)$socialJson
         ];
@@ -138,6 +143,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(227, 29, 28, 0.3); }
         .photo-preview { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
         .preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-red); }
+        .tag-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .tag-item { position: relative; }
+        .tag-item input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .tag-label {
+            display: inline-block;
+            padding: 6px 14px;
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .tag-item input:checked + .tag-label {
+            background: var(--accent-red);
+            color: #fff;
+            border-color: var(--accent-red);
+            box-shadow: 0 2px 8px rgba(227, 29, 28, 0.3);
+        }
+        .tag-label:hover { background: #e4e6e9; }
     </style>
 </head>
 <body>
@@ -194,8 +220,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Online -->
             <div class="section-title"><i class="fas fa-globe"></i> Encontros Online</div>
             <div class="form-group">
-                <label>Idiomas (ex: Inglês, Francês)</label>
-                <input type="text" name="languages" list="list-languages" value="<?= htmlspecialchars($host['languages']) ?>" placeholder="Comece a digitar um idioma...">
+                <label>Idiomas</label>
+                <div class="tag-grid">
+                    <?php 
+                    $availableLangs = ['Inglês', 'Francês', 'Espanhol', 'Alemão', 'Italiano', 'Russo', 'Japonês', 'Chinês', 'Coreano', 'Português (Estrangeiros)'];
+                    $currentLangs = array_map('trim', explode(',', $host['languages']));
+                    foreach ($availableLangs as $lang): ?>
+                        <label class="tag-item">
+                            <input type="checkbox" name="languages[]" value="<?= $lang ?>" <?= in_array($lang, $currentLangs) ? 'checked' : '' ?>>
+                            <span class="tag-label"><?= $lang ?></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
             </div>
             <div class="form-group">
                 <label>Descrição Online (Resumo)</label>
@@ -210,8 +246,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="text" name="region" value="<?= htmlspecialchars($host['region'] ?? '') ?>" placeholder="Ex: Brasília - DF">
                 </div>
                 <div class="form-group">
-                    <label>Categorias (separadas por vírgula)</label>
-                    <input type="text" name="category" list="list-categories" value="<?= htmlspecialchars($host['category'] ?? 'Online') ?>">
+                    <label>Categorias</label>
+                    <div class="tag-grid">
+                        <?php 
+                        $availableCats = ['Online', 'Presencial', 'Técnica'];
+                        $currentCats = array_map('trim', explode(',', $host['category'] ?? 'Online'));
+                        foreach ($availableCats as $cat): ?>
+                            <label class="tag-item">
+                                <input type="checkbox" name="category[]" value="<?= $cat ?>" <?= in_array($cat, $currentCats) ? 'checked' : '' ?>>
+                                <span class="tag-label"><?= $cat ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -259,8 +305,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Habilidades (ex: PHP, Design)</label>
-                    <input type="text" name="technical_skills" list="list-skills" value="<?= htmlspecialchars($host['technical_skills']) ?>">
+                    <label>Habilidades Técnicas</label>
+                    <div class="tag-grid">
+                        <?php 
+                        $availableSkills = ['PHP', 'JavaScript', 'HTML', 'CSS', 'MySQL', 'WordPress', 'Design Gráfico', 'UI/UX', 'Edição de Vídeo'];
+                        $currentSkills = array_map('trim', explode(',', $host['technical_skills']));
+                        foreach ($availableSkills as $skill): ?>
+                            <label class="tag-item">
+                                <input type="checkbox" name="technical_skills[]" value="<?= $skill ?>" <?= in_array($skill, $currentSkills) ? 'checked' : '' ?>>
+                                <span class="tag-label"><?= $skill ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Papéis Técnicos (ex: Dev, UI/UX)</label>
@@ -278,74 +334,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </form>
 
-        <!-- Listas de Sugestões (Datalists - Apenas versões corretas) -->
-        <datalist id="list-languages">
-            <option value="Inglês">
-            <option value="Francês">
-            <option value="Espanhol">
-            <option value="Alemão">
-            <option value="Italiano">
-            <option value="Russo">
-            <option value="Japonês">
-            <option value="Chinês">
-            <option value="Coreano">
-            <option value="Português (Estrangeiros)">
-        </datalist>
-
-        <datalist id="list-categories">
-            <option value="Online">
-            <option value="Presencial">
-            <option value="Técnica">
-            <option value="Online, Presencial">
-        </datalist>
-
-        <datalist id="list-skills">
-            <option value="PHP">
-            <option value="JavaScript">
-            <option value="HTML">
-            <option value="CSS">
-            <option value="MySQL">
-            <option value="WordPress">
-            <option value="Design Gráfico">
-            <option value="UI/UX">
-            <option value="Edição de Vídeo">
-        </datalist>
-
-        <datalist id="list-roles">
-            <option value="Desenvolvedor">
-            <option value="Designer">
-            <option value="Criador de Conteúdo">
-            <option value="Coordenador Técnico">
-            <option value="Social Media">
-        </datalist>
-
-        <script>
-        // Inteligência para Sugestões após Vírgula (Estilo LinkedIn/Tags)
-        function enableMultiSuggest(inputId) {
-            const input = document.getElementsByName(inputId)[0];
-            if (!input) return;
-
-            input.addEventListener('input', function(e) {
-                const value = this.value;
-                const lastComma = value.lastIndexOf(',');
-                
-                // Se houver vírgula, o navegador para de sugerir nativamente.
-                // Aqui poderíamos implementar um dropdown customizado, 
-                // mas para manter leve, vamos apenas limpar o 'list' se estiver no meio de uma palavra 
-                // e reativar se for o início de uma nova tag.
-                if (lastComma !== -1) {
-                    const currentTag = value.substring(lastComma + 1).trim();
-                    // O datalist nativo não suporta troca dinâmica de contexto facilmente,
-                    // mas ao menos limpamos o placeholder para ajudar o usuário.
-                }
-            });
-        }
-        
-        // Ativando nos campos principais
-        enableMultiSuggest('languages');
-        enableMultiSuggest('technical_skills');
-        enableMultiSuggest('category');
-        </script>
     </main>
 </body>
 </html>
