@@ -369,6 +369,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="text" name="whatsapp" value="<?= htmlspecialchars($social['whatsapp'] ?? '') ?>" placeholder="556199999999">
                 </div>
                 <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" name="email" value="<?= htmlspecialchars($social['email'] ?? '') ?>">
+                </div>
+                <div class="form-group">
                     <label>Instagram</label>
                     <input type="text" name="instagram" value="<?= htmlspecialchars($social['instagram'] ?? '') ?>">
                 </div>
