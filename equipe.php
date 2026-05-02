@@ -73,8 +73,9 @@ ob_start();
         justify-content: space-between;
         align-items: center;
         padding: 12px 20px;
-        background: var(--white);
-        border: 2px solid #eee;
+        background: var(--accent-red);
+        color: var(--white);
+        border: 2px solid var(--accent-red);
         border-radius: 25px;
         width: 100%;
         cursor: pointer;
@@ -83,7 +84,10 @@ ob_start();
         font-family: inherit;
     }
 
-    .dropdown-button:hover { border-color: var(--accent-red); }
+    .dropdown-button:hover { 
+        background: #c11817;
+        border-color: #c11817;
+    }
 
     .dropdown-content {
         display: none;
