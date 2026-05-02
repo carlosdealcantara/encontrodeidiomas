@@ -2,11 +2,20 @@
 require_once 'config.php';
 try {
     $conn = connectDB();
-    $stmt = $conn->prepare("SELECT full_name, email, whatsapp, instagram, linkedin FROM hosts WHERE full_name LIKE '%Carlos de Alcântara%'");
+    $stmt = $conn->prepare("SELECT * FROM hosts LIMIT 1");
     $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    echo "<h3>Colunas encontradas na tabela 'hosts':</h3>";
     echo "<pre>";
-    print_r($result);
+    print_r(array_keys($row));
+    echo "</pre>";
+
+    $stmt = $conn->prepare("SELECT * FROM hosts WHERE full_name LIKE '%Carlos de Alcântara%'");
+    $stmt->execute();
+    $carlos = $stmt->fetch(PDO::FETCH_ASSOC);
+    echo "<h3>Dados do Carlos:</h3>";
+    echo "<pre>";
+    print_r($carlos);
     echo "</pre>";
 } catch (Exception $e) {
     echo "Erro: " . $e->getMessage();
