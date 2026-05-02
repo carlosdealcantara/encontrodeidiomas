@@ -139,7 +139,28 @@ ob_start();
     .cta-section { padding: 0 0 10px 0; text-align: center; } 
     .cta-button-footer { margin-top: 10px; display:inline-block; padding:15px 40px; background:var(--white); color:var(--accent-red); text-decoration:none; font-weight:700; border-radius:50px; }
 
-    .host-badge { position:absolute; top:12px; right:12px; background:var(--accent-red); color:#fff; padding:5px 14px; border-radius:20px; font-size:.7rem; font-weight:700; z-index: 10; box-shadow: 0 4px 12px rgba(227,29,28,.4); text-transform: uppercase; letter-spacing: 0.5px; }
+    .host-badges-container { 
+        position:absolute; 
+        top:12px; 
+        right:12px; 
+        display:flex; 
+        flex-direction:column; 
+        gap:6px; 
+        align-items:flex-end; 
+        z-index: 10; 
+    }
+    .host-badge { 
+        background:var(--accent-red); 
+        color:#fff; 
+        padding:5px 14px; 
+        border-radius:20px; 
+        font-size:.7rem; 
+        font-weight:700; 
+        box-shadow: 0 4px 12px rgba(227,29,28,.4); 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        white-space: nowrap;
+    }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -283,12 +304,14 @@ include 'includes/header.php';
                  data-region="<?= strtolower($region) ?>"
                  data-roles="<?= strtolower(implode(',', $roles)) ?>">
                 
-                <?php 
-                $badgeText = !empty($langs) ? implode(' / ', $langs) : (!empty($host['badge']) ? $host['badge'] : '');
-                if (!empty($badgeText)): 
-                ?>
-                    <span class="host-badge"><?= htmlspecialchars($badgeText) ?></span>
-                <?php endif; ?>
+                <div class="host-badges-container">
+                    <?php 
+                    $displayBadges = !empty($langs) ? $langs : (!empty($host['badge']) ? [$host['badge']] : []);
+                    foreach ($displayBadges as $badge): 
+                    ?>
+                        <span class="host-badge"><?= htmlspecialchars($badge) ?></span>
+                    <?php endforeach; ?>
+                </div>
 
                 <div class="host-image-container">
                     <img src="<?= $photo ?>" alt="Foto de <?= htmlspecialchars($host['full_name']) ?>" class="host-image"
