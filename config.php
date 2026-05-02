@@ -171,8 +171,12 @@ function getMeetings(): array {
 }
 
 function getUsefulLinks(): array {
-    $conn = connectDB();
-    $stmt = $conn->query("SELECT * FROM useful_links WHERE active = 1 ORDER BY order_index ASC, title ASC");
-    return $stmt->fetchAll();
+    try {
+        $conn = connectDB();
+        $stmt = $conn->query("SELECT * FROM useful_links WHERE active = 1 ORDER BY order_index ASC, title ASC");
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        return [];
+    }
 }
 ?>
