@@ -29,6 +29,8 @@ define('DB_USER',    getenv('DB_USER')    ?: '');
 define('DB_PASS',    getenv('DB_PASS')    ?: '');
 define('SITE_NAME',  getenv('SITE_NAME')  ?: 'Encontro de Idiomas');
 define('ADMIN_EMAIL',getenv('ADMIN_EMAIL')?: '');
+define('ADMIN_USER', getenv('ADMIN_USER') ?: 'admin');
+define('ADMIN_PASS', getenv('ADMIN_PASS') ?: 'encontro2023');
 define('SITE_URL',   'https://' . ($_SERVER['HTTP_HOST'] ?? 'encontrodeidiomas.com.br'));
 
 // --- Conexão com o Banco de Dados ---
