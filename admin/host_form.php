@@ -221,97 +221,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <!-- Online -->
-            <div class="section-title"><i class="fas fa-globe"></i> Encontros Online</div>
-            <div class="form-group">
-                <label>Idiomas</label>
+            <!-- CATEGORIAS (O Motor do Formulário) -->
+            <div class="section-title"><i class="fas fa-tags"></i> O que este anfitrião faz?</div>
+            <div class="form-group" style="margin-bottom: 30px;">
                 <div class="tag-grid">
                     <?php 
-                    // Busca idiomas reais do banco de dados para sincronia total
-                    $stmtLangs = $conn->query("SELECT name FROM languages ORDER BY name ASC");
-                    $availableLangs = $stmtLangs->fetchAll(PDO::FETCH_COLUMN);
-                    
-                    $currentLangs = array_map('trim', explode(',', $host['languages']));
-                    foreach ($availableLangs as $lang): 
-                        // Limpa o nome para exibição se necessário
-                        $displayName = str_replace(' (Estrangeiros)', '', $lang);
-                    ?>
+                    $availableCats = ['Online', 'Presencial', 'Técnica'];
+                    $currentCats = array_map('trim', explode(',', $host['category'] ?? 'Online'));
+                    foreach ($availableCats as $cat): ?>
                         <label class="tag-item">
-                            <input type="checkbox" name="languages[]" value="<?= $lang ?>" <?= in_array($lang, $currentLangs) ? 'checked' : '' ?>>
-                            <span class="tag-label"><?= $displayName ?></span>
+                            <input type="checkbox" name="category[]" value="<?= $cat ?>" 
+                                   <?= in_array($cat, $currentCats) ? 'checked' : '' ?>
+                                   id="check-<?= strtolower(str_replace('é', 'e', $cat)) ?>">
+                            <span class="tag-label"><?= $cat ?></span>
                         </label>
                     <?php endforeach; ?>
                 </div>
             </div>
-            <div class="form-group">
-                <label>Descrição Online (Resumo)</label>
-                <textarea name="online_description" rows="3"><?= htmlspecialchars($host['online_description']) ?></textarea>
-            </div>
 
-            <!-- Presencial -->
-            <div class="section-title"><i class="fas fa-map-marker-alt"></i> Encontros Presenciais</div>
-            <div class="form-grid">
+            <!-- SEÇÃO: ONLINE (Condicional) -->
+            <div id="section-online" class="conditional-section" style="display: none; border-left: 4px solid var(--accent-red); padding-left: 20px; margin-bottom: 30px;">
+                <div class="section-title"><i class="fas fa-globe"></i> Encontros Online</div>
                 <div class="form-group">
-                    <label>Região / Cidade</label>
-                    <input type="text" name="region" value="<?= htmlspecialchars($host['region'] ?? '') ?>" placeholder="Ex: Brasília - DF">
-                </div>
-                <div class="form-group">
-                    <label>Categorias</label>
+                    <label>Idiomas que domina</label>
                     <div class="tag-grid">
                         <?php 
-                        $availableCats = ['Online', 'Presencial', 'Técnica'];
-                        $currentCats = array_map('trim', explode(',', $host['category'] ?? 'Online'));
-                        foreach ($availableCats as $cat): ?>
+                        $stmtLangs = $conn->query("SELECT name FROM languages ORDER BY name ASC");
+                        $availableLangs = $stmtLangs->fetchAll(PDO::FETCH_COLUMN);
+                        $currentLangs = array_map('trim', explode(',', $host['languages']));
+                        foreach ($availableLangs as $lang): 
+                            $displayName = str_replace(' (Estrangeiros)', '', $lang);
+                        ?>
                             <label class="tag-item">
-                                <input type="checkbox" name="category[]" value="<?= $cat ?>" 
-                                       <?= in_array($cat, $currentCats) ? 'checked' : '' ?>
-                                       <?= $cat === 'Técnica' ? 'id="check-tecnica"' : '' ?>>
-                                <span class="tag-label"><?= $cat ?></span>
+                                <input type="checkbox" name="languages[]" value="<?= $lang ?>" <?= in_array($lang, $currentLangs) ? 'checked' : '' ?>>
+                                <span class="tag-label"><?= $displayName ?></span>
                             </label>
                         <?php endforeach; ?>
                     </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Papéis / Funções (ex: Host, Co-host)</label>
-                <input type="text" name="role" value="<?= htmlspecialchars($host['role'] ?? '') ?>">
-            </div>
-            <div class="form-group">
-                <label>Descrição Presencial</label>
-                <textarea name="inperson_description" rows="3"><?= htmlspecialchars($host['inperson_description'] ?? '') ?></textarea>
-            </div>
-
-            <!-- Redes Sociais -->
-            <div class="section-title"><i class="fas fa-share-alt"></i> Redes Sociais (Links)</div>
-            <div class="form-grid">
                 <div class="form-group">
-                    <label>WhatsApp (com DDD)</label>
-                    <input type="text" name="whatsapp" value="<?= htmlspecialchars($social['whatsapp'] ?? '') ?>" placeholder="556199999999">
-                </div>
-                <div class="form-group">
-                    <label>E-mail Público</label>
-                    <input type="email" name="email" value="<?= htmlspecialchars($social['email'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>Instagram URL</label>
-                    <input type="text" name="instagram" value="<?= htmlspecialchars($social['instagram'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>LinkedIn URL</label>
-                    <input type="text" name="linkedin" value="<?= htmlspecialchars($social['linkedin'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>GitHub URL (Técnico)</label>
-                    <input type="text" name="github" value="<?= htmlspecialchars($social['github'] ?? '') ?>">
+                    <label>Descrição para os Encontros Online</label>
+                    <textarea name="online_description" rows="3"><?= htmlspecialchars($host['online_description'] ?? '') ?></textarea>
                 </div>
             </div>
 
-            <!-- Seção Técnica (Condicional) -->
-            <div id="section-tecnica" style="display: none; border-top: 2px solid #f0f2f5; padding-top: 20px; margin-top: 20px;">
+            <!-- SEÇÃO: PRESENCIAL (Condicional) -->
+            <div id="section-presencial" class="conditional-section" style="display: none; border-left: 4px solid var(--accent-blue); padding-left: 20px; margin-bottom: 30px;">
+                <div class="section-title"><i class="fas fa-map-marker-alt"></i> Encontros Presenciais</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Região / Cidade</label>
+                        <input type="text" name="region" value="<?= htmlspecialchars($host['region'] ?? '') ?>" placeholder="Ex: Brasília - DF">
+                    </div>
+                    <div class="form-group">
+                        <label>Papéis no Presencial (ex: Host, Co-host)</label>
+                        <input type="text" name="role" value="<?= htmlspecialchars($host['role'] ?? '') ?>">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrição para os Encontros Presenciais</label>
+                    <textarea name="inperson_description" rows="3"><?= htmlspecialchars($host['inperson_description'] ?? '') ?></textarea>
+                </div>
+            </div>
+
+            <!-- SEÇÃO: TÉCNICA (Condicional) -->
+            <div id="section-tecnica" class="conditional-section" style="display: none; border-left: 4px solid #f39c12; padding-left: 20px; margin-bottom: 30px;">
                 <div class="section-title"><i class="fas fa-code"></i> Equipe Técnica</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Papéis Técnicos (ex: Dev, UI/UX)</label>
+                        <label>Papéis Técnicos (ex: Dev, Designer)</label>
                         <input type="text" name="technical_roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>" placeholder="Sua função nos bastidores...">
                     </div>
                     <div class="form-group">
@@ -330,8 +308,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Descrição Técnica / Bio (Basta um resumo se já tiver bio acima)</label>
+                    <label>Bio Técnica / Experiência</label>
                     <textarea name="technical_description" rows="3"><?= htmlspecialchars($host['technical_description'] ?? '') ?></textarea>
+                </div>
+            </div>
+
+            <!-- Redes Sociais -->
+            <div class="section-title"><i class="fas fa-share-alt"></i> Redes Sociais & Contato</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="text" name="whatsapp" value="<?= htmlspecialchars($social['whatsapp'] ?? '') ?>" placeholder="556199999999">
+                </div>
+                <div class="form-group">
+                    <label>Instagram</label>
+                    <input type="text" name="instagram" value="<?= htmlspecialchars($social['instagram'] ?? '') ?>">
+                </div>
+                <div class="form-group">
+                    <label>LinkedIn</label>
+                    <input type="text" name="linkedin" value="<?= htmlspecialchars($social['linkedin'] ?? '') ?>">
+                </div>
+                <div class="form-group">
+                    <label>GitHub</label>
+                    <input type="text" name="github" value="<?= htmlspecialchars($social['github'] ?? '') ?>">
                 </div>
             </div>
 
@@ -344,21 +343,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <script>
-    // Lógica de Exibição Condicional da Seção Técnica
-    const checkTecnica = document.getElementById('check-tecnica');
-    const sectionTecnica = document.getElementById('section-tecnica');
+    // Lógica de Exibição Dinâmica do Formulário
+    const config = [
+        { check: 'check-online', section: 'section-online' },
+        { check: 'check-presencial', section: 'section-presencial' },
+        { check: 'check-tecnica', section: 'section-tecnica' }
+    ];
 
-    function toggleTechSection() {
-        if (checkTecnica && sectionTecnica) {
-            sectionTecnica.style.display = checkTecnica.checked ? 'block' : 'none';
+    function updateSections() {
+        config.forEach(item => {
+            const checkbox = document.getElementById(item.check);
+            const section = document.getElementById(item.section);
+            if (checkbox && section) {
+                section.style.display = checkbox.checked ? 'block' : 'none';
+                if (checkbox.checked) {
+                    section.style.animation = 'fadeIn 0.3s ease-out';
+                }
+            }
+        });
+    }
+
+    config.forEach(item => {
+        const checkbox = document.getElementById(item.check);
+        if (checkbox) {
+            checkbox.addEventListener('change', updateSections);
         }
-    }
+    });
 
-    if (checkTecnica) {
-        checkTecnica.addEventListener('change', toggleTechSection);
-        // Executa ao carregar para definir estado inicial
-        toggleTechSection();
-    }
+    // Inicialização
+    updateSections();
     </script>
 </body>
 </html>
