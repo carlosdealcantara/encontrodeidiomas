@@ -34,6 +34,9 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
                 <?php if (!empty($ev['final_whatsapp'])): ?>
                 <a href="<?= htmlspecialchars($ev['final_whatsapp']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
                 <?php endif; ?>
+                <?php if (!empty($ev['final_instagram'])): ?>
+                <a href="<?= htmlspecialchars($ev['final_instagram']) ?>" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <?php endif; ?>
             </div>
         </div>
         

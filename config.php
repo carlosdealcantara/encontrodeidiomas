@@ -99,6 +99,7 @@ function getMeetings(): array {
                 m.*, 
                 l.name AS language_name, l.flag_code, l.flag_emoji,
                 m.whatsapp_group_link AS final_whatsapp,
+                m.instagram_link AS final_instagram,
                 COALESCE(h.full_name, h_auto.full_name) AS host_name,
                 COALESCE(h.profile_picture, h_auto.profile_picture) AS host_photo
             FROM meetings m

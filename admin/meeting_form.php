@@ -20,6 +20,7 @@ $meeting = [
     'meet_link' => '',
     'replay_link' => '',
     'whatsapp_group_link' => '',
+    'instagram_link' => '',
     'active' => 1
 ];
 
@@ -45,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'meet'   => $_POST['meet_link'],
         'replay' => $_POST['replay_link'],
         'wa'     => $_POST['whatsapp_group_link'],
+        'ig'     => $_POST['instagram_link'],
         'active' => isset($_POST['active']) ? 1 : 0
     ];
 
@@ -52,13 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "UPDATE meetings SET 
                 language_id = :lang, host_id = :host, day_of_week = :day, time_hour = :hour,
                 title = :title, description = :desc, meet_link = :meet, 
-                replay_link = :replay, whatsapp_group_link = :wa, active = :active 
+                replay_link = :replay, whatsapp_group_link = :wa, instagram_link = :ig, active = :active 
                 WHERE id = :id";
         $data['id'] = $id;
     } else {
         $sql = "INSERT INTO meetings 
-                (language_id, host_id, day_of_week, time_hour, title, description, meet_link, replay_link, whatsapp_group_link, active) 
-                VALUES (:lang, :host, :day, :hour, :title, :desc, :meet, :replay, :wa, :active)";
+                (language_id, host_id, day_of_week, time_hour, title, description, meet_link, replay_link, whatsapp_group_link, instagram_link, active) 
+                VALUES (:lang, :host, :day, :hour, :title, :desc, :meet, :replay, :wa, :ig, :active)";
     }
 
     try {
@@ -204,6 +206,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label>Link do Grupo WhatsApp</label>
                     <input type="url" name="whatsapp_group_link" value="<?= htmlspecialchars($meeting['whatsapp_group_link']) ?>" placeholder="https://chat.whatsapp.com/...">
+                </div>
+
+                <div class="form-group">
+                    <label>Link do Instagram</label>
+                    <input type="url" name="instagram_link" value="<?= htmlspecialchars($meeting['instagram_link']) ?>" placeholder="https://instagram.com/...">
                 </div>
 
                 <div class="form-group">
