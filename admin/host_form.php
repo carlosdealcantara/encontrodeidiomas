@@ -40,7 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Converte arrays de checkboxes em string separada por vírgula
         $languagesStr = isset($data['languages']) && is_array($data['languages']) ? implode(', ', $data['languages']) : ($data['languages'] ?? '');
         $skillsStr    = isset($data['technical_skills']) && is_array($data['technical_skills']) ? implode(', ', $data['technical_skills']) : ($data['technical_skills'] ?? '');
-        $categoryStr  = isset($data['category']) && is_array($data['category']) ? implode(', ', $data['category']) : ($data['category'] ?? 'Online');
+        $categoryArr  = isset($data['category']) && is_array($data['category']) ? $data['category'] : [];
+        $categoryStr  = implode(', ', $categoryArr);
+        
+        // Status técnico é definido pela presença da categoria 'Técnica'
+        $techStatus = in_array('Técnica', $categoryArr) ? 'ativo' : 'inativo';
 
         $socialData = [
             'whatsapp'  => $data['whatsapp'] ?? '',
@@ -69,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'region'                => (string)($data['region'] ?? ''),
             'category'              => (string)$categoryStr,
             'inperson_description'  => (string)($data['inperson_description'] ?? ''),
-            'technical_status'      => (string)($data['technical_status'] ?? 'inativo'),
+            'technical_status'      => (string)$techStatus,
             'technical_roles'       => (string)($data['technical_roles'] ?? ''),
             'technical_skills'      => (string)$skillsStr,
             'technical_description' => (string)($data['technical_description'] ?? ''),
@@ -259,7 +263,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $currentCats = array_map('trim', explode(',', $host['category'] ?? 'Online'));
                         foreach ($availableCats as $cat): ?>
                             <label class="tag-item">
-                                <input type="checkbox" name="category[]" value="<?= $cat ?>" <?= in_array($cat, $currentCats) ? 'checked' : '' ?>>
+                                <input type="checkbox" name="category[]" value="<?= $cat ?>" 
+                                       <?= in_array($cat, $currentCats) ? 'checked' : '' ?>
+                                       <?= $cat === 'Técnica' ? 'id="check-tecnica"' : '' ?>>
                                 <span class="tag-label"><?= $cat ?></span>
                             </label>
                         <?php endforeach; ?>
@@ -300,38 +306,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <!-- Técnico -->
-            <div class="section-title"><i class="fas fa-code"></i> Equipe Técnica</div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Status Técnico</label>
-                    <select name="technical_status">
-                        <option value="inativo" <?= $host['technical_status'] === 'inativo' ? 'selected' : '' ?>>Inativo</option>
-                        <option value="ativo" <?= $host['technical_status'] === 'ativo' ? 'selected' : '' ?>>Ativo</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Habilidades Técnicas</label>
-                    <div class="tag-grid">
-                        <?php 
-                        $availableSkills = ['PHP', 'JavaScript', 'HTML', 'CSS', 'MySQL', 'WordPress', 'Design Gráfico', 'UI/UX', 'Edição de Vídeo'];
-                        $currentSkills = array_map('trim', explode(',', $host['technical_skills']));
-                        foreach ($availableSkills as $skill): ?>
-                            <label class="tag-item">
-                                <input type="checkbox" name="technical_skills[]" value="<?= $skill ?>" <?= in_array($skill, $currentSkills) ? 'checked' : '' ?>>
-                                <span class="tag-label"><?= $skill ?></span>
-                            </label>
-                        <?php endforeach; ?>
+            <!-- Seção Técnica (Condicional) -->
+            <div id="section-tecnica" style="display: none; border-top: 2px solid #f0f2f5; padding-top: 20px; margin-top: 20px;">
+                <div class="section-title"><i class="fas fa-code"></i> Equipe Técnica</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Papéis Técnicos (ex: Dev, UI/UX)</label>
+                        <input type="text" name="technical_roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>" placeholder="Sua função nos bastidores...">
+                    </div>
+                    <div class="form-group">
+                        <label>Habilidades Técnicas</label>
+                        <div class="tag-grid">
+                            <?php 
+                            $availableSkills = ['PHP', 'JavaScript', 'HTML', 'CSS', 'MySQL', 'WordPress', 'Design Gráfico', 'UI/UX', 'Edição de Vídeo'];
+                            $currentSkills = array_map('trim', explode(',', $host['technical_skills']));
+                            foreach ($availableSkills as $skill): ?>
+                                <label class="tag-item">
+                                    <input type="checkbox" name="technical_skills[]" value="<?= $skill ?>" <?= in_array($skill, $currentSkills) ? 'checked' : '' ?>>
+                                    <span class="tag-label"><?= $skill ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Papéis Técnicos (ex: Dev, UI/UX)</label>
-                    <input type="text" name="technical_roles" list="list-roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>">
+                    <label>Descrição Técnica / Bio (Basta um resumo se já tiver bio acima)</label>
+                    <textarea name="technical_description" rows="3"><?= htmlspecialchars($host['technical_description'] ?? '') ?></textarea>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Descrição Técnica</label>
-                <textarea name="technical_description" rows="3"><?= htmlspecialchars($host['technical_description'] ?? '') ?></textarea>
             </div>
 
             <div style="margin-top: 40px; display: flex; gap: 20px;">
@@ -341,5 +342,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
     </main>
+
+    <script>
+    // Lógica de Exibição Condicional da Seção Técnica
+    const checkTecnica = document.getElementById('check-tecnica');
+    const sectionTecnica = document.getElementById('section-tecnica');
+
+    function toggleTechSection() {
+        if (checkTecnica && sectionTecnica) {
+            sectionTecnica.style.display = checkTecnica.checked ? 'block' : 'none';
+        }
+    }
+
+    if (checkTecnica) {
+        checkTecnica.addEventListener('change', toggleTechSection);
+        // Executa ao carregar para definir estado inicial
+        toggleTechSection();
+    }
+    </script>
 </body>
 </html>
