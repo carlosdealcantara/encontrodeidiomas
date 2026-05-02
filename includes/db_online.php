@@ -20,11 +20,8 @@ $currentHour      = (int)date('G');
 // Parâmetros iniciais da URL
 $initialView = $_GET['view'] ?? 'day';
 
-// 1. Inteligência para o Dia Padrão
+// 1. Inteligência para o Dia Padrão (Sempre carrega o dia atual)
 $initialDay = $_GET['dia'] ?? $currentDayOfWeek;
-if (!isset($_GET['dia']) && $initialDay > 5) {
-    $initialDay = 1;
-}
 
 // 2. Inteligência para o Idioma Padrão
 $initialLang = $_GET['idioma'] ?? '';

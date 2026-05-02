@@ -224,8 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="tag-grid">
                     <?php 
                     // Busca idiomas reais do banco de dados para sincronia total
-                    $db = getDB();
-                    $stmtLangs = $db->query("SELECT name FROM languages ORDER BY name ASC");
+                    $stmtLangs = $conn->query("SELECT name FROM languages ORDER BY name ASC");
                     $availableLangs = $stmtLangs->fetchAll(PDO::FETCH_COLUMN);
                     
                     $currentLangs = array_map('trim', explode(',', $host['languages']));
