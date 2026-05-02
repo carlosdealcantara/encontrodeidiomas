@@ -297,6 +297,13 @@ include 'includes/header.php';
                 }
                 
                 $skills = !empty($host['technical_skills']) ? array_map('trim', explode(',', $host['technical_skills'])) : [];
+
+                // Processa Redes Sociais do JSON (Hostinger/Produção)
+                $social = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
+                $whatsapp  = $social['whatsapp']  ?? $host['whatsapp'] ?? '';
+                $email     = $social['email']     ?? $host['email'] ?? '';
+                $instagram = $social['instagram'] ?? $host['instagram'] ?? '';
+                $linkedin  = $social['linkedin']  ?? $host['linkedin'] ?? '';
             ?>
             <div class="host-card" 
                  data-categories="<?= $categoriesAttr ?>" 
@@ -341,17 +348,17 @@ include 'includes/header.php';
 
                     <!-- Redes Sociais e Contato -->
                     <div class="host-contact">
-                        <?php if (!empty($host['whatsapp'])): ?>
-                            <a href="https://wa.me/<?= preg_replace('/\D/', '', $host['whatsapp']) ?>" target="_blank" class="contact-btn" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <?php if (!empty($whatsapp)): ?>
+                            <a href="<?= (strpos($whatsapp, 'http') === 0) ? htmlspecialchars($whatsapp) : 'https://wa.me/' . preg_replace('/\D/', '', $whatsapp) ?>" target="_blank" class="contact-btn" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                         <?php endif; ?>
-                        <?php if (!empty($host['email'])): ?>
-                            <a href="mailto:<?= htmlspecialchars($host['email']) ?>" class="contact-btn" title="Email"><i class="fas fa-envelope"></i></a>
+                        <?php if (!empty($email)): ?>
+                            <a href="mailto:<?= htmlspecialchars($email) ?>" class="contact-btn" title="Email"><i class="fas fa-envelope"></i></a>
                         <?php endif; ?>
-                        <?php if (!empty($host['instagram'])): ?>
-                            <a href="<?= htmlspecialchars($host['instagram']) ?>" target="_blank" class="contact-btn" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <?php if (!empty($instagram)): ?>
+                            <a href="<?= (strpos($instagram, 'http') === 0) ? htmlspecialchars($instagram) : 'https://instagram.com/' . ltrim($instagram, '@') ?>" target="_blank" class="contact-btn" title="Instagram"><i class="fab fa-instagram"></i></a>
                         <?php endif; ?>
-                        <?php if (!empty($host['linkedin'])): ?>
-                            <a href="<?= htmlspecialchars($host['linkedin']) ?>" target="_blank" class="contact-btn" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <?php if (!empty($linkedin)): ?>
+                            <a href="<?= htmlspecialchars($linkedin) ?>" target="_blank" class="contact-btn" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                         <?php endif; ?>
                     </div>
                 </div>
