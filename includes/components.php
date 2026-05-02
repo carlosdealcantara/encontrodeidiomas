@@ -49,7 +49,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         </div>
         <?php else: ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
-            <img src="assets/images/logo.png" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; filter: grayscale(100%);" alt="Comunidade">
+            <img src="assets/images/favicon.png" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Comunidade">
             <span><strong>Conversação Livre</strong></span>
         </div>
         <?php endif; ?>
