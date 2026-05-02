@@ -223,12 +223,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label>Idiomas</label>
                 <div class="tag-grid">
                     <?php 
-                    $availableLangs = ['Inglês', 'Francês', 'Espanhol', 'Alemão', 'Italiano', 'Russo', 'Japonês', 'Chinês', 'Coreano', 'Português (Estrangeiros)'];
+                    // Busca idiomas reais do banco de dados para sincronia total
+                    $db = getDB();
+                    $stmtLangs = $db->query("SELECT name FROM languages ORDER BY name ASC");
+                    $availableLangs = $stmtLangs->fetchAll(PDO::FETCH_COLUMN);
+                    
                     $currentLangs = array_map('trim', explode(',', $host['languages']));
-                    foreach ($availableLangs as $lang): ?>
+                    foreach ($availableLangs as $lang): 
+                        // Limpa o nome para exibição se necessário
+                        $displayName = str_replace(' (Estrangeiros)', '', $lang);
+                    ?>
                         <label class="tag-item">
                             <input type="checkbox" name="languages[]" value="<?= $lang ?>" <?= in_array($lang, $currentLangs) ? 'checked' : '' ?>>
-                            <span class="tag-label"><?= $lang ?></span>
+                            <span class="tag-label"><?= $displayName ?></span>
                         </label>
                     <?php endforeach; ?>
                 </div>
