@@ -141,7 +141,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
-            flex-wrap: wrap;
+            /* Removemos o wrap para evitar que o menu caia para baixo abruptamente em desktops */
+            flex-wrap: nowrap;
         }
 
         .logo-container {
@@ -223,6 +224,10 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
                 display: block;
             }
 
+            .header-content {
+                flex-wrap: wrap;
+            }
+            
             .nav-links {
                 display: none;
                 width: 100%;
