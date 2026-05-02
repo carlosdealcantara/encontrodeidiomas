@@ -602,6 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
         dayFilterBtn.classList.add('active'); langFilterBtn.classList.remove('active');
         activateDay(currentDay);
         updateURL();
+        scrollToRelevantEvent(); // Gatilho ao clicar no botão "Por Dia"
     });
 
     langFilterBtn.addEventListener('click', function() {
@@ -628,8 +629,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Initial scroll
+    // Initial scroll & State
     if (currentView === 'day') {
+        activateDay(currentDay); // Garante que o dia correto está ativo no DOM
         scrollToRelevantEvent();
     }
 
