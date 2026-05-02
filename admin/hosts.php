@@ -95,6 +95,18 @@ if (isset($_GET['toggle_status']) && isset($_GET['id'])) {
         .btn-toggle:hover { background: var(--text-main); color: var(--primary-bg); }
 
         .alert { padding: 15px 25px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: var(--success); border-radius: 12px; margin-bottom: 25px; }
+
+        /* Controls Section */
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; flex-wrap: wrap; }
+        .filter-group { display: flex; gap: 5px; background: var(--sidebar-bg); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .filter-btn { padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; }
+        .filter-btn:hover { color: var(--white); }
+        .filter-btn.active { background: var(--accent-red); color: white; box-shadow: 0 4px 10px rgba(227, 29, 28, 0.2); }
+        
+        .search-group { position: relative; flex: 1; max-width: 400px; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
+        .search-group input { width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 15px 12px 45px; color: var(--text-main); outline: none; transition: all 0.3s ease; }
+        .search-group input:focus { border-color: var(--accent-red); box-shadow: 0 0 0 4px rgba(227, 29, 28, 0.1); }
     </style>
 </head>
 <body>
@@ -138,6 +150,18 @@ if (isset($_GET['toggle_status']) && isset($_GET['id'])) {
                 <i class="fas fa-check-circle" style="margin-right: 8px;"></i> <?= htmlspecialchars($_GET['msg']) ?>
             </div>
         <?php endif; ?>
+
+        <div class="controls">
+            <div class="filter-group">
+                <button class="filter-btn active" data-status="ativo">Ativos</button>
+                <button class="filter-btn" data-status="inativo">Inativos</button>
+                <button class="filter-btn" data-status="all">Todos</button>
+            </div>
+            <div class="search-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="hostSearch" placeholder="Pesquisar por nome ou idioma...">
+            </div>
+        </div>
 
         <div class="table-container">
             <table>
@@ -185,5 +209,44 @@ if (isset($_GET['toggle_status']) && isset($_GET['id'])) {
             </table>
         </div>
     </main>
+    <script>
+        const searchInput = document.getElementById('hostSearch');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.status;
+
+            tableRows.forEach(row => {
+                const name = row.querySelector('.host-name').textContent.toLowerCase();
+                const langs = row.querySelector('.host-langs').textContent.toLowerCase();
+                const statusBadge = row.querySelector('.badge');
+                const status = statusBadge.textContent.trim().toLowerCase(); // 'ativo' ou 'inativo'
+                
+                const matchesSearch = name.includes(searchTerm) || langs.includes(searchTerm);
+                const matchesStatus = activeFilter === 'all' || status === activeFilter;
+
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterTable);
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterTable();
+            });
+        });
+
+        // Inicializa o filtro (Ativos por padrão)
+        filterTable();
+    </script>
 </body>
 </html>
