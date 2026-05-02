@@ -56,18 +56,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Preparação de dados com Fallbacks para evitar erros de colunas vazias
+        // Preparação de dados - APENAS colunas que existem no banco real
         $dataToSave = [
             'full_name'             => $data['full_name'] ?? '',
             'status'                => $data['status'] ?? 'ativo',
             'profile_picture'       => $profilePic,
             'languages'             => $data['languages'] ?? '',
             'online_description'    => $data['online_description'] ?? '',
-            'special_badge'         => $data['special_badge'] ?? '',
             'region'                => $data['region'] ?? '',
             'category'              => $data['category'] ?? 'Online',
             'inperson_description'  => $data['inperson_description'] ?? '',
-            'role'                  => $data['role'] ?? '',
             'technical_status'      => $data['technical_status'] ?? 'inativo',
             'technical_roles'       => $data['technical_roles'] ?? '',
             'technical_skills'      => $data['technical_skills'] ?? '',
@@ -199,18 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="section-title"><i class="fas fa-globe"></i> Encontros Online</div>
             <div class="form-group">
                 <label>Idiomas (ex: Inglês, Francês)</label>
-                <input type="text" name="languages" list="list-languages" value="<?= htmlspecialchars($host['languages']) ?>">
-                <datalist id="list-languages">
-                    <option value="Inglês">
-                    <option value="Francês">
-                    <option value="Espanhol">
-                    <option value="Alemão">
-                    <option value="Italiano">
-                    <option value="Russo">
-                    <option value="Japonês">
-                    <option value="Chinês">
-                    <option value="Português (Estrangeiros)">
-                </datalist>
+                <input type="text" name="languages" list="list-languages" value="<?= htmlspecialchars($host['languages']) ?>" placeholder="Comece a digitar um idioma...">
             </div>
             <div class="form-group">
                 <label>Descrição Online (Resumo)</label>
@@ -227,12 +214,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label>Categorias (separadas por vírgula)</label>
                     <input type="text" name="category" list="list-categories" value="<?= htmlspecialchars($host['category'] ?? 'Online') ?>">
-                    <datalist id="list-categories">
-                        <option value="Online">
-                        <option value="Presencial">
-                        <option value="Técnica">
-                        <option value="Online, Presencial">
-                    </datalist>
                 </div>
             </div>
             <div class="form-group">
@@ -282,26 +263,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label>Habilidades (ex: PHP, Design)</label>
                     <input type="text" name="technical_skills" list="list-skills" value="<?= htmlspecialchars($host['technical_skills']) ?>">
-                    <datalist id="list-skills">
-                        <option value="PHP">
-                        <option value="JavaScript">
-                        <option value="HTML">
-                        <option value="CSS">
-                        <option value="MySQL">
-                        <option value="WordPress">
-                        <option value="Design">
-                        <option value="UI/UX">
-                    </datalist>
                 </div>
                 <div class="form-group">
                     <label>Papéis Técnicos (ex: Dev, UI/UX)</label>
                     <input type="text" name="technical_roles" list="list-roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>">
-                    <datalist id="list-roles">
-                        <option value="Desenvolvimento">
-                        <option value="Design">
-                        <option value="Conteúdo">
-                        <option value="Coordenador Técnico">
-                    </datalist>
                 </div>
             </div>
             <div class="form-group">
@@ -314,6 +279,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="hosts.php" style="color: var(--text-dim); text-decoration: none; padding: 14px 20px;">Cancelar</a>
             </div>
         </form>
+
+        <!-- Listas de Sugestões (Datalists) -->
+        <datalist id="list-languages">
+            <option value="Inglês">
+            <option value="Ingles">
+            <option value="Francês">
+            <option value="Frances">
+            <option value="Espanhol">
+            <option value="Alemão">
+            <option value="Alemao">
+            <option value="Italiano">
+            <option value="Russo">
+            <option value="Japonês">
+            <option value="Japones">
+            <option value="Chinês">
+            <option value="Chines">
+            <option value="Coreano">
+            <option value="Português (Estrangeiros)">
+        </datalist>
+
+        <datalist id="list-categories">
+            <option value="Online">
+            <option value="Presencial">
+            <option value="Técnica">
+            <option value="Online, Presencial">
+            <option value="Online, Presencial, Técnica">
+        </datalist>
+
+        <datalist id="list-skills">
+            <option value="PHP">
+            <option value="JavaScript">
+            <option value="HTML">
+            <option value="CSS">
+            <option value="MySQL">
+            <option value="WordPress">
+            <option value="Design Grafico">
+            <option value="Design Gráfico">
+            <option value="UI/UX">
+            <option value="Edição de Vídeo">
+        </datalist>
+
+        <datalist id="list-roles">
+            <option value="Desenvolvedor">
+            <option value="Designer">
+            <option value="Criador de Conteúdo">
+            <option value="Coordenador Técnico">
+            <option value="Social Media">
+        </datalist>
     </main>
 </body>
 </html>
