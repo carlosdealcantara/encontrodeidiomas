@@ -29,14 +29,14 @@ $page_styles = <<<CSS
     /* Header Visual */
     .hero-header {
         text-align: center;
-        margin-bottom: 40px;
+        margin-bottom: 30px;
         animation: fadeInDown 0.8s ease-out;
     }
 
     .hero-image-wrapper {
         width: 100%;
-        max-width: 280px;
-        margin: 0 auto 20px;
+        max-width: 260px;
+        margin: 0 auto 15px;
         position: relative;
     }
 
@@ -48,9 +48,9 @@ $page_styles = <<<CSS
     }
 
     .hero-header h1 {
-        font-size: 2.2rem;
+        font-size: 2rem;
         font-weight: 800;
-        margin-bottom: 8px;
+        margin-bottom: 5px;
         background: var(--accent-gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -59,18 +59,18 @@ $page_styles = <<<CSS
 
     .hero-header p {
         color: #666;
-        font-size: 1.1rem;
-        max-width: 80%;
+        font-size: 1rem;
+        max-width: 85%;
         margin: 0 auto;
     }
 
     /* Section Headers */
     .section-label {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 700;
         text-transform: uppercase;
         color: #999;
-        margin: 30px 0 15px 5px;
+        margin: 25px 0 12px 5px;
         letter-spacing: 1px;
         display: flex;
         align-items: center;
@@ -91,8 +91,8 @@ $page_styles = <<<CSS
         -webkit-backdrop-filter: blur(10px);
         border: 1px solid var(--glass-border);
         border-radius: 20px;
-        padding: 18px 20px;
-        margin-bottom: 15px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         text-decoration: none;
@@ -104,21 +104,21 @@ $page_styles = <<<CSS
     }
 
     .link-card:hover {
-        transform: translateY(-5px) scale(1.02);
+        transform: translateY(-4px) scale(1.01);
         box-shadow: var(--shadow-md);
         background: var(--white);
     }
 
     .link-card .icon-box {
-        width: 50px;
-        height: 50px;
+        width: 46px;
+        height: 46px;
         background: #f0f2f5;
-        border-radius: 14px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 18px;
-        font-size: 1.4rem;
+        margin-right: 15px;
+        font-size: 1.3rem;
         color: var(--accent-blue);
         transition: var(--transition);
     }
@@ -134,27 +134,26 @@ $page_styles = <<<CSS
 
     .link-card .title {
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         display: block;
-        margin-bottom: 2px;
+        margin-bottom: 1px;
     }
 
     .link-card .subtitle {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: #777;
         display: block;
     }
 
-    /* Featured Link (Hero CTA) */
+    /* Featured Link Style */
     .link-featured {
         background: var(--accent-gradient);
         color: var(--white);
-        padding: 24px;
+        padding: 22px;
         border: none;
     }
-
-    .link-featured .title { font-size: 1.25rem; }
-    .link-featured .subtitle { color: rgba(255,255,255,0.8); }
+    .link-featured .title { font-size: 1.2rem; }
+    .link-featured .subtitle { color: rgba(255,255,255,0.85); font-weight: 500; }
     .link-featured .icon-box { background: rgba(255,255,255,0.2); color: var(--white); }
     
     .badge-top {
@@ -168,25 +167,27 @@ $page_styles = <<<CSS
         font-weight: 800;
         text-transform: uppercase;
         border-bottom-left-radius: 12px;
+        box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
     }
 
-    /* Grid for Info Cards */
-    .info-grid {
+    /* Grid for Twins (Cronograma & Video) */
+    .twin-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 15px;
+        gap: 12px;
+        margin-bottom: 12px;
     }
 
-    .info-grid .link-card {
+    .twin-grid .link-card {
         flex-direction: column;
         text-align: center;
-        padding: 20px 10px;
+        padding: 18px 10px;
         margin-bottom: 0;
+        justify-content: center;
     }
 
-    .info-grid .icon-box {
-        margin: 0 auto 12px;
+    .twin-grid .icon-box {
+        margin: 0 auto 10px;
     }
 
     /* Animations */
@@ -205,38 +206,53 @@ $page_styles = <<<CSS
     }
 
     @media (max-width: 480px) {
-        .hero-header h1 { font-size: 1.8rem; }
-        .info-grid { grid-template-columns: 1fr; }
+        .hero-header h1 { font-size: 1.7rem; }
+        .twin-grid { grid-template-columns: 1fr; }
     }
 CSS;
 
 include 'includes/header.php';
 
-// Logic to categorize links
+// Safe Fetch - ensuring we categorize ALL links correctly
 $allLinks = getUsefulLinks();
+
+// Temporary arrays to hold categorized links
 $heroLink = null;
-$infoLinks = [];
-$communityLinks = [];
-$footerLink = null;
+$twinLinks = []; // Cronograma (2) and Video (5)
+$communityLinks = []; // English (3) and Others (4)
+$footerLink = null; // Main structure (6)
 
 foreach ($allLinks as $l) {
     $t = mb_strtolower($l['title']);
+    
     // Link 1: Atalho Grupão (Featured)
     if (strpos($t, 'grupão') !== false || strpos($t, 'entrada') !== false) {
-        if (!$heroLink) $heroLink = $l; else $footerLink = $l; // Link 6 logic (regions)
+        // We might have Link 1 and Link 6 both matching "entrada"
+        // Link 1 is usually the "shortcut", Link 6 is the "community"
+        if (strpos($t, 'atalho') !== false || strpos($t, 'início') !== false || !$heroLink) {
+             if (!$heroLink) $heroLink = $l; else $footerLink = $l;
+        } else {
+             $footerLink = $l;
+        }
     } 
-    // Link 2 & 5: Info (Cronograma, Vídeo)
+    // Link 2 & 5: Twins (Cronograma & Video)
     elseif (strpos($t, 'cronograma') !== false || strpos($t, 'vídeo') !== false || strpos($t, 'funcionam') !== false) {
-        $infoLinks[] = $l;
+        $twinLinks[] = $l;
     }
-    // Link 3 & 4: Communities (Inglês, Outros)
-    elseif (strpos($t, 'inglês') !== false || strpos($t, 'outros') !== false || strpos($t, 'demais') !== false) {
+    // Link 3 & 4: Communities (Inglês & Outros)
+    elseif (strpos($t, 'inglês') !== false || strpos($t, 'outros') !== false || strpos($t, 'demais') !== false || strpos($t, 'idiomas') !== false) {
         $communityLinks[] = $l;
     }
-    // Fallback/Link 6
+    // Catch-all/Link 6
     else {
-        $footerLink = $l;
+        if (!$footerLink) $footerLink = $l; else $communityLinks[] = $l;
     }
+}
+
+// Special case: If user says Link 1 is "Online comece por aqui", let's ensure it has that label
+if ($heroLink) {
+    $heroLink['subtitle'] = "Atalho direto para o Grupão de Entrada";
+    $heroLink['badge'] = "Comece por aqui";
 }
 ?>
 
@@ -251,33 +267,34 @@ foreach ($allLinks as $l) {
             <p>Conecte-se com o mundo através dos nossos grupos e recursos.</p>
         </header>
 
-        <!-- Seção 1: Destaque / Atalho Rápido -->
+        <!-- Seção 1: Destaque Principal -->
         <?php if ($heroLink): ?>
-            <div class="section-label">Acesso Rápido</div>
+            <div class="section-label">Acesso Imediato</div>
             <a href="<?= htmlspecialchars($heroLink['url']) ?>" class="link-card link-featured stagger-1" target="_blank">
-                <div class="badge-top">Recomendado</div>
+                <div class="badge-top"><?= $heroLink['badge'] ?? 'Destaque' ?></div>
                 <div class="icon-box">
                     <i class="fab fa-whatsapp"></i>
                 </div>
                 <div class="content">
                     <span class="title"><?= htmlspecialchars($heroLink['title']) ?></span>
-                    <span class="subtitle">Atalho direto para começar agora!</span>
+                    <span class="subtitle"><?= htmlspecialchars($heroLink['subtitle']) ?></span>
                 </div>
                 <i class="fas fa-chevron-right"></i>
             </a>
         <?php endif; ?>
 
-        <!-- Seção 2: Entenda o Projeto -->
-        <?php if (!empty($infoLinks)): ?>
-            <div class="section-label">Explore o Projeto</div>
-            <div class="info-grid">
-                <?php foreach ($infoLinks as $idx => $il): ?>
-                    <a href="<?= htmlspecialchars($il['url']) ?>" class="link-card stagger-2" target="_blank">
+        <!-- Seção 2: Gêmeos (Cronograma & Vídeo) -->
+        <?php if (!empty($twinLinks)): ?>
+            <div class="section-label">Entenda o Projeto</div>
+            <div class="twin-grid">
+                <?php foreach ($twinLinks as $idx => $tl): ?>
+                    <a href="<?= htmlspecialchars($tl['url']) ?>" class="link-card stagger-2" target="_blank">
                         <div class="icon-box">
-                            <i class="<?= strpos(mb_strtolower($il['title']), 'vídeo') !== false ? 'fas fa-play' : 'fas fa-calendar-alt' ?>"></i>
+                            <i class="<?= (strpos(mb_strtolower($tl['title']), 'vídeo') !== false || strpos(mb_strtolower($tl['title']), 'funcionam') !== false) ? 'fas fa-play' : 'fas fa-calendar-days' ?>"></i>
                         </div>
                         <div class="content">
-                            <span class="title"><?= htmlspecialchars($il['title']) ?></span>
+                            <span class="title"><?= htmlspecialchars($tl['title']) ?></span>
+                            <span class="subtitle" style="font-size: 0.7rem;">Clique para ver</span>
                         </div>
                     </a>
                 <?php endforeach; ?>
@@ -286,7 +303,7 @@ foreach ($allLinks as $l) {
 
         <!-- Seção 3: Comunidades por Idioma -->
         <?php if (!empty($communityLinks)): ?>
-            <div class="section-label">Nossas Comunidades</div>
+            <div class="section-label">Pratique um Idioma</div>
             <?php foreach ($communityLinks as $idx => $cl): ?>
                 <a href="<?= htmlspecialchars($cl['url']) ?>" class="link-card stagger-3" target="_blank">
                     <div class="icon-box">
@@ -294,7 +311,7 @@ foreach ($allLinks as $l) {
                     </div>
                     <div class="content">
                         <span class="title"><?= htmlspecialchars($cl['title']) ?></span>
-                        <span class="subtitle"><?= strpos(mb_strtolower($cl['title']), 'inglês') !== false ? 'O maior grupo do projeto' : 'Mais de 50 idiomas disponíveis' ?></span>
+                        <span class="subtitle"><?= strpos(mb_strtolower($cl['title']), 'inglês') !== false ? 'O maior grupo do projeto' : 'Italiano, Francês, Alemão e +50' ?></span>
                     </div>
                     <i class="fas fa-chevron-right"></i>
                 </a>
@@ -303,23 +320,23 @@ foreach ($allLinks as $l) {
 
         <!-- Seção 4: Estrutura Completa -->
         <?php if ($footerLink): ?>
-            <div class="section-label">Estrutura Completa</div>
+            <div class="section-label">Nossa Estrutura</div>
             <a href="<?= htmlspecialchars($footerLink['url']) ?>" class="link-card" target="_blank">
                 <div class="icon-box">
-                    <i class="fas fa-users-rectangle"></i>
+                    <i class="fas fa-sitemap"></i>
                 </div>
                 <div class="content">
                     <span class="title"><?= htmlspecialchars($footerLink['title']) ?></span>
-                    <span class="subtitle">Regiões e grupos de organização</span>
+                    <span class="subtitle">Comunidade principal e grupos regionais</span>
                 </div>
                 <i class="fas fa-chevron-right"></i>
             </a>
         <?php endif; ?>
 
-        <!-- Rodapé de Redes Sociais -->
-        <div style="text-align: center; margin-top: 40px; display: flex; justify-content: center; gap: 20px;">
-            <a href="https://www.instagram.com/encontrodeidiomas/" target="_blank" style="color: var(--accent-red); font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
-            <a href="https://discord.gg/STHkrEhMpP" target="_blank" style="color: #5865F2; font-size: 1.5rem;"><i class="fab fa-discord"></i></a>
+        <!-- Rodapé Social -->
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: center; gap: 25px;">
+            <a href="https://www.instagram.com/encontrodeidiomas/" target="_blank" style="color: var(--accent-red); font-size: 1.6rem; transition: 0.3s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"><i class="fab fa-instagram"></i></a>
+            <a href="https://discord.gg/STHkrEhMpP" target="_blank" style="color: #5865F2; font-size: 1.6rem; transition: 0.3s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"><i class="fab fa-discord"></i></a>
         </div>
 
     </div>
