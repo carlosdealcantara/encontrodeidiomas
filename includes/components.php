@@ -51,7 +51,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         </div>
         <?php else: ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
-            <div style="width: 24px; height: 24px; border-radius: 50%; background-image: url('assets/images/logo.png'); background-size: 140%; background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05);"></div>
+            <div style="width: 24px; height: 24px; border-radius: 50%; background-image: url('assets/images/logo.png'); background-size: 110%; background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); background-color: #fff;"></div>
             <span><strong>Conversação Livre</strong></span>
         </div>
         <?php endif; ?>
