@@ -43,18 +43,20 @@ $page_styles = <<<CSS
     .hero-image {
         width: 100%;
         height: auto;
-        border-radius: 30px;
-        filter: drop-shadow(0 15px 30px rgba(0,38,84,0.15));
+        /* Removido bordas e sombras pesadas para um look mais limpo e integrado */
+        filter: drop-shadow(0 10px 20px rgba(0,38,84,0.1));
+        transform: scale(1.05); /* Leve destaque */
     }
 
     .hero-header h1 {
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: 800;
         margin-bottom: 5px;
-        background: var(--accent-gradient);
+        /* Gradiente ajustado para o Vermelho e Azul da marca */
+        background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-blue) 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        letter-spacing: -1px;
+        letter-spacing: -1.5px;
     }
 
     .hero-header p {
