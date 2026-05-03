@@ -187,7 +187,7 @@ $currentHour = (int)date('H');
                 <i class="fas fa-calendar-alt"></i> Encontros
             </a>
             <a href="useful_links.php" class="nav-item">
-                <i class="fas fa-link"></i> Links Úteis
+                <i class="fas fa-link"></i> Central de Links
             </a>
             <a href="settings.php" class="nav-item">
                 <i class="fas fa-cog"></i> Configurações
