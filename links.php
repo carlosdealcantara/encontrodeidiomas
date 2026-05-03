@@ -215,6 +215,10 @@ CSS;
 include 'includes/header.php';
 
 $allLinks = getUsefulLinks();
+
+// Separate twins from standards
+$twins = array_filter($allLinks, function($l) { return $l['layout_type'] === 'twin'; });
+$standards = array_filter($allLinks, function($l) { return $l['layout_type'] !== 'twin'; });
 ?>
 
 <main>
@@ -222,40 +226,40 @@ $allLinks = getUsefulLinks();
         
         <header class="hero-header">
             <div class="hero-image-wrapper">
-                <img src="assets/images/community_hub.png" alt="Hub de Comunidades" class="hero-image">
+                <img src="assets/images/hero_links_v2.png" alt="Hub de Comunidades" class="hero-image">
             </div>
             <h1>Central de Links</h1>
             <p>Conecte-se com o mundo através dos nossos grupos e recursos.</p>
         </header>
 
         <div class="links-wrapper">
-            <?php 
-            $i = 0;
-            while ($i < count($allLinks)): 
-                $l = $allLinks[$i];
-                
-                if ($l['layout_type'] === 'twin'): 
-                    // Start a twin grid
-                    echo '<div class="twin-grid">';
-                    
-                    // Render first twin
-                    renderLinkCard($l, 'twin', 'stagger-1');
-                    $i++;
-                    
-                    // Check if next one is also twin
-                    if ($i < count($allLinks) && $allLinks[$i]['layout_type'] === 'twin') {
-                        renderLinkCard($allLinks[$i], 'twin', 'stagger-1');
-                        $i++;
+            <!-- Seção de Gêmeos (Sempre no Topo) -->
+            <?php if (!empty($twins)): ?>
+                <div class="section-label">Entenda o Projeto</div>
+                <div class="twin-grid">
+                    <?php 
+                    $stagger = 1;
+                    foreach ($twins as $l) {
+                        renderLinkCard($l, 'twin', 'stagger-' . $stagger);
+                        $stagger = ($stagger % 3) + 1;
                     }
-                    
-                    echo '</div>';
-                else:
-                    // Render standard card
-                    renderLinkCard($l, 'standard', 'stagger-2');
-                    $i++;
-                endif;
-            endwhile; 
+                    ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Seção de Links Padrão -->
+            <?php if (!empty($standards)): ?>
+                <div class="section-label">Recursos e Comunidades</div>
+                <?php 
+                $stagger = 1;
+                foreach ($standards as $l) {
+                    renderLinkCard($l, 'standard', 'stagger-' . $stagger);
+                    $stagger = ($stagger % 3) + 1;
+                }
+                ?>
+            <?php endif; ?>
             
+            <?php 
             function renderLinkCard($link, $type, $animation) {
                 $url = htmlspecialchars($link['url']);
                 $title = htmlspecialchars($link['title']);

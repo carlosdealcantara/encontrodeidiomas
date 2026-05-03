@@ -158,7 +158,12 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index ASC, titl
                     <div class="link-info">
                         <div class="link-icon"><i class="<?= $l['icon'] ?>"></i></div>
                         <div>
-                            <div style="font-weight: 600;"><?= htmlspecialchars($l['title']) ?></div>
+                            <div style="font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                                <?= htmlspecialchars($l['title']) ?>
+                                <?php if (($l['layout_type'] ?? 'standard') === 'twin'): ?>
+                                    <span style="background: rgba(255,255,255,0.1); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1);">GÊMEO</span>
+                                <?php endif; ?>
+                            </div>
                             <div style="font-size: 0.8rem; color: var(--text-dim);"><?= htmlspecialchars($l['url']) ?></div>
                         </div>
                     </div>
