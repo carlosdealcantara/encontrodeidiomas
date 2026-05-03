@@ -2,7 +2,7 @@
 require_once 'config.php';
 require_once 'includes/components.php';
 
-$title          = 'Nossa Equipe';
+$title          = 'Conheça a Equipe';
 $current_page   = 'equipe.php';
 $og_description = 'Conheça a equipe do Encontro de Idiomas - Anfitriões, desenvolvedores e criadores de conteúdo.';
 $canonical      = 'https://encontrodeidiomas.com.br/equipe.php';
@@ -228,7 +228,7 @@ include 'includes/header.php';
 
 <main>
     <div class="container page-wrapper" style="padding: 60px 0;">
-        <h1 class="section-title">Nossa Equipe</h1>
+        <h1 class="section-title">Conheça a Equipe</h1>
         <p class="section-description">Conheça as pessoas incríveis que tornam o Encontro de Idiomas possível!</p>
 
         <!-- Navegação por Categorias -->

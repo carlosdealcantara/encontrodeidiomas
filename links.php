@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-$title          = 'Links Úteis';
+$title          = 'Central de Links';
 $current_page   = 'links.php';
 $og_description = 'Hub de Comunidades do Encontro de Idiomas - Acesse nossos grupos de WhatsApp, cronogramas e recursos exclusivos.';
 $canonical      = SITE_URL . '/links.php';
