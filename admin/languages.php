@@ -14,6 +14,22 @@ $conn = connectDB();
 try {
     $conn->exec("ALTER TABLE languages ADD COLUMN whatsapp_link VARCHAR(255) AFTER active");
     $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link");
+    
+    // Migração inicial do Instagram (se estiver vazio na tabela languages)
+    $stmt = $conn->query("SELECT id FROM languages WHERE instagram_link IS NULL OR instagram_link = '' LIMIT 1");
+    if ($stmt->fetch()) {
+        $conn->exec("
+            UPDATE languages l
+            INNER JOIN (
+                SELECT language_id, MIN(instagram_link) as first_insta
+                FROM meetings
+                WHERE instagram_link IS NOT NULL AND instagram_link != ''
+                GROUP BY language_id
+            ) m ON l.id = m.language_id
+            SET l.instagram_link = m.first_insta
+            WHERE l.instagram_link IS NULL OR l.instagram_link = ''
+        ");
+    }
 } catch (PDOException $e) {}
 
 // Lógica de Salvar em Lote (Bulk Update)
