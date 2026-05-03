@@ -249,13 +249,30 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
 
         function suggestIcon(url) {
             const u = url.toLowerCase();
-            if (u.includes('wa.me') || u.includes('whatsapp')) setIcon('fab fa-whatsapp');
+            const title = document.getElementById('linkTitle').value.toLowerCase();
+            const combined = u + ' ' + title;
+
+            // Prioridade 1: Conteúdo/Tema (Semântica)
+            if (combined.includes('cidade') || combined.includes('local') || combined.includes('presencial')) 
+                setIcon('fas fa-map-marker-alt');
+            else if (combined.includes('idioma') || combined.includes('mundo') || combined.includes('global') || combined.includes('todos')) 
+                setIcon('fas fa-globe-americas');
+            else if (combined.includes('inglês') || combined.includes('english')) 
+                setIcon('fas fa-language');
+            else if (combined.includes('comunidade') || combined.includes('grupo')) 
+                setIcon('fas fa-users');
+            else if (combined.includes('agenda') || combined.includes('calendar') || combined.includes('horário')) 
+                setIcon('fas fa-calendar-days');
+            else if (combined.includes('video') || combined.includes('filme') || combined.includes('assista') || combined.includes('drive.google')) 
+                setIcon('fas fa-video');
+            
+            // Prioridade 2: Plataforma (Se não houver tema forte)
+            else if (u.includes('wa.me') || u.includes('whatsapp')) setIcon('fab fa-whatsapp');
             else if (u.includes('instagram')) setIcon('fab fa-instagram');
             else if (u.includes('tiktok')) setIcon('fab fa-tiktok');
             else if (u.includes('youtube')) setIcon('fab fa-youtube');
             else if (u.includes('discord')) setIcon('fab fa-discord');
-            else if (u.includes('calendar') || u.includes('agenda')) setIcon('fas fa-calendar-days');
-            else if (u.includes('video') || u.includes('drive.google')) setIcon('fas fa-video');
+            else setIcon('fas fa-link');
         }
 
         // Sortable logic
