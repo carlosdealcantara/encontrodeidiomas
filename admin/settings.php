@@ -81,9 +81,9 @@ foreach ($settings as $s) {
         </div>
         <nav class="nav-menu">
             <a href="index.php" class="nav-item">Dashboard</a>
-            <a href="hosts.php" class="nav-item">Anfitriões</a>
-            <a href="meetings.php" class="nav-item">Encontros</a>
-            <a href="useful_links.php" class="nav-item">Central de Links</a>
+            <a href="hosts.php" class="nav-item">Equipe</a>
+            <a href="meetings.php" class="nav-item">Online</a>
+            <a href="useful_links.php" class="nav-item">Links</a>
             <a href="settings.php" class="nav-item active">Configurações</a>
         </nav>
     </aside>

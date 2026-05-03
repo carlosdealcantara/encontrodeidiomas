@@ -3,7 +3,7 @@ require_once 'config.php';
 require_once 'includes/db_online.php';
 require_once 'includes/components.php';
 
-$title          = 'Encontros Online';
+$title          = 'Online';
 $current_page   = 'online.php';
 $og_description = 'Encontro de Idiomas Online - Comunidade gratuita para praticar idiomas via videoconferência.';
 $canonical      = 'https://encontrodeidiomas.com.br/online.php';
@@ -17,7 +17,7 @@ include 'includes/header.php';
 <main>
     <section class="hero">
         <div class="hero-content container">
-            <h1>Encontro de Idiomas Online</h1>
+            <h1>Online</h1>
             <p>Comunidade gratuita para praticar idiomas via videoconferência</p>
             <a href="#calendar" class="hero-button">Ver Programação</a>
         </div>

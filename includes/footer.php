@@ -27,11 +27,11 @@
                     <div class="footer-section">
                         <h3>Navegação</h3>
                         <ul>
-                            <li><a href="index.php">Início</a></li>
-                            <li><a href="online.php">Encontros Online</a></li>
-                             <li><a href="equipe.php">Conheça a Equipe</a></li>
-                             <li><a href="links.php">Central de Links</a></li>
-                            <li><a href="contato.php">Contato</a></li>
+                             <li><a href="index.php">Início</a></li>
+                             <li><a href="online.php">Online</a></li>
+                             <li><a href="equipe.php">Equipe</a></li>
+                             <li><a href="links.php">Links</a></li>
+                             <li><a href="contato.php">Contato</a></li>
                         </ul>
                     </div>
 
