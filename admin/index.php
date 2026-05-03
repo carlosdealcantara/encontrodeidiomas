@@ -10,6 +10,12 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $conn = connectDB();
 
+// REMOÇÃO ÚNICA DE COLUNAS OBSOLETAS
+try {
+    $conn->exec("ALTER TABLE meetings DROP COLUMN whatsapp_group_link");
+    $conn->exec("ALTER TABLE meetings DROP COLUMN instagram_link");
+} catch (PDOException $e) {}
+
 // Estatísticas Rápidas
 $stmt = $conn->query("SELECT COUNT(*) as total FROM hosts");
 $totalHosts = $stmt->fetch()['total'];
