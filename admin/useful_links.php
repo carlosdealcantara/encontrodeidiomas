@@ -73,16 +73,24 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
         .header { margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; }
 
         .form-inline { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; }
-        .form-grid { display: grid; grid-template-columns: 2fr 2fr 1fr 1fr auto; gap: 15px; align-items: end; }
+        .form-grid { display: grid; grid-template-columns: 2fr 2fr 1.5fr auto; gap: 15px; align-items: end; }
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top: 15px; align-items: end; }
 
         .form-group label { display: block; margin-bottom: 8px; font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; }
-        .form-group input { width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: white; outline: none; }
+        .form-group input, .form-group select { width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: white; outline: none; }
 
-        .btn-add { background: var(--accent-red); color: white; border: none; padding: 10px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .icon-picker { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .icon-opt { width: 40px; height: 40px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: var(--text-dim); }
+        .icon-opt:hover, .icon-opt.active { border-color: var(--accent-red); color: white; background: rgba(227, 29, 28, 0.1); }
+
+        .btn-add { background: var(--accent-red); color: white; border: none; padding: 10px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; height: 42px; }
 
         .links-list { display: grid; gap: 15px; }
-        .link-item { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; }
+        .link-item { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; cursor: default; }
+        .link-item.sortable-ghost { opacity: 0.4; background: var(--accent-red); }
+        
         .link-info { display: flex; align-items: center; gap: 15px; }
+        .drag-handle { color: var(--text-dim); cursor: grab; padding: 10px; margin-left: -10px; }
         .link-icon { width: 40px; height: 40px; background: rgba(227, 29, 28, 0.1); color: var(--accent-red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         
         .actions { display: flex; gap: 10px; }
@@ -95,7 +103,7 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: #10b981; /* Green */
+            background: #10b981;
             color: white;
             padding: 15px 25px;
             border-radius: 12px;
@@ -108,10 +116,7 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        #toast.show { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
@@ -133,11 +138,10 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
         <header class="header">
             <div>
                 <h2>Gestão de Links</h2>
-                <p style="color: var(--text-dim);">Adicione ou remova links da página principal de recursos.</p>
+                <p style="color: var(--text-dim);">Arraste para reordenar os links na página principal.</p>
             </div>
         </header>
 
-        <!-- Toast Notification Container -->
         <div id="toast">
             <i class="fas fa-check-circle"></i>
             <span id="toastMsg"></span>
@@ -156,35 +160,46 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
                 </div>
                 <div class="form-group">
                     <label>URL</label>
-                    <input type="url" name="url" id="linkUrl" placeholder="https://..." required>
+                    <input type="url" name="url" id="linkUrl" placeholder="https://..." required oninput="suggestIcon(this.value)">
                 </div>
+                <button type="submit" class="btn-add" id="btnSubmit">Salvar Link</button>
+            </div>
+            
+            <div class="form-row-2">
                 <div class="form-group">
                     <label>Selo (Badge)</label>
                     <input type="text" name="badge" id="linkBadge" placeholder="Ex: Comece por aqui">
                 </div>
                 <div class="form-group">
-                    <label>Ícone (FontAwesome)</label>
-                    <input type="text" name="icon" id="linkIcon" placeholder="fab fa-whatsapp" value="fas fa-link">
-                </div>
-                <div class="form-group">
                     <label>Layout</label>
-                    <select name="layout_type" id="linkLayout" style="width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: white; outline: none;">
+                    <select name="layout_type" id="linkLayout">
                         <option value="standard">Padrão (Linha)</option>
                         <option value="twin">Bloco (Quadrado)</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label title="Números maiores aparecem primeiro no topo">Prioridade</label>
-                    <input type="number" name="order_index" id="linkOrder" value="0">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Ícone (FontAwesome)</label>
+                    <input type="text" name="icon" id="linkIcon" value="fas fa-link">
+                    <div class="icon-picker">
+                        <div class="icon-opt" onclick="setIcon('fab fa-whatsapp')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+                        <div class="icon-opt" onclick="setIcon('fab fa-instagram')" title="Instagram"><i class="fab fa-instagram"></i></div>
+                        <div class="icon-opt" onclick="setIcon('fab fa-tiktok')" title="TikTok"><i class="fab fa-tiktok"></i></div>
+                        <div class="icon-opt" onclick="setIcon('fab fa-youtube')" title="YouTube"><i class="fab fa-youtube"></i></div>
+                        <div class="icon-opt" onclick="setIcon('fab fa-discord')" title="Discord"><i class="fab fa-discord"></i></div>
+                        <div class="icon-opt" onclick="setIcon('fas fa-calendar-days')" title="Agenda"><i class="fas fa-calendar-days"></i></div>
+                        <div class="icon-opt" onclick="setIcon('fas fa-video')" title="Vídeo"><i class="fas fa-video"></i></div>
+                        <div class="icon-opt" onclick="setIcon('fas fa-link')" title="Link Padrão"><i class="fas fa-link"></i></div>
+                    </div>
                 </div>
-                <button type="submit" class="btn-add" id="btnSubmit">Salvar</button>
+                <input type="hidden" name="order_index" id="linkOrder" value="0">
             </div>
         </form>
 
-        <div class="links-list">
+        <div class="links-list" id="sortableList">
             <?php foreach ($links as $l): ?>
-                <div class="link-item">
+                <div class="link-item" data-id="<?= $l['id'] ?>">
                     <div class="link-info">
+                        <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
                         <div class="link-icon"><i class="<?= $l['icon'] ?>"></i></div>
                         <div>
                             <div style="font-weight: 600; display: flex; align-items: center; gap: 10px;">
@@ -205,26 +220,61 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
-        // Check for message in URL
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const msg = urlParams.get('msg');
-            
-            if (msg) {
-                const toast = document.getElementById('toast');
-                const toastMsg = document.getElementById('toastMsg');
-                toastMsg.textContent = msg;
-                toast.classList.add('show');
-                
-                // Hide after 4 seconds
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 4000);
+        // Toast logic
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
 
-                // Clean URL without refreshing
-                const newUrl = window.location.pathname;
-                window.history.replaceState({}, document.title, newUrl);
+        // Check for URL message
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('msg')) {
+                showToast(params.get('msg'));
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+
+        // Icon Picker logic
+        function setIcon(iconClass) {
+            document.getElementById('linkIcon').value = iconClass;
+            document.querySelectorAll('.icon-opt').forEach(opt => {
+                opt.classList.toggle('active', opt.querySelector('i').className === iconClass);
+            });
+        }
+
+        function suggestIcon(url) {
+            const u = url.toLowerCase();
+            if (u.includes('wa.me') || u.includes('whatsapp')) setIcon('fab fa-whatsapp');
+            else if (u.includes('instagram')) setIcon('fab fa-instagram');
+            else if (u.includes('tiktok')) setIcon('fab fa-tiktok');
+            else if (u.includes('youtube')) setIcon('fab fa-youtube');
+            else if (u.includes('discord')) setIcon('fab fa-discord');
+            else if (u.includes('calendar') || u.includes('agenda')) setIcon('fas fa-calendar-days');
+            else if (u.includes('video') || u.includes('drive.google')) setIcon('fas fa-video');
+        }
+
+        // Sortable logic
+        const el = document.getElementById('sortableList');
+        Sortable.create(el, {
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            onEnd: function() {
+                const order = Array.from(el.querySelectorAll('.link-item')).map(item => item.dataset.id);
+                fetch('update_link_order.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order: order })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) showToast('Ordem atualizada com sucesso!');
+                });
             }
         });
 
@@ -237,6 +287,7 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
             document.getElementById('linkIcon').value = link.icon;
             document.getElementById('linkLayout').value = link.layout_type || 'standard';
             document.getElementById('linkOrder').value = link.order_index;
+            setIcon(link.icon);
             document.getElementById('btnSubmit').textContent = 'Salvar Alteração';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
