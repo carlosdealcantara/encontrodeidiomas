@@ -28,6 +28,9 @@ try {
         )
         WHERE (l.instagram_link IS NULL OR l.instagram_link = '')
     ");
+    
+    // Limpeza forçada de qualquer link que já tenha barra (roda uma vez para limpar o que já existe)
+    $conn->exec("UPDATE languages SET instagram_link = TRIM(TRAILING '/' FROM instagram_link), whatsapp_link = TRIM(TRAILING '/' FROM whatsapp_link)");
 } catch (PDOException $e) {}
 
 // Lógica de Salvar em Lote (Bulk Update)
