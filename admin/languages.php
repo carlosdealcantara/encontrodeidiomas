@@ -14,12 +14,12 @@ $conn = connectDB();
 try { $conn->exec("ALTER TABLE languages ADD COLUMN whatsapp_link VARCHAR(255) AFTER active"); } catch (PDOException $e) {}
 try { $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link"); } catch (PDOException $e) {}
 
-// Auto-Migração passo 2: Copia Instagram dos encontros para idiomas (roda sempre)
+// Auto-Migração passo 2: Copia Instagram dos encontros para idiomas (e remove barras finais)
 try {
-    $affected = $conn->exec("
+    $conn->exec("
         UPDATE languages l
         SET l.instagram_link = (
-            SELECT m.instagram_link 
+            SELECT TRIM(TRAILING '/' FROM m.instagram_link)
             FROM meetings m 
             WHERE m.language_id = l.id 
               AND m.instagram_link IS NOT NULL 
@@ -28,12 +28,7 @@ try {
         )
         WHERE (l.instagram_link IS NULL OR l.instagram_link = '')
     ");
-    if ($affected > 0) {
-        $msg = "Migração concluída: $affected links de Instagram importados automaticamente!";
-    }
-} catch (PDOException $e) {
-    $error = "Erro na migração: " . $e->getMessage();
-}
+} catch (PDOException $e) {}
 
 // Lógica de Salvar em Lote (Bulk Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
@@ -45,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
                 $data['name'], 
                 $data['flag_code'], 
                 $data['flag_emoji'], 
-                $data['whatsapp_link'], 
-                $data['instagram_link'], 
+                trim($data['whatsapp_link'], '/ '), 
+                trim($data['instagram_link'], '/ '), 
                 isset($data['active']) ? 1 : 0,
                 $id
             ]);
