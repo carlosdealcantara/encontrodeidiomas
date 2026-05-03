@@ -261,7 +261,7 @@ include 'includes/header.php';
                     <img src="assets/images/hero_contact.png" alt="Fale Conosco" class="hero-image">
                 </div>
                 <h1>Fale Conosco</h1>
-                <p>Tem alguma dúvida ou sugestão? Nossa equipe está pronta para te ouvir e ajudar!</p>
+                <p>Quer tirar dúvidas, dar sugestões ou se juntar ao nosso time de voluntários e anfitriões? Envie sua mensagem!</p>
             </header>
 
             <div class="alert alert-success" id="success-message" role="alert">
@@ -284,7 +284,7 @@ include 'includes/header.php';
                     </div>
                     <div class="form-group">
                         <label for="message">Sua Mensagem</label>
-                        <textarea id="message" name="message" class="form-control" placeholder="Escreva aqui sua dúvida, sugestão ou feedback..." required></textarea>
+                        <textarea id="message" name="message" class="form-control" placeholder="Escreva sua mensagem, dúvida ou conte-nos como gostaria de colaborar..." required></textarea>
                     </div>
                     <button type="submit" class="submit-btn" id="submit-btn">
                         <i class="fas fa-paper-plane"></i> Enviar Mensagem
