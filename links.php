@@ -217,10 +217,6 @@ CSS;
 include 'includes/header.php';
 
 $allLinks = getUsefulLinks();
-
-// Separate twins from standards
-$twins = array_filter($allLinks, function($l) { return $l['layout_type'] === 'twin'; });
-$standards = array_filter($allLinks, function($l) { return $l['layout_type'] !== 'twin'; });
 ?>
 
 <main>
@@ -235,33 +231,33 @@ $standards = array_filter($allLinks, function($l) { return $l['layout_type'] !==
         </header>
 
         <div class="links-wrapper">
-            <!-- Seção de Gêmeos (Sempre no Topo) -->
-            <?php if (!empty($twins)): ?>
-                <div class="section-label">Conheça o Projeto</div>
-                <div class="twin-grid">
-                    <?php 
-                    $stagger = 1;
-                    foreach ($twins as $l) {
-                        renderLinkCard($l, 'twin', 'stagger-' . $stagger);
-                        $stagger = ($stagger % 3) + 1;
-                    }
-                    ?>
-                </div>
-            <?php endif; ?>
-
-            <!-- Seção de Links Padrão -->
-            <?php if (!empty($standards)): ?>
-                <div class="section-label">Recursos e Comunidades</div>
-                <?php 
-                $stagger = 1;
-                foreach ($standards as $l) {
-                    renderLinkCard($l, 'standard', 'stagger-' . $stagger);
-                    $stagger = ($stagger % 3) + 1;
-                }
-                ?>
-            <?php endif; ?>
-            
+            <div class="section-label">Conheça o Projeto</div>
             <?php 
+            $i = 0;
+            $twins_buffer = [];
+            
+            while ($i < count($allLinks)) {
+                $l = $allLinks[$i];
+                
+                if ($l['layout_type'] === 'twin') {
+                    // Start a twin grid for consecutive twins
+                    echo '<div class="twin-grid">';
+                    renderLinkCard($l, 'twin', 'stagger-1');
+                    $i++;
+                    
+                    // Check if next one is also a twin to fill the pair
+                    if ($i < count($allLinks) && $allLinks[$i]['layout_type'] === 'twin') {
+                        renderLinkCard($allLinks[$i], 'twin', 'stagger-1');
+                        $i++;
+                    }
+                    echo '</div>';
+                } else {
+                    // Render standard card
+                    renderLinkCard($l, 'standard', 'stagger-2');
+                    $i++;
+                }
+            }
+            
             function renderLinkCard($link, $type, $animation) {
                 $url = htmlspecialchars($link['url']);
                 $title = htmlspecialchars($link['title']);
