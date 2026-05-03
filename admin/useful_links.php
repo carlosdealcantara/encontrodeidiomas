@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$links = $conn->query("SELECT * FROM useful_links ORDER BY order_index ASC, title ASC")->fetchAll();
+$links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, title ASC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -145,7 +145,7 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index ASC, titl
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Ordem</label>
+                    <label title="Números maiores aparecem primeiro no topo">Prioridade</label>
                     <input type="number" name="order_index" id="linkOrder" value="0">
                 </div>
                 <button type="submit" class="btn-add" id="btnSubmit">Salvar</button>
