@@ -145,32 +145,7 @@ $page_styles = <<<CSS
         display: block;
     }
 
-    /* Featured Link Style */
-    .link-featured {
-        background: var(--accent-gradient);
-        color: var(--white);
-        padding: 22px;
-        border: none;
-    }
-    .link-featured .title { font-size: 1.2rem; }
-    .link-featured .subtitle { color: rgba(255,255,255,0.85); font-weight: 500; }
-    .link-featured .icon-box { background: rgba(255,255,255,0.2); color: var(--white); }
-    
-    .badge-top {
-        position: absolute;
-        top: 0;
-        right: 0;
-        background: var(--accent-yellow);
-        color: var(--primary-color);
-        padding: 4px 12px;
-        font-size: 0.7rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        border-bottom-left-radius: 12px;
-        box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
-    }
-
-    /* Grid for Twins (Cronograma & Video) */
+    /* Twins Layout (Strictly Squares) */
     .twin-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -181,13 +156,36 @@ $page_styles = <<<CSS
     .twin-grid .link-card {
         flex-direction: column;
         text-align: center;
-        padding: 18px 10px;
+        padding: 25px 15px;
         margin-bottom: 0;
+        min-height: 180px;
         justify-content: center;
     }
 
     .twin-grid .icon-box {
-        margin: 0 auto 10px;
+        margin: 0 auto 15px;
+        width: 55px;
+        height: 55px;
+        font-size: 1.6rem;
+    }
+
+    .twin-grid .title {
+        font-size: 1.1rem;
+        line-height: 1.3;
+    }
+    
+    .badge-top {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: var(--accent-yellow);
+        color: var(--primary-color);
+        padding: 4px 10px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        border-bottom-left-radius: 12px;
+        box-shadow: -2px 2px 5px rgba(0,0,0,0.05);
     }
 
     /* Animations */
@@ -208,51 +206,43 @@ $page_styles = <<<CSS
     @media (max-width: 480px) {
         .hero-header h1 { font-size: 1.7rem; }
         .twin-grid { grid-template-columns: 1fr; }
+        .twin-grid .link-card { min-height: auto; padding: 20px; }
     }
 CSS;
 
 include 'includes/header.php';
 
-// Safe Fetch - ensuring we categorize ALL links correctly
+// Safe Fetch and Categorization
 $allLinks = getUsefulLinks();
-
-// Temporary arrays to hold categorized links
-$heroLink = null;
-$twinLinks = []; // Cronograma (2) and Video (5)
-$communityLinks = []; // English (3) and Others (4)
-$footerLink = null; // Main structure (6)
+$onlineLink = null;
+$presencialLink = null;
+$cronogramaLink = null;
+$communityLinks = [];
+$structureLink = null;
 
 foreach ($allLinks as $l) {
     $t = mb_strtolower($l['title']);
     
-    // Link 1: Atalho Grupão (Featured)
+    // Online (Link 1)
     if (strpos($t, 'grupão') !== false || strpos($t, 'entrada') !== false) {
-        // We might have Link 1 and Link 6 both matching "entrada"
-        // Link 1 is usually the "shortcut", Link 6 is the "community"
-        if (strpos($t, 'atalho') !== false || strpos($t, 'início') !== false || !$heroLink) {
-             if (!$heroLink) $heroLink = $l; else $footerLink = $l;
-        } else {
-             $footerLink = $l;
-        }
+        if (!$onlineLink) $onlineLink = $l; else $structureLink = $l;
     } 
-    // Link 2 & 5: Twins (Cronograma & Video)
-    elseif (strpos($t, 'cronograma') !== false || strpos($t, 'vídeo') !== false || strpos($t, 'funcionam') !== false) {
-        $twinLinks[] = $l;
+    // Cronograma (Link 2)
+    elseif (strpos($t, 'cronograma') !== false) {
+        $cronogramaLink = $l;
     }
-    // Link 3 & 4: Communities (Inglês & Outros)
+    // Presencial (Link 5)
+    elseif (strpos($t, 'vídeo') !== false || strpos($t, 'funcionam') !== false) {
+        $presencialLink = $l;
+    }
+    // Communities (3 & 4)
     elseif (strpos($t, 'inglês') !== false || strpos($t, 'outros') !== false || strpos($t, 'demais') !== false || strpos($t, 'idiomas') !== false) {
         $communityLinks[] = $l;
     }
-    // Catch-all/Link 6
+    // Catch-all
     else {
-        if (!$footerLink) $footerLink = $l; else $communityLinks[] = $l;
+        if (!$structureLink) $structureLink = $l; else $communityLinks[] = $l;
     }
-}
-
-// Special case: If user says Link 1 is "Online comece por aqui", let's ensure it has that label
-if ($heroLink) {
-    $heroLink['subtitle'] = "Atalho direto para o Grupão de Entrada";
-    $heroLink['badge'] = "Comece por aqui";
 }
 ?>
 
@@ -267,51 +257,63 @@ if ($heroLink) {
             <p>Conecte-se com o mundo através dos nossos grupos e recursos.</p>
         </header>
 
-        <!-- Seção 1: Destaque Principal -->
-        <?php if ($heroLink): ?>
-            <div class="section-label">Acesso Imediato</div>
-            <a href="<?= htmlspecialchars($heroLink['url']) ?>" class="link-card link-featured stagger-1" target="_blank">
-                <div class="badge-top"><?= $heroLink['badge'] ?? 'Destaque' ?></div>
+        <!-- Seção 1: Entenda o Projeto (Os Gêmeos) -->
+        <div class="section-label">Entenda o Projeto</div>
+        <div class="twin-grid">
+            <!-- Gêmeo A: Online -->
+            <?php if ($onlineLink): ?>
+                <a href="<?= htmlspecialchars($onlineLink['url']) ?>" class="link-card stagger-1" target="_blank">
+                    <div class="badge-top">Comece por aqui</div>
+                    <div class="icon-box">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="content">
+                        <span class="title">Online – Encontros Virtuais</span>
+                        <span class="subtitle" style="font-size: 0.7rem;">Clique para entrar</span>
+                    </div>
+                </a>
+            <?php endif; ?>
+
+            <!-- Gêmeo B: Presencial -->
+            <?php if ($presencialLink): ?>
+                <a href="<?= htmlspecialchars($presencialLink['url']) ?>" class="link-card stagger-1" target="_blank">
+                    <div class="icon-box">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <div class="content">
+                        <span class="title">Presencial – Vídeo de Apresentação</span>
+                        <span class="subtitle" style="font-size: 0.7rem;">Assista agora</span>
+                    </div>
+                </a>
+            <?php endif; ?>
+        </div>
+
+        <!-- Seção 2: Programação Atual -->
+        <?php if ($cronogramaLink): ?>
+            <div class="section-label">Programação</div>
+            <a href="<?= htmlspecialchars($cronogramaLink['url']) ?>" class="link-card stagger-2" target="_blank">
                 <div class="icon-box">
-                    <i class="fab fa-whatsapp"></i>
+                    <i class="fas fa-calendar-days"></i>
                 </div>
                 <div class="content">
-                    <span class="title"><?= htmlspecialchars($heroLink['title']) ?></span>
-                    <span class="subtitle"><?= htmlspecialchars($heroLink['subtitle']) ?></span>
+                    <span class="title"><?= htmlspecialchars($cronogramaLink['title']) ?></span>
+                    <span class="subtitle">Confira os dias e horários atuais</span>
                 </div>
                 <i class="fas fa-chevron-right"></i>
             </a>
         <?php endif; ?>
 
-        <!-- Seção 2: Gêmeos (Cronograma & Vídeo) -->
-        <?php if (!empty($twinLinks)): ?>
-            <div class="section-label">Entenda o Projeto</div>
-            <div class="twin-grid">
-                <?php foreach ($twinLinks as $idx => $tl): ?>
-                    <a href="<?= htmlspecialchars($tl['url']) ?>" class="link-card stagger-2" target="_blank">
-                        <div class="icon-box">
-                            <i class="<?= (strpos(mb_strtolower($tl['title']), 'vídeo') !== false || strpos(mb_strtolower($tl['title']), 'funcionam') !== false) ? 'fas fa-play' : 'fas fa-calendar-days' ?>"></i>
-                        </div>
-                        <div class="content">
-                            <span class="title"><?= htmlspecialchars($tl['title']) ?></span>
-                            <span class="subtitle" style="font-size: 0.7rem;">Clique para ver</span>
-                        </div>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-
         <!-- Seção 3: Comunidades por Idioma -->
         <?php if (!empty($communityLinks)): ?>
             <div class="section-label">Pratique um Idioma</div>
-            <?php foreach ($communityLinks as $idx => $cl): ?>
+            <?php foreach ($communityLinks as $cl): ?>
                 <a href="<?= htmlspecialchars($cl['url']) ?>" class="link-card stagger-3" target="_blank">
                     <div class="icon-box">
                         <i class="<?= strpos(mb_strtolower($cl['title']), 'inglês') !== false ? 'fas fa-flag-usa' : 'fas fa-globe' ?>"></i>
                     </div>
                     <div class="content">
                         <span class="title"><?= htmlspecialchars($cl['title']) ?></span>
-                        <span class="subtitle"><?= strpos(mb_strtolower($cl['title']), 'inglês') !== false ? 'O maior grupo do projeto' : 'Italiano, Francês, Alemão e +50' ?></span>
+                        <span class="subtitle"><?= strpos(mb_strtolower($cl['title']), 'inglês') !== false ? 'O maior grupo do projeto' : 'Comunidade com diversos idiomas' ?></span>
                     </div>
                     <i class="fas fa-chevron-right"></i>
                 </a>
@@ -319,14 +321,14 @@ if ($heroLink) {
         <?php endif; ?>
 
         <!-- Seção 4: Estrutura Completa -->
-        <?php if ($footerLink): ?>
+        <?php if ($structureLink): ?>
             <div class="section-label">Nossa Estrutura</div>
-            <a href="<?= htmlspecialchars($footerLink['url']) ?>" class="link-card" target="_blank">
+            <a href="<?= htmlspecialchars($structureLink['url']) ?>" class="link-card" target="_blank">
                 <div class="icon-box">
                     <i class="fas fa-sitemap"></i>
                 </div>
                 <div class="content">
-                    <span class="title"><?= htmlspecialchars($footerLink['title']) ?></span>
+                    <span class="title"><?= htmlspecialchars($structureLink['title']) ?></span>
                     <span class="subtitle">Comunidade principal e grupos regionais</span>
                 </div>
                 <i class="fas fa-chevron-right"></i>
