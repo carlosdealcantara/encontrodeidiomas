@@ -104,9 +104,9 @@ function getMeetings(): array {
                 COALESCE(h.profile_picture, h_auto.profile_picture) AS host_photo
             FROM meetings m
             JOIN languages l ON m.language_id = l.id
-            LEFT JOIN hosts h ON m.host_id = h.id
+            LEFT JOIN hosts h ON (m.host_id = h.id AND h.status = 'ativo')
             LEFT JOIN hosts h_auto ON (
-                m.host_id IS NULL 
+                h.id IS NULL 
                 AND h_auto.status = 'ativo' 
                 AND h_auto.category LIKE '%Online%'
                 AND h_auto.languages LIKE CONCAT('%', l.name, '%')
