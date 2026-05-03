@@ -83,6 +83,7 @@ foreach ($settings as $s) {
             <a href="index.php" class="nav-item">Dashboard</a>
             <a href="hosts.php" class="nav-item">Equipe</a>
             <a href="meetings.php" class="nav-item">Online</a>
+            <a href="languages.php" class="nav-item">Idiomas</a>
             <a href="useful_links.php" class="nav-item">Links</a>
             <a href="settings.php" class="nav-item active">Configurações</a>
         </nav>

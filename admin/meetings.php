@@ -140,6 +140,9 @@ function getDayLabel($day) {
             <a href="meetings.php" class="nav-item active">
                 <i class="fas fa-calendar-alt"></i> Online
             </a>
+            <a href="languages.php" class="nav-item">
+                <i class="fas fa-language"></i> Idiomas
+            </a>
             <a href="useful_links.php" class="nav-item">
                 <i class="fas fa-link"></i> Links
             </a>

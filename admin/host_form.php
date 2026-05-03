@@ -243,6 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <nav>
             <a href="index.php" style="color: var(--text-dim); text-decoration: none; display: block; padding: 10px 0;"><i class="fas fa-chart-pie"></i> Dashboard</a>
             <a href="hosts.php" style="color: white; text-decoration: none; display: block; padding: 10px 0;"><i class="fas fa-users"></i> Anfitriões</a>
+            <a href="languages.php" style="color: var(--text-dim); text-decoration: none; display: block; padding: 10px 0;"><i class="fas fa-language"></i> Idiomas</a>
             <a href="logout.php" style="color: #ff6b6b; text-decoration: none; display: block; padding: 10px 0; margin-top: 50px;"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </nav>
     </aside>
