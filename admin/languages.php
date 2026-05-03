@@ -10,28 +10,12 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $conn = connectDB();
 
-// Auto-Migração passo 1: Tenta criar colunas (silencioso se já existirem)
+// Auto-Migração: Tenta criar colunas (silencioso se já existirem)
 try { $conn->exec("ALTER TABLE languages ADD COLUMN whatsapp_link VARCHAR(255) AFTER active"); } catch (PDOException $e) {}
 try { $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link"); } catch (PDOException $e) {}
 
-// Auto-Migração passo 2: Copia Instagram dos encontros para idiomas (e remove barras finais)
-try {
-    $conn->exec("
-        UPDATE languages l
-        SET l.instagram_link = (
-            SELECT TRIM(TRAILING '/' FROM m.instagram_link)
-            FROM meetings m 
-            WHERE m.language_id = l.id 
-              AND m.instagram_link IS NOT NULL 
-              AND m.instagram_link != '' 
-            LIMIT 1
-        )
-        WHERE (l.instagram_link IS NULL OR l.instagram_link = '')
-    ");
-    
-    // Limpeza forçada de qualquer link que já tenha barra (roda uma vez para limpar o que já existe)
-    $conn->exec("UPDATE languages SET instagram_link = TRIM(TRAILING '/' FROM instagram_link), whatsapp_link = TRIM(TRAILING '/' FROM whatsapp_link)");
-} catch (PDOException $e) {}
+// Limpeza de barras finais
+try { $conn->exec("UPDATE languages SET instagram_link = TRIM(TRAILING '/' FROM instagram_link), whatsapp_link = TRIM(TRAILING '/' FROM whatsapp_link)"); } catch (PDOException $e) {}
 
 // Lógica de Salvar em Lote (Bulk Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {

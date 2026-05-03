@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS meetings (
     description TEXT,
     meet_link VARCHAR(255),
     replay_link VARCHAR(255),
-    whatsapp_group_link VARCHAR(255),
     active TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (language_id) REFERENCES languages(id),
