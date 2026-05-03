@@ -89,6 +89,29 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
         .action-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); width: 35px; height: 35px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .action-btn:hover { color: white; border-color: white; }
         .btn-del:hover { color: #ef4444; border-color: #ef4444; }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #10b981; /* Green */
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -113,6 +136,12 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
                 <p style="color: var(--text-dim);">Adicione ou remova links da página principal de recursos.</p>
             </div>
         </header>
+
+        <!-- Toast Notification Container -->
+        <div id="toast">
+            <i class="fas fa-check-circle"></i>
+            <span id="toastMsg"></span>
+        </div>
 
         <form method="POST" class="form-inline">
             <input type="hidden" name="id" id="linkId" value="0">
@@ -177,6 +206,28 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
     </main>
 
     <script>
+        // Check for message in URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const msg = urlParams.get('msg');
+            
+            if (msg) {
+                const toast = document.getElementById('toast');
+                const toastMsg = document.getElementById('toastMsg');
+                toastMsg.textContent = msg;
+                toast.classList.add('show');
+                
+                // Hide after 4 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4000);
+
+                // Clean URL without refreshing
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        });
+
         function editLink(link) {
             document.getElementById('linkId').value = link.id;
             document.getElementById('linkTitle').value = link.title;
