@@ -212,38 +212,24 @@ CSS;
 
 include 'includes/header.php';
 
-// Safe Fetch and Categorization
+// Categorization by ID (robust, no title matching)
+// ID 1: Online - Grupo com os Encontros de Todos os Idiomas
+// ID 2: Online - Agenda dos Encontros
+// ID 3: Inglês - Comunidade
+// ID 4: Todos os Outros Idiomas - Comunidade
+// ID 5: Presencial - Vídeo de Apresentação
+// ID 6: Presencial na Sua Cidade - Comunidade
 $allLinks = getUsefulLinks();
-$onlineLink = null;
-$presencialLink = null;
-$cronogramaLink = null;
-$communityLinks = [];
-$structureLink = null;
-
+$linksById = [];
 foreach ($allLinks as $l) {
-    $t = mb_strtolower($l['title']);
-    
-    // Online (Link 1)
-    if (strpos($t, 'grupão') !== false || strpos($t, 'entrada') !== false) {
-        if (!$onlineLink) $onlineLink = $l; else $structureLink = $l;
-    } 
-    // Cronograma (Link 2)
-    elseif (strpos($t, 'cronograma') !== false) {
-        $cronogramaLink = $l;
-    }
-    // Presencial (Link 5)
-    elseif (strpos($t, 'vídeo') !== false || strpos($t, 'funcionam') !== false) {
-        $presencialLink = $l;
-    }
-    // Communities (3 & 4)
-    elseif (strpos($t, 'inglês') !== false || strpos($t, 'outros') !== false || strpos($t, 'demais') !== false || strpos($t, 'idiomas') !== false) {
-        $communityLinks[] = $l;
-    }
-    // Catch-all
-    else {
-        if (!$structureLink) $structureLink = $l; else $communityLinks[] = $l;
-    }
+    $linksById[$l['id']] = $l;
 }
+
+$onlineLink     = $linksById[1] ?? null; // twin A: Grupo de entrada online
+$cronogramaLink = $linksById[2] ?? null; // Agenda dos encontros
+$communityLinks = array_filter([$linksById[3] ?? null, $linksById[4] ?? null]); // Inglês + Outros
+$presencialLink = $linksById[5] ?? null; // twin B: Vídeo presencial
+$structureLink  = $linksById[6] ?? null; // Comunidade regiões
 ?>
 
 <main>
@@ -257,10 +243,10 @@ foreach ($allLinks as $l) {
             <p>Conecte-se com o mundo através dos nossos grupos e recursos.</p>
         </header>
 
-        <!-- Seção 1: Entenda o Projeto (Os Gêmeos) -->
+        <!-- Seção 1: Entenda o Projeto (Os Gêmeos Idênticos) -->
         <div class="section-label">Entenda o Projeto</div>
         <div class="twin-grid">
-            <!-- Gêmeo A: Online -->
+            <!-- Gêmeo A: Online (com badge) -->
             <?php if ($onlineLink): ?>
                 <a href="<?= htmlspecialchars($onlineLink['url']) ?>" class="link-card stagger-1" target="_blank">
                     <div class="badge-top">Comece por aqui</div>
@@ -268,20 +254,20 @@ foreach ($allLinks as $l) {
                         <i class="fas fa-headset"></i>
                     </div>
                     <div class="content">
-                        <span class="title">Online – Encontros Virtuais</span>
+                        <span class="title"><?= htmlspecialchars($onlineLink['title']) ?></span>
                         <span class="subtitle" style="font-size: 0.7rem;">Clique para entrar</span>
                     </div>
                 </a>
             <?php endif; ?>
 
-            <!-- Gêmeo B: Presencial -->
+            <!-- Gêmeo B: Presencial (idêntico ao A) -->
             <?php if ($presencialLink): ?>
                 <a href="<?= htmlspecialchars($presencialLink['url']) ?>" class="link-card stagger-1" target="_blank">
                     <div class="icon-box">
                         <i class="fas fa-play"></i>
                     </div>
                     <div class="content">
-                        <span class="title">Presencial – Vídeo de Apresentação</span>
+                        <span class="title"><?= htmlspecialchars($presencialLink['title']) ?></span>
                         <span class="subtitle" style="font-size: 0.7rem;">Assista agora</span>
                     </div>
                 </a>
