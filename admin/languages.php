@@ -16,7 +16,7 @@ try {
     $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link");
     
     // Migração inicial do Instagram (se estiver vazio na tabela languages)
-    $conn->exec("
+    $affected = $conn->exec("
         UPDATE languages l
         SET l.instagram_link = (
             SELECT m.instagram_link 
@@ -28,6 +28,9 @@ try {
         )
         WHERE (l.instagram_link IS NULL OR l.instagram_link = '')
     ");
+    if ($affected > 0) {
+        $msg = "Migração concluída: $affected links de Instagram foram trazidos para esta tabela!";
+    }
 } catch (PDOException $e) {}
 
 // Lógica de Salvar em Lote (Bulk Update)
