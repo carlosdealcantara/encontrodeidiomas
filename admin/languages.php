@@ -10,17 +10,12 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $conn = connectDB();
 
-// Auto-Migração: Garante que as colunas existam
-try {
-    $conn->exec("ALTER TABLE languages ADD COLUMN whatsapp_link VARCHAR(255) AFTER active");
-    $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link");
-    
-    // Debug: Conta encontros
-    $totalMeetings = $conn->query("SELECT COUNT(*) FROM meetings")->fetchColumn();
-    $withInsta = $conn->query("SELECT COUNT(*) FROM meetings WHERE instagram_link IS NOT NULL AND instagram_link != ''")->fetchColumn();
-    $msg = "Debug: Total de encontros: $totalMeetings | Com Instagram: $withInsta";
+// Auto-Migração passo 1: Tenta criar colunas (silencioso se já existirem)
+try { $conn->exec("ALTER TABLE languages ADD COLUMN whatsapp_link VARCHAR(255) AFTER active"); } catch (PDOException $e) {}
+try { $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link"); } catch (PDOException $e) {}
 
-    // Migração inicial do Instagram (se estiver vazio na tabela languages)
+// Auto-Migração passo 2: Copia Instagram dos encontros para idiomas (roda sempre)
+try {
     $affected = $conn->exec("
         UPDATE languages l
         SET l.instagram_link = (
@@ -34,9 +29,11 @@ try {
         WHERE (l.instagram_link IS NULL OR l.instagram_link = '')
     ");
     if ($affected > 0) {
-        $msg .= " | Migração realizada: $affected links!";
+        $msg = "Migração concluída: $affected links de Instagram importados automaticamente!";
     }
-} catch (PDOException $e) {}
+} catch (PDOException $e) {
+    $error = "Erro na migração: " . $e->getMessage();
+}
 
 // Lógica de Salvar em Lote (Bulk Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
