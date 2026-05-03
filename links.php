@@ -212,24 +212,7 @@ CSS;
 
 include 'includes/header.php';
 
-// Categorization by ID (robust, no title matching)
-// ID 1: Online - Grupo com os Encontros de Todos os Idiomas
-// ID 2: Online - Agenda dos Encontros
-// ID 3: Inglês - Comunidade
-// ID 4: Todos os Outros Idiomas - Comunidade
-// ID 5: Presencial - Vídeo de Apresentação
-// ID 6: Presencial na Sua Cidade - Comunidade
 $allLinks = getUsefulLinks();
-$linksById = [];
-foreach ($allLinks as $l) {
-    $linksById[$l['id']] = $l;
-}
-
-$onlineLink     = $linksById[1] ?? null; // twin A: Grupo de entrada online
-$cronogramaLink = $linksById[2] ?? null; // Agenda dos encontros
-$communityLinks = array_filter([$linksById[3] ?? null, $linksById[4] ?? null]); // Inglês + Outros
-$presencialLink = $linksById[5] ?? null; // twin B: Vídeo presencial
-$structureLink  = $linksById[6] ?? null; // Comunidade regiões
 ?>
 
 <main>
@@ -243,83 +226,68 @@ $structureLink  = $linksById[6] ?? null; // Comunidade regiões
             <p>Conecte-se com o mundo através dos nossos grupos e recursos.</p>
         </header>
 
-        <!-- Seção 1: Entenda o Projeto (Os Gêmeos Idênticos) -->
-        <div class="section-label">Entenda o Projeto</div>
-        <div class="twin-grid">
-            <!-- Gêmeo A: Online (com badge) -->
-            <?php if ($onlineLink): ?>
-                <a href="<?= htmlspecialchars($onlineLink['url']) ?>" class="link-card stagger-1" target="_blank">
-                    <div class="badge-top">Comece por aqui</div>
-                    <div class="icon-box">
-                        <i class="fas fa-headset"></i>
-                    </div>
-                    <div class="content">
-                        <span class="title"><?= htmlspecialchars($onlineLink['title']) ?></span>
-                        <span class="subtitle" style="font-size: 0.7rem;">Clique para entrar</span>
-                    </div>
-                </a>
-            <?php endif; ?>
-
-            <!-- Gêmeo B: Presencial (idêntico ao A) -->
-            <?php if ($presencialLink): ?>
-                <a href="<?= htmlspecialchars($presencialLink['url']) ?>" class="link-card stagger-1" target="_blank">
-                    <div class="icon-box">
-                        <i class="fas fa-play"></i>
-                    </div>
-                    <div class="content">
-                        <span class="title"><?= htmlspecialchars($presencialLink['title']) ?></span>
-                        <span class="subtitle" style="font-size: 0.7rem;">Assista agora</span>
-                    </div>
-                </a>
-            <?php endif; ?>
+        <div class="links-wrapper">
+            <?php 
+            $i = 0;
+            while ($i < count($allLinks)): 
+                $l = $allLinks[$i];
+                
+                if ($l['layout_type'] === 'twin'): 
+                    // Start a twin grid
+                    echo '<div class="twin-grid">';
+                    
+                    // Render first twin
+                    renderLinkCard($l, 'twin', 'stagger-1');
+                    $i++;
+                    
+                    // Check if next one is also twin
+                    if ($i < count($allLinks) && $allLinks[$i]['layout_type'] === 'twin') {
+                        renderLinkCard($allLinks[$i], 'twin', 'stagger-1');
+                        $i++;
+                    }
+                    
+                    echo '</div>';
+                else:
+                    // Render standard card
+                    renderLinkCard($l, 'standard', 'stagger-2');
+                    $i++;
+                endif;
+            endwhile; 
+            
+            function renderLinkCard($link, $type, $animation) {
+                $url = htmlspecialchars($link['url']);
+                $title = htmlspecialchars($link['title']);
+                $subtitle = htmlspecialchars($link['subtitle'] ?? '');
+                $badge = htmlspecialchars($link['badge'] ?? '');
+                $icon = htmlspecialchars($link['icon'] ?? 'fas fa-link');
+                
+                if ($type === 'twin'): ?>
+                    <a href="<?= $url ?>" class="link-card <?= $animation ?>" target="_blank">
+                        <?php if ($badge): ?><div class="badge-top"><?= $badge ?></div><?php endif; ?>
+                        <div class="icon-box">
+                            <i class="<?= $icon ?>"></i>
+                        </div>
+                        <div class="content">
+                            <span class="title"><?= $title ?></span>
+                            <?php if ($subtitle): ?><span class="subtitle" style="font-size: 0.7rem;"><?= $subtitle ?></span><?php endif; ?>
+                        </div>
+                    </a>
+                <?php else: ?>
+                    <a href="<?= $url ?>" class="link-card <?= $animation ?>" target="_blank">
+                        <?php if ($badge): ?><div class="badge-top"><?= $badge ?></div><?php endif; ?>
+                        <div class="icon-box">
+                            <i class="<?= $icon ?>"></i>
+                        </div>
+                        <div class="content">
+                            <span class="title"><?= $title ?></span>
+                            <?php if ($subtitle): ?><span class="subtitle"><?= $subtitle ?></span><?php endif; ?>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                <?php endif;
+            }
+            ?>
         </div>
-
-        <!-- Seção 2: Programação Atual -->
-        <?php if ($cronogramaLink): ?>
-            <div class="section-label">Programação</div>
-            <a href="<?= htmlspecialchars($cronogramaLink['url']) ?>" class="link-card stagger-2" target="_blank">
-                <div class="icon-box">
-                    <i class="fas fa-calendar-days"></i>
-                </div>
-                <div class="content">
-                    <span class="title"><?= htmlspecialchars($cronogramaLink['title']) ?></span>
-                    <span class="subtitle">Confira os dias e horários atuais</span>
-                </div>
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        <?php endif; ?>
-
-        <!-- Seção 3: Comunidades por Idioma -->
-        <?php if (!empty($communityLinks)): ?>
-            <div class="section-label">Pratique um Idioma</div>
-            <?php foreach ($communityLinks as $cl): ?>
-                <a href="<?= htmlspecialchars($cl['url']) ?>" class="link-card stagger-3" target="_blank">
-                    <div class="icon-box">
-                        <i class="<?= strpos(mb_strtolower($cl['title']), 'inglês') !== false ? 'fas fa-flag-usa' : 'fas fa-globe' ?>"></i>
-                    </div>
-                    <div class="content">
-                        <span class="title"><?= htmlspecialchars($cl['title']) ?></span>
-                        <span class="subtitle"><?= strpos(mb_strtolower($cl['title']), 'inglês') !== false ? 'O maior grupo do projeto' : 'Comunidade com diversos idiomas' ?></span>
-                    </div>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-            <?php endforeach; ?>
-        <?php endif; ?>
-
-        <!-- Seção 4: Estrutura Completa -->
-        <?php if ($structureLink): ?>
-            <div class="section-label">Nossa Estrutura</div>
-            <a href="<?= htmlspecialchars($structureLink['url']) ?>" class="link-card" target="_blank">
-                <div class="icon-box">
-                    <i class="fas fa-sitemap"></i>
-                </div>
-                <div class="content">
-                    <span class="title"><?= htmlspecialchars($structureLink['title']) ?></span>
-                    <span class="subtitle">Comunidade principal e grupos regionais</span>
-                </div>
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        <?php endif; ?>
 
         <!-- Rodapé Social -->
         <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: center; gap: 25px;">

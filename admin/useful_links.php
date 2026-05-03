@@ -21,18 +21,21 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
 
 // Lógica de salvamento (Novo/Editar)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = $_POST['title'];
-    $url   = $_POST['url'];
-    $icon  = $_POST['icon'];
-    $order = (int)$_POST['order_index'];
-    $id    = (int)$_POST['id'];
+    $title    = $_POST['title'];
+    $url      = $_POST['url'];
+    $subtitle = $_POST['subtitle'];
+    $badge    = $_POST['badge'];
+    $icon     = $_POST['icon'];
+    $layout   = $_POST['layout_type'];
+    $order    = (int)$_POST['order_index'];
+    $id       = (int)$_POST['id'];
 
     if ($id > 0) {
-        $stmt = $conn->prepare("UPDATE useful_links SET title = ?, url = ?, icon = ?, order_index = ? WHERE id = ?");
-        $stmt->execute([$title, $url, $icon, $order, $id]);
+        $stmt = $conn->prepare("UPDATE useful_links SET title = ?, url = ?, subtitle = ?, badge = ?, icon = ?, layout_type = ?, order_index = ? WHERE id = ?");
+        $stmt->execute([$title, $url, $subtitle, $badge, $icon, $layout, $order, $id]);
     } else {
-        $stmt = $conn->prepare("INSERT INTO useful_links (title, url, icon, order_index) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$title, $url, $icon, $order]);
+        $stmt = $conn->prepare("INSERT INTO useful_links (title, url, subtitle, badge, icon, layout_type, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $url, $subtitle, $badge, $icon, $layout, $order]);
     }
     header('Location: useful_links.php?msg=Link salvo com sucesso');
     exit;
@@ -119,18 +122,33 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index ASC, titl
                     <input type="text" name="title" id="linkTitle" placeholder="Ex: Grupo WhatsApp" required>
                 </div>
                 <div class="form-group">
+                    <label>Descrição (Subtitle)</label>
+                    <input type="text" name="subtitle" id="linkSubtitle" placeholder="Ex: O maior grupo do projeto">
+                </div>
+                <div class="form-group">
                     <label>URL</label>
                     <input type="url" name="url" id="linkUrl" placeholder="https://..." required>
+                </div>
+                <div class="form-group">
+                    <label>Selo (Badge)</label>
+                    <input type="text" name="badge" id="linkBadge" placeholder="Ex: Comece por aqui">
                 </div>
                 <div class="form-group">
                     <label>Ícone (FontAwesome)</label>
                     <input type="text" name="icon" id="linkIcon" placeholder="fab fa-whatsapp" value="fas fa-link">
                 </div>
                 <div class="form-group">
+                    <label>Layout</label>
+                    <select name="layout_type" id="linkLayout" style="width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: white; outline: none;">
+                        <option value="standard">Padrão (Lista)</option>
+                        <option value="twin">Gêmeo (Quadrado)</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Ordem</label>
                     <input type="number" name="order_index" id="linkOrder" value="0">
                 </div>
-                <button type="submit" class="btn-add" id="btnSubmit">Adicionar</button>
+                <button type="submit" class="btn-add" id="btnSubmit">Salvar</button>
             </div>
         </form>
 
@@ -157,8 +175,11 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index ASC, titl
         function editLink(link) {
             document.getElementById('linkId').value = link.id;
             document.getElementById('linkTitle').value = link.title;
+            document.getElementById('linkSubtitle').value = link.subtitle || '';
             document.getElementById('linkUrl').value = link.url;
+            document.getElementById('linkBadge').value = link.badge || '';
             document.getElementById('linkIcon').value = link.icon;
+            document.getElementById('linkLayout').value = link.layout_type || 'standard';
             document.getElementById('linkOrder').value = link.order_index;
             document.getElementById('btnSubmit').textContent = 'Salvar Alteração';
             window.scrollTo({ top: 0, behavior: 'smooth' });
