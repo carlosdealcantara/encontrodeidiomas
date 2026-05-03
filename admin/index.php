@@ -186,6 +186,9 @@ $currentHour = (int)date('H');
             <a href="meetings.php" class="nav-item">
                 <i class="fas fa-calendar-alt"></i> Online
             </a>
+            <a href="presencial.php" class="nav-item">
+                <i class="fas fa-map-marker-alt"></i> Presencial
+            </a>
             <a href="languages.php" class="nav-item">
                 <i class="fas fa-language"></i> Idiomas
             </a>

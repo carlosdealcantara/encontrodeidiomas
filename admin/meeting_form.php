@@ -135,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="index.php" class="nav-item">Dashboard</a>
             <a href="hosts.php" class="nav-item">Anfitriões</a>
             <a href="meetings.php" class="nav-item active">Encontros</a>
+            <a href="presencial.php" class="nav-item"><i class="fas fa-map-marker-alt"></i> Presencial</a>
             <a href="languages.php" class="nav-item">Idiomas</a>
             <a href="settings.php" class="nav-item">Configurações</a>
         </nav>

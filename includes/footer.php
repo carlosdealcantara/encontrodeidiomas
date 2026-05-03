@@ -29,6 +29,7 @@
                         <ul>
                              <li><a href="index.php">Início</a></li>
                              <li><a href="online.php">Online</a></li>
+                             <li><a href="presencial.php">Presencial</a></li>
                              <li><a href="equipe.php">Equipe</a></li>
                              <li><a href="links.php">Links</a></li>
                              <li><a href="contato.php">Contato</a></li>

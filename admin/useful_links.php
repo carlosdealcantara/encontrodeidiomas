@@ -129,6 +129,7 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
             <a href="index.php" class="nav-item">Dashboard</a>
             <a href="hosts.php" class="nav-item">Equipe</a>
             <a href="meetings.php" class="nav-item">Online</a>
+            <a href="presencial.php" class="nav-item"><i class="fas fa-map-marker-alt"></i> Presencial</a>
             <a href="languages.php" class="nav-item">Idiomas</a>
             <a href="useful_links.php" class="nav-item active">Links</a>
             <a href="settings.php" class="nav-item">Configurações</a>
