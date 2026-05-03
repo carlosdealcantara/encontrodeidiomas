@@ -72,13 +72,15 @@ $page_styles = <<<CSS
         font-weight: 700;
         text-transform: uppercase;
         color: #999;
-        margin: 25px 0 12px 5px;
+        margin: 25px 0 15px;
         letter-spacing: 1px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
+        justify-content: center; /* Centralizado */
     }
 
+    .section-label::before,
     .section-label::after {
         content: '';
         flex: 1;
@@ -229,13 +231,13 @@ $standards = array_filter($allLinks, function($l) { return $l['layout_type'] !==
                 <img src="assets/images/hero_links_v2.png" alt="Hub de Comunidades" class="hero-image">
             </div>
             <h1>Central de Links</h1>
-            <p>Conecte-se com o mundo através dos nossos grupos e recursos.</p>
+            <p>Conecte-se com o mundo pelos nossos grupos e recursos.</p>
         </header>
 
         <div class="links-wrapper">
             <!-- Seção de Gêmeos (Sempre no Topo) -->
             <?php if (!empty($twins)): ?>
-                <div class="section-label">Entenda o Projeto</div>
+                <div class="section-label">Conheça o Projeto</div>
                 <div class="twin-grid">
                     <?php 
                     $stagger = 1;

@@ -140,8 +140,8 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index ASC, titl
                 <div class="form-group">
                     <label>Layout</label>
                     <select name="layout_type" id="linkLayout" style="width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: white; outline: none;">
-                        <option value="standard">Padrão (Lista)</option>
-                        <option value="twin">Gêmeo (Quadrado)</option>
+                        <option value="standard">Padrão (Linha)</option>
+                        <option value="twin">Bloco (Quadrado)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -161,7 +161,7 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index ASC, titl
                             <div style="font-weight: 600; display: flex; align-items: center; gap: 10px;">
                                 <?= htmlspecialchars($l['title']) ?>
                                 <?php if (($l['layout_type'] ?? 'standard') === 'twin'): ?>
-                                    <span style="background: rgba(255,255,255,0.1); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1);">GÊMEO</span>
+                                    <span style="background: rgba(255,255,255,0.1); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1);">BLOCO</span>
                                 <?php endif; ?>
                             </div>
                             <div style="font-size: 0.8rem; color: var(--text-dim);"><?= htmlspecialchars($l['url']) ?></div>
