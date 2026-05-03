@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once '../config.php';
 $conn = connectDB();
 
 // Ajuste fino para os ícones baseados no título (para recuperar a diversidade)
