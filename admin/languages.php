@@ -15,6 +15,11 @@ try {
     $conn->exec("ALTER TABLE languages ADD COLUMN whatsapp_link VARCHAR(255) AFTER active");
     $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link");
     
+    // Debug: Conta encontros
+    $totalMeetings = $conn->query("SELECT COUNT(*) FROM meetings")->fetchColumn();
+    $withInsta = $conn->query("SELECT COUNT(*) FROM meetings WHERE instagram_link IS NOT NULL AND instagram_link != ''")->fetchColumn();
+    $msg = "Debug: Total de encontros: $totalMeetings | Com Instagram: $withInsta";
+
     // Migração inicial do Instagram (se estiver vazio na tabela languages)
     $affected = $conn->exec("
         UPDATE languages l
@@ -29,7 +34,7 @@ try {
         WHERE (l.instagram_link IS NULL OR l.instagram_link = '')
     ");
     if ($affected > 0) {
-        $msg = "Migração concluída: $affected links de Instagram foram trazidos para esta tabela!";
+        $msg .= " | Migração realizada: $affected links!";
     }
 } catch (PDOException $e) {}
 
