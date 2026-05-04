@@ -32,14 +32,31 @@ include 'includes/header.php';
 ?>
 
     <main>
-        <!-- INTRO — Minimal: title + text -->
-        <section class="intro-section">
+        <!-- HERO SPLIT — Impact (left) + Intro (right) -->
+        <section class="hero-split">
             <div class="container">
-                <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
-                <p class="welcome-text">
-                    Pratique idiomas de forma gratuita e natural, em encontros online ou presenciais.
-                    Sem taxas, sem burocracia e com um único objetivo: unir pessoas através da conversação genuína.
-                </p>
+                <div class="hero-grid">
+                    <!-- Column 1: Impact Badge -->
+                    <div class="hero-impact">
+                        <div class="impact-content">
+                            <div class="impact-icon">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <div class="impact-text">
+                                <span class="impact-eyebrow">Referência Nacional</span>
+                                <h2 class="impact-title">A maior comunidade gratuita de prática de idiomas do país</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Column 2: Title & Text -->
+                    <div class="hero-intro">
+                        <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
+                        <p class="welcome-text">
+                            Pratique idiomas de forma gratuita e natural, em encontros online ou presenciais.
+                            Sem taxas, sem burocracia e com um único objetivo: unir pessoas através da conversação genuína.
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -92,20 +109,7 @@ include 'includes/header.php';
             </div>
         </section>
 
-        <!-- IMPACT SECTION — Redesigned for premium look -->
-        <section class="premium-impact">
-            <div class="container">
-                <div class="impact-content">
-                    <div class="impact-icon">
-                        <i class="fas fa-award"></i>
-                    </div>
-                    <div class="impact-text">
-                        <span class="impact-eyebrow">Referência Nacional</span>
-                        <h2 class="impact-title">A maior comunidade gratuita de prática de idiomas do país</h2>
-                    </div>
-                </div>
-            </div>
-        </section>
+
 
         <!-- MODALIDADES -->
         <section class="modalidades-section">
