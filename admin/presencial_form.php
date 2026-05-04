@@ -59,6 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $id > 0 ? 'Editar' : 'Novo' ?> Evento Presencial | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-bg:#0f172a; --sidebar-bg:#1e293b; --accent-red:#e31d1c;
@@ -107,24 +109,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .section-divider { grid-column:1/-1; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px; margin-top:5px; }
         .section-divider h3 { font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:0; }
     </style>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-logo">Ei</div>
-            <span class="brand-name">ADMIN CENTRAL</span>
-        </div>
-        <nav class="nav-menu">
-            <a href="index.php" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
-            <a href="hosts.php" class="nav-item"><i class="fas fa-users"></i> Equipe</a>
-            <a href="meetings.php" class="nav-item"><i class="fas fa-calendar-alt"></i> Online</a>
-            <a href="presencial.php" class="nav-item active"><i class="fas fa-map-marker-alt"></i> Presencial</a>
-            <a href="languages.php" class="nav-item"><i class="fas fa-language"></i> Idiomas</a>
-            <a href="useful_links.php" class="nav-item"><i class="fas fa-link"></i> Links</a>
-            <a href="settings.php" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
-            <a href="logout.php" class="nav-item nav-logout"><i class="fas fa-sign-out-alt"></i> Sair do Painel</a>
-        </nav>
-    </aside>
+<?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
         <div class="page-header">

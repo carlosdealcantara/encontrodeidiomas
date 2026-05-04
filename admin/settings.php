@@ -32,6 +32,8 @@ foreach ($settings as $s) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-bg: #0f172a;
@@ -70,23 +72,10 @@ foreach ($settings as $s) {
 
         .alert { padding: 15px 25px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; border-radius: 12px; margin-bottom: 25px; }
     </style>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-    <aside class="sidebar">
-        <div class="brand" style="display:flex; align-items:center; gap:12px; margin-bottom:50px;">
-            <div style="width:35px; height:35px; background:var(--accent-red); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">EI</div>
-            <span style="font-size:1.2rem; font-weight:700;">ADMIN</span>
-        </div>
-        <nav class="nav-menu">
-            <a href="index.php" class="nav-item">Dashboard</a>
-            <a href="hosts.php" class="nav-item">Equipe</a>
-            <a href="meetings.php" class="nav-item">Online</a>
-            <a href="presencial.php" class="nav-item"><i class="fas fa-map-marker-alt"></i> Presencial</a>
-            <a href="languages.php" class="nav-item">Idiomas</a>
-            <a href="useful_links.php" class="nav-item">Links</a>
-            <a href="settings.php" class="nav-item active">Configurações</a>
-        </nav>
-    </aside>
+<?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
         <header class="header">

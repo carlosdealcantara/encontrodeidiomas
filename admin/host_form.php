@@ -148,6 +148,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $id > 0 ? 'Editar' : 'Novo' ?> Anfitrião | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root {
@@ -234,17 +236,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .sortable-ghost { opacity: 0.4; background: var(--accent-red) !important; }
     </style>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-    <aside class="sidebar">
-        <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 40px;">ADMIN CENTRAL</div>
-        <nav>
-            <a href="index.php" style="color: var(--text-dim); text-decoration: none; display: block; padding: 10px 0;"><i class="fas fa-chart-pie"></i> Dashboard</a>
-            <a href="hosts.php" style="color: white; text-decoration: none; display: block; padding: 10px 0;"><i class="fas fa-users"></i> Anfitriões</a>
-            <a href="languages.php" style="color: var(--text-dim); text-decoration: none; display: block; padding: 10px 0;"><i class="fas fa-language"></i> Idiomas</a>
-            <a href="logout.php" style="color: #ff6b6b; text-decoration: none; display: block; padding: 10px 0; margin-top: 50px;"><i class="fas fa-sign-out-alt"></i> Sair</a>
-        </nav>
-    </aside>
+<?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
         <div class="header">
