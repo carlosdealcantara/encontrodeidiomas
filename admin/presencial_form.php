@@ -25,31 +25,32 @@ if ($id > 0) {
 
 // Salvar
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title       = trim($_POST['title'] ?? '');
-    $city        = trim($_POST['city'] ?? '');
-    $state       = trim($_POST['state'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $host_id     = !empty($_POST['host_id']) ? (int)$_POST['host_id'] : null;
-    $whatsapp_link = trim($_POST['whatsapp_link'] ?? '');
+    $title          = trim($_POST['title'] ?? '');
+    $city           = trim($_POST['city'] ?? '');
+    $state          = trim($_POST['state'] ?? '');
+    $country        = trim($_POST['country'] ?? 'Brasil');
+    $description    = trim($_POST['description'] ?? '');
+    $host_id        = !empty($_POST['host_id']) ? (int)$_POST['host_id'] : null;
+    $whatsapp_link  = trim($_POST['whatsapp_link'] ?? '');
     $instagram_link = trim($_POST['instagram_link'] ?? '');
-    $active      = isset($_POST['active']) ? 1 : 0;
+    $active         = isset($_POST['active']) ? 1 : 0;
 
-    if (empty($title))  $errors[] = 'Título é obrigatório.';
-    if (empty($city))   $errors[] = 'Cidade é obrigatória.';
+    if (empty($title))   $errors[] = 'Título é obrigatório.';
+    if (empty($city))    $errors[] = 'Cidade é obrigatória.';
+    if (empty($country)) $errors[] = 'País é obrigatório.';
 
     if (empty($errors)) {
         if ($id > 0) {
-            $stmt = $conn->prepare("UPDATE in_person_events SET title=:title, city=:city, state=:state, description=:description, host_id=:host_id, whatsapp_link=:whatsapp_link, instagram_link=:instagram_link, active=:active WHERE id=:id");
-            $stmt->execute(compact('title','city','state','description','host_id','whatsapp_link','instagram_link','active','id'));
+            $stmt = $conn->prepare("UPDATE in_person_events SET title=:title, city=:city, state=:state, country=:country, description=:description, host_id=:host_id, whatsapp_link=:whatsapp_link, instagram_link=:instagram_link, active=:active WHERE id=:id");
+            $stmt->execute(compact('title','city','state','country','description','host_id','whatsapp_link','instagram_link','active','id'));
         } else {
-            $stmt = $conn->prepare("INSERT INTO in_person_events (title,city,state,description,host_id,whatsapp_link,instagram_link,active) VALUES (:title,:city,:state,:description,:host_id,:whatsapp_link,:instagram_link,:active)");
-            $stmt->execute(compact('title','city','state','description','host_id','whatsapp_link','instagram_link','active'));
+            $stmt = $conn->prepare("INSERT INTO in_person_events (title,city,state,country,description,host_id,whatsapp_link,instagram_link,active) VALUES (:title,:city,:state,:country,:description,:host_id,:whatsapp_link,:instagram_link,:active)");
+            $stmt->execute(compact('title','city','state','country','description','host_id','whatsapp_link','instagram_link','active'));
         }
         header('Location: presencial.php?msg=' . urlencode($id > 0 ? 'Evento atualizado com sucesso' : 'Evento criado com sucesso'));
         exit;
     }
-    // Manter dados no formulário
-    $ev = compact('title','city','state','description','host_id','whatsapp_link','instagram_link','active');
+    $ev = compact('title','city','state','country','description','host_id','whatsapp_link','instagram_link','active');
 }
 ?>
 <!DOCTYPE html>
@@ -150,8 +151,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group">
-                    <label>Estado (UF)</label>
-                    <input type="text" name="state" placeholder="Ex: SP" maxlength="2" value="<?= htmlspecialchars($ev['state'] ?? '') ?>">
+                    <label>País *</label>
+                    <select name="country">
+                        <?php foreach (['Brasil','Argentina','Paraguai','Chile','Uruguai','Peru','Colômbia','Bolívia','Venezuela','México','Portugal','Angola','Moçambique','Outro'] as $c): ?>
+                            <option value="<?= $c ?>" <?= ($ev['country'] ?? 'Brasil') === $c ? 'selected' : '' ?>><?= $c ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado (UF) <small style="font-size:0.7rem;text-transform:none;opacity:0.6;">— apenas Brasil</small></label>
+                    <input type="text" name="state" placeholder="Ex: SP" maxlength="2" value="<?= htmlspecialchars($ev['state'] ?? '') ?>"></div>
                 </div>
 
                 <div class="form-group full">

@@ -3,48 +3,57 @@ require_once 'config.php';
 
 $title          = 'Presencial';
 $current_page   = 'presencial.php';
-$og_description = 'Encontros presenciais do Encontro de Idiomas em diversas cidades do Brasil. Participe ou organize um encontro na sua cidade!';
+$og_description = 'Encontros presenciais do Encontro de Idiomas em diversas cidades do Brasil, Argentina e Paraguai.';
 $canonical      = 'https://encontrodeidiomas.com.br/presencial.php';
 
-// Busca eventos presenciais ativos
 function getInPersonEvents(): array {
     try {
         $conn = connectDB();
-        $stmt = $conn->query("
-            SELECT e.*, h.full_name AS host_name, h.profile_picture AS host_photo
+        return $conn->query("
+            SELECT e.*, COALESCE(e.country,'Brasil') AS country,
+                   h.full_name AS host_name, h.profile_picture AS host_photo
             FROM in_person_events e
             LEFT JOIN hosts h ON e.host_id = h.id AND h.status = 'ativo'
             WHERE e.active = 1
-            ORDER BY e.city ASC
-        ");
-        return $stmt->fetchAll();
-    } catch (PDOException $e) {
-        return [];
-    }
+            ORDER BY CASE WHEN COALESCE(e.country,'Brasil')='Brasil' THEN 0 ELSE 1 END, e.country, e.city ASC
+        ")->fetchAll();
+    } catch (PDOException $e) { return []; }
 }
 
-$events   = getInPersonEvents();
-$cities   = array_unique(array_column($events, 'city'));
-$cityCount = count($cities);
+function getRegiao(string $state): string {
+    $map = [
+        'AC'=>'Norte','AM'=>'Norte','AP'=>'Norte','PA'=>'Norte','RO'=>'Norte','RR'=>'Norte','TO'=>'Norte',
+        'AL'=>'Nordeste','BA'=>'Nordeste','CE'=>'Nordeste','MA'=>'Nordeste','PB'=>'Nordeste',
+        'PE'=>'Nordeste','PI'=>'Nordeste','RN'=>'Nordeste','SE'=>'Nordeste',
+        'DF'=>'Centro-Oeste','GO'=>'Centro-Oeste','MS'=>'Centro-Oeste','MT'=>'Centro-Oeste',
+        'ES'=>'Sudeste','MG'=>'Sudeste','RJ'=>'Sudeste','SP'=>'Sudeste',
+        'PR'=>'Sul','RS'=>'Sul','SC'=>'Sul',
+    ];
+    return $map[strtoupper(trim($state))] ?? 'Outras Regiões';
+}
+
+$regionOrder = ['Norte','Nordeste','Centro-Oeste','Sudeste','Sul','Outras Regiões'];
+
+$countryFlags = ['Brasil'=>'🇧🇷','Argentina'=>'🇦🇷','Paraguai'=>'🇵🇾'];
+$countryEmoji = fn($c) => $countryFlags[$c] ?? '🌎';
+
+$events    = getInPersonEvents();
+$byCountry = [];
+foreach ($events as $ev) {
+    $byCountry[$ev['country']][] = $ev;
+}
+$totalGroups    = count($events);
+$totalCountries = count($byCountry);
 
 ob_start();
 ?>
-    /* ---- PRESENCIAL PAGE STYLES ---- */
-    :root {
-        --presencial-green: #16a34a;
-        --presencial-teal:  #0d9488;
-    }
-
+    /* ---- PRESENCIAL PAGE ---- */
     .hero-presencial {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        padding: 100px 0 80px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
+        padding: 100px 0 80px; text-align: center; position: relative; overflow: hidden;
     }
     .hero-presencial::before {
-        content: '';
-        position: absolute; inset: 0;
+        content: ''; position: absolute; inset: 0;
         background: radial-gradient(ellipse at 30% 50%, rgba(227,29,28,0.15) 0%, transparent 60%),
                     radial-gradient(ellipse at 70% 50%, rgba(0,38,84,0.3) 0%, transparent 60%);
     }
@@ -62,29 +71,35 @@ ob_start();
     }
     .hero-title span { color: var(--accent-red); }
     .hero-subtitle {
-        font-size: 1.15rem; color: rgba(255,255,255,0.75);
+        font-size: 1.1rem; color: rgba(255,255,255,0.75);
         max-width: 680px; margin: 0 auto 40px; line-height: 1.7;
     }
+    .hero-cta-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero-outline {
+        display: inline-flex; align-items: center; gap: 10px;
+        background: rgba(255,255,255,0.1); color: #fff;
+        padding: 14px 30px; border-radius: 50px; font-weight: 700;
+        text-decoration: none; border: 1px solid rgba(255,255,255,0.25); transition: all 0.3s;
+    }
+    .btn-hero-outline:hover { background: rgba(255,255,255,0.2); }
     .hero-stats {
-        display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; margin-top: 50px;
-        border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;
+        display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;
+        margin-top: 50px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;
     }
     .hero-stat { text-align: center; }
     .hero-stat .num { font-size: 2.8rem; font-weight: 800; color: #fff; line-height: 1; }
-    .hero-stat .lbl { font-size: 0.83rem; color: rgba(255,255,255,0.55); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .hero-stat .lbl { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
 
     /* How it works */
     .how-section { padding: 90px 0; background: #f8f9fa; }
-    .section-label { text-align:center; font-size:0.8rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent-red); margin-bottom:12px; }
+    .section-label { text-align:center; font-size:0.78rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent-red); margin-bottom:12px; }
     .section-title-lg { text-align:center; font-size:clamp(1.8rem,3vw,2.6rem); font-weight:800; color:var(--primary-color); margin-bottom:16px; }
     .section-desc { text-align:center; max-width:640px; margin:0 auto 60px; color:#666; font-size:1.05rem; line-height:1.7; }
-
     .steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:30px; }
     .step-card {
         background:#fff; border-radius:20px; padding:35px 28px;
         box-shadow:0 4px 20px rgba(0,0,0,0.06); text-align:center;
-        transition: transform 0.3s, box-shadow 0.3s;
-        position: relative; overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s; position: relative; overflow: hidden;
     }
     .step-card::before {
         content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
@@ -95,83 +110,111 @@ ob_start();
         width: 52px; height: 52px; border-radius: 50%;
         background: linear-gradient(135deg, var(--accent-red), #991b1b);
         color: #fff; font-size: 1.3rem; font-weight: 800;
-        display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 20px;
+        display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
     }
     .step-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: var(--primary-color); }
     .step-card p  { font-size: 0.92rem; color: #666; line-height: 1.6; }
 
-    /* Cities section */
+    /* Cities accordion */
     .cities-section { padding: 90px 0; }
-    .cities-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:28px; }
+    .country-accordion { margin-bottom: 16px; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #eee; }
+    .country-header {
+        display: flex; align-items: center; gap: 14px;
+        background: #fff; padding: 20px 28px; cursor: pointer;
+        transition: background 0.2s; user-select: none; border: none; width: 100%;
+    }
+    .country-header:hover { background: #fafafa; }
+    .country-flag { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
+    .country-info { flex: 1; text-align: left; }
+    .country-name { font-size: 1.15rem; font-weight: 800; color: var(--primary-color); }
+    .country-count { font-size: 0.82rem; color: #888; margin-top: 2px; }
+    .country-chevron { color: #aaa; transition: transform 0.3s; font-size: 0.9rem; }
+    .country-accordion.open .country-chevron { transform: rotate(180deg); }
+    .country-body { display: none; background: #f8f9fa; }
+    .country-accordion.open .country-body { display: block; }
+    .country-body-inner { padding: 28px; }
+
+    /* Region groups */
+    .region-group { margin-bottom: 30px; }
+    .region-group:last-child { margin-bottom: 0; }
+    .region-label {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1.5px; color: var(--accent-red);
+        margin-bottom: 18px; padding-bottom: 8px;
+        border-bottom: 2px solid var(--accent-red);
+    }
+    .cities-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+
+    /* City card redesign — clean white, no heavy dark header */
     .city-card {
-        background:#fff; border-radius:20px; overflow:hidden;
-        box-shadow:0 4px 20px rgba(0,0,0,0.07);
+        background:#fff; border-radius:16px; overflow:hidden;
+        box-shadow:0 3px 15px rgba(0,0,0,0.07);
         transition: transform 0.3s, box-shadow 0.3s;
-        border: 1px solid #f0f0f0;
+        border: 1px solid #ebebeb; border-top: 3px solid var(--accent-red);
     }
-    .city-card:hover { transform:translateY(-8px); box-shadow:0 20px 50px rgba(0,0,0,0.12); }
+    .city-card:hover { transform:translateY(-6px); box-shadow:0 15px 40px rgba(0,0,0,0.12); }
     .city-card-header {
-        background: linear-gradient(135deg, var(--primary-color), #334155);
-        padding: 24px 28px; display:flex; align-items:center; gap:15px;
+        padding: 18px 22px 14px;
+        display: flex; align-items: flex-start; gap: 12px;
+        border-bottom: 1px solid #f3f3f3;
     }
-    .city-icon {
-        width: 50px; height: 50px; border-radius: 14px;
-        background: rgba(227,29,28,0.2); display:flex; align-items:center; justify-content:center;
-        font-size: 1.4rem; color: #fff; flex-shrink:0;
+    .city-pin { color: var(--accent-red); font-size: 1.1rem; margin-top: 4px; flex-shrink: 0; }
+    .city-name { font-size: 1.15rem; font-weight: 800; color: var(--primary-color); line-height: 1.2; }
+    .city-state-badge {
+        display: inline-block; background: #f1f5f9; color: #64748b;
+        padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+        margin-top: 5px; letter-spacing: 0.5px;
     }
-    .city-name { font-size:1.3rem; font-weight:700; color:#fff; }
-    .city-state { font-size:0.85rem; color:rgba(255,255,255,0.6); margin-top:2px; }
-    .city-card-body { padding:24px 28px; }
-    .city-event-title { font-size:1rem; font-weight:700; color:var(--primary-color); margin-bottom:8px; }
-    .city-desc { font-size:0.9rem; color:#666; line-height:1.6; margin-bottom:18px; }
-    .city-host { display:flex; align-items:center; gap:10px; padding:12px 15px; background:#f8f9fa; border-radius:12px; margin-bottom:16px; }
-    .city-host img { width:36px; height:36px; border-radius:50%; object-fit:cover; }
-    .city-host-icon { width:36px; height:36px; border-radius:50%; background:var(--accent-red); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.9rem; flex-shrink:0; }
-    .city-host-name { font-size:0.9rem; font-weight:600; color:var(--primary-color); }
-    .city-host-label { font-size:0.75rem; color:#999; }
-    .city-links { display:flex; gap:10px; flex-wrap:wrap; margin-top: 4px; }
+    .city-card-body { padding: 18px 22px; }
+    .city-event-title { font-size: 0.92rem; font-weight: 700; color: var(--primary-color); margin-bottom: 6px; }
+    .city-desc { font-size: 0.87rem; color: #666; line-height: 1.6; margin-bottom: 14px; }
+    .city-host { display:flex; align-items:center; gap:10px; padding:10px 13px; background:#f8f9fa; border-radius:10px; margin-bottom:14px; }
+    .city-host img { width:32px; height:32px; border-radius:50%; object-fit:cover; }
+    .city-host-icon { width:32px; height:32px; border-radius:50%; background: var(--accent-red); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.8rem; flex-shrink:0; }
+    .city-host-name { font-size:0.85rem; font-weight:600; color:var(--primary-color); }
+    .city-host-label { font-size:0.72rem; color:#999; }
+    .city-links { display:flex; gap:8px; flex-wrap:wrap; }
     .city-link {
-        display:inline-flex; align-items:center; gap:7px;
-        padding:8px 18px; border-radius:50px; font-size:0.83rem; font-weight:600;
-        text-decoration:none; transition: all 0.3s; border: 1.5px solid;
+        display:inline-flex; align-items:center; gap:6px;
+        padding:7px 16px; border-radius:50px; font-size:0.82rem; font-weight:600;
+        text-decoration:none; transition: all 0.25s; border: 1.5px solid;
     }
-    .city-link-whatsapp { background: transparent; color: #16a34a; border-color: #16a34a; }
+    .city-link-whatsapp { color: #16a34a; border-color: #16a34a; }
     .city-link-whatsapp:hover { background:#16a34a; color:#fff; }
-    .city-link-instagram { background: transparent; color: #9333ea; border-color: #9333ea; }
+    .city-link-instagram { color: #9333ea; border-color: #9333ea; }
     .city-link-instagram:hover { background:#9333ea; color:#fff; }
 
     /* No events */
     .no-events { text-align:center; padding:60px 20px; }
     .no-events i { font-size:3rem; color:#ccc; margin-bottom:20px; display:block; }
-    .no-events p { color:#999; font-size:1rem; }
 
-    /* CTA expandir */
+    /* Expand CTA */
     .expand-section {
         background: linear-gradient(135deg, var(--accent-red) 0%, #991b1b 100%);
         padding: 90px 0; color:#fff; text-align:center;
     }
     .expand-title { font-size:clamp(1.8rem,3.5vw,2.8rem); font-weight:800; margin-bottom:16px; }
     .expand-desc { font-size:1.1rem; opacity:0.9; max-width:600px; margin:0 auto 40px; line-height:1.7; }
-    .expand-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px; max-width:900px; margin:0 auto 50px; }
+    .expand-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px; max-width:900px; margin:0 auto 48px; }
     .expand-card {
-        background:rgba(255,255,255,0.12); border-radius:16px; padding:28px 22px;
+        background:rgba(255,255,255,0.12); border-radius:16px; padding:26px 20px;
         backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.2);
         transition: transform 0.3s, background 0.3s;
     }
     .expand-card:hover { transform:translateY(-6px); background:rgba(255,255,255,0.18); }
-    .expand-card i { font-size:2rem; margin-bottom:14px; display:block; opacity:0.9; }
-    .expand-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:8px; }
-    .expand-card p { font-size:0.88rem; opacity:0.85; line-height:1.6; }
+    .expand-card i { font-size:1.8rem; margin-bottom:12px; display:block; opacity:0.9; }
+    .expand-card h3 { font-size:1rem; font-weight:700; margin-bottom:8px; }
+    .expand-card p { font-size:0.85rem; opacity:0.85; line-height:1.6; }
     .btn-expand {
         display:inline-flex; align-items:center; gap:10px;
         background:#fff; color:var(--accent-red);
-        padding:16px 40px; border-radius:50px; font-weight:700; font-size:1.05rem;
+        padding:16px 40px; border-radius:50px; font-weight:700; font-size:1rem;
         text-decoration:none; transition: all 0.3s; box-shadow:0 8px 25px rgba(0,0,0,0.2);
     }
     .btn-expand:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 15px 35px rgba(0,0,0,0.3); }
 
-    /* Host CTA — substitui seção de benefícios (já existe em equipe.php) */
+    /* Host CTA */
     .host-cta-section { padding: 90px 0; background: #f8f9fa; text-align: center; }
     .host-cta-inner {
         background: #fff; border-radius: 28px; padding: 60px 40px;
@@ -182,6 +225,8 @@ ob_start();
     .host-cta-inner h2 { font-size: 1.8rem; font-weight: 800; color: var(--primary-color); margin-bottom: 14px; }
     .host-cta-inner p { font-size: 1rem; color: #666; line-height: 1.7; max-width: 520px; margin: 0 auto 32px; }
     .host-cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary-red { display:inline-flex; align-items:center; gap:10px; background:var(--accent-red); color:#fff; padding:14px 32px; border-radius:50px; font-weight:700; font-size:0.95rem; text-decoration:none; transition:all 0.3s; }
+    .btn-primary-red:hover { background:#c11817; transform:translateY(-2px); box-shadow:0 10px 25px rgba(227,29,28,0.3); }
     .btn-outline-red {
         display: inline-flex; align-items: center; gap: 8px;
         padding: 14px 32px; border-radius: 50px; font-weight: 700; font-size: 0.95rem;
@@ -190,27 +235,19 @@ ob_start();
     }
     .btn-outline-red:hover { background: var(--accent-red); color: #fff; transform: translateY(-2px); }
 
-    /* CTA final */
-    .final-cta { padding:80px 0; text-align:center; }
-    .final-cta h2 { font-size:2rem; font-weight:800; margin-bottom:16px; color:var(--primary-color); }
-    .final-cta p { color:#666; max-width:560px; margin:0 auto 35px; line-height:1.7; }
-    .btn-primary-red { display:inline-flex; align-items:center; gap:10px; background:var(--accent-red); color:#fff; padding:16px 40px; border-radius:50px; font-weight:700; font-size:1rem; text-decoration:none; transition:all 0.3s; }
-    .btn-primary-red:hover { background:#c11817; transform:translateY(-3px); box-shadow:0 10px 25px rgba(227,29,28,0.3); }
-
     @media (max-width: 768px) {
         .hero-stats { gap: 30px; }
         .steps-grid { grid-template-columns: 1fr 1fr; }
         .cities-grid { grid-template-columns: 1fr; }
         .expand-cards { grid-template-columns: 1fr; }
-        .benefits-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 480px) {
         .steps-grid { grid-template-columns: 1fr; }
-        .benefits-grid { grid-template-columns: 1fr; }
+        .country-header { padding: 16px 20px; }
+        .country-body-inner { padding: 20px 16px; }
     }
 <?php
 $page_styles = ob_get_clean();
-
 include 'includes/header.php';
 ?>
 
@@ -225,25 +262,24 @@ include 'includes/header.php';
                 Encontros <span>Presenciais</span><br>em todo o Brasil e além
             </h1>
             <p class="hero-subtitle">
-                Pratique idiomas pessoalmente com pessoas reais na sua cidade — e em países vizinhos.
-                Com grupos ativos no Brasil, Argentina e Paraguai, o Encontro de Idiomas já é um projeto internacional.
+                Pratique idiomas pessoalmente com pessoas reais — no Brasil, na Argentina e no Paraguai.
                 Sem horário fixo, sem burocracia: apenas conversação genuína e conexões para a vida toda.
             </p>
-            <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-                <?php if ($cityCount > 0): ?>
-                    <a href="#cidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> Ver localidades</a>
+            <div class="hero-cta-row">
+                <?php if ($totalGroups > 0): ?>
+                    <a href="#localidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> Ver localidades</a>
                 <?php endif; ?>
-                <a href="#seja-organizador" style="display:inline-flex;align-items:center;gap:10px; background:rgba(255,255,255,0.12); color:#fff; padding:16px 32px; border-radius:50px; font-weight:700; text-decoration:none; border:1px solid rgba(255,255,255,0.25); transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+                <a href="#seja-organizador" class="btn-hero-outline">
                     <i class="fas fa-plus-circle"></i> Organizar na minha cidade
                 </a>
             </div>
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <div class="num">11+</div>
+                    <div class="num"><?= $totalGroups ?>+</div>
                     <div class="lbl">Grupos ativos</div>
                 </div>
                 <div class="hero-stat">
-                    <div class="num">3</div>
+                    <div class="num"><?= $totalCountries ?></div>
                     <div class="lbl">Países</div>
                 </div>
                 <div class="hero-stat">
@@ -276,87 +312,80 @@ include 'includes/header.php';
                 <div class="step-card">
                     <div class="step-num">2</div>
                     <h3>Movimente o grupo — convide!</h3>
-                    <p>Convide amigos e colegas enquanto os outros membros fazem o mesmo. Quando a demanda crescer, o organizador anuncia data e local. Quanto mais gente convida, mais rápido o encontro acontece!</p>
+                    <p>Convide amigos enquanto os outros membros fazem o mesmo. Quando a demanda crescer, o organizador anuncia data e local. Quanto mais gente convida, mais rápido o encontro acontece!</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">3</div>
                     <h3>Apareça e viva momentos inesquecíveis</h3>
-                    <p>Vá ao encontro, apresente-se e pratique o idioma. Você vai sair de lá com amizades reais, conversas incríveis e histórias que não esperava ter.</p>
+                    <p>Vá ao encontro, apresente-se e pratique. Você vai sair com amizades reais, conversas incríveis e histórias que não esperava ter.</p>
                 </div>
             </div>
         </div>
     </section>
 
-
-    <!-- CIDADES ATIVAS -->
-    <section class="cities-section" id="cidades">
+    <!-- LOCALIDADES COM ACCORDION -->
+    <section class="cities-section" id="localidades">
         <div class="container">
             <p class="section-label">Onde estamos</p>
             <h2 class="section-title-lg">Localidades com grupos ativos</h2>
             <p class="section-desc">
                 No Brasil, na Argentina e no Paraguai — estas são as localidades com grupos já formados.
-                Entre no grupo da sua cidade e faça parte da comunidade!
+                Entre no grupo e faça parte da comunidade!
             </p>
 
             <?php if (empty($events)): ?>
                 <div class="no-events">
                     <i class="fas fa-map-marked-alt"></i>
-                    <p>Em breve teremos cidades cadastradas aqui. Enquanto isso, seja o primeiro a organizar na sua cidade!</p>
+                    <p>Em breve teremos cidades aqui. Seja o primeiro a organizar na sua cidade!</p>
                 </div>
             <?php else: ?>
-            <div class="cities-grid">
-                <?php foreach ($events as $ev): ?>
-                <div class="city-card">
-                    <div class="city-card-header">
-                        <div class="city-icon"><i class="fas fa-map-marker-alt"></i></div>
-                        <div>
-                            <div class="city-name"><?= htmlspecialchars($ev['city']) ?></div>
-                            <?php if (!empty($ev['state'])): ?>
-                                <div class="city-state"><?= htmlspecialchars($ev['state']) ?></div>
-                            <?php endif; ?>
+                <?php $isFirst = true; foreach ($byCountry as $country => $countryEvents): ?>
+                <div class="country-accordion <?= $isFirst ? 'open' : '' ?>">
+                    <button class="country-header" type="button" onclick="toggleCountry(this)">
+                        <span class="country-flag"><?= $countryEmoji($country) ?></span>
+                        <div class="country-info">
+                            <div class="country-name"><?= htmlspecialchars($country) ?></div>
+                            <div class="country-count"><?= count($countryEvents) ?> <?= count($countryEvents) === 1 ? 'localidade' : 'localidades' ?></div>
                         </div>
-                    </div>
-                    <div class="city-card-body">
-                        <div class="city-event-title"><?= htmlspecialchars($ev['title']) ?></div>
-                        <?php if (!empty($ev['description'])): ?>
-                            <p class="city-desc"><?= htmlspecialchars($ev['description']) ?></p>
-                        <?php endif; ?>
-
-                        <?php if (!empty($ev['host_name'])): ?>
-                        <div class="city-host">
-                            <?php if (!empty($ev['host_photo'])): ?>
-                                <img src="assets/images/<?= htmlspecialchars($ev['host_photo']) ?>" alt="<?= htmlspecialchars($ev['host_name']) ?>">
+                        <i class="fas fa-chevron-down country-chevron"></i>
+                    </button>
+                    <div class="country-body">
+                        <div class="country-body-inner">
+                            <?php if ($country === 'Brasil'): ?>
+                                <?php
+                                $byRegion = [];
+                                foreach ($countryEvents as $ev) {
+                                    $r = !empty($ev['state']) ? getRegiao($ev['state']) : 'Outras Regiões';
+                                    $byRegion[$r][] = $ev;
+                                }
+                                foreach ($regionOrder as $reg):
+                                    if (empty($byRegion[$reg])) continue;
+                                ?>
+                                <div class="region-group">
+                                    <div class="region-label"><i class="fas fa-map-signs"></i> <?= $reg ?></div>
+                                    <div class="cities-grid">
+                                        <?php foreach ($byRegion[$reg] as $ev): ?>
+                                            <?php include __DIR__ . '/includes/presencial_card.php'; ?>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
                             <?php else: ?>
-                                <div class="city-host-icon"><i class="fas fa-user"></i></div>
-                            <?php endif; ?>
-                            <div>
-                                <div class="city-host-name"><?= htmlspecialchars($ev['host_name']) ?></div>
-                                <div class="city-host-label">Organizador(a) local</div>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-
-                        <div class="city-links">
-                            <?php if (!empty($ev['whatsapp_link'])): ?>
-                                <a href="<?= htmlspecialchars($ev['whatsapp_link']) ?>" target="_blank" rel="noopener" class="city-link city-link-whatsapp">
-                                    <i class="fab fa-whatsapp"></i> Entrar no grupo
-                                </a>
-                            <?php endif; ?>
-                            <?php if (!empty($ev['instagram_link'])): ?>
-                                <a href="<?= htmlspecialchars($ev['instagram_link']) ?>" target="_blank" rel="noopener" class="city-link city-link-instagram">
-                                    <i class="fab fa-instagram"></i> Instagram
-                                </a>
+                                <div class="cities-grid">
+                                    <?php foreach ($countryEvents as $ev): ?>
+                                        <?php include __DIR__ . '/includes/presencial_card.php'; ?>
+                                    <?php endforeach; ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
-                <?php endforeach; ?>
-            </div>
+                <?php $isFirst = false; endforeach; ?>
             <?php endif; ?>
         </div>
     </section>
 
-    <!-- EXPANDA PARA SUA CIDADE -->
+    <!-- EXPANDA -->
     <section class="expand-section" id="seja-organizador">
         <div class="container">
             <h2 class="expand-title">Não tem encontro na sua cidade?</h2>
@@ -367,17 +396,17 @@ include 'includes/header.php';
                 <div class="expand-card">
                     <i class="fas fa-users"></i>
                     <h3>Crie o grupo e convide</h3>
-                    <p>Abra um grupo WhatsApp para a sua cidade e comece convidando amigos, colegas e quem mais quiser praticar idiomas.</p>
+                    <p>Abra um grupo WhatsApp para a sua cidade e comece convidando amigos e colegas que queiram praticar idiomas.</p>
                 </div>
                 <div class="expand-card">
                     <i class="fas fa-calendar-plus"></i>
                     <h3>Marque quando tiver turma</h3>
-                    <p>Sem compromisso fixo. Quando sentir que há gente suficiente, combine um dia e pronto — o encontro está marcado.</p>
+                    <p>Sem compromisso fixo. Quando sentir que há gente suficiente, combine um dia e pronto.</p>
                 </div>
                 <div class="expand-card">
                     <i class="fas fa-map-pin"></i>
                     <h3>Escolha o local</h3>
-                    <p>A praça de alimentação do shopping é perfeita: espaço gratuito, sem consumação obrigatória, confortável e de fácil acesso. Mas café, parque, livraria ou biblioteca também funcionam!</p>
+                    <p>A praça de alimentação do shopping é perfeita: espaço gratuito, sem consumação obrigatória. Café, parque ou biblioteca também funcionam!</p>
                 </div>
             </div>
             <a href="contato.php" class="btn-expand">
@@ -386,20 +415,20 @@ include 'includes/header.php';
         </div>
     </section>
 
-    <!-- HOST CTA — link para equipe.php que já tem os benefícios completos -->
-    <section class="host-cta-section" id="beneficios">
+    <!-- HOST CTA -->
+    <section class="host-cta-section" id="seja-host">
         <div class="container">
             <div class="host-cta-inner">
                 <div class="host-cta-icon"><i class="fas fa-star"></i></div>
                 <h2>Quer ser um organizador?</h2>
                 <p>
-                    Organizar um encontro presencial vai muito além de juntar pessoas para praticar um idioma.
+                    Organizar um encontro vai muito além de juntar pessoas para praticar idiomas.
                     É uma oportunidade real de desenvolver liderança, expandir sua rede e causar impacto na sua cidade.
                     Conheça os benefícios completos de quem faz parte da nossa equipe de voluntários.
                 </p>
                 <div class="host-cta-btns">
                     <a href="equipe.php?tab=presencial#seja-host" class="btn-primary-red">
-                        <i class="fas fa-users"></i> Conheça os benefícios
+                        <i class="fas fa-users"></i> Conhecer os benefícios
                     </a>
                     <a href="contato.php" class="btn-outline-red">
                         <i class="fas fa-envelope"></i> Falar com a equipe
@@ -408,30 +437,19 @@ include 'includes/header.php';
             </div>
         </div>
     </section>
-
-    <!-- CTA FINAL -->
-    <section class="final-cta">
-        <div class="container">
-            <h2>Pronto para dar o primeiro passo?</h2>
-            <p>Entre em contato conosco e nossa equipe vai te orientar em todos os passos para criar o primeiro encontro na sua cidade.</p>
-            <a href="contato.php" class="btn-primary-red">
-                <i class="fas fa-envelope"></i> Falar com a equipe
-            </a>
-        </div>
-    </section>
 </main>
 
 <?php
 $page_scripts = <<<JS
 <script>
-// Smooth scroll para âncoras
+function toggleCountry(btn) {
+    const acc = btn.closest('.country-accordion');
+    acc.classList.toggle('open');
+}
 document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', function(e) {
         const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            e.preventDefault();
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     });
 });
 </script>
