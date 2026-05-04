@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-group">
                     <label>Estado (UF) <small style="font-size:0.7rem;text-transform:none;opacity:0.6;">— apenas Brasil</small></label>
-                    <input type="text" name="state" placeholder="Ex: SP" maxlength="2" value="<?= htmlspecialchars($ev['state'] ?? '') ?>"></div>
+                    <input type="text" name="state" placeholder="Ex: SP" maxlength="2" value="<?= htmlspecialchars($ev['state'] ?? '') ?>">
                 </div>
 
                 <div class="form-group full">
