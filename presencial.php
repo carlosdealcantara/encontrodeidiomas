@@ -34,8 +34,12 @@ function getRegiao(string $state): string {
 
 $regionOrder = ['Norte','Nordeste','Centro-Oeste','Sudeste','Sul','Outras Regiões'];
 
-$countryFlags = ['Brasil'=>'🇧🇷','Argentina'=>'🇦🇷','Paraguai'=>'🇵🇾'];
-$countryEmoji = fn($c) => $countryFlags[$c] ?? '🌎';
+$countryCodes = ['Brasil'=>'br','Argentina'=>'ar','Paraguai'=>'py','Chile'=>'cl','Uruguai'=>'uy','Portugal'=>'pt','Angola'=>'ao','Moçambique'=>'mz'];
+$countryFlag  = function(string $c) use ($countryCodes): string {
+    $code = $countryCodes[$c] ?? null;
+    if ($code) return "<img src=\"https://flagcdn.com/32x24/{$code}.png\" alt=\"Bandeira de {$c}\" style=\"width:40px;height:30px;object-fit:cover;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;\">";
+    return '<span style="font-size:1.8rem;">🌎</span>';
+};
 
 $events    = getInPersonEvents();
 $byCountry = [];
@@ -124,7 +128,7 @@ ob_start();
         transition: background 0.2s; user-select: none; border: none; width: 100%;
     }
     .country-header:hover { background: #fafafa; }
-    .country-flag { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
+    .country-flag { flex-shrink: 0; }
     .country-info { flex: 1; text-align: left; }
     .country-name { font-size: 1.15rem; font-weight: 800; color: var(--primary-color); }
     .country-count { font-size: 0.82rem; color: #888; margin-top: 2px; }
@@ -134,17 +138,24 @@ ob_start();
     .country-accordion.open .country-body { display: block; }
     .country-body-inner { padding: 28px; }
 
-    /* Region groups */
-    .region-group { margin-bottom: 30px; }
-    .region-group:last-child { margin-bottom: 0; }
-    .region-label {
-        display: inline-flex; align-items: center; gap: 8px;
-        font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 1.5px; color: var(--accent-red);
-        margin-bottom: 18px; padding-bottom: 8px;
-        border-bottom: 2px solid var(--accent-red);
+    /* Region accordion inside Brazil */
+    .region-accordion { margin-bottom: 12px; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; background: #fff; }
+    .region-header {
+        display: flex; align-items: center; gap: 10px; padding: 14px 20px;
+        cursor: pointer; user-select: none; background: #fff; border: none; width: 100%;
+        transition: background 0.2s;
     }
-    .cities-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+    .region-header:hover { background: #f8fafc; }
+    .region-name {
+        flex: 1; text-align: left; font-size: 0.8rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-red);
+    }
+    .region-count { font-size: 0.75rem; color: #94a3b8; margin-right: 6px; }
+    .region-chevron { color: #aaa; transition: transform 0.3s; font-size: 0.8rem; }
+    .region-accordion.open .region-chevron { transform: rotate(180deg); }
+    .region-body { display: none; padding: 0 16px 16px; background: #f8f9fa; }
+    .region-accordion.open .region-body { display: block; }
+    .cities-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-top: 12px; }
 
     /* City card redesign — clean white, no heavy dark header */
     .city-card {
@@ -279,7 +290,7 @@ include 'includes/header.php';
                     <div class="lbl">Grupos ativos</div>
                 </div>
                 <div class="hero-stat">
-                    <div class="num"><?= $totalCountries ?></div>
+                    <div class="num"><?= $totalCountries ?>+</div>
                     <div class="lbl">Países</div>
                 </div>
                 <div class="hero-stat">
@@ -342,7 +353,7 @@ include 'includes/header.php';
                 <?php $isFirst = true; foreach ($byCountry as $country => $countryEvents): ?>
                 <div class="country-accordion <?= $isFirst ? 'open' : '' ?>">
                     <button class="country-header" type="button" onclick="toggleCountry(this)">
-                        <span class="country-flag"><?= $countryEmoji($country) ?></span>
+                        <span class="country-flag"><?= $countryFlag($country) ?></span>
                         <div class="country-info">
                             <div class="country-name"><?= htmlspecialchars($country) ?></div>
                             <div class="country-count"><?= count($countryEvents) ?> <?= count($countryEvents) === 1 ? 'localidade' : 'localidades' ?></div>
@@ -360,13 +371,21 @@ include 'includes/header.php';
                                 }
                                 foreach ($regionOrder as $reg):
                                     if (empty($byRegion[$reg])) continue;
+                                    $regSlug = strtolower(preg_replace('/[^a-z]/i','-',$reg));
                                 ?>
-                                <div class="region-group">
-                                    <div class="region-label"><i class="fas fa-map-signs"></i> <?= $reg ?></div>
-                                    <div class="cities-grid">
-                                        <?php foreach ($byRegion[$reg] as $ev): ?>
-                                            <?php include __DIR__ . '/includes/presencial_card.php'; ?>
-                                        <?php endforeach; ?>
+                                <div class="region-accordion" id="reg-<?= $regSlug ?>">
+                                    <button class="region-header" type="button" onclick="toggleRegion(this)">
+                                        <i class="fas fa-map-signs" style="color:var(--accent-red);font-size:0.8rem;"></i>
+                                        <span class="region-name"><?= $reg ?></span>
+                                        <span class="region-count"><?= count($byRegion[$reg]) ?> <?= count($byRegion[$reg]) === 1 ? 'cidade' : 'cidades' ?></span>
+                                        <i class="fas fa-chevron-down region-chevron"></i>
+                                    </button>
+                                    <div class="region-body">
+                                        <div class="cities-grid">
+                                            <?php foreach ($byRegion[$reg] as $ev): ?>
+                                                <?php include __DIR__ . '/includes/presencial_card.php'; ?>
+                                            <?php endforeach; ?>
+                                        </div>
                                     </div>
                                 </div>
                                 <?php endforeach; ?>
@@ -388,7 +407,7 @@ include 'includes/header.php';
     <!-- EXPANDA -->
     <section class="expand-section" id="seja-organizador">
         <div class="container">
-            <h2 class="expand-title">Não tem encontro na sua cidade?</h2>
+            <h2 class="expand-title">Não tem encontro na sua região?</h2>
             <p class="expand-desc">
                 Você pode ser o primeiro! Basta criar o grupo local, convidar pessoas e, quando juntar uma turma, combinar um lugar e um dia. É isso — sem complicação.
             </p>
@@ -410,7 +429,7 @@ include 'includes/header.php';
                 </div>
             </div>
             <a href="contato.php" class="btn-expand">
-                <i class="fas fa-hand-raised"></i> Quero organizar na minha cidade
+                <i class="fas fa-hand-raised"></i> Quero organizar na minha região
             </a>
         </div>
     </section>
@@ -419,7 +438,11 @@ include 'includes/header.php';
     <section class="host-cta-section" id="seja-host">
         <div class="container">
             <div class="host-cta-inner">
-                <div class="host-cta-icon"><i class="fas fa-star"></i></div>
+                <div class="host-cta-icon">
+                    <i class="fas fa-globe" style="color:#3b82f6;"></i>
+                    <i class="fas fa-comments" style="color:var(--accent-red);font-size:2rem;margin:0 8px;"></i>
+                    <i class="fas fa-award" style="color:#f59e0b;"></i>
+                </div>
                 <h2>Quer ser um organizador?</h2>
                 <p>
                     Organizar um encontro vai muito além de juntar pessoas para praticar idiomas.
@@ -444,6 +467,10 @@ $page_scripts = <<<JS
 <script>
 function toggleCountry(btn) {
     const acc = btn.closest('.country-accordion');
+    acc.classList.toggle('open');
+}
+function toggleRegion(btn) {
+    const acc = btn.closest('.region-accordion');
     acc.classList.toggle('open');
 }
 document.querySelectorAll('a[href^="#"]').forEach(a => {
