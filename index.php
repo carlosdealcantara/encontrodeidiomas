@@ -36,16 +36,14 @@ include 'includes/header.php';
         <section class="hero-split">
             <div class="container">
                 <div class="hero-grid">
-                    <!-- Column 1: Impact Badge -->
+                    <!-- Column 1: Premium Seal -->
                     <div class="hero-impact">
-                        <div class="impact-content">
-                            <div class="impact-icon">
-                                <i class="fas fa-award"></i>
+                        <div class="impact-seal">
+                            <div class="impact-seal-icon">
+                                <i class="fas fa-medal"></i>
                             </div>
-                            <div class="impact-text">
-                                <span class="impact-eyebrow">Referência Nacional</span>
-                                <h2 class="impact-title">A maior comunidade gratuita de prática de idiomas do país</h2>
-                            </div>
+                            <span class="impact-seal-eyebrow">Referência Nacional</span>
+                            <h2 class="impact-seal-title">A maior comunidade gratuita de prática de idiomas do país</h2>
                         </div>
                     </div>
                     <!-- Column 2: Title & Text -->
