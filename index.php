@@ -7,29 +7,22 @@ $og_description = 'Participe gratuitamente de encontros para praticar inglês, e
 $canonical      = 'https://encontrodeidiomas.com.br/';
 $swiper_enabled = true;
 
-// Dynamic stats from DB
-try {
-    $conn = connectDB();
-    $langCount     = (int) $conn->query("SELECT COUNT(*) FROM languages WHERE active = 1")->fetchColumn();
-    $meetingCount  = (int) $conn->query("SELECT COUNT(*) FROM meetings WHERE active = 1")->fetchColumn();
-    $presCount     = (int) $conn->query("SELECT COUNT(*) FROM in_person_events WHERE active = 1")->fetchColumn();
-    $presCountries = (int) $conn->query("SELECT COUNT(DISTINCT COALESCE(country,'Brasil')) FROM in_person_events WHERE active = 1")->fetchColumn();
-} catch (Exception $e) {
-    $langCount = $meetingCount = $presCount = $presCountries = 0;
-}
-
 $extra_head = '<link rel="stylesheet" href="assets/css/home.css">';
 
 $page_scripts = <<<JS
 <script>
-    new Swiper('.hero-swiper', {
+    new Swiper('.photo-swiper', {
         loop: true,
-        effect: 'fade',
-        fadeEffect: { crossFade: true },
-        speed: 800,
-        autoplay: { delay: 5000, disableOnInteraction: false },
+        slidesPerView: 1,
+        spaceBetween: 20,
+        speed: 700,
+        autoplay: { delay: 4500, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        breakpoints: {
+            640:  { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+        },
     });
 </script>
 JS;
@@ -38,60 +31,7 @@ include 'includes/header.php';
 ?>
 
     <main>
-        <!-- HERO CAROUSEL — First thing visitors see -->
-        <section class="hero-carousel">
-            <div class="swiper hero-swiper">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro presencial com participantes">
-                        <div class="hero-slide-overlay">
-                            <h2>Encontros Presenciais</h2>
-                            <p>Pratique idiomas em um ambiente acolhedor</p>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro online de idiomas">
-                        <div class="hero-slide-overlay">
-                            <h2>Encontros Online</h2>
-                            <p>Participe de onde estiver, pelo seu computador ou celular</p>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="assets/images/encontrodeidiomas-20250408-0002.jpg" alt="Piquenique de idiomas">
-                        <div class="hero-slide-overlay">
-                            <h2>Eventos Sociais</h2>
-                            <p>Integre-se à comunidade em eventos divertidos</p>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades em grupo">
-                        <div class="hero-slide-overlay">
-                            <h2>Atividades Interativas</h2>
-                            <p>Aprenda jogando e interagindo com outros participantes</p>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Encontro ao ar livre">
-                        <div class="hero-slide-overlay">
-                            <h2>Momentos Marcantes</h2>
-                            <p>Crie memórias enquanto aprende novos idiomas</p>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Evento ao ar livre">
-                        <div class="hero-slide-overlay">
-                            <h2>Eventos ao Ar Livre</h2>
-                            <p>Momentos especiais de aprendizado e diversão</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="swiper-pagination"></div>
-                <div class="swiper-button-prev"></div>
-                <div class="swiper-button-next"></div>
-            </div>
-        </section>
-
-        <!-- INTRO SECTION — Clean white welcome -->
+        <!-- INTRO — First thing visitors see -->
         <section class="intro-section">
             <div class="container">
                 <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
@@ -99,6 +39,10 @@ include 'includes/header.php';
                     Comunidade gratuita com encontros online via videoconferência e presenciais em diversas cidades.
                     Sem matrícula, sem compromisso — apenas conversação genuína e conexões para a vida toda.
                 </p>
+                <div class="intro-badge">
+                    <i class="fas fa-trophy"></i>
+                    Maior comunidade gratuita de prática de idiomas do Brasil
+                </div>
                 <div class="intro-cta-row">
                     <a href="online.php" class="btn-intro btn-intro-online">
                         <i class="fas fa-video"></i> Encontros Online
@@ -107,11 +51,58 @@ include 'includes/header.php';
                         <i class="fas fa-map-marker-alt"></i> Encontros Presenciais
                     </a>
                 </div>
-                <div class="stats-pills">
-                    <div class="stat-pill"><i class="fas fa-globe"></i> <strong><?= $langCount ?>+</strong> idiomas</div>
-                    <div class="stat-pill"><i class="fas fa-calendar-check"></i> <strong><?= $meetingCount ?>+</strong> encontros/semana</div>
-                    <div class="stat-pill"><i class="fas fa-map-pin"></i> <strong><?= $presCount ?>+</strong> cidades</div>
-                    <div class="stat-pill"><i class="fas fa-flag"></i> <strong><?= $presCountries ?>+</strong> países</div>
+            </div>
+        </section>
+
+        <!-- PHOTO CAROUSEL — Community moments -->
+        <section class="photo-section">
+            <div class="container">
+                <p class="section-eyebrow">Nossa Comunidade</p>
+                <h2 class="section-heading">Momentos que marcam</h2>
+            </div>
+            <div class="carousel-wrapper">
+                <div class="swiper photo-swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro presencial com participantes">
+                                <div class="photo-label">Encontros Presenciais</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro online de idiomas">
+                                <div class="photo-label">Encontros Online</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/encontrodeidiomas-20250408-0002.jpg" alt="Piquenique de idiomas">
+                                <div class="photo-label">Eventos Sociais</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades em grupo">
+                                <div class="photo-label">Atividades Interativas</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Encontro ao ar livre">
+                                <div class="photo-label">Momentos Marcantes</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Evento ao ar livre">
+                                <div class="photo-label">Eventos ao Ar Livre</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
                 </div>
             </div>
         </section>
@@ -142,7 +133,7 @@ include 'includes/header.php';
             </div>
         </section>
 
-        <!-- COMO FUNCIONA — Horizontal flow -->
+        <!-- COMO FUNCIONA -->
         <section class="how-section">
             <div class="container">
                 <p class="section-eyebrow">Como participar</p>
@@ -167,7 +158,7 @@ include 'includes/header.php';
             </div>
         </section>
 
-        <!-- COMMUNITY CTA -->
+        <!-- COMMUNITY CTA — Red gradient (not black, avoids footer confusion) -->
         <section class="community-cta">
             <div class="container">
                 <h2>Faça parte da comunidade</h2>
