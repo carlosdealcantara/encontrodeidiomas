@@ -10,14 +10,24 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $conn = connectDB();
 
-// Estatísticas Rápidas
-$stmt = $conn->query("SELECT COUNT(*) as total FROM hosts");
-$totalHosts = $stmt->fetch()['total'];
+// Hosts
+$totalHosts  = $conn->query("SELECT COUNT(*) FROM hosts")->fetchColumn();
+$activeHosts = $conn->query("SELECT COUNT(*) FROM hosts WHERE status='ativo'")->fetchColumn();
 
-$stmt = $conn->query("SELECT COUNT(*) as total FROM hosts WHERE status = 'ativo'");
-$activeHosts = $stmt->fetch()['total'];
+// Idiomas
+$totalLanguages = $conn->query("SELECT COUNT(*) FROM languages")->fetchColumn();
 
-// Próximos encontros (exemplo estático por enquanto)
+// Encontros Online
+$totalMeetings  = $conn->query("SELECT COUNT(*) FROM meetings")->fetchColumn();
+$activeMeetings = $conn->query("SELECT COUNT(*) FROM meetings WHERE status='ativo'")->fetchColumn();
+
+// Encontros Presenciais
+$totalPresencial  = $conn->query("SELECT COUNT(*) FROM in_person_events WHERE active=1")->fetchColumn();
+$totalPaises      = $conn->query("SELECT COUNT(DISTINCT country) FROM in_person_events WHERE active=1")->fetchColumn();
+
+// Links
+$totalLinks = $conn->query("SELECT COUNT(*) FROM useful_links")->fetchColumn();
+
 $currentHour = (int)date('H');
 ?>
 <!DOCTYPE html>
@@ -147,10 +157,24 @@ $currentHour = (int)date('H');
             justify-content: center;
             font-size: 1.3rem;
         }
-        .icon-blue { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); }
-        .icon-red { background: rgba(227, 29, 28, 0.1); color: var(--accent-red); }
+        .icon-blue    { background: rgba(56,189,248,0.1);  color: var(--accent-blue); }
+        .icon-red     { background: rgba(227,29,28,0.1);   color: var(--accent-red); }
+        .icon-green   { background: rgba(22,163,74,0.1);   color: #4ade80; }
+        .icon-purple  { background: rgba(147,51,234,0.1);  color: #c084fc; }
+        .icon-amber   { background: rgba(245,158,11,0.1);  color: #fbbf24; }
+        .icon-teal    { background: rgba(20,184,166,0.1);  color: #2dd4bf; }
         .stat-info h3 { font-size: 1.8rem; font-weight: 700; line-height: 1; }
-        .stat-info p { color: var(--text-dim); font-size: 0.9rem; margin-top: 5px; }
+        .stat-info p  { color: var(--text-dim); font-size: 0.9rem; margin-top: 5px; }
+        .stat-card a.stat-link {
+            display: inline-block; margin-top: 8px; font-size: 0.78rem;
+            color: var(--accent-blue); text-decoration: none; opacity: 0.8;
+        }
+        .stat-card a.stat-link:hover { opacity: 1; }
+        .section-title {
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--text-dim);
+            margin-bottom: 18px; margin-top: 10px;
+        }
 
         /* Welcome Section */
         .welcome-banner {
@@ -228,34 +252,75 @@ $currentHour = (int)date('H');
             </div>
         </section>
 
+        <p class="section-title">Equipe &amp; Idiomas</p>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon icon-blue">
-                    <i class="fas fa-users"></i>
-                </div>
+                <div class="stat-icon icon-blue"><i class="fas fa-users"></i></div>
                 <div class="stat-info">
                     <h3><?= $totalHosts ?></h3>
                     <p>Total de Hosts</p>
+                    <a href="hosts.php" class="stat-link">Gerenciar &rarr;</a>
                 </div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-icon icon-red">
-                    <i class="fas fa-user-check"></i>
-                </div>
+                <div class="stat-icon icon-green"><i class="fas fa-user-check"></i></div>
                 <div class="stat-info">
                     <h3><?= $activeHosts ?></h3>
                     <p>Hosts Ativos</p>
                 </div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-icon icon-blue">
-                    <i class="fas fa-language"></i>
-                </div>
+                <div class="stat-icon icon-purple"><i class="fas fa-language"></i></div>
                 <div class="stat-info">
-                    <h3>+15</h3>
-                    <p>Idiomas no Radar</p>
+                    <h3><?= $totalLanguages ?></h3>
+                    <p>Idiomas Cadastrados</p>
+                    <a href="languages.php" class="stat-link">Gerenciar &rarr;</a>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-amber"><i class="fas fa-link"></i></div>
+                <div class="stat-info">
+                    <h3><?= $totalLinks ?></h3>
+                    <p>Links Úteis</p>
+                    <a href="useful_links.php" class="stat-link">Gerenciar &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <p class="section-title">Encontros Online</p>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue"><i class="fas fa-calendar-alt"></i></div>
+                <div class="stat-info">
+                    <h3><?= $totalMeetings ?></h3>
+                    <p>Encontros Cadastrados</p>
+                    <a href="meetings.php" class="stat-link">Gerenciar &rarr;</a>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-info">
+                    <h3><?= $activeMeetings ?></h3>
+                    <p>Encontros Ativos</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="section-title">Encontros Presenciais</p>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-red"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="stat-info">
+                    <h3><?= $totalPresencial ?>+</h3>
+                    <p>Grupos Ativos</p>
+                    <a href="presencial.php" class="stat-link">Gerenciar &rarr;</a>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-teal"><i class="fas fa-globe"></i></div>
+                <div class="stat-info">
+                    <h3><?= $totalPaises ?>+</h3>
+                    <p>Países com Grupos</p>
                 </div>
             </div>
         </div>
