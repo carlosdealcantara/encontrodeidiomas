@@ -2,9 +2,9 @@
    HOME PAGE — Unique Premium Landing
    ============================================================ */
 
-/* INTRO SECTION — First element below header */
+/* INTRO — Minimal, just title + badge */
 .intro-section {
-    padding: 60px 0 50px;
+    padding: 45px 0 30px;
     background: #fff;
     text-align: center;
 }
@@ -13,7 +13,7 @@
     font-weight: 800;
     color: var(--primary-color);
     line-height: 1.15;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 .intro-section h1 .highlight {
     background: linear-gradient(135deg, var(--accent-red) 0%, #d4380d 100%);
@@ -21,107 +21,42 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.intro-desc {
-    font-size: 1.1rem;
-    color: #555;
-    line-height: 1.8;
-    max-width: 640px;
-    margin: 0 auto 24px;
-}
-.intro-badge {
+
+/* Impact badge — prominent */
+.impact-badge {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,215,0,0.06));
-    border: 1px solid rgba(255,215,0,0.3);
-    color: #b8860b;
-    padding: 10px 24px;
-    border-radius: 50px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    margin-bottom: 32px;
-    letter-spacing: 0.2px;
+    gap: 12px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    padding: 14px 32px;
+    border-radius: 60px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.25);
 }
-.intro-badge i { color: #daa520; }
-.intro-cta-row {
-    display: flex;
-    gap: 14px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-.btn-intro {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 28px;
-    border-radius: 50px;
-    font-weight: 700;
-    text-decoration: none;
-    transition: all 0.3s;
-    font-size: 0.95rem;
-    border: 2px solid;
-}
-.btn-intro-online {
-    background: var(--accent-blue);
-    border-color: var(--accent-blue);
-    color: #fff;
-}
-.btn-intro-online:hover {
-    background: #001a3d;
-    border-color: #001a3d;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,38,84,0.35);
-}
-.btn-intro-presencial {
-    background: transparent;
-    border-color: var(--accent-red);
-    color: var(--accent-red);
-}
-.btn-intro-presencial:hover {
-    background: var(--accent-red);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(227,29,28,0.3);
+.impact-badge i {
+    color: #d97706;
+    font-size: 1.2rem;
 }
 
-/* PHOTO CAROUSEL — Cards with full photos */
+/* PHOTO CAROUSEL */
 .photo-section {
-    padding: 60px 0 50px;
+    padding: 30px 0 50px;
     background: var(--bg-light);
     overflow: hidden;
 }
-.section-eyebrow {
-    text-align: center;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent-red);
-    margin-bottom: 12px;
-}
-.section-heading {
-    text-align: center;
-    font-size: clamp(1.8rem, 3vw, 2.6rem);
-    font-weight: 800;
-    color: var(--primary-color);
-    margin-bottom: 16px;
-}
-.section-desc {
-    text-align: center;
-    max-width: 640px;
-    margin: 0 auto 60px;
-    color: #666;
-    font-size: 1.05rem;
-    line-height: 1.7;
-}
 .carousel-wrapper {
     max-width: 1200px;
-    margin: 30px auto 0;
+    margin: 0 auto;
     padding: 0 20px;
+    overflow: hidden;
 }
 .photo-swiper {
-    overflow: visible;
-    padding-bottom: 50px;
+    overflow: hidden;
+    padding-bottom: 45px;
 }
 .photo-card {
     border-radius: 16px;
@@ -167,10 +102,50 @@
 }
 .photo-swiper .swiper-pagination-bullet { background: var(--accent-red); }
 
-/* MODALIDADES — Two big cards */
+/* WELCOME TEXT — Below carousel */
+.welcome-section {
+    padding: 40px 0;
+    background: #fff;
+    text-align: center;
+}
+.welcome-text {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.8;
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* Shared section helpers */
+.section-eyebrow {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+    margin-bottom: 12px;
+}
+.section-heading {
+    text-align: center;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 16px;
+}
+.section-desc {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 60px;
+    color: #666;
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+/* MODALIDADES */
 .modalidades-section {
     padding: 90px 0;
-    background: #fff;
+    background: var(--bg-light);
 }
 .modalidades-grid {
     display: grid;
@@ -178,7 +153,7 @@
     gap: 30px;
 }
 .mod-card {
-    background: var(--bg-light);
+    background: #fff;
     border-radius: 24px;
     padding: 45px 35px;
     box-shadow: 0 4px 25px rgba(0,0,0,0.06);
@@ -221,10 +196,10 @@
 .mod-card-presencial .mod-card-link { color: var(--accent-red); }
 .mod-card:hover .mod-card-link { gap: 14px; }
 
-/* HOW IT WORKS — horizontal flow with icons */
+/* HOW IT WORKS */
 .how-section {
     padding: 90px 0;
-    background: var(--bg-light);
+    background: #fff;
 }
 .how-flow {
     display: flex;
@@ -278,14 +253,12 @@
 .how-step h3 { font-size: 1.05rem; font-weight: 700; color: var(--primary-color); margin-bottom: 8px; }
 .how-step p { font-size: 0.88rem; color: #666; line-height: 1.6; max-width: 240px; margin: 0 auto; }
 
-/* COMMUNITY CTA — Red gradient (distinct from black footer) */
+/* COMMUNITY CTA — Red gradient */
 .community-cta {
     background: linear-gradient(135deg, var(--accent-red) 0%, #991b1b 100%);
     padding: 90px 0;
     color: #fff;
     text-align: center;
-    position: relative;
-    overflow: hidden;
 }
 .community-cta h2 {
     font-size: clamp(1.8rem, 3.5vw, 2.8rem);
@@ -336,15 +309,15 @@
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
+    .impact-badge { font-size: 0.9rem; padding: 12px 22px; }
     .modalidades-grid { grid-template-columns: 1fr; }
     .how-flow { flex-direction: column; gap: 40px; }
     .how-step:not(:last-child)::after { display: none; }
     .cta-cards { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 480px) {
-    .intro-section { padding: 40px 0 35px; }
-    .intro-cta-row { flex-direction: column; align-items: center; }
-    .btn-intro { width: 100%; max-width: 300px; justify-content: center; }
+    .intro-section { padding: 35px 0 22px; }
+    .impact-badge { font-size: 0.82rem; padding: 10px 18px; gap: 8px; }
     .cta-cards { grid-template-columns: 1fr; }
     .mod-card { padding: 30px 22px; }
     .photo-swiper .swiper-button-prev,

@@ -14,14 +14,15 @@ $page_scripts = <<<JS
     new Swiper('.photo-swiper', {
         loop: true,
         slidesPerView: 1,
+        centeredSlides: true,
         spaceBetween: 20,
         speed: 700,
         autoplay: { delay: 4500, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
         breakpoints: {
-            640:  { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
+            640:  { slidesPerView: 2, centeredSlides: false },
+            1024: { slidesPerView: 3, centeredSlides: false },
         },
     });
 </script>
@@ -31,35 +32,19 @@ include 'includes/header.php';
 ?>
 
     <main>
-        <!-- INTRO — First thing visitors see -->
+        <!-- INTRO — Minimal: title + impact badge only -->
         <section class="intro-section">
             <div class="container">
                 <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
-                <p class="intro-desc">
-                    Comunidade gratuita com encontros online via videoconferência e presenciais em diversas cidades.
-                    Sem matrícula, sem compromisso — apenas conversação genuína e conexões para a vida toda.
-                </p>
-                <div class="intro-badge">
+                <div class="impact-badge">
                     <i class="fas fa-trophy"></i>
-                    Maior comunidade gratuita de prática de idiomas do Brasil
-                </div>
-                <div class="intro-cta-row">
-                    <a href="online.php" class="btn-intro btn-intro-online">
-                        <i class="fas fa-video"></i> Encontros Online
-                    </a>
-                    <a href="presencial.php" class="btn-intro btn-intro-presencial">
-                        <i class="fas fa-map-marker-alt"></i> Encontros Presenciais
-                    </a>
+                    <span>Maior comunidade gratuita de prática de idiomas do país</span>
                 </div>
             </div>
         </section>
 
-        <!-- PHOTO CAROUSEL — Community moments -->
+        <!-- PHOTO CAROUSEL -->
         <section class="photo-section">
-            <div class="container">
-                <p class="section-eyebrow">Nossa Comunidade</p>
-                <h2 class="section-heading">Momentos que marcam</h2>
-            </div>
             <div class="carousel-wrapper">
                 <div class="swiper photo-swiper">
                     <div class="swiper-wrapper">
@@ -104,6 +89,16 @@ include 'includes/header.php';
                     <div class="swiper-button-prev"></div>
                     <div class="swiper-button-next"></div>
                 </div>
+            </div>
+        </section>
+
+        <!-- WELCOME TEXT — Below carousel -->
+        <section class="welcome-section">
+            <div class="container">
+                <p class="welcome-text">
+                    Comunidade gratuita com encontros online via videoconferência e presenciais em diversas cidades.
+                    Sem matrícula, sem compromisso — apenas conversação genuína e conexões para a vida toda.
+                </p>
             </div>
         </section>
 
@@ -158,7 +153,7 @@ include 'includes/header.php';
             </div>
         </section>
 
-        <!-- COMMUNITY CTA — Red gradient (not black, avoids footer confusion) -->
+        <!-- COMMUNITY CTA -->
         <section class="community-cta">
             <div class="container">
                 <h2>Faça parte da comunidade</h2>
