@@ -63,14 +63,15 @@ ob_start();
     .hero-title span { color: var(--accent-red); }
     .hero-subtitle {
         font-size: 1.15rem; color: rgba(255,255,255,0.75);
-        max-width: 640px; margin: 0 auto 40px; line-height: 1.7;
+        max-width: 680px; margin: 0 auto 40px; line-height: 1.7;
     }
     .hero-stats {
         display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; margin-top: 50px;
+        border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;
     }
     .hero-stat { text-align: center; }
-    .hero-stat .num { font-size: 2.5rem; font-weight: 800; color: #fff; }
-    .hero-stat .lbl { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
+    .hero-stat .num { font-size: 2.8rem; font-weight: 800; color: #fff; line-height: 1; }
+    .hero-stat .lbl { font-size: 0.83rem; color: rgba(255,255,255,0.55); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* How it works */
     .how-section { padding: 90px 0; background: #f8f9fa; }
@@ -129,16 +130,16 @@ ob_start();
     .city-host-icon { width:36px; height:36px; border-radius:50%; background:var(--accent-red); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.9rem; flex-shrink:0; }
     .city-host-name { font-size:0.9rem; font-weight:600; color:var(--primary-color); }
     .city-host-label { font-size:0.75rem; color:#999; }
-    .city-links { display:flex; gap:10px; flex-wrap:wrap; }
+    .city-links { display:flex; gap:10px; flex-wrap:wrap; margin-top: 4px; }
     .city-link {
         display:inline-flex; align-items:center; gap:7px;
-        padding:8px 16px; border-radius:50px; font-size:0.85rem; font-weight:600;
-        text-decoration:none; transition: all 0.3s;
+        padding:8px 18px; border-radius:50px; font-size:0.83rem; font-weight:600;
+        text-decoration:none; transition: all 0.3s; border: 1.5px solid;
     }
-    .city-link-whatsapp { background:#25d366; color:#fff; }
-    .city-link-whatsapp:hover { background:#1da851; }
-    .city-link-instagram { background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; }
-    .city-link-instagram:hover { opacity:0.9; }
+    .city-link-whatsapp { background: transparent; color: #16a34a; border-color: #16a34a; }
+    .city-link-whatsapp:hover { background:#16a34a; color:#fff; }
+    .city-link-instagram { background: transparent; color: #9333ea; border-color: #9333ea; }
+    .city-link-instagram:hover { background:#9333ea; color:#fff; }
 
     /* No events */
     .no-events { text-align:center; padding:60px 20px; }
@@ -170,17 +171,24 @@ ob_start();
     }
     .btn-expand:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 15px 35px rgba(0,0,0,0.3); }
 
-    /* Benefits host */
-    .host-benefits { padding:90px 0; background:#f8f9fa; }
-    .benefits-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:30px; margin-top:50px; }
-    .benefit-card {
-        background:#fff; border-radius:18px; padding:32px 26px; text-align:center;
-        box-shadow:0 4px 15px rgba(0,0,0,0.06); transition: transform 0.3s, box-shadow 0.3s;
+    /* Host CTA — substitui seção de benefícios (já existe em equipe.php) */
+    .host-cta-section { padding: 90px 0; background: #f8f9fa; text-align: center; }
+    .host-cta-inner {
+        background: #fff; border-radius: 28px; padding: 60px 40px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.08); max-width: 700px; margin: 0 auto;
+        border: 1px solid #f0f0f0;
     }
-    .benefit-card:hover { transform:translateY(-8px); box-shadow:0 15px 35px rgba(0,0,0,0.1); }
-    .benefit-icon { font-size:2.4rem; color:var(--accent-red); margin-bottom:18px; }
-    .benefit-card h4 { font-size:1.1rem; font-weight:700; color:var(--primary-color); margin-bottom:10px; }
-    .benefit-card p  { font-size:0.9rem; color:#666; line-height:1.6; }
+    .host-cta-icon { font-size: 3rem; color: var(--accent-red); margin-bottom: 20px; }
+    .host-cta-inner h2 { font-size: 1.8rem; font-weight: 800; color: var(--primary-color); margin-bottom: 14px; }
+    .host-cta-inner p { font-size: 1rem; color: #666; line-height: 1.7; max-width: 520px; margin: 0 auto 32px; }
+    .host-cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-outline-red {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 14px 32px; border-radius: 50px; font-weight: 700; font-size: 0.95rem;
+        text-decoration: none; transition: all 0.3s;
+        border: 2px solid var(--accent-red); color: var(--accent-red); background: transparent;
+    }
+    .btn-outline-red:hover { background: var(--accent-red); color: #fff; transform: translateY(-2px); }
 
     /* CTA final */
     .final-cta { padding:80px 0; text-align:center; }
@@ -214,15 +222,16 @@ include 'includes/header.php';
                 <i class="fas fa-map-marker-alt"></i> Acontece presencialmente
             </div>
             <h1 class="hero-title">
-                Encontros <span>Presenciais</span><br>em todo o Brasil
+                Encontros <span>Presenciais</span><br>em todo o Brasil e além
             </h1>
             <p class="hero-subtitle">
-                Pratique idiomas de forma presencial com pessoas reais na sua cidade.
-                Sem horário fixo, sem burocracia — apenas conversação genuína e conexões duradouras.
+                Pratique idiomas pessoalmente com pessoas reais na sua cidade — e em países vizinhos.
+                Com grupos ativos no Brasil, Argentina e Paraguai, o Encontro de Idiomas já é um projeto internacional.
+                Sem horário fixo, sem burocracia: apenas conversação genuína e conexões para a vida toda.
             </p>
             <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
                 <?php if ($cityCount > 0): ?>
-                    <a href="#cidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> Ver cidades</a>
+                    <a href="#cidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> Ver localidades</a>
                 <?php endif; ?>
                 <a href="#seja-organizador" style="display:inline-flex;align-items:center;gap:10px; background:rgba(255,255,255,0.12); color:#fff; padding:16px 32px; border-radius:50px; font-weight:700; text-decoration:none; border:1px solid rgba(255,255,255,0.25); transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
                     <i class="fas fa-plus-circle"></i> Organizar na minha cidade
@@ -230,8 +239,12 @@ include 'includes/header.php';
             </div>
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <div class="num"><?= $cityCount > 0 ? $cityCount . '+' : '?' ?></div>
-                    <div class="lbl">Cidades</div>
+                    <div class="num">11+</div>
+                    <div class="lbl">Grupos ativos</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">3</div>
+                    <div class="lbl">Países</div>
                 </div>
                 <div class="hero-stat">
                     <div class="num">100%</div>
@@ -251,40 +264,38 @@ include 'includes/header.php';
             <p class="section-label">Como funciona</p>
             <h2 class="section-title-lg">Simples, flexível e gratuito</h2>
             <p class="section-desc">
-                Os encontros presenciais não têm data fixa. Eles acontecem conforme a demanda da comunidade local se forma. Veja como é fácil participar.
+                Os encontros não têm data fixa. Acontecem conforme a comunidade local se mobiliza.
+                Você não precisa esperar passivamente — faça o encontro acontecer!
             </p>
             <div class="steps-grid">
                 <div class="step-card">
                     <div class="step-num">1</div>
-                    <h3>Entre no grupo da cidade</h3>
-                    <p>Encontre o grupo WhatsApp da sua cidade ou região e entre para acompanhar os próximos encontros.</p>
+                    <h3>Entre no grupo da sua cidade</h3>
+                    <p>Encontre o grupo WhatsApp da sua cidade ou região e junte-se a quem já quer praticar idiomas pessoalmente.</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">2</div>
-                    <h3>Espere a demanda se formar</h3>
-                    <p>Quando houver participantes suficientes, o organizador local anuncia data e local no grupo.</p>
+                    <h3>Movimente o grupo — convide!</h3>
+                    <p>Convide amigos e colegas enquanto os outros membros fazem o mesmo. Quando a demanda crescer, o organizador anuncia data e local. Quanto mais gente convida, mais rápido o encontro acontece!</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">3</div>
-                    <h3>Apareça e pratique</h3>
-                    <p>Vá ao local combinado, apresente-se e pratique o idioma com pessoas reais de forma descontraída.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-num">4</div>
-                    <h3>Convide mais pessoas</h3>
-                    <p>Quanto mais participantes, mais encontros acontecem. Compartilhe com amigos que também queiram praticar.</p>
+                    <h3>Apareça e viva momentos inesquecíveis</h3>
+                    <p>Vá ao encontro, apresente-se e pratique o idioma. Você vai sair de lá com amizades reais, conversas incríveis e histórias que não esperava ter.</p>
                 </div>
             </div>
         </div>
     </section>
 
+
     <!-- CIDADES ATIVAS -->
     <section class="cities-section" id="cidades">
         <div class="container">
             <p class="section-label">Onde estamos</p>
-            <h2 class="section-title-lg">Cidades com encontros ativos</h2>
+            <h2 class="section-title-lg">Localidades com grupos ativos</h2>
             <p class="section-desc">
-                Estas são as localidades onde já temos organização ativa. Clique no grupo WhatsApp para participar!
+                No Brasil, na Argentina e no Paraguai — estas são as localidades com grupos já formados.
+                Entre no grupo da sua cidade e faça parte da comunidade!
             </p>
 
             <?php if (empty($events)): ?>
@@ -350,23 +361,23 @@ include 'includes/header.php';
         <div class="container">
             <h2 class="expand-title">Não tem encontro na sua cidade?</h2>
             <p class="expand-desc">
-                Você pode ser o primeiro a organizar! Precisamos de pessoas motivadas para liderar encontros presenciais em novas localidades. É simples, gratuito e muito gratificante.
+                Você pode ser o primeiro! Basta criar o grupo local, convidar pessoas e, quando juntar uma turma, combinar um lugar e um dia. É isso — sem complicação.
             </p>
             <div class="expand-cards">
                 <div class="expand-card">
                     <i class="fas fa-users"></i>
-                    <h3>Reúna as pessoas</h3>
-                    <p>Divulgue o grupo local para juntar participantes interessados em praticar idiomas.</p>
+                    <h3>Crie o grupo e convide</h3>
+                    <p>Abra um grupo WhatsApp para a sua cidade e comece convidando amigos, colegas e quem mais quiser praticar idiomas.</p>
                 </div>
                 <div class="expand-card">
                     <i class="fas fa-calendar-plus"></i>
-                    <h3>Marque quando houver demanda</h3>
-                    <p>Sem compromisso fixo. Organize quando sentir que há participantes suficientes.</p>
+                    <h3>Marque quando tiver turma</h3>
+                    <p>Sem compromisso fixo. Quando sentir que há gente suficiente, combine um dia e pronto — o encontro está marcado.</p>
                 </div>
                 <div class="expand-card">
                     <i class="fas fa-map-pin"></i>
                     <h3>Escolha o local</h3>
-                    <p>Cafés, parques, livrarias, bibliotecas — qualquer lugar confortável serve!</p>
+                    <p>A praça de alimentação do shopping é perfeita: espaço gratuito, sem consumação obrigatória, confortável e de fácil acesso. Mas café, parque, livraria ou biblioteca também funcionam!</p>
                 </div>
             </div>
             <a href="contato.php" class="btn-expand">
@@ -375,42 +386,24 @@ include 'includes/header.php';
         </div>
     </section>
 
-    <!-- BENEFÍCIOS DO HOST PRESENCIAL -->
-    <section class="host-benefits" id="beneficios">
+    <!-- HOST CTA — link para equipe.php que já tem os benefícios completos -->
+    <section class="host-cta-section" id="beneficios">
         <div class="container">
-            <p class="section-label">Para organizadores</p>
-            <h2 class="section-title-lg">Por que ser um host presencial?</h2>
-            <p class="section-desc">Muito além de organizar um encontro — uma oportunidade de crescimento real.</p>
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-certificate"></i></div>
-                    <h4>Certificado e Currículo</h4>
-                    <p>Receba um certificado de voluntariado reconhecido para turbinar seu currículo e LinkedIn.</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-id-card"></i></div>
-                    <h4>Perfil no Site</h4>
-                    <p>Seu perfil em destaque na equipe do Encontro de Idiomas, visível para milhares de visitantes.</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
-                    <h4>Networking Real</h4>
-                    <p>Conecte-se com outros organizadores e voluntários de todo o Brasil.</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-bullseye"></i></div>
-                    <h4>Liderança na Prática</h4>
-                    <p>Desenvolva habilidades de organização de grupos e liderança comunitária com suporte total.</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-gem"></i></div>
-                    <h4>Comunidade VIP</h4>
-                    <p>Acesso ao grupo exclusivo de organizadores, com materiais, dicas e suporte entre pares.</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
-                    <h4>Impacto na Comunidade</h4>
-                    <p>Seja o responsável por transformar sua cidade em um polo de aprendizado de idiomas.</p>
+            <div class="host-cta-inner">
+                <div class="host-cta-icon"><i class="fas fa-star"></i></div>
+                <h2>Quer ser um organizador?</h2>
+                <p>
+                    Organizar um encontro presencial vai muito além de juntar pessoas para praticar um idioma.
+                    É uma oportunidade real de desenvolver liderança, expandir sua rede e causar impacto na sua cidade.
+                    Conheça os benefícios completos de quem faz parte da nossa equipe de voluntários.
+                </p>
+                <div class="host-cta-btns">
+                    <a href="equipe.php?tab=presencial#seja-host" class="btn-primary-red">
+                        <i class="fas fa-users"></i> Conheça os benefícios
+                    </a>
+                    <a href="contato.php" class="btn-outline-red">
+                        <i class="fas fa-envelope"></i> Falar com a equipe
+                    </a>
                 </div>
             </div>
         </div>
