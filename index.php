@@ -37,8 +37,8 @@ include 'includes/header.php';
             <div class="container">
                 <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
                 <p class="welcome-text">
-                    Comunidade gratuita com encontros online via videoconferência e presenciais em diversas cidades.
-                    Sem matrícula, sem compromisso — apenas conversação genuína e conexões para a vida toda.
+                    Pratique idiomas de forma gratuita e natural, em encontros online ou presenciais.
+                    Sem taxas, sem burocracia e com um único objetivo: unir pessoas através da conversação genuína.
                 </p>
             </div>
         </section>
@@ -92,12 +92,17 @@ include 'includes/header.php';
             </div>
         </section>
 
-        <!-- IMPACT BADGE — Below carousel -->
-        <section class="impact-section">
-            <div class="container" style="text-align: center; padding-bottom: 20px;">
-                <div class="impact-badge">
-                    <i class="fas fa-trophy"></i>
-                    <span>Maior comunidade gratuita de prática de idiomas do país</span>
+        <!-- IMPACT SECTION — Redesigned for premium look -->
+        <section class="premium-impact">
+            <div class="container">
+                <div class="impact-content">
+                    <div class="impact-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <div class="impact-text">
+                        <span class="impact-eyebrow">Referência Nacional</span>
+                        <h2 class="impact-title">A maior comunidade gratuita de prática de idiomas do país</h2>
+                    </div>
                 </div>
             </div>
         </section>
