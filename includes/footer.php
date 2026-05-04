@@ -198,5 +198,24 @@
 
     <?php if (!empty($page_scripts)) echo $page_scripts; ?>
 
+    <!-- Global Scripts -->
+    <script>
+        // Correção para o comportamento das teclas Home/End quando links ou botões estão focados
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Home' || e.key === 'End') {
+                const active = document.activeElement;
+                const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+                
+                if (!isInput) {
+                    e.preventDefault();
+                    if (e.key === 'Home') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
