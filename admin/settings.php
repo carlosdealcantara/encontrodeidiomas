@@ -72,6 +72,7 @@ foreach ($settings as $s) {
 
         .alert { padding: 15px 25px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; border-radius: 12px; margin-bottom: 25px; }
     </style>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23e31d1c'/%3E%3Ctext x='50' y='53' font-family='sans-serif' font-weight='bold' font-size='55' fill='white' text-anchor='middle' dominant-baseline='central'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
 <body>
     <aside class="sidebar">

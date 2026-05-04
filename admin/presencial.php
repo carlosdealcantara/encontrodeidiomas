@@ -103,11 +103,12 @@ $events = $conn->query("
         .search-group input { width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 15px 12px 45px; color: var(--text-main); outline: none; transition: all 0.3s ease; }
         .search-group input:focus { border-color: var(--accent-red); }
     </style>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23e31d1c'/%3E%3Ctext x='50' y='53' font-family='sans-serif' font-weight='bold' font-size='55' fill='white' text-anchor='middle' dominant-baseline='central'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
 <body>
     <aside class="sidebar">
         <div class="brand">
-            <div class="brand-logo">EI</div>
+            <div class="brand-logo">Ei</div>
             <span class="brand-name">ADMIN CENTRAL</span>
         </div>
         <nav class="nav-menu">
