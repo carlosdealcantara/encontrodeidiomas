@@ -273,8 +273,8 @@ include 'includes/header.php';
                 Encontros <span>Presenciais</span><br>em todo o Brasil e além
             </h1>
             <p class="hero-subtitle">
-                Pratique idiomas pessoalmente com pessoas reais — no Brasil, na Argentina e no Paraguai.
-                Sem horário fixo, sem burocracia: apenas conversação genuína e conexões para a vida toda.
+                Pratique idiomas pessoalmente com pessoas reais, onde quer que você esteja.
+                Junte-se a uma comunidade global em expansão. Sem horário fixo, sem burocracia: apenas conversação genuína e conexões para a vida toda.
             </p>
             <div class="hero-cta-row">
                 <?php if ($totalGroups > 0): ?>
@@ -340,8 +340,8 @@ include 'includes/header.php';
             <p class="section-label">Onde estamos</p>
             <h2 class="section-title-lg">Localidades com grupos ativos</h2>
             <p class="section-desc">
-                No Brasil, na Argentina e no Paraguai — estas são as localidades com grupos já formados.
-                Entre no grupo e faça parte da comunidade!
+                Estas são as localidades com grupos já formados ao redor do mundo.
+                Encontre a sua região e faça parte da comunidade!
             </p>
 
             <?php if (empty($events)): ?>
