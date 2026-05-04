@@ -53,6 +53,9 @@ include 'includes/header.php';
                             Pratique idiomas de forma gratuita e natural, em encontros online ou presenciais.
                             Sem taxas, sem burocracia e com um único objetivo: unir pessoas através da conversação genuína.
                         </p>
+                        <div class="hero-cta" style="margin-top: 24px;">
+                            <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -110,7 +113,7 @@ include 'includes/header.php';
 
 
         <!-- MODALIDADES -->
-        <section class="modalidades-section">
+        <section id="modalidades" class="modalidades-section">
             <div class="container">
                 <p class="section-eyebrow">Duas formas de participar</p>
                 <h2 class="section-heading">Escolha como praticar</h2>
