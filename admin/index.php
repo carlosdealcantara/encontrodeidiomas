@@ -19,7 +19,7 @@ $totalLanguages = $conn->query("SELECT COUNT(*) FROM languages")->fetchColumn();
 
 // Encontros Online
 $totalMeetings  = $conn->query("SELECT COUNT(*) FROM meetings")->fetchColumn();
-$activeMeetings = $conn->query("SELECT COUNT(*) FROM meetings WHERE status='ativo'")->fetchColumn();
+$activeMeetings = $conn->query("SELECT COUNT(*) FROM meetings WHERE active=1")->fetchColumn();
 
 // Encontros Presenciais
 $totalPresencial  = $conn->query("SELECT COUNT(*) FROM in_person_events WHERE active=1")->fetchColumn();
