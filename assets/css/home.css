@@ -2,9 +2,9 @@
    HOME PAGE — Unique Premium Landing
    ============================================================ */
 
-/* INTRO — Minimal, just title + badge */
+/* INTRO — Minimal, just title + text */
 .intro-section {
-    padding: 45px 0 30px;
+    padding: 60px 0 20px;
     background: #fff;
     text-align: center;
 }
@@ -22,7 +22,12 @@
     background-clip: text;
 }
 
-/* Impact badge — prominent */
+/* Impact section — prominent */
+.impact-section {
+    padding: 20px 0 40px;
+    background: var(--bg-light);
+    text-align: center;
+}
 .impact-badge {
     display: inline-flex;
     align-items: center;
@@ -36,6 +41,7 @@
     font-weight: 800;
     letter-spacing: 0.3px;
     box-shadow: 0 4px 20px rgba(245,158,11,0.25);
+    margin: 0 auto;
 }
 .impact-badge i {
     color: #d97706;
@@ -44,8 +50,8 @@
 
 /* PHOTO CAROUSEL */
 .photo-section {
-    padding: 30px 0 50px;
-    background: var(--bg-light);
+    padding: 20px 0 20px;
+    background: #fff; /* Keep white to flow nicely from intro */
     overflow: hidden;
 }
 .carousel-wrapper {
@@ -102,17 +108,12 @@
 }
 .photo-swiper .swiper-pagination-bullet { background: var(--accent-red); }
 
-/* WELCOME TEXT — Below carousel */
-.welcome-section {
-    padding: 40px 0;
-    background: #fff;
-    text-align: center;
-}
+/* WELCOME TEXT — Below title */
 .welcome-text {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     color: #555;
-    line-height: 1.8;
-    max-width: 680px;
+    line-height: 1.7;
+    max-width: 760px;
     margin: 0 auto;
 }
 

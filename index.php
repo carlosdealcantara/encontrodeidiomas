@@ -32,14 +32,14 @@ include 'includes/header.php';
 ?>
 
     <main>
-        <!-- INTRO — Minimal: title + impact badge only -->
+        <!-- INTRO — Minimal: title + text -->
         <section class="intro-section">
             <div class="container">
                 <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
-                <div class="impact-badge">
-                    <i class="fas fa-trophy"></i>
-                    <span>Maior comunidade gratuita de prática de idiomas do país</span>
-                </div>
+                <p class="welcome-text">
+                    Comunidade gratuita com encontros online via videoconferência e presenciais em diversas cidades.
+                    Sem matrícula, sem compromisso — apenas conversação genuína e conexões para a vida toda.
+                </p>
             </div>
         </section>
 
@@ -92,13 +92,13 @@ include 'includes/header.php';
             </div>
         </section>
 
-        <!-- WELCOME TEXT — Below carousel -->
-        <section class="welcome-section">
-            <div class="container">
-                <p class="welcome-text">
-                    Comunidade gratuita com encontros online via videoconferência e presenciais em diversas cidades.
-                    Sem matrícula, sem compromisso — apenas conversação genuína e conexões para a vida toda.
-                </p>
+        <!-- IMPACT BADGE — Below carousel -->
+        <section class="impact-section">
+            <div class="container" style="text-align: center; padding-bottom: 20px;">
+                <div class="impact-badge">
+                    <i class="fas fa-trophy"></i>
+                    <span>Maior comunidade gratuita de prática de idiomas do país</span>
+                </div>
             </div>
         </section>
 
