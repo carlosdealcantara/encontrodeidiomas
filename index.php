@@ -45,7 +45,7 @@ include 'includes/header.php';
                             </div>
                             <div class="seal-text">
                                 <span class="seal-eyebrow">Referência Nacional</span>
-                                <span class="seal-main">A maior comunidade gratuita do país</span>
+                                <span class="seal-main">1º lugar no país</span>
                             </div>
                         </div>
                         <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
