@@ -37,24 +37,52 @@ html {
 
 .premium-seal {
     position: absolute;
-    bottom: 85px; /* Posicionado acima da barra de legenda */
-    right: 35px;
+    bottom: 24px; /* Alinhado verticalmente com a barra de legenda */
+    right: 25px;
     z-index: 10;
     pointer-events: none;
     display: inline-flex;
     align-items: center;
-    gap: 15px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 10px 22px;
-    border-radius: 16px;
-    border: 1px solid rgba(201, 162, 39, 0.4);
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.1),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(201, 162, 39, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     margin-bottom: 0;
     overflow: hidden;
+}
+
+.seal-icon {
+    font-size: 1.4rem; /* Reduzido */
+    color: #c9a227;
+    display: flex;
+    align-items: center;
+}
+
+.seal-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.seal-eyebrow {
+    font-size: 0.55rem; /* Reduzido */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #a07c10;
+    line-height: 1;
+}
+
+.seal-main {
+    font-size: 0.75rem; /* Reduzido */
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1.1;
+    white-space: nowrap;
 }
 
 /* O brilho genial que você gostou */
