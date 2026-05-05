@@ -52,114 +52,71 @@ include 'includes/header.php';
 
                     <!-- Column 2: The Integrated Carousel -->
                     <div class="hero-visual">
+                        <!-- Floating Seal (Static over the label bar) -->
+                        <div class="premium-seal">
+                            <div class="seal-icon">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <div class="seal-text">
+                                <span class="seal-eyebrow">Referência</span>
+                                <span class="seal-main">Nº 1 do país</span>
+                            </div>
+                        </div>
+
                         <div class="swiper photo-swiper">
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontros Presenciais">
-                                        <div class="photo-label">
-                                            <span>Encontros Presenciais</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Encontros Presenciais</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontros Online">
-                                        <div class="photo-label">
-                                            <span>Encontros Online</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Encontros Online</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/replay.png" alt="Replay das Chamadas">
-                                        <div class="photo-label">
-                                            <span>Replay das Chamadas</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Replay das Chamadas</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades Interativas">
-                                        <div class="photo-label">
-                                            <span>Atividades Interativas</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Atividades Interativas</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/mentoria.jpg" alt="Mentoria Acessível">
-                                        <div class="photo-label">
-                                            <span>Mentoria Acessível</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Mentoria Acessível</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Eventos ao Ar Livre">
-                                        <div class="photo-label">
-                                            <span>Eventos ao Ar Livre</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Eventos ao Ar Livre</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/Grupos.png" alt="Grupos de Idiomas Variados">
-                                        <div class="photo-label">
-                                            <span>Grupos de Idiomas Variados</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Grupos de Idiomas Variados</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Momentos Marcantes">
-                                        <div class="photo-label">
-                                            <span>Momentos Marcantes</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Momentos Marcantes</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
                                         <img src="assets/images/instagram_social.png" alt="Atividade nas Redes Sociais">
-                                        <div class="photo-label">
-                                            <span>Atividade nas Redes Sociais</span>
-                                            <div class="premium-seal-mini">
-                                                <i class="fas fa-award"></i>
-                                                <span>Referência Nº 1</span>
-                                            </div>
-                                        </div>
+                                        <div class="photo-label">Atividade nas Redes Sociais</div>
                                     </div>
                                 </div>
                             </div>
