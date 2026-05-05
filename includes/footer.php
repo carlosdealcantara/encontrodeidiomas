@@ -17,7 +17,13 @@
                 <div class="footer-logo-section">
                     <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="footer-logo">
                     <div>
-                        <div class="footer-title">Encontro de Idiomas</div>
+                        <div class="footer-title">
+                            Encontro de Idiomas
+                            <div class="footer-seal">
+                                <i class="fas fa-award"></i>
+                                <span>Nº 1 do Brasil</span>
+                            </div>
+                        </div>
                         <div class="footer-tagline">Pratique idiomas gratuitamente</div>
                     </div>
                 </div>
@@ -99,6 +105,32 @@
         .footer-title {
             font-size: 1.5rem;
             font-weight: 600;
+        }
+
+        .footer-seal {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 2px 8px;
+            border-radius: 50px;
+            margin-left: 8px;
+            vertical-align: middle;
+            transform: translateY(-1px);
+        }
+
+        .footer-seal i {
+            color: var(--accent-yellow);
+            font-size: 0.75rem;
+        }
+
+        .footer-seal span {
+            color: var(--white);
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .footer-tagline {

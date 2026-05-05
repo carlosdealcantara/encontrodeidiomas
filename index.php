@@ -52,17 +52,6 @@ include 'includes/header.php';
 
                     <!-- Column 2: The Integrated Carousel -->
                     <div class="hero-visual">
-                        <!-- Floating Seal (Static over the label bar) -->
-                        <div class="premium-seal">
-                            <div class="seal-icon">
-                                <i class="fas fa-award"></i>
-                            </div>
-                            <div class="seal-text">
-                                <span class="seal-eyebrow">Referência</span>
-                                <span class="seal-main">Nº 1 do país</span>
-                            </div>
-                        </div>
-
                         <div class="swiper photo-swiper">
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
@@ -137,6 +126,12 @@ include 'includes/header.php';
             <div class="container">
                 <p class="section-eyebrow">Duas formas de participar</p>
                 <h2 class="section-heading">Escolha como praticar</h2>
+                
+                <div class="section-seal-badge">
+                    <i class="fas fa-award"></i>
+                    <span>Referência Nº 1 do país</span>
+                </div>
+
                 <p class="section-desc">
                     Seja online de qualquer lugar do mundo ou presencialmente na sua cidade,
                     temos o formato ideal para você começar a praticar hoje mesmo.
