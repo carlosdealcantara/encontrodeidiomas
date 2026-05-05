@@ -5,127 +5,119 @@ html {
     scroll-behavior: smooth;
 }
 
-/* HERO SPLIT — Seal (left) + Intro (right) */
-.hero-split {
-    padding: 40px 0 24px;
-    background: #fff;
+/* HERO PREMIUM — Fusion Layout */
+.hero-premium {
+    padding: 60px 0 80px;
+    background: linear-gradient(180deg, #fff 0%, var(--bg-light) 100%);
+    overflow: hidden;
 }
-.hero-grid {
+
+.hero-premium-grid {
     display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 40px;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
     align-items: center;
 }
 
-/* Column 1: Premium Seal */
-.hero-impact {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+/* Column 1: Content */
+.hero-content {
+    max-width: 520px;
+}
+
+.premium-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 16px;
-    text-align: center;
-}
-.impact-seal {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 8px;
-    /* Octagonal seal shape via clip-path */
-    background: linear-gradient(145deg, #fffdf0 0%, #fef9e2 100%);
-    border: 3px solid #c9a227;
-    border-radius: 50%;
-    box-shadow:
-        0 0 0 6px #fff,
-        0 0 0 10px rgba(201,162,39,0.25),
-        0 12px 40px rgba(201,162,39,0.2);
-    padding: 20px;
-}
-/* Decorative inner ring */
-.impact-seal::before {
-    content: '';
-    position: absolute;
-    inset: 6px;
-    border-radius: 50%;
-    border: 1.5px dashed rgba(201,162,39,0.45);
-    pointer-events: none;
-}
-.impact-seal-icon {
-    font-size: 1.7rem;
-    color: #c9a227;
-    line-height: 1;
-}
-.impact-seal-eyebrow {
-    font-size: 0.6rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
+    gap: 10px;
+    background: rgba(201, 162, 39, 0.1);
     color: #a07c10;
-    line-height: 1.2;
-    max-width: 90px;
-}
-.impact-seal-title-external {
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: #1a1a1a;
-    line-height: 1.4;
-    margin: 0;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(201, 162, 39, 0.2);
 }
 
-/* Column 2: Intro — left-aligned, generous breathing room */
-.hero-intro {
-    border-left: 3px solid #f0f0f0;
-    padding-left: 40px;
-}
-.hero-intro h1 {
-    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+.hero-content h1 {
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
     font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
     color: var(--primary-color);
-    line-height: 1.2;
-    margin: 0 0 12px;
-    letter-spacing: -0.2px;
+    letter-spacing: -1px;
 }
-.hero-intro h1 .highlight {
+
+.hero-content h1 .highlight {
     background: linear-gradient(135deg, var(--accent-red) 0%, #d4380d 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.hero-intro .welcome-text {
-    font-size: 1rem;
-    color: #666;
-    line-height: 1.6;
-    max-width: 580px;
-    margin: 0;
+
+.hero-content .welcome-text {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 35px;
 }
+
+.hero-cta {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
 .btn-hero-cta {
     display: inline-flex;
     align-items: center;
-    color: var(--accent-red);
-    font-weight: 800;
-    font-size: 0.95rem;
+    gap: 10px;
+    background: var(--accent-red);
+    color: #fff;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-weight: 700;
     text-decoration: none;
-    transition: all 0.3s ease;
-    border-bottom: 2px solid transparent;
-    padding-bottom: 2px;
-}
-.btn-hero-cta:hover {
-    color: #b01515;
-    border-bottom: 2px solid #b01515;
-    transform: translateX(5px);
+    transition: all 0.3s cubic-bezier(.175,.885,.32,1.275);
+    box-shadow: 0 8px 20px rgba(227,29,28,0.25);
 }
 
-/* PHOTO CAROUSEL */
-.photo-section {
-    padding: 20px 0 20px;
-    background: var(--bg-light); /* Light gray for card contrast */
-    overflow: hidden;
+.btn-hero-cta:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(227,29,28,0.35);
 }
+
+.btn-hero-secondary {
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.btn-hero-secondary:hover {
+    color: var(--accent-red);
+    border-bottom-color: var(--accent-red);
+}
+
+/* Column 2: Visual (The Carousel) */
+.hero-visual {
+    position: relative;
+    width: 100%;
+}
+
+/* Ajustes finos no Swiper dentro do Hero */
+.hero-visual .photo-swiper {
+    padding: 20px 20px 40px;
+    overflow: visible; /* Importante para as sombras não cortarem */
+}
+
+.hero-visual .photo-card {
+    box-shadow: 0 15px 45px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
 .carousel-wrapper {
     max-width: 1200px;
     margin: 0 auto;
@@ -374,16 +366,15 @@ html {
 }
 
 /* RESPONSIVE */
-@media (max-width: 900px) {
-    .hero-grid { grid-template-columns: 160px 1fr; gap: 36px; }
-    .hero-intro { padding-left: 36px; }
+@media (max-width: 1024px) {
+    .hero-premium { padding: 40px 0; }
+    .hero-premium-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+    .hero-content { max-width: 100%; }
+    .hero-cta { justify-content: center; }
+    .hero-visual .photo-swiper { padding: 10px; }
 }
 @media (max-width: 680px) {
-    .hero-grid { grid-template-columns: 1fr; gap: 28px; text-align: center; }
-    .hero-impact { border-right: none; }
-    .hero-intro { border-left: none; padding-left: 0; }
-    .hero-intro h1 { font-size: clamp(1.9rem, 5vw, 2.6rem); }
-    .hero-intro .welcome-text { max-width: 100%; text-align: center; }
+    .hero-content h1 { font-size: 2.2rem; }
     .modalidades-grid { grid-template-columns: 1fr; }
     .how-flow { flex-direction: column; gap: 40px; }
     .how-step:not(:last-child)::after { display: none; }

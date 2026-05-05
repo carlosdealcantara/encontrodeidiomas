@@ -13,16 +13,16 @@ $page_scripts = <<<JS
 <script>
     new Swiper('.photo-swiper', {
         loop: true,
-        slidesPerView: 1,
+        slidesPerView: 1.1,
         centeredSlides: true,
         spaceBetween: 20,
-        speed: 700,
-        autoplay: { delay: 4500, disableOnInteraction: false },
+        speed: 800,
+        autoplay: { delay: 4000, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
         breakpoints: {
-            640:  { slidesPerView: 2, centeredSlides: false },
-            1024: { slidesPerView: 3, centeredSlides: false },
+            768:  { slidesPerView: 1.2, spaceBetween: 30 },
+            1024: { slidesPerView: 1.2, spaceBetween: 40 },
         },
     });
 </script>
@@ -32,99 +32,74 @@ include 'includes/header.php';
 ?>
 
     <main>
-        <!-- HERO SPLIT — Impact (left) + Intro (right) -->
-        <section class="hero-split">
+        <!-- HERO PREMIUM FUSION — Text + Visual Carousel -->
+        <section class="hero-premium">
             <div class="container">
-                <div class="hero-grid">
-                    <!-- Column 1: Premium Seal -->
-                    <div class="hero-impact">
-                        <div class="impact-seal">
-                            <div class="impact-seal-icon">
-                                <i class="fas fa-medal"></i>
-                            </div>
-                            <span class="impact-seal-eyebrow">Referência Nacional</span>
+                <div class="hero-premium-grid">
+                    <!-- Column 1: Impact & Text -->
+                    <div class="hero-content">
+                        <div class="premium-badge">
+                            <i class="fas fa-medal"></i>
+                            <span>Referência Nacional em Prática de Idiomas</span>
                         </div>
-                        <h2 class="impact-seal-title-external">A maior comunidade gratuita de prática de idiomas do país</h2>
-                    </div>
-                    <!-- Column 2: Title & Text -->
-                    <div class="hero-intro">
                         <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
                         <p class="welcome-text">
-                            Pratique idiomas de forma gratuita e natural, em encontros online ou presenciais.
-                            Sem taxas, sem burocracia e com um único objetivo: unir pessoas através da conversação genuína.
+                            Pratique inglês, espanhol e outros idiomas de forma gratuita e natural. 
+                            Participe de uma comunidade vibrante com encontros online e presenciais em todo o país.
                         </p>
-                        <div class="hero-cta" style="margin-top: 30px;">
-                            <a href="#modalidades" class="btn-hero-cta">Ver como participar <i class="fas fa-arrow-right" style="margin-left: 8px; font-size: 0.9em;"></i></a>
+                        <div class="hero-cta">
+                            <a href="#modalidades" class="btn-hero-cta">Ver como participar <i class="fas fa-arrow-right"></i></a>
+                            <a href="links.php" class="btn-hero-secondary">Central de Links</a>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- PHOTO CAROUSEL -->
-        <section class="photo-section">
-            <div class="carousel-wrapper">
-                <div class="swiper photo-swiper">
-                    <div class="swiper-wrapper">
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro presencial com participantes">
-                                <div class="photo-label">Encontros Presenciais</div>
+                    <!-- Column 2: The Integrated Carousel -->
+                    <div class="hero-visual">
+                        <div class="swiper photo-swiper">
+                            <div class="swiper-wrapper">
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro presencial">
+                                        <div class="photo-label">Encontros Presenciais</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro online">
+                                        <div class="photo-label">Encontros Online</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/replay.png" alt="Replay das chamadas">
+                                        <div class="photo-label">Replay das chamadas</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/instagram_social.png" alt="Atividade nas redes sociais">
+                                        <div class="photo-label">Atividade nas redes sociais</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/mentoria.jpg" alt="Mentoria acessível">
+                                        <div class="photo-label">Mentoria acessível</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/Grupos.png" alt="Grupos de idiomas">
+                                        <div class="photo-label">Grupos de idiomas variados</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro online de idiomas">
-                                <div class="photo-label">Encontros Online</div>
-                            </div>
-                        </div>
-
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/replay.png" alt="Replay das chamadas">
-                                <div class="photo-label">Replay das chamadas</div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades em grupo">
-                                <div class="photo-label">Atividades Interativas</div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/mentoria.jpg" alt="Mentoria acessível">
-                                <div class="photo-label">Mentoria acessível</div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Evento ao ar livre">
-                                <div class="photo-label">Eventos ao Ar Livre</div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/Grupos.png" alt="Grupos de idiomas variados">
-                                <div class="photo-label">Grupos de idiomas variados</div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Encontro ao ar livre">
-                                <div class="photo-label">Momentos Marcantes</div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/instagram_social.png" alt="Atividade nas redes sociais">
-                                <div class="photo-label">Atividade nas redes sociais</div>
-                            </div>
+                            <!-- Small refined navigation -->
+                            <div class="swiper-pagination"></div>
+                            <div class="swiper-button-prev"></div>
+                            <div class="swiper-button-next"></div>
                         </div>
                     </div>
-                    <div class="swiper-pagination"></div>
-                    <div class="swiper-button-prev"></div>
-                    <div class="swiper-button-next"></div>
                 </div>
             </div>
         </section>
