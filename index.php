@@ -53,8 +53,8 @@ include 'includes/header.php';
                             Pratique idiomas de forma gratuita e natural, em encontros online ou presenciais.
                             Sem taxas, sem burocracia e com um único objetivo: unir pessoas através da conversação genuína.
                         </p>
-                        <div class="hero-cta" style="margin-top: 24px;">
-                            <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
+                        <div class="hero-cta" style="margin-top: 30px;">
+                            <a href="#modalidades" class="btn-hero-cta">Ver como participar <i class="fas fa-arrow-right" style="margin-left: 8px; font-size: 0.9em;"></i></a>
                         </div>
                     </div>
                 </div>
