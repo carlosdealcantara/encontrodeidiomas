@@ -78,12 +78,7 @@ include 'includes/header.php';
                                 <div class="photo-label">Encontros Online</div>
                             </div>
                         </div>
-                        <div class="swiper-slide">
-                            <div class="photo-card">
-                                <img src="assets/images/encontrodeidiomas-20250408-0002.jpg" alt="Piquenique de idiomas">
-                                <div class="photo-label">Eventos Sociais</div>
-                            </div>
-                        </div>
+
                         <div class="swiper-slide">
                             <div class="photo-card">
                                 <img src="assets/images/replay.png" alt="Replay das chamadas">
