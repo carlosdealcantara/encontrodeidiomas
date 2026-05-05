@@ -209,19 +209,17 @@ html {
 .premium-seal-section {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    padding: 10px 20px;
-    border-radius: 10px;
+    padding: 12px 24px;
+    border-radius: 12px;
     border: 1px solid rgba(201, 162, 39, 0.4);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
     position: relative;
     overflow: hidden;
     animation: slideUpSeal 1s ease-out;
-    transform: scale(0.85);
-    transform-origin: left center;
 }
 
 @keyframes slideUpSeal {
@@ -230,7 +228,7 @@ html {
 }
 
 .premium-seal-section .seal-icon {
-    font-size: 1.6rem;
+    font-size: 2rem;
     color: #c9a227;
     filter: drop-shadow(0 2px 8px rgba(201,162,39,0.3));
     display: flex;
@@ -244,7 +242,7 @@ html {
 }
 
 .premium-seal-section .seal-eyebrow {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1.5px;
@@ -253,7 +251,7 @@ html {
 }
 
 .premium-seal-section .seal-main {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: var(--primary-color);
     line-height: 1.2;
