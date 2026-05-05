@@ -98,6 +98,12 @@ include 'includes/header.php';
                         </div>
                         <div class="swiper-slide">
                             <div class="photo-card">
+                                <img src="assets/images/mentoria.jpg" alt="Mentoria acessível">
+                                <div class="photo-label">Mentoria acessível</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
                                 <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Encontro ao ar livre">
                                 <div class="photo-label">Momentos Marcantes</div>
                             </div>
@@ -112,6 +118,12 @@ include 'includes/header.php';
                             <div class="photo-card">
                                 <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Evento ao ar livre">
                                 <div class="photo-label">Eventos ao Ar Livre</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/instagram_social.png" alt="Atividade nas redes sociais">
+                                <div class="photo-label">Atividade nas redes sociais</div>
                             </div>
                         </div>
                     </div>
