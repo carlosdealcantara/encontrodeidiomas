@@ -37,8 +37,8 @@ html {
 
 .premium-seal {
     position: absolute;
-    bottom: 24px;
-    right: 25px;
+    bottom: 82px; /* Elevado para alinhar com a barra de legenda */
+    right: 45px; /* Recuado para dentro do card */
     z-index: 10;
     pointer-events: none;
     display: inline-flex;
