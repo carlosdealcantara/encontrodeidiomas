@@ -115,8 +115,8 @@ html {
 
 /* Ajustes finos no Swiper dentro do Hero */
 .hero-visual .photo-swiper {
-    padding: 20px 20px 40px;
-    overflow: visible; /* Importante para as sombras não cortarem */
+    padding: 20px 20px 60px; /* Mais padding embaixo para a paginação */
+    overflow: hidden; /* Garante que não invada o texto à esquerda */
 }
 
 .hero-visual .photo-card {

@@ -14,14 +14,15 @@ $page_scripts = <<<JS
     document.addEventListener('DOMContentLoaded', function() {
         new Swiper('.photo-swiper', {
             loop: true,
-            slidesPerView: 1,
-            spaceBetween: 30,
+            slidesPerView: 1.1,
+            centeredSlides: false,
+            spaceBetween: 20,
             speed: 800,
             autoplay: { delay: 4000, disableOnInteraction: false },
             pagination: { el: '.swiper-pagination', clickable: true },
             navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
             breakpoints: {
-                768: { slidesPerView: 1 }
+                768: { slidesPerView: 1.2 }
             }
         });
     });
