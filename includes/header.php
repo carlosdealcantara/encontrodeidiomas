@@ -189,17 +189,29 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         }
 
         .nav-links a {
+            position: relative;
             color: var(--white);
             text-decoration: none;
             padding: 8px 16px;
-            border-radius: 20px;
             transition: all 0.3s ease;
             white-space: nowrap;
+            opacity: 0.8;
         }
 
         .nav-links a:hover,
         .nav-links a.active {
-            color: var(--accent-red);
+            opacity: 1;
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 16px;
+            right: 16px;
+            height: 3px;
+            background-color: var(--accent-red);
+            border-radius: 3px;
         }
 
         /* ============================================================
