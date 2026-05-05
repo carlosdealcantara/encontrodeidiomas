@@ -30,21 +30,30 @@ html {
     max-width: 520px;
 }
 
+.hero-visual {
+    position: relative;
+    width: 100%;
+}
+
 .premium-seal {
+    position: absolute;
+    top: 35px;
+    left: 35px;
+    z-index: 10;
+    pointer-events: none;
     display: inline-flex;
     align-items: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     padding: 10px 22px;
     border-radius: 16px;
     border: 1px solid rgba(201, 162, 39, 0.4);
     box-shadow: 
-        0 8px 32px rgba(31, 38, 135, 0.05),
+        0 8px 32px rgba(0, 0, 0, 0.1),
         inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-    margin-bottom: 30px;
-    position: relative;
+    margin-bottom: 0; /* Reset */
     overflow: hidden;
 }
 

@@ -39,15 +39,6 @@ include 'includes/header.php';
                 <div class="hero-premium-grid">
                     <!-- Column 1: Impact & Text -->
                     <div class="hero-content">
-                        <div class="premium-seal">
-                            <div class="seal-icon">
-                                <i class="fas fa-award"></i>
-                            </div>
-                            <div class="seal-text">
-                                <span class="seal-eyebrow">Referência</span>
-                                <span class="seal-main">Nº 1 do país</span>
-                            </div>
-                        </div>
                         <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
                         <p class="welcome-text">
                             Pratique inglês, espanhol e outros idiomas de forma gratuita e natural. 
@@ -61,6 +52,17 @@ include 'includes/header.php';
 
                     <!-- Column 2: The Integrated Carousel -->
                     <div class="hero-visual">
+                        <!-- Floating Seal on Carousel -->
+                        <div class="premium-seal">
+                            <div class="seal-icon">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <div class="seal-text">
+                                <span class="seal-eyebrow">Referência</span>
+                                <span class="seal-main">Nº 1 do país</span>
+                            </div>
+                        </div>
+
                         <div class="swiper photo-swiper">
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
