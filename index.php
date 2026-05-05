@@ -48,6 +48,19 @@ include 'includes/header.php';
                             <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
                             <a href="links.php" class="btn-hero-secondary">Central de Links <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px; opacity: 0.7;"></i></a>
                         </div>
+
+                        <!-- Hero Authority Seal -->
+                        <div class="hero-seal-content">
+                            <div class="premium-seal-section">
+                                <div class="seal-icon">
+                                    <i class="fas fa-award"></i>
+                                </div>
+                                <div class="seal-text">
+                                    <span class="seal-eyebrow">Referência Nacional</span>
+                                    <span class="seal-main">1º lugar no país</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Column 2: The Integrated Carousel -->
@@ -119,18 +132,7 @@ include 'includes/header.php';
             </div>
         </section>
 
-        <!-- Authority Transition -->
-        <div class="authority-divider">
-            <div class="premium-seal-section">
-                <div class="seal-icon">
-                    <i class="fas fa-award"></i>
-                </div>
-                <div class="seal-text">
-                    <span class="seal-eyebrow">Referência Nacional</span>
-                    <span class="seal-main">1º lugar no país</span>
-                </div>
-            </div>
-        </div>
+
 
         <!-- MODALIDADES -->
         <section id="modalidades" class="modalidades-section">

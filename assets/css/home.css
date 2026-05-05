@@ -197,15 +197,11 @@ html {
     line-height: 1.7;
 }
 
-/* AUTHORITY TRANSITION (Between Hero and Sections) */
-.authority-divider {
-    width: 100%;
+/* HERO AUTHORITY SEAL (Inside Content Column) */
+.hero-seal-content {
+    margin-top: 35px;
     display: flex;
-    justify-content: center;
-    margin-top: -30px; /* Faz o selo 'flutuar' entre as seções */
-    margin-bottom: 20px;
-    position: relative;
-    z-index: 20;
+    justify-content: flex-start;
 }
 
 /* PREMIUM SECTION SEAL (The Definitive One) */
