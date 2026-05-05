@@ -10,13 +10,19 @@ html {
     padding: 60px 0 80px;
     background: linear-gradient(180deg, #fff 0%, var(--bg-light) 100%);
     overflow: hidden;
+    min-height: 500px; /* Estabiliza altura inicial */
 }
 
 .hero-premium-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    gap: 40px;
     align-items: center;
+}
+
+/* Column stabilization for Swiper */
+.hero-content, .hero-visual {
+    min-width: 0;
 }
 
 /* Column 1: Content */

@@ -11,19 +11,19 @@ $extra_head = '<link rel="stylesheet" href="assets/css/home.css">';
 
 $page_scripts = <<<JS
 <script>
-    new Swiper('.photo-swiper', {
-        loop: true,
-        slidesPerView: 1.1,
-        centeredSlides: true,
-        spaceBetween: 20,
-        speed: 800,
-        autoplay: { delay: 4000, disableOnInteraction: false },
-        pagination: { el: '.swiper-pagination', clickable: true },
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        breakpoints: {
-            768:  { slidesPerView: 1.2, spaceBetween: 30 },
-            1024: { slidesPerView: 1.2, spaceBetween: 40 },
-        },
+    document.addEventListener('DOMContentLoaded', function() {
+        new Swiper('.photo-swiper', {
+            loop: true,
+            slidesPerView: 1,
+            spaceBetween: 30,
+            speed: 800,
+            autoplay: { delay: 4000, disableOnInteraction: false },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            breakpoints: {
+                768: { slidesPerView: 1 }
+            }
+        });
     });
 </script>
 JS;
@@ -192,6 +192,5 @@ include 'includes/header.php';
                 </a>
             </div>
         </section>
-    </main>
 
 <?php include 'includes/footer.php'; ?>
