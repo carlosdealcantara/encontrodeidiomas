@@ -43,8 +43,8 @@ include 'includes/header.php';
                                 <i class="fas fa-medal"></i>
                             </div>
                             <span class="impact-seal-eyebrow">Referência Nacional</span>
-                            <h2 class="impact-seal-title">A maior comunidade gratuita de prática de idiomas do país</h2>
                         </div>
+                        <h2 class="impact-seal-title-external">A maior comunidade gratuita de prática de idiomas do país</h2>
                     </div>
                     <!-- Column 2: Title & Text -->
                     <div class="hero-intro">

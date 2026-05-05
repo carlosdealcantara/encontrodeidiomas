@@ -20,19 +20,22 @@ html {
 /* Column 1: Premium Seal */
 .hero-impact {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 16px;
+    text-align: center;
 }
 .impact-seal {
     position: relative;
-    width: 220px;
-    height: 220px;
+    width: 140px;
+    height: 140px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 10px;
+    gap: 8px;
     /* Octagonal seal shape via clip-path */
     background: linear-gradient(145deg, #fffdf0 0%, #fef9e2 100%);
     border: 3px solid #c9a227;
@@ -47,31 +50,31 @@ html {
 .impact-seal::before {
     content: '';
     position: absolute;
-    inset: 8px;
+    inset: 6px;
     border-radius: 50%;
     border: 1.5px dashed rgba(201,162,39,0.45);
     pointer-events: none;
 }
 .impact-seal-icon {
-    font-size: 1.7rem;
+    font-size: 2rem;
     color: #c9a227;
     line-height: 1;
 }
 .impact-seal-eyebrow {
-    font-size: 0.58rem;
+    font-size: 0.65rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 2.5px;
+    letter-spacing: 1.5px;
     color: #a07c10;
     line-height: 1.2;
+    max-width: 90px;
 }
-.impact-seal-title {
-    font-size: 0.8rem;
+.impact-seal-title-external {
+    font-size: 1rem;
     font-weight: 800;
     color: #1a1a1a;
     line-height: 1.4;
     margin: 0;
-    max-width: 160px;
 }
 
 /* Column 2: Intro — left-aligned, generous breathing room */
@@ -371,14 +374,12 @@ html {
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
-    .hero-grid { grid-template-columns: 180px 1fr; gap: 36px; }
-    .impact-seal { width: 180px; height: 180px; }
+    .hero-grid { grid-template-columns: 160px 1fr; gap: 36px; }
     .hero-intro { padding-left: 36px; }
 }
 @media (max-width: 680px) {
     .hero-grid { grid-template-columns: 1fr; gap: 28px; text-align: center; }
     .hero-impact { border-right: none; }
-    .impact-seal { margin: 0 auto; width: 180px; height: 180px; }
     .hero-intro { border-left: none; padding-left: 0; }
     .hero-intro h1 { font-size: clamp(1.9rem, 5vw, 2.6rem); }
     .hero-intro .welcome-text { max-width: 100%; text-align: center; }
@@ -389,8 +390,7 @@ html {
 }
 @media (max-width: 480px) {
     .hero-split { padding: 36px 0 16px; }
-    .impact-seal { width: 160px; height: 160px; }
-    .impact-seal-title { font-size: 0.72rem; }
+    .impact-seal-title-external { font-size: 0.95rem; }
     .cta-cards { grid-template-columns: 1fr; }
     .mod-card { padding: 30px 22px; }
     .photo-swiper .swiper-button-prev,
