@@ -199,7 +199,8 @@ html {
 
 /* HERO AUTHORITY SEAL (Inside Content Column) */
 .hero-seal-content {
-    margin-top: 35px;
+    margin-top: 20px;
+    margin-bottom: 25px;
     display: flex;
     justify-content: flex-start;
 }

@@ -44,12 +44,7 @@ include 'includes/header.php';
                             Pratique inglês, espanhol e outros idiomas de forma gratuita e natural. 
                             Participe de uma comunidade vibrante com encontros online e presenciais em todo o país.
                         </p>
-                        <div class="hero-cta">
-                            <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
-                            <a href="links.php" class="btn-hero-secondary">Central de Links <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px; opacity: 0.7;"></i></a>
-                        </div>
-
-                        <!-- Hero Authority Seal -->
+                        <!-- Hero Authority Seal (Authority Trigger before Action) -->
                         <div class="hero-seal-content">
                             <div class="premium-seal-section">
                                 <div class="seal-icon">
@@ -60,6 +55,11 @@ include 'includes/header.php';
                                     <span class="seal-main">Nº 1 do país</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="hero-cta">
+                            <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
+                            <a href="links.php" class="btn-hero-secondary">Central de Links <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px; opacity: 0.7;"></i></a>
                         </div>
                     </div>
 
