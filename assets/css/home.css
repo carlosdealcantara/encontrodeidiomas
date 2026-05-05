@@ -245,16 +245,16 @@ html {
 }
 
 .premium-seal-section .seal-eyebrow {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     color: #a07c10;
     line-height: 1.2;
 }
 
 .premium-seal-section .seal-main {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: var(--primary-color);
     line-height: 1.2;
