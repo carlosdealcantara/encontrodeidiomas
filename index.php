@@ -99,8 +99,8 @@ include 'includes/header.php';
                         </div>
                         <div class="swiper-slide">
                             <div class="photo-card">
-                                <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Encontro ao ar livre">
-                                <div class="photo-label">Momentos Marcantes</div>
+                                <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Evento ao ar livre">
+                                <div class="photo-label">Eventos ao Ar Livre</div>
                             </div>
                         </div>
                         <div class="swiper-slide">
@@ -111,8 +111,8 @@ include 'includes/header.php';
                         </div>
                         <div class="swiper-slide">
                             <div class="photo-card">
-                                <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Evento ao ar livre">
-                                <div class="photo-label">Eventos ao Ar Livre</div>
+                                <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Encontro ao ar livre">
+                                <div class="photo-label">Momentos Marcantes</div>
                             </div>
                         </div>
                         <div class="swiper-slide">
