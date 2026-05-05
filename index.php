@@ -86,6 +86,12 @@ include 'includes/header.php';
                         </div>
                         <div class="swiper-slide">
                             <div class="photo-card">
+                                <img src="assets/images/replay.png" alt="Replay das chamadas">
+                                <div class="photo-label">Replay das chamadas</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
                                 <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades em grupo">
                                 <div class="photo-label">Atividades Interativas</div>
                             </div>
@@ -94,6 +100,12 @@ include 'includes/header.php';
                             <div class="photo-card">
                                 <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Encontro ao ar livre">
                                 <div class="photo-label">Momentos Marcantes</div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="photo-card">
+                                <img src="assets/images/Grupos.png" alt="Grupos de idiomas variados">
+                                <div class="photo-label">Grupos de idiomas variados</div>
                             </div>
                         </div>
                         <div class="swiper-slide">
