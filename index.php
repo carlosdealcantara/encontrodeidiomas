@@ -49,8 +49,8 @@ include 'includes/header.php';
                             Participe de uma comunidade vibrante com encontros online e presenciais em todo o país.
                         </p>
                         <div class="hero-cta">
-                            <a href="#modalidades" class="btn-hero-cta">Ver como participar <i class="fas fa-arrow-right"></i></a>
-                            <a href="links.php" class="btn-hero-secondary">Central de Links</a>
+                            <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
+                            <a href="links.php" class="btn-hero-secondary">Central de Links <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px; opacity: 0.7;"></i></a>
                         </div>
                     </div>
 
@@ -72,8 +72,8 @@ include 'includes/header.php';
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/replay.png" alt="Replay das chamadas">
-                                        <div class="photo-label">Replay das chamadas</div>
+                                        <img src="assets/images/replay.png" alt="Replay das Chamadas">
+                                        <div class="photo-label">Replay das Chamadas</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
@@ -84,8 +84,8 @@ include 'includes/header.php';
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/mentoria.jpg" alt="Mentoria acessível">
-                                        <div class="photo-label">Mentoria acessível</div>
+                                        <img src="assets/images/mentoria.jpg" alt="Mentoria Acessível">
+                                        <div class="photo-label">Mentoria Acessível</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
@@ -96,8 +96,8 @@ include 'includes/header.php';
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/Grupos.png" alt="Grupos de idiomas variados">
-                                        <div class="photo-label">Grupos de idiomas variados</div>
+                                        <img src="assets/images/Grupos.png" alt="Grupos de Idiomas Variados">
+                                        <div class="photo-label">Grupos de Idiomas Variados</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
@@ -108,8 +108,8 @@ include 'includes/header.php';
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/instagram_social.png" alt="Atividade nas redes sociais">
-                                        <div class="photo-label">Atividade nas redes sociais</div>
+                                        <img src="assets/images/instagram_social.png" alt="Atividade nas Redes Sociais">
+                                        <div class="photo-label">Atividade nas Redes Sociais</div>
                                     </div>
                                 </div>
                             </div>
