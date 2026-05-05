@@ -34,28 +34,26 @@ html {
     display: inline-flex;
     align-items: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: #1a1a1a;
     padding: 10px 22px;
-    border-radius: 16px;
-    border: 1px solid rgba(201, 162, 39, 0.4);
+    border-radius: 12px;
+    border: 2px solid #c9a227;
     box-shadow: 
-        0 8px 32px rgba(31, 38, 135, 0.05),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        0 10px 30px rgba(0,0,0,0.15),
+        inset 0 0 0 1px rgba(201, 162, 39, 0.3);
     margin-bottom: 30px;
     position: relative;
     overflow: hidden;
 }
 
-/* Mantendo o brilho genial que você gostou */
+/* Brilho intenso sobre o fundo escuro */
 .premium-seal::before {
     content: '';
     position: absolute;
     top: 0; left: -150%;
     width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-    animation: shine 5s infinite;
+    background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.4), transparent);
+    animation: shine 4s infinite;
 }
 
 @keyframes shine {
@@ -65,9 +63,9 @@ html {
 }
 
 .seal-icon {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #c9a227;
-    filter: drop-shadow(0 2px 8px rgba(201,162,39,0.3));
+    filter: drop-shadow(0 0 10px rgba(201,162,39,0.5));
     display: flex;
     align-items: center;
 }
@@ -83,14 +81,14 @@ html {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #a07c10;
+    color: rgba(255, 255, 255, 0.6);
     line-height: 1.2;
 }
 
 .seal-main {
     font-size: 0.85rem;
     font-weight: 800;
-    color: var(--primary-color);
+    color: #fff;
     line-height: 1.2;
     white-space: nowrap;
 }
