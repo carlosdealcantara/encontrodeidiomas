@@ -166,33 +166,6 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             margin: 0;
         }
 
-        .header-seal {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 215, 0, 0.1);
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            padding: 4px 10px;
-            border-radius: 50px;
-            margin-left: 10px;
-            vertical-align: middle;
-            transform: translateY(-2px);
-        }
-
-        .header-seal i {
-            color: var(--accent-yellow);
-            font-size: 0.85rem;
-        }
-
-        .header-seal span {
-            color: var(--white);
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
         .site-description {
             font-size: 0.9rem;
             opacity: 0.9;
@@ -349,13 +322,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             <div class="logo-container">
                 <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo">
                 <div>
-                    <div class="site-title">
-                        <?= getSetting('site_title', 'Encontro de Idiomas') ?>
-                        <div class="header-seal">
-                            <i class="fas fa-award"></i>
-                            <span>Nº 1 do Brasil</span>
-                        </div>
-                    </div>
+                    <div class="site-title"><?= getSetting('site_title', 'Encontro de Idiomas') ?></div>
                     <div class="site-description"><?= getSetting('site_description', 'Aprenda se divertindo!') ?></div>
                 </div>
             </div>

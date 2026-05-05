@@ -197,37 +197,70 @@ html {
     line-height: 1.7;
 }
 
-/* SECTION SEAL BADGE (Option B) */
-.section-seal-badge {
+/* PREMIUM SECTION SEAL (The Definitive One) */
+.premium-seal-section {
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    margin: -10px auto 35px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(201, 162, 39, 0.3);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    overflow: hidden;
+}
+
+.premium-seal-section .seal-icon {
+    font-size: 2rem;
+    color: #c9a227;
+    filter: drop-shadow(0 2px 8px rgba(201,162,39,0.3));
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: -10px auto 30px;
-    background: rgba(201, 162, 39, 0.05);
-    border: 1px solid rgba(201, 162, 39, 0.2);
-    padding: 8px 18px;
-    border-radius: 50px;
-    width: fit-content;
-    animation: fadeIn 0.8s ease-out;
 }
 
-.section-seal-badge i {
-    color: #c9a227;
-    font-size: 1.1rem;
+.premium-seal-section .seal-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
 }
 
-.section-seal-badge span {
-    font-size: 0.8rem;
-    font-weight: 700;
+.premium-seal-section .seal-eyebrow {
+    font-size: 0.6rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     color: #a07c10;
+    line-height: 1.2;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.premium-seal-section .seal-main {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* O brilho metálico clássico */
+.premium-seal-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -150%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shine-section 6s infinite;
+}
+
+@keyframes shine-section {
+    0% { left: -150%; }
+    15% { left: 150%; }
+    100% { left: 150%; }
 }
 
 /* MODALIDADES */
