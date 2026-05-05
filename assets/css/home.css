@@ -34,26 +34,28 @@ html {
     display: inline-flex;
     align-items: center;
     gap: 15px;
-    background: linear-gradient(135deg, #fffdf0 0%, #fff 50%, #fef9e2 100%);
-    padding: 12px 20px;
-    border-radius: 12px;
-    border: 2px solid #c9a227;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 22px;
+    border-radius: 16px;
+    border: 1px solid rgba(201, 162, 39, 0.4);
     box-shadow: 
-        0 10px 25px rgba(201,162,39,0.12),
-        inset 0 0 0 2px rgba(255,255,255,1);
+        0 8px 32px rgba(31, 38, 135, 0.05),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
     margin-bottom: 30px;
     position: relative;
     overflow: hidden;
 }
 
-/* Efeito de brilho metálico passando */
+/* Mantendo o brilho genial que você gostou */
 .premium-seal::before {
     content: '';
     position: absolute;
     top: 0; left: -150%;
     width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
-    animation: shine 4s infinite;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shine 5s infinite;
 }
 
 @keyframes shine {
@@ -63,9 +65,9 @@ html {
 }
 
 .seal-icon {
-    font-size: 1.8rem;
+    font-size: 2rem;
     color: #c9a227;
-    filter: drop-shadow(0 2px 4px rgba(201,162,39,0.2));
+    filter: drop-shadow(0 2px 8px rgba(201,162,39,0.3));
     display: flex;
     align-items: center;
 }
@@ -77,16 +79,16 @@ html {
 }
 
 .seal-eyebrow {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     color: #a07c10;
     line-height: 1.2;
 }
 
 .seal-main {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 800;
     color: var(--primary-color);
     line-height: 1.2;

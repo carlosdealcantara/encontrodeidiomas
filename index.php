@@ -41,7 +41,7 @@ include 'includes/header.php';
                     <div class="hero-content">
                         <div class="premium-seal">
                             <div class="seal-icon">
-                                <i class="fas fa-certificate"></i>
+                                <i class="fas fa-award"></i>
                             </div>
                             <div class="seal-text">
                                 <span class="seal-eyebrow">Referência Nacional</span>
