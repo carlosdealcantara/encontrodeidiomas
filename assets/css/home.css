@@ -197,23 +197,37 @@ html {
     line-height: 1.7;
 }
 
+/* AUTHORITY TRANSITION (Between Hero and Sections) */
+.authority-divider {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: -30px; /* Faz o selo 'flutuar' entre as seções */
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 20;
+}
+
 /* PREMIUM SECTION SEAL (The Definitive One) */
 .premium-seal-section {
     display: inline-flex;
     align-items: center;
     gap: 15px;
-    margin: -10px auto 35px;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     padding: 12px 24px;
     border-radius: 12px;
-    border: 1px solid rgba(201, 162, 39, 0.3);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(201, 162, 39, 0.4);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
     position: relative;
-    left: 50%;
-    transform: translateX(-50%);
     overflow: hidden;
+    animation: slideUpSeal 1s ease-out;
+}
+
+@keyframes slideUpSeal {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .premium-seal-section .seal-icon {
