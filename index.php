@@ -39,9 +39,14 @@ include 'includes/header.php';
                 <div class="hero-premium-grid">
                     <!-- Column 1: Impact & Text -->
                     <div class="hero-content">
-                        <div class="premium-badge">
-                            <i class="fas fa-medal"></i>
-                            <span>Referência Nacional em Prática de Idiomas</span>
+                        <div class="premium-seal">
+                            <div class="seal-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div class="seal-text">
+                                <span class="seal-eyebrow">Referência Nacional</span>
+                                <span class="seal-main">A maior comunidade gratuita do país</span>
+                            </div>
                         </div>
                         <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
                         <p class="welcome-text">
