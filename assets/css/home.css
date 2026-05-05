@@ -37,8 +37,8 @@ html {
 
 .premium-seal {
     position: absolute;
-    top: 35px;
-    left: 35px;
+    bottom: 85px; /* Posicionado acima da barra de legenda */
+    right: 35px;
     z-index: 10;
     pointer-events: none;
     display: inline-flex;
@@ -53,7 +53,7 @@ html {
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.1),
         inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-    margin-bottom: 0; /* Reset */
+    margin-bottom: 0;
     overflow: hidden;
 }
 
