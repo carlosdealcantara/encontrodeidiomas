@@ -199,7 +199,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 
         .nav-links a:hover,
         .nav-links a.active {
-            background: var(--accent-red);
+            color: var(--accent-red);
         }
 
         /* ============================================================
