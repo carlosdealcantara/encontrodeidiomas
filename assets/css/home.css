@@ -66,12 +66,12 @@ html {
     line-height: 1.2;
 }
 .impact-seal-title {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 800;
     color: #1a1a1a;
     line-height: 1.4;
     margin: 0;
-    max-width: 145px;
+    max-width: 160px;
 }
 
 /* Column 2: Intro — left-aligned, generous breathing room */
@@ -80,7 +80,7 @@ html {
     padding-left: 50px;
 }
 .hero-intro h1 {
-    font-size: clamp(2rem, 3vw, 2.75rem);
+    font-size: clamp(1.8rem, 2.8vw, 2.4rem);
     font-weight: 800;
     color: var(--primary-color);
     line-height: 1.2;
@@ -393,7 +393,7 @@ html {
 @media (max-width: 480px) {
     .hero-split { padding: 36px 0 16px; }
     .impact-seal { width: 160px; height: 160px; }
-    .impact-seal-title { font-size: 0.65rem; }
+    .impact-seal-title { font-size: 0.72rem; }
     .cta-cards { grid-template-columns: 1fr; }
     .mod-card { padding: 30px 22px; }
     .photo-swiper .swiper-button-prev,
