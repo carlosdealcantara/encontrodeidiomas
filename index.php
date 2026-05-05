@@ -44,8 +44,8 @@ include 'includes/header.php';
                                 <i class="fas fa-award"></i>
                             </div>
                             <div class="seal-text">
-                                <span class="seal-eyebrow">Referência Nacional</span>
-                                <span class="seal-main">1º lugar no país</span>
+                                <span class="seal-eyebrow">Referência</span>
+                                <span class="seal-main">Nº 1 do país</span>
                             </div>
                         </div>
                         <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
