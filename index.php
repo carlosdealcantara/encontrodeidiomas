@@ -60,13 +60,13 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro presencial">
+                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontros Presenciais">
                                         <div class="photo-label">Encontros Presenciais</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro online">
+                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontros Online">
                                         <div class="photo-label">Encontros Online</div>
                                     </div>
                                 </div>
@@ -78,8 +78,8 @@ include 'includes/header.php';
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/instagram_social.png" alt="Atividade nas redes sociais">
-                                        <div class="photo-label">Atividade nas redes sociais</div>
+                                        <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades Interativas">
+                                        <div class="photo-label">Atividades Interativas</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
@@ -90,8 +90,26 @@ include 'includes/header.php';
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/Grupos.png" alt="Grupos de idiomas">
+                                        <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Eventos ao Ar Livre">
+                                        <div class="photo-label">Eventos ao Ar Livre</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/Grupos.png" alt="Grupos de idiomas variados">
                                         <div class="photo-label">Grupos de idiomas variados</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Momentos Marcantes">
+                                        <div class="photo-label">Momentos Marcantes</div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="photo-card">
+                                        <img src="assets/images/instagram_social.png" alt="Atividade nas redes sociais">
+                                        <div class="photo-label">Atividade nas redes sociais</div>
                                     </div>
                                 </div>
                             </div>
