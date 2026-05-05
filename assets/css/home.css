@@ -7,13 +7,13 @@ html {
 
 /* HERO SPLIT — Seal (left) + Intro (right) */
 .hero-split {
-    padding: 56px 0 36px;
+    padding: 40px 0 24px;
     background: #fff;
 }
 .hero-grid {
     display: grid;
     grid-template-columns: 240px 1fr;
-    gap: 60px;
+    gap: 40px;
     align-items: center;
 }
 
@@ -28,8 +28,8 @@ html {
 }
 .impact-seal {
     position: relative;
-    width: 140px;
-    height: 140px;
+    width: 120px;
+    height: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -56,12 +56,12 @@ html {
     pointer-events: none;
 }
 .impact-seal-icon {
-    font-size: 2rem;
+    font-size: 1.7rem;
     color: #c9a227;
     line-height: 1;
 }
 .impact-seal-eyebrow {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1.5px;
@@ -70,7 +70,7 @@ html {
     max-width: 90px;
 }
 .impact-seal-title-external {
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 800;
     color: #1a1a1a;
     line-height: 1.4;
@@ -80,14 +80,14 @@ html {
 /* Column 2: Intro — left-aligned, generous breathing room */
 .hero-intro {
     border-left: 3px solid #f0f0f0;
-    padding-left: 50px;
+    padding-left: 40px;
 }
 .hero-intro h1 {
-    font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
     font-weight: 800;
     color: var(--primary-color);
     line-height: 1.2;
-    margin: 0 0 16px;
+    margin: 0 0 12px;
     letter-spacing: -0.2px;
 }
 .hero-intro h1 .highlight {
@@ -97,9 +97,9 @@ html {
     background-clip: text;
 }
 .hero-intro .welcome-text {
-    font-size: 1.12rem;
+    font-size: 1rem;
     color: #666;
-    line-height: 1.7;
+    line-height: 1.6;
     max-width: 580px;
     margin: 0;
 }
@@ -108,7 +108,7 @@ html {
     align-items: center;
     color: var(--accent-red);
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     text-decoration: none;
     transition: all 0.3s ease;
     border-bottom: 2px solid transparent;
