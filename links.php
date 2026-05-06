@@ -211,6 +211,12 @@ $page_styles = <<<CSS
         .hero-header h1 { font-size: 1.7rem; }
         .twin-grid { grid-template-columns: 1fr; }
         .twin-grid .link-card { min-height: auto; padding: 20px; }
+        
+        /* Evita que o hover fique travado no ícone no mobile */
+        .link-card:hover .icon-box {
+            background: #f0f2f5 !important;
+            color: var(--accent-blue) !important;
+        }
     }
 CSS;
 
