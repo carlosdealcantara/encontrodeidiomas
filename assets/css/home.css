@@ -458,7 +458,6 @@ html {
 }
 @media (max-width: 480px) {
     .hero-split { padding: 36px 0 16px; }
-    .impact-seal-title-external { font-size: 0.95rem; }
     .cta-cards { grid-template-columns: 1fr; }
     .mod-card { padding: 30px 22px; }
     .photo-swiper .swiper-button-prev,

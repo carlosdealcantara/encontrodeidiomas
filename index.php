@@ -119,8 +119,6 @@ include 'includes/header.php';
             </div>
         </section>
 
-
-
         <!-- MODALIDADES -->
         <section id="modalidades" class="modalidades-section">
             <div class="container">
