@@ -44,19 +44,6 @@ include 'includes/header.php';
                             Pratique inglês, espanhol e outros idiomas de forma gratuita e natural. 
                             Participe de uma comunidade vibrante com encontros online e presenciais em todo o país.
                         </p>
-                        <!-- Hero Authority Seal (Authority Trigger before Action) -->
-                        <div class="hero-seal-content">
-                            <div class="premium-seal-section">
-                                <div class="seal-icon">
-                                    <i class="fas fa-award"></i>
-                                </div>
-                                <div class="seal-text">
-                                    <span class="seal-eyebrow">Referência e Liderança Nacional em Idiomas</span>
-                                    <span class="seal-main">O maior ecossistema de prática de idiomas do país</span>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="hero-cta">
                             <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
                             <a href="links.php" class="btn-hero-secondary">Central de Links <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px; opacity: 0.7;"></i></a>
@@ -188,6 +175,19 @@ include 'includes/header.php';
         <!-- COMMUNITY CTA -->
         <section class="community-cta">
             <div class="container">
+                <!-- Authority Seal (Final Trust Point) -->
+                <div class="footer-seal-anchor">
+                    <div class="premium-seal-section">
+                        <div class="seal-icon">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div class="seal-text">
+                            <span class="seal-eyebrow">Referência e Liderança Nacional em Idiomas</span>
+                            <span class="seal-main">O maior ecossistema de prática de idiomas do país</span>
+                        </div>
+                    </div>
+                </div>
+
                 <h2>Faça parte da comunidade</h2>
                 <p>
                     Mais do que praticar idiomas, o Encontro de Idiomas é sobre criar conexões reais.
