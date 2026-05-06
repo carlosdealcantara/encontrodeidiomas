@@ -93,13 +93,15 @@ ob_start();
     .btn-hero-outline {
         display: inline-flex; align-items: center; gap: 10px;
         background: rgba(255,255,255,0.1); color: #fff;
-        padding: 14px 30px; border-radius: 50px; font-weight: 700;
+        padding: 14px 32px; border-radius: 50px; font-weight: 700;
+        font-size: 0.95rem;
         text-decoration: none; border: 1px solid rgba(255,255,255,0.25); transition: all 0.3s;
     }
     .btn-hero-outline:hover { background: rgba(255,255,255,0.2); }
     .hero-stats {
         display: flex; justify-content: center; gap: 80px; flex-wrap: wrap;
-        margin-top: 50px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;
+        margin: 50px auto 0; max-width: 850px;
+        border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;
     }
     .hero-stat { text-align: center; }
     .hero-stat .num { font-size: 2.8rem; font-weight: 800; color: #fff; line-height: 1; }
