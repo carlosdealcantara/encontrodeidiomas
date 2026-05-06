@@ -199,7 +199,8 @@ html {
 
 /* FINAL AUTHORITY SEAL (Footer Section Anchor) */
 .footer-seal-anchor {
-    margin-bottom: 35px;
+    margin-top: 20px;
+    margin-bottom: 45px;
     display: flex;
     justify-content: center;
 }

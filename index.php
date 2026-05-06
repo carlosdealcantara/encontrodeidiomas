@@ -175,6 +175,12 @@ include 'includes/header.php';
         <!-- COMMUNITY CTA -->
         <section class="community-cta">
             <div class="container">
+                <h2>Faça parte da comunidade</h2>
+                <p>
+                    Mais do que praticar idiomas, o Encontro de Idiomas é sobre criar conexões reais.
+                    Conheça pessoas incríveis e construa algo maior junto com a gente.
+                </p>
+
                 <!-- Authority Seal (Final Trust Point) -->
                 <div class="footer-seal-anchor">
                     <div class="premium-seal-section">
@@ -187,12 +193,6 @@ include 'includes/header.php';
                         </div>
                     </div>
                 </div>
-
-                <h2>Faça parte da comunidade</h2>
-                <p>
-                    Mais do que praticar idiomas, o Encontro de Idiomas é sobre criar conexões reais.
-                    Conheça pessoas incríveis e construa algo maior junto com a gente.
-                </p>
                 <div class="cta-cards">
                     <a href="equipe.php" class="cta-card">
                         <i class="fas fa-users"></i>
