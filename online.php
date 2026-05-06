@@ -17,10 +17,7 @@ include 'includes/header.php';
 <main>
     <section class="hero">
         <div class="hero-content container">
-            <div class="hero-badge">
-                <i class="fas fa-globe"></i> Conexão Global
-            </div>
-            <h1>Prática <span>Online</span></h1>
+            <h1>Prática <span>Online</span> em todo o Mundo</h1>
             <p>
                 Conecte-se com pessoas de todo o mundo sem sair de casa. 
                 Nossos encontros online são o coração da nossa comunidade global, 
@@ -29,6 +26,25 @@ include 'includes/header.php';
             <div class="hero-cta-row">
                 <a href="#calendar" class="hero-button">Ver Programação</a>
                 <a href="equipe.php#seja-host" class="hero-button-outline">Seja um Anfitrião</a>
+            </div>
+            
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="num">50+</div>
+                    <div class="lbl">Encontros Mensais</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">10+</div>
+                    <div class="lbl">Idiomas</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">100%</div>
+                    <div class="lbl">Gratuito</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">∞</div>
+                    <div class="lbl">Conexões</div>
+                </div>
             </div>
         </div>
         <a href="#calendar" class="scroll-down"><i class="fas fa-chevron-down"></i></a>

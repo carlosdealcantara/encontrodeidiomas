@@ -277,11 +277,8 @@ include 'includes/header.php';
     <!-- HERO -->
     <section class="hero-presencial">
         <div class="container">
-            <div class="hero-badge">
-                <i class="fas fa-map-marker-alt"></i> Acontece presencialmente
-            </div>
             <h1 class="hero-title">
-                Encontros <span>Presenciais</span><br>em todo o Brasil e além
+                Encontros <span>Presenciais</span><br>em todo o país e além
             </h1>
             <p class="hero-subtitle">
                 Pratique idiomas pessoalmente com pessoas reais, onde quer que você esteja.
@@ -292,7 +289,7 @@ include 'includes/header.php';
                     <a href="#localidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> Ver localidades</a>
                 <?php endif; ?>
                 <a href="#seja-organizador" class="btn-hero-outline">
-                    <i class="fas fa-plus-circle"></i> Organizar na minha cidade
+                    <i class="fas fa-plus-circle"></i> Quero na minha cidade
                 </a>
             </div>
             <div class="hero-stats">
@@ -489,6 +486,23 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
         const target = document.querySelector(this.getAttribute('href'));
         if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     });
+});
+
+// Auto-scroll para as localidades se não houver hash na URL
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        const localidadesSection = document.getElementById('localidades');
+        if (localidadesSection && !window.location.hash) {
+            const header = document.querySelector('.header');
+            const headerHeight = header ? header.offsetHeight : 80;
+            const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+            
+            window.scrollTo({
+                top: targetY,
+                behavior: 'smooth'
+            });
+        }
+    }, 800); 
 });
 </script>
 JS;
