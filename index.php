@@ -51,8 +51,8 @@ include 'includes/header.php';
                                     <i class="fas fa-award"></i>
                                 </div>
                                 <div class="seal-text">
-                                    <span class="seal-eyebrow">Referência Nacional em Prática Mediada</span>
-                                    <span class="seal-main">O maior ecossistema de prática de idiomas do Brasil</span>
+                                    <span class="seal-eyebrow">Referência e Liderança Nacional em Metodologia de Prática Mediada</span>
+                                    <span class="seal-main">O maior ecossistema de prática de idiomas do Brasil com suporte de hosts</span>
                                 </div>
                             </div>
                         </div>
