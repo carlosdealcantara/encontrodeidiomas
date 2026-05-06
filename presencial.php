@@ -98,7 +98,7 @@ ob_start();
     }
     .btn-hero-outline:hover { background: rgba(255,255,255,0.2); }
     .hero-stats {
-        display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;
+        display: flex; justify-content: center; gap: 80px; flex-wrap: wrap;
         margin-top: 50px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;
     }
     .hero-stat { text-align: center; }

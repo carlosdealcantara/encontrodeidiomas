@@ -19,7 +19,7 @@ include 'includes/header.php';
         <div class="hero-content container">
             <h1>Fale <span>Online</span> com pessoas<br>reais de todo o mundo</h1>
             <p>
-                Conecte-se com pessoas do mundo todo sem sair de casa. Junte-se à nossa comunidade global: um ambiente online gratuito e acolhedor para destravar a fala, fazer amigos e praticar idiomas em tempo real.
+                Conecte-se com pessoas do mundo todo sem sair de casa. Junte-se à nossa comunidade global: um ambiente online gratuito e acolhedor para destravar a fala, fazer novas amizades e praticar diferentes idiomas em tempo real com nativos e entusiastas.
             </p>
             <div class="hero-cta-row">
                 <a href="#calendar" class="hero-button"><i class="fas fa-calendar-alt"></i> Ver Programação</a>
@@ -29,7 +29,7 @@ include 'includes/header.php';
             <div class="hero-stats">
                 <div class="hero-stat">
                     <div class="num">50+</div>
-                    <div class="lbl">Encontros Mensais</div>
+                    <div class="lbl">Encontros</div>
                 </div>
                 <div class="hero-stat">
                     <div class="num">10+</div>
