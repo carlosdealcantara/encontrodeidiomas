@@ -17,11 +17,9 @@ include 'includes/header.php';
 <main>
     <section class="hero">
         <div class="hero-content container">
-            <h1>Prática <span>Online</span> com pessoas<br>reais de todo o mundo</h1>
+            <h1>Fale <span>Online</span> com pessoas<br>reais de todo o mundo</h1>
             <p>
-                Conecte-se com pessoas de todo o mundo sem sair de casa. 
-                Nossos encontros online são o coração da nossa comunidade global, 
-                proporcionando um ambiente gratuito e acolhedor para você destravar sua fala, fazer amigos e praticar diversos idiomas em tempo real com nativos e entusiastas.
+                Conecte-se com pessoas do mundo todo sem sair de casa. Junte-se à nossa comunidade global: um ambiente online gratuito e acolhedor para destravar a fala, fazer amigos e praticar idiomas em tempo real.
             </p>
             <div class="hero-cta-row">
                 <a href="#calendar" class="hero-button"><i class="fas fa-calendar-alt"></i> Ver Programação</a>
