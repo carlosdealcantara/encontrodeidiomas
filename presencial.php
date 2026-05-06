@@ -291,7 +291,7 @@ include 'includes/header.php';
                     <a href="#localidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> Ver localidades</a>
                 <?php endif; ?>
                 <a href="#seja-organizador" class="btn-hero-outline">
-                    <i class="fas fa-plus-circle"></i> Quero na minha cidade
+                    <i class="fas fa-plus-circle"></i> Na sua cidade!
                 </a>
             </div>
             <div class="hero-stats">
@@ -417,7 +417,7 @@ include 'includes/header.php';
     <!-- EXPANDA -->
     <section class="expand-section" id="seja-organizador">
         <div class="container">
-            <h2 class="expand-title">Não tem encontro na sua região?</h2>
+            <h2 class="expand-title">Não tem encontro por perto?</h2>
             <p class="expand-desc">
                 Você pode ser o primeiro! Basta criar o grupo local, convidar pessoas e, quando juntar uma turma, combinar um lugar e um dia. É isso — sem complicação.
             </p>
@@ -439,7 +439,7 @@ include 'includes/header.php';
                 </div>
             </div>
             <a href="contato.php" class="btn-expand">
-                <i class="fas fa-hand-raised"></i> Quero organizar na minha região
+                <i class="fas fa-hand-raised"></i> Quero ajuda para organizar
             </a>
         </div>
     </section>
