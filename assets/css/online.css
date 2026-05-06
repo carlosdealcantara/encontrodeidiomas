@@ -1,6 +1,7 @@
 /* ---- ONLINE PAGE STYLES ---- */
 .hero {
-    min-height: 70vh;
+    height: 85vh;
+    min-height: 600px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -9,7 +10,6 @@
     background: linear-gradient(135deg, #0f172a, #1e293b);
     color: var(--white);
     position: relative;
-    padding: 80px 0;
     overflow: hidden;
 }
 .hero::before {
@@ -23,7 +23,7 @@
 .hero-content {
     position: relative;
     z-index: 1;
-    max-width: 900px;
+    max-width: 1000px;
     padding: 0 20px;
     animation: fadeUp 1s ease;
 }
@@ -32,10 +32,10 @@
     to   { opacity:1; transform:translateY(0); }
 }
 .hero h1 {
-    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
     font-weight: 800;
-    margin-bottom: 1.5rem;
-    line-height: 1.2;
+    margin-bottom: 1rem;
+    line-height: 1.1;
     text-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 .hero h1 span {
