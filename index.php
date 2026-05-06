@@ -7,7 +7,7 @@ $og_description = 'Participe gratuitamente de encontros para praticar inglês, e
 $canonical      = 'https://encontrodeidiomas.com.br/';
 $swiper_enabled = true;
 
-$extra_head = '<link rel="stylesheet" href="assets/css/home.css?v=1.0.2">';
+$extra_head = '<link rel="stylesheet" href="assets/css/home.css">';
 
 $page_scripts = <<<JS
 <script>
