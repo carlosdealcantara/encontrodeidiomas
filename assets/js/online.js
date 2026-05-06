@@ -199,18 +199,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Auto-scroll suave
     window.addEventListener('load', function() {
+        if (window.location.hash) return;
+        
         setTimeout(() => {
             const calendarNav = document.querySelector('.calendar-nav');
-            if (calendarNav && !window.location.hash) {
+            if (calendarNav) {
                 const header = document.querySelector('.header');
                 const headerHeight = header ? header.offsetHeight : 80;
                 const targetY = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
                 
-                window.scrollTo({
-                    top: targetY,
-                    behavior: 'smooth'
-                });
+                smoothScrollTo(targetY, 1500); // 1.5 segundos de rolagem
             }
-        }, 800); 
+        }, 1200); // 1.2 segundos de espera
     });
 });
