@@ -463,13 +463,21 @@ html {
     .photo-swiper .swiper-button-prev,
     .photo-swiper .swiper-button-next { display: none; }
     
-    /* Ajuste de quebra de texto para o selo no mobile */
+    /* Ajuste de miniaturização para o selo manter uma linha só no mobile */
     .premium-seal-section { 
-        padding: 12px 20px;
-        text-align: center;
+        padding: 8px 15px;
+        gap: 10px;
+    }
+    .premium-seal-section .seal-icon {
+        font-size: 1.4rem;
+    }
+    .premium-seal-section .seal-eyebrow {
+        font-size: 0.55rem;
+        letter-spacing: 1px;
     }
     .premium-seal-section .seal-main { 
-        white-space: normal; /* Permite quebrar linha se o texto for muito longo */
-        font-size: 0.85rem;
+        white-space: nowrap; 
+        font-size: 0.72rem;
+        letter-spacing: -0.2px; /* Leve aperto para caber */
     }
 }
