@@ -18,7 +18,7 @@
     inset: 0;
     background: url('../images/encontrodeidiomas-20250407-0002.jpg') center/cover;
     opacity: .5;
-    filter: brightness(0.7) blur(2px);
+    filter: brightness(0.7);
 }
 .hero-content {
     position: relative;
@@ -73,7 +73,9 @@
 .hero-stat .lbl { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
 
 .hero-button {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     padding: 14px 32px;
     background: var(--accent-red);
     color: var(--white);

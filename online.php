@@ -17,15 +17,15 @@ include 'includes/header.php';
 <main>
     <section class="hero">
         <div class="hero-content container">
-            <h1>Prática <span>Online</span> com pessoas reais<br>do mundo todo</h1>
+            <h1>Prática <span>Online</span><br>com pessoas reais de todo o mundo</h1>
             <p>
                 Conecte-se com pessoas de todo o mundo sem sair de casa. 
                 Nossos encontros online são o coração da nossa comunidade global, 
                 proporcionando um ambiente gratuito e acolhedor para você destravar sua fala, fazer amigos e praticar diversos idiomas em tempo real com nativos e entusiastas.
             </p>
             <div class="hero-cta-row">
-                <a href="#calendar" class="hero-button">Ver Programação</a>
-                <a href="equipe.php#seja-host" class="hero-button-outline">Seja um Anfitrião</a>
+                <a href="#calendar" class="hero-button"><i class="fas fa-calendar-alt"></i> Ver Programação</a>
+                <a href="equipe.php#seja-host" class="hero-button-outline"><i class="fas fa-user-plus"></i> Seja um Anfitrião</a>
             </div>
             
             <div class="hero-stats">
