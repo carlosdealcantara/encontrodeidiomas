@@ -17,9 +17,19 @@ include 'includes/header.php';
 <main>
     <section class="hero">
         <div class="hero-content container">
-            <h1>Online</h1>
-            <p>Comunidade gratuita para praticar idiomas via videoconferência</p>
-            <a href="#calendar" class="hero-button">Ver Programação</a>
+            <div class="hero-badge">
+                <i class="fas fa-globe"></i> Conexão Global
+            </div>
+            <h1>Prática <span>Online</span></h1>
+            <p>
+                Conecte-se com pessoas de todo o mundo sem sair de casa. 
+                Nossos encontros online são o coração da nossa comunidade global, 
+                proporcionando um ambiente gratuito para você destravar sua fala em diversos idiomas.
+            </p>
+            <div class="hero-cta-row">
+                <a href="#calendar" class="hero-button">Ver Programação</a>
+                <a href="equipe.php#seja-host" class="hero-button-outline">Seja um Anfitrião</a>
+            </div>
         </div>
         <a href="#calendar" class="scroll-down"><i class="fas fa-chevron-down"></i></a>
     </section>

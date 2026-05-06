@@ -1,6 +1,6 @@
 /* ---- ONLINE PAGE STYLES ---- */
 .hero {
-    min-height: 60vh;
+    min-height: 70vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -11,7 +11,6 @@
     position: relative;
     padding: 2rem 0;
     overflow: hidden;
-    margin-top: 20px;
 }
 .hero::before {
     content: '';
@@ -31,19 +30,51 @@
     from { opacity:0; transform:translateY(20px); }
     to   { opacity:1; transform:translateY(0); }
 }
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+}
 .hero h1 {
     font-size: 3.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+.hero h1 span {
     background: linear-gradient(to right, var(--accent-red), var(--accent-yellow));
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-.hero p { font-size:1.2rem; margin-bottom:2rem; }
+.hero p { 
+    font-size: 1.25rem; 
+    margin-bottom: 2.5rem; 
+    line-height: 1.8; 
+    max-width: 700px; 
+    margin-left: auto; 
+    margin-right: auto;
+    opacity: 0.9;
+}
+.hero-cta-row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
 .hero-button {
     display: inline-block;
-    padding: 12px 32px;
+    padding: 14px 36px;
     background: var(--accent-red);
     color: var(--white);
     border-radius: 50px;
@@ -53,8 +84,29 @@
     text-transform: uppercase;
     box-shadow: 0 5px 15px rgba(227,29,28,.4);
     transition: var(--transition);
+    border: 2px solid var(--accent-red);
 }
-.hero-button:hover { transform:translateY(-5px); }
+.hero-button:hover { transform:translateY(-5px); box-shadow: 0 8px 25px rgba(227,29,28,.6); }
+
+.hero-button-outline {
+    display: inline-block;
+    padding: 14px 36px;
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: var(--transition);
+}
+.hero-button-outline:hover { 
+    background: rgba(255,255,255,0.1); 
+    border-color: var(--white);
+    transform:translateY(-5px); 
+}
+
 .scroll-down {
     position: absolute;
     bottom: 30px;

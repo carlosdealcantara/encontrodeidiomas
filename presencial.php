@@ -53,13 +53,24 @@ ob_start();
 ?>
     /* ---- PRESENCIAL PAGE ---- */
     .hero-presencial {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        padding: 100px 0 80px; text-align: center; position: relative; overflow: hidden;
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: linear-gradient(135deg, #0f172a, #270101);
+        color: #fff;
+        position: relative;
+        padding: 80px 0;
+        overflow: hidden;
     }
     .hero-presencial::before {
-        content: ''; position: absolute; inset: 0;
-        background: radial-gradient(ellipse at 30% 50%, rgba(227,29,28,0.15) 0%, transparent 60%),
-                    radial-gradient(ellipse at 70% 50%, rgba(0,38,84,0.3) 0%, transparent 60%);
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url('assets/images/IMG_20250408_174649_714.jpg') center/cover;
+        opacity: .3;
     }
     .hero-presencial .container { position: relative; z-index: 1; }
     .hero-badge {
