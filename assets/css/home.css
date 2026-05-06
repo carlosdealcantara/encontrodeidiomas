@@ -443,7 +443,7 @@ html {
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
-    .hero-premium { padding: 40px 0; }
+    .hero-premium { padding: 80px 0 40px; } /* Aumentado o topo para não cortar com o menu fixo */
     .hero-premium-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
     .hero-content { max-width: 100%; }
     .hero-cta { justify-content: center; }
@@ -452,7 +452,7 @@ html {
 @media (max-width: 680px) {
     .hero-content h1 { font-size: 2.2rem; }
     .modalidades-grid { grid-template-columns: 1fr; }
-    .how-flow { flex-direction: column; gap: 40px; }
+    .how-flow { flex-direction: column; gap: 40px; align-items: center; } /* Centralizado no mobile */
     .how-step:not(:last-child)::after { display: none; }
     .cta-cards { grid-template-columns: 1fr 1fr; }
 }
@@ -462,4 +462,14 @@ html {
     .mod-card { padding: 30px 22px; }
     .photo-swiper .swiper-button-prev,
     .photo-swiper .swiper-button-next { display: none; }
+    
+    /* Ajuste de quebra de texto para o selo no mobile */
+    .premium-seal-section { 
+        padding: 12px 20px;
+        text-align: center;
+    }
+    .premium-seal-section .seal-main { 
+        white-space: normal; /* Permite quebrar linha se o texto for muito longo */
+        font-size: 0.85rem;
+    }
 }
