@@ -177,8 +177,8 @@ include 'includes/header.php';
             <div class="container">
                 <h2>Faça parte da comunidade</h2>
                 <p>
-                    Mais do que praticar idiomas, o Encontro de Idiomas é sobre criar conexões reais.
-                    Conheça pessoas incríveis e construa algo maior junto com a gente.
+                    Mais do que praticar idiomas, o Encontro de Idiomas é sobre criar conexões reais e duradouras.
+                    Conheça pessoas incríveis, faça amizades ao redor do mundo e construa algo verdadeiramente maior junto com a nossa comunidade.
                 </p>
 
                 <!-- Authority Seal (Final Trust Point) -->
