@@ -20,9 +20,27 @@ $initialRole     = $_GET['papel']   ?? 'all';
 ob_start();
 ?>
     /* ---- EQUIPE PAGE STYLES ---- */
-    .section-title { text-align:center; margin-bottom:1rem; font-weight:700; font-size:2.5rem; color:var(--primary-color); position:relative; padding-bottom:15px; }
+    .page-hero {
+        width: 100%;
+        min-height: 50vh;
+        background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 50%, rgba(227, 29, 28, 0.4) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 60px 0;
+        text-align: center;
+    }
+
+    .hero-content-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .section-title { margin-bottom:1rem; font-weight:700; font-size:3rem; color:var(--primary-color); position:relative; padding-bottom:15px; }
     .section-title::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100px; height:4px; background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); border-radius:2px; }
-    .section-description { text-align:center; max-width:800px; margin:0 auto 30px; font-size:1.1rem; color:#666; }
+    .section-description { max-width:800px; margin:0 auto; font-size:1.2rem; color:#555; line-height: 1.6; }
 
     /* Category Tabs */
     .category-tabs {
@@ -226,10 +244,14 @@ $page_styles = ob_get_clean();
 include 'includes/header.php';
 ?>
 
-<main>
+    <section class="page-hero">
+        <div class="hero-content-wrapper">
+            <h1 class="section-title">Equipe</h1>
+            <p class="section-description">Conheça as pessoas incríveis que tornam o Encontro de Idiomas possível!</p>
+        </div>
+    </section>
+
     <div class="container page-wrapper" style="padding: 60px 0;">
-        <h1 class="section-title">Equipe</h1>
-        <p class="section-description">Conheça as pessoas incríveis que tornam o Encontro de Idiomas possível!</p>
 
         <!-- Navegação por Categorias -->
         <div class="category-tabs">

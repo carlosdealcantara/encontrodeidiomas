@@ -23,14 +23,28 @@ $page_styles = <<<CSS
     .links-container {
         max-width: 600px;
         margin: 0 auto;
-        padding: 20px 15px 80px;
+        padding: 40px 15px 80px;
+    }
+
+    /* Page Banner Full-Bleed */
+    .page-banner {
+        width: 100%;
+        min-height: 280px;
+        background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 50%, rgba(227, 29, 28, 0.4) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 40px 0;
     }
 
     /* Header Visual */
     .hero-header {
         text-align: center;
-        margin-bottom: 30px;
         animation: fadeInDown 0.8s ease-out;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 20px;
     }
 
     .hero-image-wrapper {
@@ -226,8 +240,7 @@ $allLinks = getUsefulLinks();
 ?>
 
 <main>
-    <div class="links-container">
-        
+    <section class="page-banner">
         <header class="hero-header">
             <div class="hero-image-wrapper">
                 <img src="assets/images/hero_links_v2.png" alt="Hub de Comunidades" class="hero-image">
@@ -235,9 +248,11 @@ $allLinks = getUsefulLinks();
             <h1>Links</h1>
             <p>Conecte-se com o mundo pelos nossos grupos e recursos.</p>
         </header>
+    </section>
 
+    <div class="links-container">
         <div class="links-wrapper">
-            <div class="section-label">Links</div>
+            <div class="section-label">Central de Links</div>
             <?php 
             $i = 0;
             $twins_buffer = [];
