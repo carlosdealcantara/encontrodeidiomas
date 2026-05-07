@@ -19,6 +19,8 @@
     background: url('../images/encontrodeidiomas-20250407-0002.jpg') center/75% no-repeat;
     opacity: .5;
     filter: brightness(0.7);
+    -webkit-mask-image: linear-gradient(to right, transparent 10%, black 25%, black 75%, transparent 90%);
+    mask-image: linear-gradient(to right, transparent 10%, black 25%, black 75%, transparent 90%);
 }
 .hero-content {
     position: relative;
