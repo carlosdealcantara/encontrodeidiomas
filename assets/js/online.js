@@ -196,20 +196,54 @@ document.addEventListener('DOMContentLoaded', function() {
             updateURL();
         });
     });
-
-    // Auto-scroll suave
-    window.addEventListener('load', function() {
-        if (window.location.hash) return;
-        
-        setTimeout(() => {
-            const calendarNav = document.querySelector('.calendar-nav');
-            if (calendarNav) {
-                const header = document.querySelector('.header');
-                const headerHeight = header ? header.offsetHeight : 80;
-                const targetY = calendarNav.getBoundingClientRect().top + window.pageYOffset - headerHeight + 40;
-                
-                smoothScrollTo(targetY, 1500); // 1.5 segundos de rolagem
-            }
-        }, 1500); // 1.5 segundos de espera
-    });
 });
+
+// Auto-scroll inteligente (Sincronizado)
+window.addEventListener('load', function() {
+    if (window.location.hash) return;
+    
+    setTimeout(() => {
+        // Prioridade 1: O card marcado como alvo (está rolando ou é o próximo)
+        // Prioridade 2: O menu de navegação do calendário
+        const scrollTarget = document.querySelector('.scroll-target') || document.querySelector('.calendar-nav');
+        
+        if (scrollTarget) {
+            const header = document.querySelector('.header');
+            const headerHeight = header ? header.offsetHeight : 80;
+            
+            // Se for um card de evento, usamos um offset menor para não cortar o topo do card
+            const isEventCard = scrollTarget.classList.contains('scroll-target');
+            const extraOffset = isEventCard ? -20 : 40;
+            
+            const targetY = scrollTarget.getBoundingClientRect().top + window.pageYOffset - headerHeight + extraOffset;
+            
+            // Re-importamos a função smoothScrollTo aqui ou garantimos que ela esteja no escopo global
+            // Como ela está dentro do DOMContentLoaded, vamos movê-la para fora para ser acessível.
+            window.onlineSmoothScrollTo(targetY, 1500); 
+        }
+    }, 1500); 
+});
+
+// Função de rolagem movida para o escopo global para permitir acesso externo
+window.onlineSmoothScrollTo = function(endY, duration) {
+    const startY = window.pageYOffset;
+    const distance = endY - startY;
+    let startTime = null;
+
+    function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const run = ease(timeElapsed, startY, distance, duration);
+        window.scrollTo(0, run);
+        if (timeElapsed < duration) requestAnimationFrame(animation);
+    }
+
+    function ease(t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t + b;
+        t--;
+        return -c / 2 * (t * (t - 2) - 1) + b;
+    }
+
+    requestAnimationFrame(animation);
+};
