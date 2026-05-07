@@ -22,14 +22,15 @@ ob_start();
     /* ---- EQUIPE PAGE STYLES ---- */
     .page-hero {
         width: 100%;
-        min-height: 45vh;
+        height: 45vh !important;
         background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 50%, rgba(227, 29, 28, 0.4) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         border-bottom: 1px solid rgba(0,0,0,0.05);
-        padding: 60px 0;
+        padding: 20px 0;
         text-align: center;
+        overflow: hidden;
     }
 
     .hero-content-wrapper {

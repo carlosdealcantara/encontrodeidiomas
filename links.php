@@ -29,13 +29,14 @@ $page_styles = <<<CSS
     /* Page Banner Full-Bleed */
     .page-banner {
         width: 100%;
-        min-height: 45vh;
+        height: 45vh !important;
         background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 50%, rgba(227, 29, 28, 0.4) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         border-bottom: 1px solid rgba(0,0,0,0.05);
-        padding: 40px 0;
+        padding: 20px 0;
+        overflow: hidden;
     }
 
     /* Header Visual */
@@ -49,8 +50,8 @@ $page_styles = <<<CSS
 
     .hero-image-wrapper {
         width: 100%;
-        max-width: 260px;
-        margin: 0 auto 15px;
+        max-width: 220px;
+        margin: 0 auto 10px;
         position: relative;
     }
 
