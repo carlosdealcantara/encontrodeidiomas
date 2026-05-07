@@ -7,7 +7,7 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 50%, rgba(227, 29, 28, 0.4) 100%);
+    background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 30%, #ffffff 70%, rgba(227, 29, 28, 0.4) 100%);
     color: var(--primary-color);
     position: relative;
     overflow: hidden;
@@ -19,7 +19,6 @@
     inset: 0;
     background: url('../images/encontrodeidiomas-20250407-0002.jpg') center/75% no-repeat;
     opacity: .35;
-    filter: brightness(1.1);
 }
 .hero-content {
     position: relative;
