@@ -76,7 +76,7 @@ $page_styles = <<<CSS
     .hero-header p {
         color: #666;
         font-size: 1rem;
-        max-width: 85%;
+        max-width: 100%;
         margin: 0 auto;
     }
 
