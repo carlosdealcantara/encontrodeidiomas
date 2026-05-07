@@ -275,7 +275,7 @@ include 'includes/header.php';
                     <img src="assets/images/hero_contact.png" alt="Fale Conosco" class="hero-image">
                 </div>
                 <h1>Fale Conosco</h1>
-                <p>Quer tirar dúvidas, dar sugestões ou se juntar ao nosso <br> time de voluntários e anfitriões? Envie sua mensagem!</p>
+                <p>Quer tirar dúvidas, dar sugestões ou se juntar ao nosso time de voluntários e anfitriões? Envie sua mensagem!</p>
             </header>
         </section>
 
