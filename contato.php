@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         const formCard = document.querySelector('.contact-form-card');
         if (formCard) {
-            const offset = 180; // Mais respiro para não ficar colado
+            const offset = 120; // 80px (header) + 40px (respiro) = Corte perfeito no Hero
             const targetY = formCard.getBoundingClientRect().top + window.pageYOffset - offset;
             smoothScrollTo(targetY, 1500);
         }
