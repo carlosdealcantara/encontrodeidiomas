@@ -280,7 +280,7 @@ include 'includes/header.php';
                 <img src="assets/images/hero_team.png" alt="Nossa Equipe" class="hero-image">
             </div>
             <h1>Equipe</h1>
-            <p>Conheça as pessoas incríveis que tornam o Encontro de Idiomas possível!</p>
+            <p>Conheça as pessoas incríveis que <br> tornam o Encontro de Idiomas possível!</p>
         </header>
     </section>
 
