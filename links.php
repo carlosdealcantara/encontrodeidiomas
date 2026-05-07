@@ -351,11 +351,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         const wrapper = document.querySelector('.links-wrapper');
         if (wrapper) {
-            const offset = 80; // Alinhado com o header para esconder o hero
+            const offset = 100; // Restaurado para o valor original perfeito
             const targetY = wrapper.getBoundingClientRect().top + window.pageYOffset - offset;
             smoothScrollTo(targetY, 1500);
         }
-    }, 2000); // 2 segundos de espera real
+    }, 2000); 
 });
 </script>
 
