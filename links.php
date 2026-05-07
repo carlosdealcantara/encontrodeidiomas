@@ -246,7 +246,7 @@ $allLinks = getUsefulLinks();
                 <img src="assets/images/hero_links_v2.png" alt="Hub de Comunidades" class="hero-image">
             </div>
             <h1>Links</h1>
-            <p>Conecte-se com o mundo pelos nossos grupos e recursos.</p>
+            <p>Conecte-se com o mundo pelos <br> nossos grupos e recursos.</p>
         </header>
     </section>
 
@@ -323,5 +323,23 @@ $allLinks = getUsefulLinks();
 
     </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const wrapper = document.querySelector('.links-wrapper');
+        if (wrapper) {
+            const offset = 100; // Espaço reservado para o header/banner
+            const elementPosition = wrapper.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }, 600); // Delay suave para o usuário perceber a transição
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>
