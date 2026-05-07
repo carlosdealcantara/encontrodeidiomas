@@ -519,11 +519,11 @@ window.addEventListener('load', function() {
         if (localidadesSection) {
             const header = document.querySelector('.header');
             const headerHeight = header ? header.offsetHeight : 80;
-            const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - headerHeight - 80;
+            const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - headerHeight - 180;
             
             smoothScrollTo(targetY, 1500); // 1.5 segundos de rolagem
         }
-    }, 1200); // 1.2 segundos de espera
+    }, 1500); // 1.5 segundos de espera
 });
 </script>
 JS;
