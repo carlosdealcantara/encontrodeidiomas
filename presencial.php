@@ -280,7 +280,7 @@ include 'includes/header.php';
     <section class="hero-presencial">
         <div class="container">
             <h1 class="hero-title">
-                Encontros <span>Presenciais</span><br>em todo o país e além
+                &nbsp;Encontros <span>Presenciais</span>&nbsp;<br>&nbsp;em todo o país e além&nbsp;
             </h1>
             <p class="hero-subtitle">
                 Pratique idiomas pessoalmente com pessoas reais, onde quer que você esteja.

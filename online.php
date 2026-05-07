@@ -17,9 +17,9 @@ include 'includes/header.php';
 <main>
     <section class="hero">
         <div class="hero-content container">
-            <h1>Fale <span>Online</span> com pessoas<br>reais de todo o mundo</h1>
+            <h1>Fale <span>Online</span> com pessoas<br>reais de todo o planeta</h1>
             <p>
-                Conecte-se com pessoas do mundo todo sem sair de casa. Junte-se à nossa comunidade global: um ambiente online gratuito e acolhedor para destravar a fala, fazer novas amizades e praticar idiomas em tempo real com nativos.
+                Conecte-se com pessoas do mundo todo sem sair de casa. Junte-se à nossa comunidade global: um ambiente online gratuito e acolhedor para destravar a fala, fazer novas amizades e praticar idiomas com nativos.
             </p>
             <div class="hero-cta-row">
                 <a href="#calendar" class="hero-button"><i class="fas fa-calendar-alt"></i> Ver Programação</a>
