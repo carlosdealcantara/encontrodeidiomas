@@ -73,8 +73,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
            ============================================================ */
         :root {
             --primary-color:  #1a1a1a;
-            --accent-red:     #B31942;
-            --accent-blue:    #0A3161;
+            --accent-red:     #e31d1c;
+            --accent-blue:    #002654;
             --accent-yellow:  #ffd700;
             --text-color:     #333;
             --bg-light:       #f8f9fa;
