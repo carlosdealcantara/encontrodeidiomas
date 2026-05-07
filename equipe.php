@@ -627,6 +627,24 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 JS;
-
-include 'includes/footer.php';
 ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const tabs = document.querySelector('.category-tabs');
+        if (tabs) {
+            const offset = 100; // Espaço para o header
+            const elementPosition = tabs.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }, 600);
+});
+</script>
+
+<?php include 'includes/footer.php'; ?>

@@ -319,4 +319,22 @@ include 'includes/header.php';
         </div>
     </main>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const formCard = document.querySelector('.contact-form-card');
+        if (formCard) {
+            const offset = 100; // Espaço para o header
+            const elementPosition = formCard.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }, 600);
+});
+</script>
+
 <?php include 'includes/footer.php'; ?>
