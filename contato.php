@@ -345,11 +345,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         const formCard = document.querySelector('.contact-form-card');
         if (formCard) {
-            const offset = 200; // Offset maior para respiro em Contato
+            const offset = 80; // Exatamente após o fim do Hero (altura do header)
             const targetY = formCard.getBoundingClientRect().top + window.pageYOffset - offset;
             smoothScrollTo(targetY, 1500);
         }
-    }, 1500);
+    }, 2000); // 2 segundos de espera real
 });
 </script>
 

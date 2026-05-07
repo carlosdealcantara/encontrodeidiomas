@@ -597,11 +597,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         const tabsEl = document.querySelector('.category-tabs');
         if (tabsEl) {
-            const offset = 140; 
+            const offset = 80; // Alinhado com o header
             const targetY = tabsEl.getBoundingClientRect().top + window.pageYOffset - offset;
             smoothScrollTo(targetY, 1500);
         }
-    }, 1500);
+    }, 2000); // 2 segundos de espera real
 });
 </script>
 JS;
