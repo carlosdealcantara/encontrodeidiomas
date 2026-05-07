@@ -29,12 +29,13 @@ ob_start();
         justify-content: center;
         border-bottom: 1px solid rgba(0,0,0,0.05);
         padding: 20px 0;
-        text-align: center;
         overflow: hidden;
     }
 
-    .hero-content-wrapper {
-        max-width: 800px;
+    .hero-header {
+        text-align: center;
+        animation: fadeInDown 0.8s ease-out;
+        max-width: 600px;
         margin: 0 auto;
         padding: 0 20px;
     }
@@ -53,9 +54,23 @@ ob_start();
         transform: scale(1.05);
     }
 
-    .section-title { margin-bottom:1rem; font-weight:700; font-size:3rem; color:var(--primary-color); position:relative; padding-bottom:15px; }
-    .section-title::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100px; height:4px; background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); border-radius:2px; }
-    .section-description { max-width:800px; margin:0 auto; font-size:1.2rem; color:#555; line-height: 1.6; }
+    .hero-header h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 5px;
+        background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-blue) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -1.5px;
+    }
+
+    .hero-header p {
+        color: #666;
+        font-size: 1rem;
+        max-width: 100%;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
 
     /* Category Tabs */
     .category-tabs {
@@ -260,13 +275,13 @@ include 'includes/header.php';
 ?>
 
     <section class="page-hero">
-        <div class="hero-content-wrapper">
+        <header class="hero-header">
             <div class="hero-image-wrapper">
                 <img src="assets/images/hero_team.png" alt="Nossa Equipe" class="hero-image">
             </div>
-            <h1 class="section-title">Equipe</h1>
-            <p class="section-description">Conheça as pessoas incríveis que tornam o Encontro de Idiomas possível!</p>
-        </div>
+            <h1>Equipe</h1>
+            <p>Conheça as pessoas incríveis que tornam o Encontro de Idiomas possível!</p>
+        </header>
     </section>
 
     <div class="container page-wrapper" style="padding: 60px 0;">
