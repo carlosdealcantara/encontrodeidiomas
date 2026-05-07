@@ -22,7 +22,7 @@ ob_start();
     /* ---- EQUIPE PAGE STYLES ---- */
     .page-hero {
         width: 100%;
-        min-height: 50vh;
+        min-height: 45vh;
         background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 50%, rgba(227, 29, 28, 0.4) 100%);
         display: flex;
         align-items: center;
