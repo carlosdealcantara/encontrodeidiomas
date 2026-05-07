@@ -8,10 +8,10 @@ html {
 /* HERO PREMIUM — Fusion Layout */
 .hero-premium {
     padding: 75px 0 90px;
-    background: linear-gradient(135deg, #0f172a, #270101);
+    background: linear-gradient(135deg, rgba(0, 38, 84, 0.06) 0%, #ffffff 50%, rgba(227, 29, 28, 0.06) 100%);
     overflow: hidden;
     min-height: 520px; 
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .hero-premium-grid {
@@ -50,7 +50,7 @@ html {
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 20px;
-    color: #fff;
+    color: var(--primary-color);
     letter-spacing: -1px;
 }
 
@@ -63,7 +63,7 @@ html {
 
 .hero-content .welcome-text {
     font-size: 1.1rem;
-    color: rgba(255,255,255,0.85);
+    color: #555;
     line-height: 1.7;
     margin-bottom: 35px;
 }
@@ -95,7 +95,7 @@ html {
 
 .btn-hero-secondary {
     font-weight: 700;
-    color: #fff;
+    color: var(--primary-color);
     text-decoration: none;
     border-bottom: 2px solid transparent;
     transition: all 0.3s;
