@@ -327,19 +327,35 @@ $allLinks = getUsefulLinks();
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Função de rolagem suave padronizada (mesma do Online/Presencial)
+    function smoothScrollTo(endY, duration) {
+        const startY = window.pageYOffset;
+        const distance = endY - startY;
+        let startTime = null;
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const run = ease(timeElapsed, startY, distance, duration);
+            window.scrollTo(0, run);
+            if (timeElapsed < duration) requestAnimationFrame(animation);
+        }
+        function ease(t, b, c, d) {
+            t /= d / 2;
+            if (t < 1) return c / 2 * t * t + b;
+            t--;
+            return -c / 2 * (t * (t - 2) - 1) + b;
+        }
+        requestAnimationFrame(animation);
+    }
+
     setTimeout(function() {
         const wrapper = document.querySelector('.links-wrapper');
         if (wrapper) {
-            const offset = 100; // Espaço reservado para o header/banner
-            const elementPosition = wrapper.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
+            const offset = 140; // Offset padronizado
+            const targetY = wrapper.getBoundingClientRect().top + window.pageYOffset - offset;
+            smoothScrollTo(targetY, 1500); // Duração padronizada
         }
-    }, 600); // Delay suave para o usuário perceber a transição
+    }, 1500); // Delay padronizado
 });
 </script>
 

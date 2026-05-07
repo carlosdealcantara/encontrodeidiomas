@@ -77,7 +77,7 @@ $page_styles = <<<CSS
     .hero-header p {
         color: #666;
         font-size: 1rem;
-        max-width: 85%;
+        max-width: 100%;
         margin: 0 auto;
         line-height: 1.5;
     }
@@ -321,19 +321,35 @@ include 'includes/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Função de rolagem suave padronizada (mesma do Online/Presencial)
+    function smoothScrollTo(endY, duration) {
+        const startY = window.pageYOffset;
+        const distance = endY - startY;
+        let startTime = null;
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const run = ease(timeElapsed, startY, distance, duration);
+            window.scrollTo(0, run);
+            if (timeElapsed < duration) requestAnimationFrame(animation);
+        }
+        function ease(t, b, c, d) {
+            t /= d / 2;
+            if (t < 1) return c / 2 * t * t + b;
+            t--;
+            return -c / 2 * (t * (t - 2) - 1) + b;
+        }
+        requestAnimationFrame(animation);
+    }
+
     setTimeout(function() {
         const formCard = document.querySelector('.contact-form-card');
         if (formCard) {
-            const offset = 100; // Espaço para o header
-            const elementPosition = formCard.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
+            const offset = 200; // Offset maior para respiro em Contato
+            const targetY = formCard.getBoundingClientRect().top + window.pageYOffset - offset;
+            smoothScrollTo(targetY, 1500);
         }
-    }, 600);
+    }, 1500);
 });
 </script>
 

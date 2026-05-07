@@ -219,8 +219,8 @@ ob_start();
     .contact-btn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:#f0f2f5; color:var(--text-color); transition:var(--transition); font-size: 0.9rem; }
     .contact-btn:hover { transform:translateY(-3px); background: var(--accent-red); color: white; }
 
-    .cta-section { padding: 0 0 10px 0; text-align: center; } 
-    .cta-button-footer { margin-top: 10px; display:inline-block; padding:15px 40px; background:var(--white); color:var(--accent-red); text-decoration:none; font-weight:700; border-radius:50px; }
+    .cta-section { padding: 40px 0 60px; text-align: center; background: #f8f9fa; border-top: 1px solid #eee; margin-top: 60px; } 
+    .cta-button-footer { margin-top: 20px; display:inline-block; padding:15px 40px; background:var(--accent-red); color:white; text-decoration:none; font-weight:700; border-radius:50px; }
 
     .host-badges-container { 
         position:absolute; 
@@ -274,6 +274,7 @@ $page_styles = ob_get_clean();
 include 'includes/header.php';
 ?>
 
+<main>
     <section class="page-hero">
         <header class="hero-header">
             <div class="hero-image-wrapper">
@@ -458,7 +459,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     const regionDropdown = document.getElementById('region-dropdown');
     regions.forEach(reg => {
-        // Pular valores inválidos ou "Não informado"
         const cleanReg = reg.trim();
         if (!cleanReg || cleanReg.toLowerCase().includes('informado')) return;
 
@@ -466,9 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
         item.className = 'dropdown-item';
         item.dataset.value = cleanReg;
         
-        // Formata: "Brasília - DF" (Garante Sigla em Maiúsculo)
         let displayText = cleanReg.split(' ').map(word => {
-            // Se for a sigla (ex: df, sp, rj) ou palavras curtas após o hifen
             if (word.length === 2 && !word.includes('-')) return word.toUpperCase();
             if (word.includes('-')) {
                 return word.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' - ');
@@ -477,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join(' ');
 
         item.textContent = displayText;
-        item.classList.add('filterable-item'); // Marca para o filtro de busca
+        item.classList.add('filterable-item');
 
         const otherLink = regionDropdown.querySelector('.other-link');
         if (otherLink) {
@@ -487,112 +485,71 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Alternância de Abas
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             tabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
-            
             currentTab = this.dataset.tab;
-            
             filterGroups.forEach(g => g.classList.remove('active'));
             const filterGroup = document.getElementById('filter-' + currentTab);
             if (filterGroup) filterGroup.classList.add('active');
-            
             applyFilters();
             updateURL();
         });
     });
 
-    // Eventos de Dropdown (Global)
     document.addEventListener('click', function(e) {
-        // Toggle dropdown
         if (e.target.closest('.dropdown-button')) {
             const btn = e.target.closest('.dropdown-button');
             const content = btn.nextElementSibling;
-            
             document.querySelectorAll('.dropdown-content').forEach(c => {
                 if (c !== content) c.classList.remove('show');
             });
             content.classList.toggle('show');
             e.stopPropagation();
-        } 
-        // Seleção de item
-        else if (e.target.classList.contains('dropdown-item') || e.target.closest('.dropdown-item')) {
+        } else if (e.target.classList.contains('dropdown-item') || e.target.closest('.dropdown-item')) {
             const item = e.target.classList.contains('dropdown-item') ? e.target : e.target.closest('.dropdown-item');
-            
-            if (item.classList.contains('dropdown-item-link')) {
-                return; // Deixa o link funcionar normalmente
-            }
-
+            if (item.classList.contains('dropdown-item-link')) return;
             const wrapper = item.closest('.filter-group');
             const type = wrapper.id.replace('filter-', '');
-            const value = item.dataset.value;
-            const text = item.textContent.trim();
-
-            currentFilters[type] = value;
-            wrapper.querySelector('.dropdown-button span span').textContent = text;
-            
+            currentFilters[type] = item.dataset.value;
+            wrapper.querySelector('.dropdown-button span span').textContent = item.textContent.trim();
             document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
-            
             applyFilters();
             updateURL();
-        }
-        // Fechar ao clicar fora
-        else {
+        } else {
             if (!e.target.closest('.dropdown-search-wrapper')) {
                 document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
             }
         }
     });
 
-    // Lógica de busca nos dropdowns
     document.querySelectorAll('.dropdown-search-input').forEach(input => {
         input.addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase().trim();
             const dropdown = e.target.closest('.dropdown-content');
-            const items = dropdown.querySelectorAll('.filterable-item');
-
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if (text.includes(term)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
+            dropdown.querySelectorAll('.filterable-item').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(term) ? 'flex' : 'none';
             });
         });
     });
 
     function applyFilters() {
-        console.log('Filtrando para aba:', currentTab);
-        let visibleCount = 0;
-
         hostCards.forEach(card => {
-            const cardCatsRaw = card.dataset.categories || '';
-            // No dev a separação é por ESPAÇO, mas vamos garantir ambos
-            const cardCats = cardCatsRaw.split(/[\s,]+/).map(s => s.trim().toLowerCase());
-            
+            const cardCats = (card.dataset.categories || '').split(/[\s,]+/).map(s => s.trim().toLowerCase());
             const cardLangs = (card.dataset.languages || '').split(/[\s,]+/).map(s => s.trim().toLowerCase());
             const cardRegion = (card.dataset.region || '').trim().toLowerCase();
             const cardRoles = (card.dataset.roles || '').split(/[\s,]+/).map(s => s.trim().toLowerCase());
 
             let visible = cardCats.includes(currentTab.toLowerCase());
-
             if (visible) {
-                if (currentTab === 'online' && currentFilters.online !== 'all') {
-                    visible = cardLangs.includes(currentFilters.online.toLowerCase());
-                } else if (currentTab === 'presencial' && currentFilters.presencial !== 'all') {
-                    visible = cardRegion === currentFilters.presencial.toLowerCase();
-                } else if (currentTab === 'tecnica' && currentFilters.tecnica !== 'all') {
-                    visible = cardRoles.some(r => r.includes(currentFilters.tecnica.toLowerCase()));
-                }
+                if (currentTab === 'online' && currentFilters.online !== 'all') visible = cardLangs.includes(currentFilters.online.toLowerCase());
+                else if (currentTab === 'presencial' && currentFilters.presencial !== 'all') visible = cardRegion === currentFilters.presencial.toLowerCase();
+                else if (currentTab === 'tecnica' && currentFilters.tecnica !== 'all') visible = cardRoles.some(r => r.includes(currentFilters.tecnica.toLowerCase()));
             }
 
             card.style.display = visible ? 'block' : 'none';
             if (visible) {
-                visibleCount++;
-                // Atualizar contextos internos
                 card.querySelectorAll('.context-online, .context-presencial, .context-tecnica').forEach(el => {
                     el.style.display = el.classList.contains('context-' + currentTab) ? '' : 'none';
                     if (el.tagName === 'P') el.classList.add('active');
@@ -601,50 +558,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.querySelectorAll('.host-bio').forEach(p => p.classList.remove('active'));
             }
         });
-
-        console.log('Membros visíveis:', visibleCount);
-        becomeHostCard.style.display = 'flex';
     }
 
     function updateURL() {
         const url = new URL(window.location);
         url.searchParams.set('tab', currentTab);
-        
         const paramMap = { online: 'idioma', presencial: 'regiao', tecnica: 'papel' };
         Object.keys(paramMap).forEach(key => {
-            if (key === currentTab && currentFilters[key] !== 'all') {
-                url.searchParams.set(paramMap[key], currentFilters[key]);
-            } else {
-                url.searchParams.delete(paramMap[key]);
-            }
+            if (key === currentTab && currentFilters[key] !== 'all') url.searchParams.set(paramMap[key], currentFilters[key]);
+            else url.searchParams.delete(paramMap[key]);
         });
-        
         window.history.pushState({}, '', url);
     }
 
-    // Inicialização
     applyFilters();
+
+    // Auto-scroll padronizado
+    function smoothScrollTo(endY, duration) {
+        const startY = window.pageYOffset;
+        const distance = endY - startY;
+        let startTime = null;
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const run = ease(timeElapsed, startY, distance, duration);
+            window.scrollTo(0, run);
+            if (timeElapsed < duration) requestAnimationFrame(animation);
+        }
+        function ease(t, b, c, d) {
+            t /= d / 2;
+            if (t < 1) return c / 2 * t * t + b;
+            t--;
+            return -c / 2 * (t * (t - 2) - 1) + b;
+        }
+        requestAnimationFrame(animation);
+    }
+
+    setTimeout(function() {
+        const tabsEl = document.querySelector('.category-tabs');
+        if (tabsEl) {
+            const offset = 140; 
+            const targetY = tabsEl.getBoundingClientRect().top + window.pageYOffset - offset;
+            smoothScrollTo(targetY, 1500);
+        }
+    }, 1500);
 });
 </script>
 JS;
+
+include 'includes/footer.php';
 ?>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        const tabs = document.querySelector('.category-tabs');
-        if (tabs) {
-            const offset = 100; // Espaço para o header
-            const elementPosition = tabs.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-        }
-    }, 600);
-});
-</script>
-
-<?php include 'includes/footer.php'; ?>
