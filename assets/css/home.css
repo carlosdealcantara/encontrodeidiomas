@@ -7,10 +7,12 @@ html {
 
 /* HERO PREMIUM — Fusion Layout */
 .hero-premium {
-    padding: 75px 0 90px;
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
     background: linear-gradient(135deg, rgba(0, 38, 84, 0.4) 0%, #ffffff 50%, rgba(227, 29, 28, 0.4) 100%);
     overflow: hidden;
-    min-height: 520px; 
+    position: relative;
     border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
