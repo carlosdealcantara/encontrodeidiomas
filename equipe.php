@@ -39,6 +39,20 @@ ob_start();
         padding: 0 20px;
     }
 
+    .hero-image-wrapper {
+        width: 100%;
+        max-width: 220px;
+        margin: 0 auto 10px;
+        position: relative;
+    }
+
+    .hero-image {
+        width: 100%;
+        height: auto;
+        filter: drop-shadow(0 10px 20px rgba(0,38,84,0.1));
+        transform: scale(1.05);
+    }
+
     .section-title { margin-bottom:1rem; font-weight:700; font-size:3rem; color:var(--primary-color); position:relative; padding-bottom:15px; }
     .section-title::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100px; height:4px; background:linear-gradient(to right,var(--accent-red),var(--accent-blue)); border-radius:2px; }
     .section-description { max-width:800px; margin:0 auto; font-size:1.2rem; color:#555; line-height: 1.6; }
@@ -247,6 +261,9 @@ include 'includes/header.php';
 
     <section class="page-hero">
         <div class="hero-content-wrapper">
+            <div class="hero-image-wrapper">
+                <img src="assets/images/hero_team.png" alt="Nossa Equipe" class="hero-image">
+            </div>
             <h1 class="section-title">Equipe</h1>
             <p class="section-description">Conheça as pessoas incríveis que tornam o Encontro de Idiomas possível!</p>
         </div>
