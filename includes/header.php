@@ -430,34 +430,35 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <?php if (!empty($extra_head)) echo $extra_head; ?>
 </head>
 <body>
-    <?php if (getSetting('global_notice_active') === '1'): ?>
-        <div class="global-notice">
-            <i class="fas fa-exclamation-circle"></i> <?= getSetting('global_notice_text') ?>
-        </div>
-        <script>document.body.classList.add('has-notice');</script>
-    <?php endif; ?>
-
-    <?php 
-    // Banner de sugestão de idioma (melhorado e internacionalizado)
-    $alt_lang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
-    if (!isset($_COOKIE['lang_suggest_closed'])):
-        $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
-        if (strpos(strtolower($accept), $alt_lang) !== false): ?>
-            <div id="lang-suggestion-banner">
-                🌎 <?= (CURRENT_LANG === 'pt') ? 'This site is also available in English.' : 'Este site também está disponível em Português.' ?> 
-                <a href="<?= altLangUrl() ?>"><?= (CURRENT_LANG === 'pt') ? 'Switch to English' : 'Mudar para Português' ?></a>
-                <button onclick="closeLangSuggest()" style="background:none; border:none; color:white; margin-left:15px; cursor:pointer; opacity:0.7;">&times;</button>
-            </div>
-            <script>
-                function closeLangSuggest() {
-                    document.getElementById('lang-suggestion-banner').style.display = 'none';
-                    document.cookie = "lang_suggest_closed=1; path=/; max-age=" + (86400 * 30);
-                }
-            </script>
-        <?php endif; 
-    endif; ?>
-
     <header class="header">
+        <?php if (getSetting('global_notice_active') === '1'): ?>
+            <div class="global-notice">
+                <i class="fas fa-exclamation-circle"></i> <?= getSetting('global_notice_text') ?>
+            </div>
+            <script>document.body.classList.add('has-notice');</script>
+        <?php endif; ?>
+
+        <?php 
+        // Banner de sugestão de idioma (melhorado e internacionalizado)
+        $alt_lang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
+        if (!isset($_COOKIE['lang_suggest_closed'])):
+            $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+            if (strpos(strtolower($accept), $alt_lang) !== false): ?>
+                <div id="lang-suggestion-banner">
+                    🌎 <?= (CURRENT_LANG === 'pt') ? 'This site is also available in English.' : 'Este site também está disponível em Português.' ?> 
+                    <a href="<?= altLangUrl() ?>"><?= (CURRENT_LANG === 'pt') ? 'Switch to English' : 'Mudar para Português' ?></a>
+                    <button onclick="closeLangSuggest()" style="background:none; border:none; color:white; margin-left:15px; cursor:pointer; opacity:0.7;">&times;</button>
+                </div>
+                <script>
+                    function closeLangSuggest() {
+                        document.getElementById('lang-suggestion-banner').style.display = 'none';
+                        document.cookie = "lang_suggest_closed=1; path=/; max-age=" + (86400 * 30);
+                        // Recalcular altura do header após fechar
+                        if (typeof syncHeaderHeight === 'function') syncHeaderHeight();
+                    }
+                </script>
+            <?php endif; 
+        endif; ?>
         <div class="header-content">
             <div class="logo-container">
                 <img src="/assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
@@ -495,25 +496,9 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         // Ajuste dinâmico do padding-top do body baseado na altura do header
         function syncHeaderHeight() {
             const header = document.querySelector('.header');
-            const notice = document.querySelector('.global-notice');
-            const suggestion = document.getElementById('lang-suggestion-banner');
-            
-            let totalHeight = 0;
-            if (header) totalHeight += header.offsetHeight;
-            
-            // Se houver banner de aviso ou sugestão, eles empurram o header ou o corpo
-            // No nosso layout, o notice e suggestion estão fora do header fixo (acima)
-            // Mas o header em si é fixed.
-            // Precisamos calcular quanto o body deve descer.
-            
-            // Na verdade, o header é fixed: top 0.
-            // Se houver banners ACIMA do header fixed, o header deve descer? 
-            // Geralmente banners de aviso também são fixos ou empurram.
-            
-            // Vamos medir a posição do topo do conteúdo principal ou simplesmente 
-            // usar a altura combinada dos elementos fixos no topo.
-            
-            document.body.style.paddingTop = totalHeight + 'px';
+            if (header) {
+                document.body.style.paddingTop = header.offsetHeight + 'px';
+            }
         }
 
         // Executar ao carregar, ao redimensionar e ao interagir
