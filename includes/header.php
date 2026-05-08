@@ -93,8 +93,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <title><?= sanitize($title) ?> | <?= SITE_NAME ?></title>
 
     <!-- Favicon -->
-    <link rel="icon"             type="image/png" href="assets/images/favicon.png">
-    <link rel="apple-touch-icon"                  href="assets/images/favicon.png">
+    <link rel="icon"             type="image/png" href="/assets/images/favicon.png">
+    <link rel="apple-touch-icon"                  href="/assets/images/favicon.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -450,7 +450,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <header class="header">
         <div class="header-content">
             <div class="logo-container">
-                <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
+                <img src="/assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
                 <div>
                     <div class="site-title"><?= SITE_NAME ?></div>
                     <div class="site-description"><?= t('meta.tagline') ?></div>

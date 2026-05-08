@@ -272,7 +272,7 @@ include 'includes/header.php';
         <section class="page-banner">
             <header class="hero-header">
                 <div class="hero-image-wrapper">
-                    <img src="assets/images/hero_contact.png" alt="Fale Conosco" class="hero-image">
+                    <img src="/assets/images/hero_contact.png" alt="Fale Conosco" class="hero-image">
                 </div>
                 <h1><?= t('contact.hero_title') ?></h1>
                 <p><?= t('contact.hero_subtitle') ?></p>

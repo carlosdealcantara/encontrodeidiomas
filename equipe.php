@@ -278,7 +278,7 @@ include 'includes/header.php';
     <section class="page-hero">
         <header class="hero-header">
             <div class="hero-image-wrapper">
-                <img src="assets/images/hero_team.png" alt="Equipe de voluntários e anfitriões do Encontro de Idiomas" class="hero-image" fetchpriority="high">
+                <img src="/assets/images/hero_team.png" alt="Equipe de voluntários e anfitriões do Encontro de Idiomas" class="hero-image" fetchpriority="high">
             </div>
             <h1><?= t('team.hero_title') ?></h1>
             <p><?= t('team.hero_subtitle') ?></p>

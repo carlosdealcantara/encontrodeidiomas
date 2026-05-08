@@ -244,7 +244,7 @@ $allLinks = getUsefulLinks();
     <section class="page-banner">
         <header class="hero-header">
             <div class="hero-image-wrapper">
-                <img src="assets/images/hero_links_v2.png" alt="Hub de Comunidades" class="hero-image">
+                <img src="/assets/images/hero_links_v2.png" alt="Hub de Comunidades" class="hero-image">
             </div>
             <h1><?= t('links.hero_title') ?></h1>
             <p><?= t('links.hero_subtitle') ?></p>

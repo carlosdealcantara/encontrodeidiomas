@@ -17,7 +17,7 @@
         <?php if (!empty($ev['host_name'])): ?>
         <div class="city-host">
             <?php if (!empty($ev['host_photo'])): ?>
-                <img src="assets/images/<?= htmlspecialchars($ev['host_photo']) ?>" alt="<?= htmlspecialchars($ev['host_name']) ?>">
+                <img src="/assets/images/<?= htmlspecialchars($ev['host_photo']) ?>" alt="<?= htmlspecialchars($ev['host_name']) ?>">
             <?php else: ?>
                 <div class="city-host-icon"><i class="fas fa-user"></i></div>
             <?php endif; ?>

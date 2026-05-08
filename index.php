@@ -8,7 +8,7 @@ $canonical      = SITE_URL . langUrl('index.php');
 $swiper_enabled = true;
 
 $extra_head = '
-<link rel="stylesheet" href="assets/css/home.css">
+<link rel="stylesheet" href="/assets/css/home.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -88,55 +88,55 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.presencial') ?>" fetchpriority="high">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.presencial') ?>" fetchpriority="high">
                                         <div class="photo-label"><?= t('home.hero_labels.presencial') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.online') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.online') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.online') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/replay.png" alt="<?= t('home.hero_labels.replay') ?>">
+                                        <img src="/assets/images/replay.png" alt="<?= t('home.hero_labels.replay') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.replay') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="<?= t('home.hero_labels.activities') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.jpg" alt="<?= t('home.hero_labels.activities') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.activities') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/mentoria.jpg" alt="<?= t('home.hero_labels.mentorship') ?>">
+                                        <img src="/assets/images/mentoria.jpg" alt="<?= t('home.hero_labels.mentorship') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.mentorship') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/IMG_20250408_175458_304.jpg" alt="<?= t('home.hero_labels.outdoor') ?>">
+                                        <img src="/assets/images/IMG_20250408_175458_304.jpg" alt="<?= t('home.hero_labels.outdoor') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.outdoor') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/Grupos.png" alt="<?= t('home.hero_labels.varied') ?>">
+                                        <img src="/assets/images/Grupos.png" alt="<?= t('home.hero_labels.varied') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.varied') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/IMG_20250408_174649_714.jpg" alt="<?= t('home.hero_labels.moments') ?>">
+                                        <img src="/assets/images/IMG_20250408_174649_714.jpg" alt="<?= t('home.hero_labels.moments') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.moments') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/instagram_social.png" alt="<?= t('home.hero_labels.social') ?>">
+                                        <img src="/assets/images/instagram_social.png" alt="<?= t('home.hero_labels.social') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.social') ?></div>
                                     </div>
                                 </div>

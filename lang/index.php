@@ -174,3 +174,12 @@ function langSpecificUrl($page, $targetLang) {
     $url = $prefix . ($slug ? '/' . $slug : '/');
     return $url === '' ? '/' : $url;
 }
+
+/**
+ * Retorna a URL da página atual no idioma oposto
+ */
+function altLangUrl() {
+    global $current_page;
+    $targetLang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
+    return langSpecificUrl($current_page ?? 'index.php', $targetLang);
+}
