@@ -29,7 +29,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
             <?php elseif ($flagEmoji): ?>
                 <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= htmlspecialchars($langName) ?>"><?= $flagEmoji ?></span>
             <?php endif; ?>
-            <span><?= htmlspecialchars($langName) ?></span>
+            <span><?= t('languages.' . strtolower($langName)) ?></span>
             <div class="event-social-links">
                 <?php if (!empty($ev['final_whatsapp'])): ?>
                 <a href="<?= htmlspecialchars($ev['final_whatsapp']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
@@ -133,7 +133,7 @@ function renderHostCard($host) {
             $displayBadges = !empty($langs) ? $langs : (!empty($host['badge']) ? [$host['badge']] : []);
             foreach ($displayBadges as $badge): 
             ?>
-                <span class="host-badge"><?= htmlspecialchars($badge) ?></span>
+                <span class="host-badge"><?= t('languages.' . strtolower($badge)) ?></span>
             <?php endforeach; ?>
         </div>
 

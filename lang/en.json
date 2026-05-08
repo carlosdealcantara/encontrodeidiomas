@@ -6,7 +6,9 @@
     "tagline": "Practice languages for free",
     "og_title_suffix": "Conversation Practice in English and other languages",
     "org_description": "The best free alternative for those seeking a polyglot club and online and in-person conversation practice.",
-    "website_description": "Community for polyglots and language enthusiasts to practice conversation for free."
+    "website_description": "Community for polyglots and language enthusiasts to practice conversation for free.",
+    "banner_text": "This site is also available in Portuguese.",
+    "banner_cta": "Switch to Portuguese"
   },
   "nav": {
     "home": "Home",
@@ -278,5 +280,19 @@
   },
   "authority": {
     "text": "The largest language practice ecosystem in the country"
+  },
+  "languages": {
+    "inglês": "English",
+    "espanhol": "Spanish",
+    "francês": "French",
+    "alemão": "German",
+    "italiano": "Italian",
+    "japonês": "Japanese",
+    "chinês": "Chinese",
+    "russo": "Russian",
+    "português": "Portuguese",
+    "esperanto": "Esperanto",
+    "árabe": "Arabic",
+    "coreano": "Korean"
   }
 }

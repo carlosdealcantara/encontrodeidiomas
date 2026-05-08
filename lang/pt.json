@@ -6,7 +6,9 @@
     "org_description": "A melhor alternativa gratuita para quem busca um clube poliglota e prática de conversação online e presencial.",
     "website_description": "Comunidade para poliglotas e entusiastas de idiomas praticarem conversação grátis.",
     "site_name": "Encontro de Idiomas",
-    "tagline": "Pratique idiomas gratuitamente"
+    "tagline": "Pratique idiomas gratuitamente",
+    "banner_text": "Este site também está disponível em Inglês.",
+    "banner_cta": "Mudar para Inglês"
   },
   "nav": {
     "home": "Início",
@@ -278,5 +280,19 @@
   },
   "authority": {
     "text": "O maior ecossistema de prática de idiomas do país"
+  },
+  "languages": {
+    "inglês": "Inglês",
+    "espanhol": "Espanhol",
+    "francês": "Francês",
+    "alemão": "Alemão",
+    "italiano": "Italiano",
+    "japonês": "Japonês",
+    "chinês": "Chinês",
+    "russo": "Russo",
+    "português": "Português",
+    "esperanto": "Esperanto",
+    "árabe": "Árabe",
+    "coreano": "Coreano"
   }
 }

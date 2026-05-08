@@ -316,7 +316,7 @@ include 'includes/header.php';
                                 <?php elseif (!empty($lang['flag_emoji'])): ?>
                                     <span class="flag-emoji"><?= $lang['flag_emoji'] ?></span>
                                 <?php endif; ?>
-                                <?= htmlspecialchars($lang['name']) ?>
+                                <?= t('languages.' . strtolower($lang['name'])) ?>
                             </div>
                         <?php endforeach; ?>
                         <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_lang') ?></a>

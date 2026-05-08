@@ -428,13 +428,14 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <?php endif; ?>
 
     <?php 
-    // Banner de sugestão de idioma
-    if (CURRENT_LANG === 'pt' && !isset($_COOKIE['lang_suggest_closed'])):
+    // Banner de sugestão de idioma (melhorado e internacionalizado)
+    $alt_lang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
+    if (!isset($_COOKIE['lang_suggest_closed'])):
         $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
-        if (strpos(strtolower($accept), 'en') !== false): ?>
+        if (strpos(strtolower($accept), $alt_lang) !== false): ?>
             <div id="lang-suggestion-banner">
-                🌎 This site is also available in English. 
-                <a href="/en<?= $_SERVER['REQUEST_URI'] ?>">Switch to English</a>
+                🌎 <?= t('meta.banner_text') ?> 
+                <a href="<?= altLangUrl() ?>"><?= t('meta.banner_cta') ?></a>
                 <button onclick="closeLangSuggest()" style="background:none; border:none; color:white; margin-left:15px; cursor:pointer; opacity:0.7;">&times;</button>
             </div>
             <script>
@@ -451,8 +452,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             <div class="logo-container">
                 <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
                 <div>
-                    <div class="site-title"><?= getSetting('site_title', 'Encontro de Idiomas') ?></div>
-                    <div class="site-description"><?= getSetting('site_description', 'Aprenda se divertindo!') ?></div>
+                    <div class="site-title"><?= SITE_NAME ?></div>
+                    <div class="site-description"><?= t('meta.tagline') ?></div>
                 </div>
             </div>
 
