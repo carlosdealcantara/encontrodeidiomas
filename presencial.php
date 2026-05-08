@@ -517,7 +517,8 @@ window.addEventListener('load', function() {
     setTimeout(() => {
         const localidadesSection = document.getElementById('localidades');
         if (localidadesSection) {
-            const offset = 95; // Rente ao header, conforme solicitado
+            // header(80) + padding-top da section(90) - respiro(15) = 155
+            const offset = 155;
             const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - offset;
             
             smoothScrollTo(targetY, 1500);

@@ -206,8 +206,7 @@ window.addEventListener('load', function() {
     if (window.location.hash) return;
     
     setTimeout(() => {
-        // Mira específica: primeiro tentamos o evento ativo no dia de hoje
-        // Se não houver (ex: fim de semana), miramos no topo do calendário
+        // Mira: evento ativo do dia atual, senão calendário
         const activePanel = document.querySelector('.day-events.active');
         const scrollTarget = (activePanel ? activePanel.querySelector('.scroll-target') : null) 
                            || document.querySelector('.calendar-nav');
@@ -215,21 +214,15 @@ window.addEventListener('load', function() {
         if (scrollTarget) {
             const header = document.querySelector('.header');
             const headerHeight = header ? header.offsetHeight : 80;
-            const isEventCard = scrollTarget.classList.contains('scroll-target');
             
-            let targetY;
-            if (isEventCard) {
-                // Lógica de centralização exata que prioriza o evento atual/próximo
-                const elementRect = scrollTarget.getBoundingClientRect();
-                const absoluteElementTop = elementRect.top + window.pageYOffset;
-                targetY = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
-            } else {
-                targetY = scrollTarget.getBoundingClientRect().top + window.pageYOffset - headerHeight + 40;
-            }
+            // Posiciona o TOPO do elemento-alvo logo abaixo do header + respiro
+            const elementTop = scrollTarget.getBoundingClientRect().top + window.pageYOffset;
+            const targetY = elementTop - headerHeight - 20;
             
             window.onlineSmoothScrollTo(targetY, 1500); 
         }
     }, 2000); 
+
 });
 
 // Função de rolagem movida para o escopo global para permitir acesso externo
