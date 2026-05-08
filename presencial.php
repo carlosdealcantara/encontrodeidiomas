@@ -515,12 +515,13 @@ window.addEventListener('load', function() {
     if (window.location.hash) return;
     
     setTimeout(() => {
-        const localidadesSection = document.getElementById('localidades');
-        if (localidadesSection) {
-            // header(80) + padding-top da section(90) - respiro(15) = 155
-            const offset = 155;
-            const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - offset;
-            
+        // Mira direta no texto "ONDE ESTAMOS" — elimina ambiguidade de padding da section
+        const sectionLabel = document.querySelector('#localidades .section-label');
+        const target = sectionLabel || document.getElementById('localidades');
+        if (target) {
+            const header = document.querySelector('.header');
+            const headerHeight = header ? header.offsetHeight : 80;
+            const targetY = target.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
             smoothScrollTo(targetY, 1500);
         }
     }, 2000); 
