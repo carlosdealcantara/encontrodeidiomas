@@ -140,8 +140,9 @@ function langUrl($page = '') {
  * Retorna a URL da versão alternativa da página atual
  */
 function altLangUrl() {
-    $alt_lang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
-    return langSpecificUrl(basename($_SERVER['SCRIPT_NAME']), $alt_lang);
+    global $current_page;
+    $targetLang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
+    return langSpecificUrl($current_page ?? 'index.php', $targetLang);
 }
 
 /**
@@ -175,11 +176,3 @@ function langSpecificUrl($page, $targetLang) {
     return $url === '' ? '/' : $url;
 }
 
-/**
- * Retorna a URL da página atual no idioma oposto
- */
-function altLangUrl() {
-    global $current_page;
-    $targetLang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
-    return langSpecificUrl($current_page ?? 'index.php', $targetLang);
-}

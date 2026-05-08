@@ -32,6 +32,8 @@ RewriteRule ^en/links/?$       links.php?lang=en [L,QSA]
 RewriteRule ^en/contact/?$     contato.php?lang=en [L,QSA]
 
 # --- URLs Limpas PT (sem .php) ---
+RewriteRule ^$             index.php?lang=pt [L,QSA]
+RewriteRule ^index/?$      index.php?lang=pt [L,QSA]
 RewriteRule ^online/?$       online.php?lang=pt [L,QSA]
 RewriteRule ^presencial/?$   presencial.php?lang=pt [L,QSA]
 RewriteRule ^equipe/?$       equipe.php?lang=pt [L,QSA]
