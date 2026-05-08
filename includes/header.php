@@ -77,7 +77,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <meta property="og:locale"      content="pt_BR">
 
     <!-- Twitter -->
-    <meta property="twitter:card"        content="summary_large_image">
+    <meta property="twitter:card"        content="summary">
     <meta property="twitter:url"         content="<?= sanitize($canonical) ?>">
     <meta property="twitter:title"       content="<?= sanitize($title) ?> | Prática de Conversação em Inglês e outros idiomas">
     <meta property="twitter:description" content="<?= sanitize($og_description) ?>">
