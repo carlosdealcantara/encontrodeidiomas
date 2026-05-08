@@ -114,7 +114,7 @@ ob_start();
         content: '';
         position: absolute;
         inset: 0;
-        background: url('assets/images/IMG_20250408_174649_714.jpg') center/cover;
+        background: url('/assets/images/IMG_20250408_174649_714.jpg') center/cover;
         opacity: .3;
     }
     .hero-presencial .container { position: relative; z-index: 1; }
