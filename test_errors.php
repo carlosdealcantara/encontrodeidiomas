@@ -1,5 +1,5 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-echo "Test direct";
+echo "Test direct. PHP Version: " . phpversion();
 ?>
