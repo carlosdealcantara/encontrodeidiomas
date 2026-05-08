@@ -64,14 +64,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function scrollToRelevantEvent() {
         if (currentView !== 'day') return;
+        
+        // Se a página ainda está carregando, deixamos o scroll principal (no final do arquivo) cuidar disso
+        // para evitar que dois scripts briguem pela rolagem.
+        if (document.readyState !== 'complete') return;
+
         const target = document.querySelector('.day-events.active .scroll-target');
         if (target) {
-            setTimeout(() => {
-                const elementRect = target.getBoundingClientRect();
-                const absoluteElementTop = elementRect.top + window.pageYOffset;
-                const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
-                smoothScrollTo(middle, 1500);
-            }, 1000);
+            const elementRect = target.getBoundingClientRect();
+            const absoluteElementTop = elementRect.top + window.pageYOffset;
+            const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+            smoothScrollTo(middle, 800); // Scroll mais rápido para cliques manuais
         }
     }
 
@@ -125,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial scroll & State
     if (currentView === 'day') {
         activateDay(currentDay);
-        scrollToRelevantEvent();
+        // O scroll inicial agora é tratado apenas pelo listener de 'load' abaixo
     }
 
     // Dropdown toggle
@@ -211,17 +214,21 @@ window.addEventListener('load', function() {
             const header = document.querySelector('.header');
             const headerHeight = header ? header.offsetHeight : 80;
             
-            // Se for um card de evento, usamos um offset menor para não cortar o topo do card
+            // Se for um card de evento, usamos um posicionamento centralizado
             const isEventCard = scrollTarget.classList.contains('scroll-target');
-            const extraOffset = isEventCard ? -20 : 40;
             
-            const targetY = scrollTarget.getBoundingClientRect().top + window.pageYOffset - headerHeight + extraOffset;
+            let targetY;
+            if (isEventCard) {
+                const elementRect = scrollTarget.getBoundingClientRect();
+                const absoluteElementTop = elementRect.top + window.pageYOffset;
+                targetY = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+            } else {
+                targetY = scrollTarget.getBoundingClientRect().top + window.pageYOffset - headerHeight + 40;
+            }
             
-            // Re-importamos a função smoothScrollTo aqui ou garantimos que ela esteja no escopo global
-            // Como ela está dentro do DOMContentLoaded, vamos movê-la para fora para ser acessível.
             window.onlineSmoothScrollTo(targetY, 1500); 
         }
-    }, 1500); 
+    }, 2000); // Padronizado com 2 segundos para evitar conflitos e dar respiro
 });
 
 // Função de rolagem movida para o escopo global para permitir acesso externo

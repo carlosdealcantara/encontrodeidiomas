@@ -517,13 +517,12 @@ window.addEventListener('load', function() {
     setTimeout(() => {
         const localidadesSection = document.getElementById('localidades');
         if (localidadesSection) {
-            const header = document.querySelector('.header');
-            const headerHeight = header ? header.offsetHeight : 80;
-            const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - headerHeight + 40;
+            const offset = 140; // Garante o respiro visual acima do título "Onde Estamos"
+            const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - offset;
             
-            smoothScrollTo(targetY, 1500); // 1.5 segundos de rolagem
+            smoothScrollTo(targetY, 1500);
         }
-    }, 1500); // 1.5 segundos de espera
+    }, 2000); // Padronizado com 2 segundos de espera
 });
 </script>
 JS;
