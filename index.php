@@ -1,13 +1,46 @@
 <?php
 require_once 'config.php';
 
-$title          = 'Encontro de Idiomas';
+$title          = 'Prática de Conversação em Inglês e outros Idiomas';
 $current_page   = 'index.php';
-$og_description = 'Participe gratuitamente de encontros para praticar inglês, espanhol, francês, alemão, japonês e outros idiomas online e presenciais.';
+$og_description = 'Participe gratuitamente de encontros para praticar inglês, espanhol, francês e outros idiomas online e presenciais.';
 $canonical      = 'https://encontrodeidiomas.com.br/';
 $swiper_enabled = true;
 
-$extra_head = '<link rel="stylesheet" href="assets/css/home.css">';
+$extra_head = '
+<link rel="stylesheet" href="assets/css/home.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "O Encontro de Idiomas é gratuito?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sim, todos os nossos encontros, tanto online quanto presenciais, são 100% gratuitos e abertos à comunidade."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Como posso participar dos encontros?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Basta escolher um encontro na nossa programação (online ou presencial), entrar no grupo de WhatsApp correspondente e comparecer no dia e hora marcados. Não há burocracia."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Quais idiomas são praticados?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Praticamos principalmente inglês e espanhol, mas também temos grupos de francês, alemão, japonês, italiano e outros, dependendo da disponibilidade de anfitriões."
+      }
+    }
+  ]
+}
+</script>';
 
 $page_scripts = <<<JS
 <script>
@@ -56,55 +89,55 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontros Presenciais">
+                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas - Prática presencial de conversação" fetchpriority="high">
                                         <div class="photo-label">Encontros Presenciais</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontros Online">
+                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - Prática online via videoconferência">
                                         <div class="photo-label">Encontros Online</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/replay.png" alt="Replay das Chamadas">
+                                        <img src="assets/images/replay.png" alt="Replay das chamadas de prática de idiomas">
                                         <div class="photo-label">Replay das Chamadas</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades Interativas">
+                                        <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades interativas na comunidade de idiomas">
                                         <div class="photo-label">Atividades Interativas</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/mentoria.jpg" alt="Mentoria Acessível">
+                                        <img src="assets/images/mentoria.jpg" alt="Mentoria acessível para aprendizado de línguas">
                                         <div class="photo-label">Mentoria Acessível</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Eventos ao Ar Livre">
+                                        <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Eventos ao ar livre do Encontro de Idiomas">
                                         <div class="photo-label">Eventos ao Ar Livre</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/Grupos.png" alt="Grupos de Idiomas Variados">
+                                        <img src="assets/images/Grupos.png" alt="Grupos de diversos idiomas">
                                         <div class="photo-label">Grupos de Idiomas Variados</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Momentos Marcantes">
+                                        <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Momentos marcantes da comunidade">
                                         <div class="photo-label">Momentos Marcantes</div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/instagram_social.png" alt="Atividade nas Redes Sociais">
+                                        <img src="assets/images/instagram_social.png" alt="Siga o Encontro de Idiomas no Instagram">
                                         <div class="photo-label">Atividade nas Redes Sociais</div>
                                     </div>
                                 </div>
@@ -165,6 +198,28 @@ include 'includes/header.php';
                         <div class="how-step-icon"><i class="fas fa-rocket"></i></div>
                         <h3>Evolua e conecte-se</h3>
                         <p>Volte sempre que quiser. Faça amizades, melhore sua fluência e faça parte da comunidade.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section class="faq-section" style="padding: 90px 0; background: #fff;">
+            <div class="container">
+                <p class="section-eyebrow">Dúvidas frequentes</p>
+                <h2 class="section-heading">Perguntas comuns</h2>
+                <div style="max-width: 800px; margin: 40px auto 0;">
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);">O Encontro de Idiomas é gratuito?</h3>
+                        <p style="color: #666;">Sim, todos os nossos encontros, tanto online quanto presenciais, são 100% gratuitos e abertos à comunidade. Nosso objetivo é democratizar a prática de idiomas.</p>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);">Preciso ter nível avançado para participar?</h3>
+                        <p style="color: #666;">Não! Temos participantes de todos os níveis. O ambiente é acolhedor e focado no aprendizado mútuo. Se você consegue se apresentar, já pode começar a praticar.</p>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);">Como funcionam os encontros presenciais?</h3>
+                        <p style="color: #666;">Os encontros presenciais acontecem em locais públicos como cafés e shoppings. Eles são organizados por voluntários locais e não têm data fixa, ocorrendo conforme a mobilização do grupo no WhatsApp.</p>
                     </div>
                 </div>
             </div>

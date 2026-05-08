@@ -25,9 +25,9 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         </div>
         <div class="event-title">
             <?php if ($flagCode): ?>
-                <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="flag-icon" alt="<?= htmlspecialchars($langName) ?>">
+                <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="flag-icon" alt="Bandeira do idioma <?= htmlspecialchars($langName) ?>">
             <?php elseif ($flagEmoji): ?>
-                <span style="font-size:1.2rem;"><?= $flagEmoji ?></span>
+                <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= htmlspecialchars($langName) ?>"><?= $flagEmoji ?></span>
             <?php endif; ?>
             <span><?= htmlspecialchars($langName) ?></span>
             <div class="event-social-links">
@@ -43,7 +43,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         <?php if (!empty($ev['host_name'])): ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
             <?php if (!empty($ev['host_photo'])): ?>
-                <img src="assets/images/<?= htmlspecialchars($ev['host_photo']) ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Host">
+                <img src="assets/images/<?= htmlspecialchars($ev['host_photo']) ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Foto do Host <?= htmlspecialchars($ev['host_name']) ?>">
             <?php else: ?>
                 <i class="fas fa-user-circle"></i>
             <?php endif; ?>
@@ -51,7 +51,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         </div>
         <?php else: ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
-            <div style="width: 24px; height: 24px; border-radius: 50%; background-image: url('assets/images/logo.png'); background-size: 160%; background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); background-color: #fff;"></div>
+            <div style="width: 24px; height: 24px; border-radius: 50%; background-image: url('assets/images/logo.png'); background-size: 160%; background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); background-color: #fff;" role="img" aria-label="Logo Encontro de Idiomas"></div>
             <span><strong>Conversação Livre</strong></span>
         </div>
         <?php endif; ?>

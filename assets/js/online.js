@@ -196,6 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetDiv = document.getElementById('lang-events-' + currentLang);
             if (targetDiv) targetDiv.style.display = 'block';
 
+            // Atualiza título da aba dinamicamente para SEO e UX
+            document.title = 'Prática de ' + langName + ' Online Grátis | Encontro de Idiomas';
+
             updateURL();
         });
     });

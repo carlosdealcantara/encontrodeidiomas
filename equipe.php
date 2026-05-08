@@ -278,7 +278,7 @@ include 'includes/header.php';
     <section class="page-hero">
         <header class="hero-header">
             <div class="hero-image-wrapper">
-                <img src="assets/images/hero_team.png" alt="Nossa Equipe" class="hero-image">
+                <img src="assets/images/hero_team.png" alt="Equipe de voluntários e anfitriões do Encontro de Idiomas" class="hero-image" fetchpriority="high">
             </div>
             <h1>Equipe</h1>
             <p>Conheça as pessoas incríveis que <br> tornam o Encontro de Idiomas possível!</p>

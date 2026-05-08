@@ -25,10 +25,51 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <meta name="description" content="<?= sanitize($og_description) ?>">
     <meta name="author" content="Encontro de Idiomas">
     <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#1a1a1a">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "EducationalOrganization",
+          "@id": "<?= SITE_URL ?>/#organization",
+          "name": "<?= SITE_NAME ?>",
+          "url": "<?= SITE_URL ?>",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "<?= SITE_URL ?>/assets/images/logo.png"
+          },
+          "description": "A melhor alternativa gratuita para quem busca um clube poliglota e prática de conversação online e presencial.",
+          "sameAs": [
+            "https://www.instagram.com/encontrodeidiomas",
+            "https://www.tiktok.com/@encontrodeidiomas",
+            "https://discord.com/invite/STHkrEhMpP"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "<?= SITE_URL ?>/#website",
+          "url": "<?= SITE_URL ?>",
+          "name": "<?= SITE_NAME ?>",
+          "description": "Comunidade para poliglotas e entusiastas de idiomas praticarem conversação grátis.",
+          "publisher": { "@id": "<?= SITE_URL ?>/#organization" }
+        },
+        {
+          "@type": "Person",
+          "name": "Carlos de Alcântara",
+          "jobTitle": "Fundador e Professor",
+          "url": "<?= SITE_URL ?>/equipe.php",
+          "worksFor": { "@id": "<?= SITE_URL ?>/#organization" }
+        }
+      ]
+    }
+    </script>
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type"        content="website">
-    <meta property="og:title"       content="<?= sanitize($title) ?> - Comunidade gratuita para praticar idiomas">
+    <meta property="og:title"       content="<?= sanitize($title) ?> | Prática de Conversação em Inglês e outros idiomas">
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
     <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_image.png">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
@@ -38,18 +79,20 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <!-- Twitter -->
     <meta property="twitter:card"        content="summary_large_image">
     <meta property="twitter:url"         content="<?= sanitize($canonical) ?>">
-    <meta property="twitter:title"       content="<?= sanitize($title) ?> - Comunidade gratuita para praticar idiomas">
+    <meta property="twitter:title"       content="<?= sanitize($title) ?> | Prática de Conversação em Inglês e outros idiomas">
     <meta property="twitter:description" content="<?= sanitize($og_description) ?>">
     <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_image.png">
 
     <link rel="canonical" href="<?= sanitize($canonical) ?>">
-    <title><?= sanitize($title) ?> - Aprenda se divertindo!</title>
+    <title><?= sanitize($title) ?> | <?= SITE_NAME ?></title>
 
     <!-- Favicon -->
     <link rel="icon"             type="image/png" href="assets/images/favicon.png">
     <link rel="apple-touch-icon"                  href="assets/images/favicon.png">
 
     <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -320,7 +363,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <header class="header">
         <div class="header-content">
             <div class="logo-container">
-                <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo">
+                <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
                 <div>
                     <div class="site-title"><?= getSetting('site_title', 'Encontro de Idiomas') ?></div>
                     <div class="site-description"><?= getSetting('site_description', 'Aprenda se divertindo!') ?></div>

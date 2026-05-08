@@ -1,9 +1,25 @@
 <?php
 require_once 'config.php';
 
-$title          = 'Presencial';
+$title          = 'Encontros de Idiomas Presenciais - Brasil e Mundo';
 $current_page   = 'presencial.php';
 $og_description = 'Encontros presenciais do Encontro de Idiomas em diversas cidades do Brasil, Argentina e Paraguai.';
+
+// Dinamismo para SEO de Localidades Específicas (Região, Estado ou Cidade)
+if (!empty($_GET['cidade'])) {
+    $cidade_slug = htmlspecialchars($_GET['cidade']);
+    $title = 'Prática de Idiomas em ' . $cidade_slug . ' | ' . SITE_NAME;
+    $og_description = 'Participe da nossa comunidade local de idiomas em ' . $cidade_slug . '. Encontros gratuitos e conversação real.';
+} elseif (!empty($_GET['estado'])) {
+    $estado_slug = htmlspecialchars($_GET['estado']);
+    $title = 'Encontros de Idiomas em ' . $estado_slug . ' | ' . SITE_NAME;
+    $og_description = 'Veja todos os grupos de prática de idiomas no estado de ' . $estado_slug . '. Encontros presenciais gratuitos.';
+} elseif (!empty($_GET['regiao'])) {
+    $regiao_slug = htmlspecialchars($_GET['regiao']);
+    $title = 'Encontros de Idiomas na Região ' . $regiao_slug . ' | ' . SITE_NAME;
+    $og_description = 'Explore os grupos presenciais de prática de idiomas na Região ' . $regiao_slug . '. Comunidades ativas e gratuitas.';
+}
+
 $canonical      = 'https://encontrodeidiomas.com.br/presencial.php';
 
 function getInPersonEvents(): array {
@@ -43,11 +59,40 @@ $countryFlag  = function(string $c) use ($countryCodes): string {
 
 $events    = getInPersonEvents();
 $byCountry = [];
+$local_schemas = [];
+
 foreach ($events as $ev) {
     $byCountry[$ev['country']][] = $ev;
+    
+    // Build Local SEO Schema for each city
+    $local_schemas[] = [
+        "@context" => "https://schema.org",
+        "@type" => "LocalBusiness",
+        "name" => "Encontro de Idiomas - " . $ev['city'],
+        "description" => "Prática de conversação gratuita em " . $ev['city'] . " (" . $ev['country'] . "). Participe da nossa comunidade local.",
+        "image" => SITE_URL . "/assets/images/og_image.png",
+        "url" => SITE_URL . "/presencial.php",
+        "address" => [
+            "@type" => "PostalAddress",
+            "addressLocality" => $ev['city'],
+            "addressRegion" => $ev['state'] ?? '',
+            "addressCountry" => $ev['country'] === 'Brasil' ? 'BR' : $ev['country']
+        ],
+        "geo" => [
+            "@type" => "GeoCoordinates",
+            "latitude" => $ev['latitude'] ?? '', // Placeholder if database has it
+            "longitude" => $ev['longitude'] ?? ''
+        ]
+    ];
 }
+
 $totalGroups    = count($events);
 $totalCountries = count($byCountry);
+
+$extra_head = '';
+if (!empty($local_schemas)) {
+    $extra_head = '<script type="application/ld+json">' . json_encode($local_schemas, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . '</script>';
+}
 
 ob_start();
 ?>
@@ -471,6 +516,37 @@ include 'includes/header.php';
         </div>
     </section>
 </main>
+
+<!-- SEO Location Navigation — Subtle Professional Index -->
+<section class="seo-location-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
+    <div class="container" style="opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+        <div style="margin-bottom: 25px;">
+            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;">Explorar por Região</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <?php 
+                $unique_regions = array_unique(array_column($events, 'region'));
+                foreach ($unique_regions as $region): if (empty($region)) continue; ?>
+                <a href="presencial.php?regiao=<?= urlencode($region) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <?= htmlspecialchars($region) ?>
+                </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div>
+            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;">Explorar por Localidade</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <?php 
+                $unique_cities = array_unique(array_column($events, 'city'));
+                foreach ($unique_cities as $city): ?>
+                <a href="presencial.php?cidade=<?= urlencode($city) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <?= htmlspecialchars($city) ?>
+                </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</section>
 
 <?php
 $page_scripts = <<<JS
