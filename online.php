@@ -58,7 +58,7 @@ foreach ($meetings as $m) {
 }
 
 // Arquivos Externos (CSS e JS)
-$extra_head = '<link rel="stylesheet" href="/assets/css/online.css">';
+$extra_head = '<link rel="stylesheet" href="/assets/css/online.css?v=' . ASSET_VERSION . '">';
 if (!empty($events_json)) {
     $extra_head .= '<script type="application/ld+json">' . json_encode($events_json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . '</script>';
 }
@@ -236,7 +236,7 @@ ob_start(); ?>
         initialLang: '<?= $initialLang ?>'
     };
 </script>
-<script src="/assets/js/online.js"></script>
+<script src="/assets/js/online.js?v=<?= ASSET_VERSION ?>"></script>
 <?php
 $page_scripts = ob_get_clean();
 

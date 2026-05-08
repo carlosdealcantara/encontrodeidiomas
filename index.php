@@ -8,7 +8,7 @@ $canonical      = SITE_URL . langUrl('index.php');
 $swiper_enabled = true;
 
 $extra_head = '
-<link rel="stylesheet" href="/assets/css/home.css">
+<link rel="stylesheet" href="/assets/css/home.css?v=<?= ASSET_VERSION ?>">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
