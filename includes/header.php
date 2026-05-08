@@ -434,8 +434,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
         if (strpos(strtolower($accept), $alt_lang) !== false): ?>
             <div id="lang-suggestion-banner">
-                🌎 <?= t('meta.banner_text') ?> 
-                <a href="<?= altLangUrl() ?>"><?= t('meta.banner_cta') ?></a>
+                🌎 <?= (CURRENT_LANG === 'pt') ? 'This site is also available in English.' : 'Este site também está disponível em Português.' ?> 
+                <a href="<?= altLangUrl() ?>"><?= (CURRENT_LANG === 'pt') ? 'Switch to English' : 'Mudar para Português' ?></a>
                 <button onclick="closeLangSuggest()" style="background:none; border:none; color:white; margin-left:15px; cursor:pointer; opacity:0.7;">&times;</button>
             </div>
             <script>
