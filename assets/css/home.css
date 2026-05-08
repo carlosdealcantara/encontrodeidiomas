@@ -281,8 +281,10 @@ html {
 
 /* MODALIDADES */
 .modalidades-section {
-    padding: 90px 0;
-    background: var(--bg-light);
+    padding: 100px 0;
+    background: #fcfcfc;
+    position: relative;
+    scroll-margin-top: 100px;
 }
 .modalidades-grid {
     display: grid;

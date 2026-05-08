@@ -14,6 +14,12 @@ foreach ($meetings as $m) {
     $byLanguage[$m['language_id']][]     = $m;
 }
 
+// Varivel usada em online.php para renderizar os dias
+$dayNames = [];
+foreach (range(1, 7) as $d) {
+    $dayNames[$d] = getDayName($d);
+}
+
 $currentDayOfWeek = (int)date('N'); // 1=Seg ... 7=Dom
 $currentHour      = (int)date('G');
 

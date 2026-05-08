@@ -123,7 +123,7 @@
     40% { transform:translateY(-20px) translateX(-50%); }
     60% { transform:translateY(-10px) translateX(-50%); }
 }
-.calendar-section { padding:5rem 0; background:#fff; }
+.calendar-section { padding:5rem 0; background:#fff; scroll-margin-top: 100px; }
 .section-title { text-align:center; margin-bottom:30px; font-size:2rem; font-weight:700; }
 .calendar-nav { display:flex; justify-content:center; align-items:center; margin-bottom:30px; gap:15px; flex-wrap: wrap; }
 .calendar-nav-title { font-size: 1.25rem; font-weight: 600; color: var(--text-color); }

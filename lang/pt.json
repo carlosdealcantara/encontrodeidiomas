@@ -294,5 +294,10 @@
     "esperanto": "Esperanto",
     "árabe": "Árabe",
     "coreano": "Coreano"
+  },
+  "countries": {
+    "Brasil": "Brasil",
+    "Argentina": "Argentina",
+    "Paraguai": "Paraguai"
   }
 }

@@ -22,12 +22,12 @@
     "title": "Practice English and Other Languages Through Conversation",
     "meta_description": "Join free language practice meetups for English, Spanish, French and other languages online and in person.",
     "hero_heading": "Practice languages with <span class=\"highlight\">real people</span>",
-    "welcome_text": "Practice English, Spanish and other languages for free and naturally. Join a vibrant community with online and in-person meetings across the country.",
+    "welcome_text": "Practice English, Spanish and other languages for free and naturally. Join a vibrant community with online and in-person meetups across the country.",
     "cta_participate": "See how to join",
     "cta_links": "Links Hub",
     "hero_labels": {
-      "presencial": "In-Person Meetings",
-      "online": "Online Meetings",
+      "presencial": "In-Person Meetups",
+      "online": "Online Meetups",
       "replay": "Call Replays",
       "activities": "Interactive Activities",
       "mentorship": "Accessible Mentoring",
@@ -37,20 +37,20 @@
       "social": "Social Media Activity"
     },
     "modalities": {
-      "eyebrow": "Two ways to join",
+      "eyebrow": "Two ways to participate",
       "heading": "Choose how to practice",
       "desc": "Whether online from anywhere in the world or in person in your city, we have the ideal format for you to start practicing today.",
       "online_title": "Online",
-      "online_text": "Weekly video conference meetings with people from all over the world. Filter by language and day, dedicated hosts and defined schedule.",
+      "online_text": "Weekly video conference meetups with people from all over the world. Filter by language and day, dedicated hosts and defined schedule.",
       "online_link": "See schedule",
       "presencial_title": "In Person",
-      "presencial_text": "Face-to-face meetings in cafes, parks and malls. Local groups organized by volunteers, expanding across and beyond the borders.",
+      "presencial_text": "Face-to-face meetups in cafes, parks and malls. Local groups organized by volunteers, expanding across and beyond the borders.",
       "presencial_link": "See locations"
     },
     "how_it_works": {
       "eyebrow": "How to join",
       "heading": "Simple, free and hassle-free",
-      "step1_title": "Choose a meeting",
+      "step1_title": "Choose a meetup",
       "step1_text": "Browse the online schedule or find a local in-person group in your city.",
       "step2_title": "Show up and join",
       "step2_text": "Enter the video call or go to the agreed location. Introduce yourself and start practicing.",
@@ -61,11 +61,11 @@
       "eyebrow": "FAQ",
       "heading": "Common Questions",
       "q1": "Is Encontro de Idiomas free?",
-      "a1": "Yes, all our meetings, both online and in person, are 100% free and open to the community. Our goal is to democratize language practice.",
+      "a1": "Yes, all our meetups, both online and in person, are 100% free and open to the community. Our goal is to democratize language practice.",
       "q2": "Do I need to be advanced to participate?",
       "a2": "No! We have participants of all levels. The environment is welcoming and focused on mutual learning. If you can introduce yourself, you can start practicing.",
-      "q3": "How do the in-person meetings work?",
-      "a3": "In-person meetings take place in public places such as cafes and malls. They are organized by local volunteers and don't have fixed dates, occurring according to group mobilization on WhatsApp."
+      "q3": "How do the in-person meetups work?",
+      "a3": "In-person meetups take place in public places such as cafes and malls. They are organized by local volunteers and don't have fixed dates, occurring according to group mobilization on WhatsApp."
     },
     "community": {
       "heading": "Join our community",
@@ -88,7 +88,7 @@
     "title_default": "Practice Languages Online Free - Weekly Schedule",
     "meta_description_default": "Encontro de Idiomas Online - Free community to practice English, Spanish and more via video conference.",
     "title_lang": "Practice {lang} Online for Free",
-    "meta_description_lang": "Join our free conversation meetings in {lang} via video conference. Practice with real people.",
+    "meta_description_lang": "Join our free conversation meetups in {lang} via video conference. Practice with real people.",
     "event_schema_name": "Practice {lang} - Online Meeting",
     "event_schema_desc": "Free conversation meeting in {lang} via video conference.",
     "hero_heading": "Speak <span>Online</span> with real<br>people from all over the planet",
@@ -96,7 +96,7 @@
     "hero_cta_calendar": "See Schedule",
     "hero_cta_host": "Be a Host",
     "stats": {
-      "meetings": "Meetings",
+      "meetings": "Meetups",
       "languages": "Languages",
       "free": "Free",
       "connections": "Connections"
@@ -294,5 +294,10 @@
     "esperanto": "Esperanto",
     "árabe": "Arabic",
     "coreano": "Korean"
+  },
+  "countries": {
+    "Brasil": "Brazil",
+    "Argentina": "Argentina",
+    "Paraguai": "Paraguay"
   }
 }

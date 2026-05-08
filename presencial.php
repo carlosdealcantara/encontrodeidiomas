@@ -407,7 +407,7 @@ include 'includes/header.php';
                     <button class="country-header" type="button" onclick="toggleCountry(this)">
                         <span class="country-flag"><?= $countryFlag($country) ?></span>
                         <div class="country-info">
-                            <div class="country-name"><?= htmlspecialchars($country) ?></div>
+                            <div class="country-name"><?= t('countries.' . $country, [], $country) ?></div>
                             <div class="country-count"><?= count($countryEvents) ?> <?= count($countryEvents) === 1 ? t('presencial.locations.count_singular') : t('presencial.locations.count_plural') ?></div>
                         </div>
                         <i class="fas fa-chevron-down country-chevron"></i>
