@@ -234,14 +234,14 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 
         .nav-links {
             display: flex;
-            gap: 20px;
+            gap: 12px;
         }
 
         .nav-links a {
             position: relative;
             color: var(--white);
             text-decoration: none;
-            padding: 8px 16px;
+            padding: 8px 12px;
             transition: all 0.3s ease;
             white-space: nowrap;
             opacity: 0.8;
@@ -356,8 +356,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         /* Language Switcher */
         .lang-switch {
             display: flex;
-            gap: 10px;
-            margin-left: 20px;
+            gap: 6px;
+            margin-left: 15px;
         }
         .lang-btn {
             display: flex;
@@ -365,11 +365,11 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             gap: 5px;
             color: var(--white);
             text-decoration: none;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             opacity: 0.6;
             transition: var(--transition);
-            padding: 5px 10px;
-            border-radius: 20px;
+            padding: 4px 8px;
+            border-radius: 12px;
             border: 1px solid transparent;
         }
         .lang-btn:hover {
