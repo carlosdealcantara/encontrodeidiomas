@@ -517,12 +517,12 @@ window.addEventListener('load', function() {
     setTimeout(() => {
         const localidadesSection = document.getElementById('localidades');
         if (localidadesSection) {
-            const offset = 140; // Garante o respiro visual acima do título "Onde Estamos"
+            const offset = 95; // Rente ao header, conforme solicitado
             const targetY = localidadesSection.getBoundingClientRect().top + window.pageYOffset - offset;
             
             smoothScrollTo(targetY, 1500);
         }
-    }, 2000); // Padronizado com 2 segundos de espera
+    }, 2000); 
 });
 </script>
 JS;

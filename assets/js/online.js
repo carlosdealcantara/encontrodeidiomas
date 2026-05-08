@@ -206,19 +206,20 @@ window.addEventListener('load', function() {
     if (window.location.hash) return;
     
     setTimeout(() => {
-        // Prioridade 1: O card marcado como alvo (está rolando ou é o próximo)
-        // Prioridade 2: O menu de navegação do calendário
-        const scrollTarget = document.querySelector('.scroll-target') || document.querySelector('.calendar-nav');
+        // Mira específica: primeiro tentamos o evento ativo no dia de hoje
+        // Se não houver (ex: fim de semana), miramos no topo do calendário
+        const activePanel = document.querySelector('.day-events.active');
+        const scrollTarget = (activePanel ? activePanel.querySelector('.scroll-target') : null) 
+                           || document.querySelector('.calendar-nav');
         
         if (scrollTarget) {
             const header = document.querySelector('.header');
             const headerHeight = header ? header.offsetHeight : 80;
-            
-            // Se for um card de evento, usamos um posicionamento centralizado
             const isEventCard = scrollTarget.classList.contains('scroll-target');
             
             let targetY;
             if (isEventCard) {
+                // Lógica de centralização exata que prioriza o evento atual/próximo
                 const elementRect = scrollTarget.getBoundingClientRect();
                 const absoluteElementTop = elementRect.top + window.pageYOffset;
                 targetY = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
@@ -228,7 +229,7 @@ window.addEventListener('load', function() {
             
             window.onlineSmoothScrollTo(targetY, 1500); 
         }
-    }, 2000); // Padronizado com 2 segundos para evitar conflitos e dar respiro
+    }, 2000); 
 });
 
 // Função de rolagem movida para o escopo global para permitir acesso externo
