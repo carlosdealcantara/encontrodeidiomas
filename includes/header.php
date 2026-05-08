@@ -71,7 +71,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <meta property="og:type"        content="website">
     <meta property="og:title"       content="<?= sanitize($title) ?> | Prática de Conversação em Inglês e outros idiomas">
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
-    <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_red_final.png?v=4.0">
+    <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_v5.png?v=5.0">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
     <meta property="og:site_name"   content="<?= SITE_NAME ?>">
     <meta property="og:locale"      content="pt_BR">
@@ -81,7 +81,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <meta property="twitter:url"         content="<?= sanitize($canonical) ?>">
     <meta property="twitter:title"       content="<?= sanitize($title) ?> | Prática de Conversação em Inglês e outros idiomas">
     <meta property="twitter:description" content="<?= sanitize($og_description) ?>">
-    <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_red_final.png?v=4.0">
+    <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_v5.png?v=5.0">
 
     <link rel="canonical" href="<?= sanitize($canonical) ?>">
     <title><?= sanitize($title) ?> | <?= SITE_NAME ?></title>
