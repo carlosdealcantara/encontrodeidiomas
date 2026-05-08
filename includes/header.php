@@ -160,8 +160,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             background-color: #f7f7f7;
             line-height: 1.6;
             width: 100%;
-            /* Espaço para o header fixo — ESSENCIAL para não "pular" o conteúdo */
-            padding-top: 80px;
+            /* O padding-top do body é gerenciado dinamicamente via JS (fim do arquivo) */
+            padding-top: 0;
         }
 
         /* ============================================================
@@ -294,8 +294,14 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
                 width: 100%;
                 flex-direction: column;
                 gap: 10px;
-                margin-top: 15px;
-                padding-bottom: 10px;
+                margin-top: 0;
+                padding: 20px 0;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: var(--primary-color);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+                z-index: 1000;
             }
 
             .nav-links.show {
@@ -351,7 +357,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             z-index: 1001;
             margin-top: 0;
         }
-        body.has-notice { padding-top: 120px; }
+        /* O padding do notice também é gerido pelo script dinâmico */
+        body.has-notice { padding-top: 0; }
 
         /* Language Switcher */
         .lang-switch {
@@ -482,6 +489,38 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     </header>
 
     <script>
+        // Ajuste dinâmico do padding-top do body baseado na altura do header
+        function syncHeaderHeight() {
+            const header = document.querySelector('.header');
+            const notice = document.querySelector('.global-notice');
+            const suggestion = document.getElementById('lang-suggestion-banner');
+            
+            let totalHeight = 0;
+            if (header) totalHeight += header.offsetHeight;
+            
+            // Se houver banner de aviso ou sugestão, eles empurram o header ou o corpo
+            // No nosso layout, o notice e suggestion estão fora do header fixo (acima)
+            // Mas o header em si é fixed.
+            // Precisamos calcular quanto o body deve descer.
+            
+            // Na verdade, o header é fixed: top 0.
+            // Se houver banners ACIMA do header fixed, o header deve descer? 
+            // Geralmente banners de aviso também são fixos ou empurram.
+            
+            // Vamos medir a posição do topo do conteúdo principal ou simplesmente 
+            // usar a altura combinada dos elementos fixos no topo.
+            
+            document.body.style.paddingTop = totalHeight + 'px';
+        }
+
+        // Executar ao carregar, ao redimensionar e ao interagir
+        window.addEventListener('load', syncHeaderHeight);
+        window.addEventListener('resize', syncHeaderHeight);
+        
+        // Se houver banners que podem sumir, reajustar
+        const observer = new MutationObserver(syncHeaderHeight);
+        observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+
         // Menu mobile toggle
         document.getElementById('menu-toggle-btn').addEventListener('click', function () {
             const nav = document.getElementById('main-nav');
@@ -489,5 +528,9 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             this.setAttribute('aria-expanded', isOpen);
             this.querySelector('i').classList.toggle('fa-bars', !isOpen);
             this.querySelector('i').classList.toggle('fa-times', isOpen);
+            
+            // Opcional: Reajustar se a abertura do menu mudar a altura do header
+            // (Apenas se o menu não for overlay absoluto)
+            setTimeout(syncHeaderHeight, 10);
         });
     </script>
