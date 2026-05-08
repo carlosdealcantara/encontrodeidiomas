@@ -309,7 +309,10 @@ ob_start();
             height: auto; 
             min-height: 85vh; 
             overflow: visible; 
-            padding: 100px 0 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 100px 20px 60px;
         }
         .hero-stats { gap: 30px; }
         .steps-grid { grid-template-columns: 1fr 1fr; }
