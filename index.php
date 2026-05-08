@@ -9,8 +9,6 @@ $swiper_enabled = true;
 
 $extra_head = '
 <link rel="stylesheet" href="assets/css/home.css">
-$extra_head = '
-<link rel="stylesheet" href="assets/css/home.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
