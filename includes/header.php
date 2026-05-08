@@ -161,7 +161,10 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             line-height: 1.6;
             width: 100%;
             /* O padding-top do body é gerenciado dinamicamente via JS (fim do arquivo) */
-            padding-top: 0;
+            padding-top: 85px; /* Valor base fallback */
+        }
+        @media (min-width: 769px) {
+            body { padding-top: 80px; }
         }
 
         /* ============================================================

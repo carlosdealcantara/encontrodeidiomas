@@ -305,6 +305,12 @@ ob_start();
     .btn-outline-red:hover { background: var(--accent-red); color: #fff; transform: translateY(-2px); }
 
     @media (max-width: 768px) {
+        .hero-presencial { 
+            height: auto; 
+            min-height: 85vh; 
+            overflow: visible; 
+            padding: 100px 0 60px;
+        }
         .hero-stats { gap: 30px; }
         .steps-grid { grid-template-columns: 1fr 1fr; }
         .cities-grid { grid-template-columns: 1fr; }

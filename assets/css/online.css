@@ -285,6 +285,13 @@
     .timeline::before { left:20px; }
     .timeline-event { width:calc(100% - 60px); margin-left:50px !important; }
     .timeline-event::before { left:-40px !important; right:auto !important; }
+    .hero { 
+        height: auto; 
+        min-height: 85vh; 
+        overflow: visible;
+        padding-top: 40px; 
+        padding-bottom: 40px;
+    }
     .hero h1 { font-size:2.5rem; }
     .calendar-days { padding:0 10px; gap:8px; }
     .day-button { flex:1 1 calc(50% - 8px); min-width:0; padding:10px 5px; font-size:.9rem; }
