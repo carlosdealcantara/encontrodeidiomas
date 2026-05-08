@@ -1,10 +1,10 @@
 <?php
 require_once 'config.php';
 
-$title          = 'Contato';
+$title          = t('contact.title');
 $current_page   = 'contato.php';
-$og_description = 'Entre em contato com o Encontro de Idiomas - Envie uma mensagem para nossa equipe ou participe de nossos grupos.';
-$canonical      = 'https://encontrodeidiomas.com.br/contato.php';
+$og_description = t('contact.meta_description');
+$canonical      = SITE_URL . langUrl('contato.php');
 
 $page_styles = <<<CSS
     :root {
@@ -234,7 +234,7 @@ $page_scripts = <<<JS
         const originalContent = btn.innerHTML;
         
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + '<?= t('contact.form.sending_btn') ?>';
 
         const formData = new FormData(this);
         formData.append('_subject', 'Nova mensagem do Encontro de Idiomas');
@@ -274,37 +274,37 @@ include 'includes/header.php';
                 <div class="hero-image-wrapper">
                     <img src="assets/images/hero_contact.png" alt="Fale Conosco" class="hero-image">
                 </div>
-                <h1>Fale Conosco</h1>
-                <p>Quer tirar dúvidas, dar sugestões ou se juntar ao nosso time de voluntários e anfitriões? Envie sua mensagem!</p>
+                <h1><?= t('contact.hero_title') ?></h1>
+                <p><?= t('contact.hero_subtitle') ?></p>
             </header>
         </section>
 
         <div class="contact-container">
 
             <div class="alert alert-success" id="success-message" role="alert">
-                <i class="fas fa-check-circle"></i> Sua mensagem foi enviada com sucesso! Responderemos em breve.
+                <i class="fas fa-check-circle"></i> <?= t('contact.success_message') ?>
             </div>
 
             <div class="alert alert-error" id="error-message" role="alert">
-                <i class="fas fa-exclamation-circle"></i> Ocorreu um erro ao enviar. Por favor, tente novamente mais tarde.
+                <i class="fas fa-exclamation-circle"></i> <?= t('contact.error_message') ?>
             </div>
 
             <div class="contact-form-card">
                 <form id="contact-form" novalidate>
                     <div class="form-group">
-                        <label for="name">Nome Completo</label>
-                        <input type="text" id="name" name="name" class="form-control" placeholder="Como podemos te chamar?" required autocomplete="name">
+                        <label for="name"><?= t('contact.form.name_label') ?></label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="<?= t('contact.form.name_placeholder') ?>" required autocomplete="name">
                     </div>
                     <div class="form-group">
-                        <label for="email">Seu melhor E-mail</label>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="exemplo@email.com" required autocomplete="email">
+                        <label for="email"><?= t('contact.form.email_label') ?></label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="<?= t('contact.form.email_placeholder') ?>" required autocomplete="email">
                     </div>
                     <div class="form-group">
-                        <label for="message">Sua Mensagem</label>
-                        <textarea id="message" name="message" class="form-control" placeholder="Escreva sua mensagem, dúvida ou conte-nos como gostaria de colaborar..." required></textarea>
+                        <label for="message"><?= t('contact.form.message_label') ?></label>
+                        <textarea id="message" name="message" class="form-control" placeholder="<?= t('contact.form.message_placeholder') ?>" required></textarea>
                     </div>
                     <button type="submit" class="submit-btn" id="submit-btn">
-                        <i class="fas fa-paper-plane"></i> Enviar Mensagem
+                        <i class="fas fa-paper-plane"></i> <?= t('contact.form.submit_btn') ?>
                     </button>
                 </form>
             </div>

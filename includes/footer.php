@@ -18,26 +18,26 @@
                     <img src="assets/images/logo.png" alt="Logo Encontro de Idiomas" class="footer-logo">
                     <div>
                         <div class="footer-title">Encontro de Idiomas</div>
-                        <div class="footer-tagline">Pratique idiomas gratuitamente</div>
+                        <div class="footer-tagline"><?= t('footer.tagline') ?></div>
                     </div>
                 </div>
 
                 <!-- Navegação + Redes Sociais -->
                 <nav class="footer-nav" aria-label="Rodapé">
                     <div class="footer-section">
-                        <h3>Navegação</h3>
+                        <h3><?= t('footer.navigation') ?></h3>
                         <ul>
-                             <li><a href="index.php">Início</a></li>
-                             <li><a href="online.php">Online</a></li>
-                             <li><a href="presencial.php">Presencial</a></li>
-                             <li><a href="equipe.php">Equipe</a></li>
-                             <li><a href="links.php">Links</a></li>
-                             <li><a href="contato.php">Contato</a></li>
+                             <li><a href="<?= langUrl('index.php') ?>"><?= t('nav.home') ?></a></li>
+                             <li><a href="<?= langUrl('online.php') ?>"><?= t('nav.online') ?></a></li>
+                             <li><a href="<?= langUrl('presencial.php') ?>"><?= t('nav.presencial') ?></a></li>
+                             <li><a href="<?= langUrl('equipe.php') ?>"><?= t('nav.team') ?></a></li>
+                             <li><a href="<?= langUrl('links.php') ?>"><?= t('nav.links') ?></a></li>
+                             <li><a href="<?= langUrl('contato.php') ?>"><?= t('nav.contact') ?></a></li>
                         </ul>
                     </div>
 
                     <div class="footer-section">
-                        <h3>Redes Sociais</h3>
+                        <h3><?= t('footer.social') ?></h3>
                         <div class="social-links">
                             <a href="https://www.instagram.com/encontrodeidiomas" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
                                 <i class="fab fa-instagram"></i>
@@ -59,7 +59,7 @@
             </div><!-- /footer-content -->
 
             <div class="copyright">
-                &copy; <?= date('Y') ?> Encontro de Idiomas. Todos os direitos reservados.
+                &copy; <?= date('Y') ?> Encontro de Idiomas. <?= t('footer.copyright') ?>
             </div>
         </div>
     </footer>

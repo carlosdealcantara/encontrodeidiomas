@@ -1,0 +1,282 @@
+{
+  "meta": {
+    "lang_code": "pt",
+    "og_locale": "pt_BR",
+    "og_title_suffix": "Prática de Conversação em Inglês e outros idiomas",
+    "org_description": "A melhor alternativa gratuita para quem busca um clube poliglota e prática de conversação online e presencial.",
+    "website_description": "Comunidade para poliglotas e entusiastas de idiomas praticarem conversação grátis.",
+    "site_name": "Encontro de Idiomas",
+    "tagline": "Pratique idiomas gratuitamente"
+  },
+  "nav": {
+    "home": "Início",
+    "online": "Online",
+    "presencial": "Presencial",
+    "team": "Equipe",
+    "links": "Links",
+    "contact": "Contato"
+  },
+  "home": {
+    "title": "Prática de Conversação em Inglês e outros Idiomas",
+    "meta_description": "Participe gratuitamente de encontros para praticar inglês, espanhol, francês e outros idiomas online e presenciais.",
+    "hero_heading": "Pratique idiomas com <span class=\"highlight\">pessoas reais</span>",
+    "welcome_text": "Pratique inglês, espanhol e outros idiomas de forma gratuita e natural. Participe de uma comunidade vibrante com encontros online e presenciais em todo o país.",
+    "cta_participate": "Ver como participar",
+    "cta_links": "Central de Links",
+    "hero_labels": {
+      "presencial": "Encontros Presenciais",
+      "online": "Encontros Online",
+      "replay": "Replay das Chamadas",
+      "activities": "Atividades Interativas",
+      "mentorship": "Mentoria Acessível",
+      "outdoor": "Eventos ao Ar Livre",
+      "varied": "Grupos de Idiomas Variados",
+      "moments": "Momentos Marcantes",
+      "social": "Atividade nas Redes Sociais"
+    },
+    "modalities": {
+      "eyebrow": "Duas formas de participar",
+      "heading": "Escolha como praticar",
+      "desc": "Seja online de qualquer lugar do mundo ou presencialmente na sua cidade, temos o formato ideal para você começar a praticar hoje mesmo.",
+      "online_title": "Online",
+      "online_text": "Encontros semanais por videoconferência com pessoas de todo o Brasil e do mundo. Filtros por idioma e dia, anfitriões dedicados e programação definida.",
+      "online_link": "Ver programação",
+      "presencial_title": "Presencial",
+      "presencial_text": "Encontros cara a cara em cafés, praças e shoppings de diversas cidades. Grupos locais organizados por voluntários, em expansão pelo Brasil e além.",
+      "presencial_link": "Ver localidades"
+    },
+    "how_it_works": {
+      "eyebrow": "Como participar",
+      "heading": "Simples, gratuito e sem burocracia",
+      "step1_title": "Escolha um encontro",
+      "step1_text": "Navegue pela programação online ou encontre o grupo presencial da sua cidade.",
+      "step2_title": "Apareça e participe",
+      "step2_text": "Entre na videochamada ou vá ao local combinado. Apresente-se e comece a praticar.",
+      "step3_title": "Evolua e conecte-se",
+      "step3_text": "Volte sempre que quiser. Faça amizades, melhore sua fluência e faça parte da comunidade."
+    },
+    "faq": {
+      "eyebrow": "Dúvidas frequentes",
+      "heading": "Perguntas comuns",
+      "q1": "O Encontro de Idiomas é gratuito?",
+      "a1": "Sim, todos os nossos encontros, tanto online quanto presenciais, são 100% gratuitos e abertos à comunidade. Nosso objetivo é democratizar a prática de idiomas.",
+      "q2": "Preciso ter nível avançado para participar?",
+      "a2": "Não! Temos participantes de todos os níveis. O ambiente é acolhedor e focado no aprendizado mútuo. Se você consegue se apresentar, já pode começar a praticar.",
+      "q3": "Como funcionam os encontros presenciais?",
+      "a3": "Os encontros presenciais acontecem em locais públicos como cafés e shoppings. Eles são organizados por voluntários locais e não têm data fixa, ocorrendo conforme a mobilização do grupo no WhatsApp."
+    },
+    "community": {
+      "heading": "Faça parte da comunidade",
+      "text": "Mais do que praticar idiomas, o Encontro de Idiomas é sobre criar conexões reais. Conheça pessoas incríveis, faça amizades e construa algo verdadeiramente maior junto com a gente.",
+      "team_title": "Conheça a Equipe",
+      "team_text": "Anfitriões voluntários que fazem tudo acontecer.",
+      "links_title": "Central de Links",
+      "links_text": "Grupos de WhatsApp, cronogramas e recursos.",
+      "contact_title": "Fale Conosco",
+      "contact_text": "Dúvidas, sugestões ou quer ser voluntário?",
+      "social_title": "Siga no Instagram",
+      "social_text": "Novidades, dicas e bastidores do projeto.",
+      "cta_start": "Comece agora — é gratuito"
+    },
+    "authority_seal": {
+      "eyebrow": "Referência e Liderança Nacional em Idiomas"
+    }
+  },
+  "online": {
+    "title_default": "Praticar Idiomas Online Grátis - Programação Semanal",
+    "meta_description_default": "Encontro de Idiomas Online - Comunidade gratuita para praticar inglês, espanhol e mais via videoconferência.",
+    "title_lang": "Prática de {lang} Online Grátis",
+    "meta_description_lang": "Participe dos nossos encontros gratuitos de conversação em {lang} via videoconferência. Pratique com pessoas reais.",
+    "event_schema_name": "Prática de {lang} - Encontro Online",
+    "event_schema_desc": "Encontro gratuito de conversação em {lang} via videoconferência.",
+    "hero_heading": "Fale <span>Online</span> com pessoas<br>reais de todo o planeta",
+    "hero_text": "Conecte-se com pessoas do mundo todo sem sair de casa. Junte-se à nossa comunidade global: um ambiente online gratuito e acolhedor para destravar a fala, fazer novas amizades e praticar idiomas com nativos.",
+    "hero_cta_calendar": "Ver Programação",
+    "hero_cta_host": "Seja um Anfitrião",
+    "stats": {
+      "meetings": "Encontros",
+      "languages": "Idiomas",
+      "free": "Gratuito",
+      "connections": "Conexões"
+    },
+    "calendar_heading": "Programação Semanal",
+    "calendar_timezone": "Fuso horário: GMT-3 (Horário de Brasília)<br>As chamadas são gravadas e disponibilizadas no Odysee.",
+    "filter_label": "Filtrar por:",
+    "filter_day": "Dia da Semana",
+    "filter_language": "Idioma",
+    "search_placeholder": "Buscar idioma...",
+    "empty_day_title": "Que tal ser o próximo Anfitrião?",
+    "empty_day_text": "Se o idioma ou horário que você procura não está aqui, você pode ser a pessoa que faz ele acontecer!",
+    "empty_day_cta": "Quero ser um Host",
+    "seo_index_title": "Índice de Prática por Idioma"
+  },
+  "presencial": {
+    "title_default": "Encontros de Idiomas Presenciais - Brasil e Mundo",
+    "meta_description_default": "Encontros presenciais do Encontro de Idiomas em diversas cidades do Brasil, Argentina e Paraguai.",
+    "title_city": "Prática de Idiomas em {city} | {site_name}",
+    "meta_description_city": "Participe da nossa comunidade local de idiomas em {city}. Encontros gratuitos e conversação real.",
+    "title_state": "Encontros de Idiomas em {state} | {site_name}",
+    "meta_description_state": "Veja todos os grupos de prática de idiomas no estado de {state}. Encontros presenciais gratuitos.",
+    "title_region": "Encontros de Idiomas na Região {region} | {site_name}",
+    "meta_description_region": "Explore os grupos presenciais de prática de idiomas na Região {region}. Comunidades ativas e gratuitas.",
+    "local_business_name": "Encontro de Idiomas - {city}",
+    "local_business_desc": "Prática de conversação gratuita em {city} ({country}). Participe da nossa comunidade local.",
+    "hero_heading": "&nbsp;Encontros <span>Presenciais</span>&nbsp;<br>&nbsp;em todo o país e além&nbsp;",
+    "hero_subtitle": "Pratique idiomas pessoalmente com pessoas reais, onde quer que você esteja. Junte-se a uma comunidade global em expansão. Sem horário fixo, sem burocracia: apenas conversação genuína e conexões para a vida toda.",
+    "hero_cta_locations": "Ver localidades",
+    "hero_cta_city": "Na sua cidade!",
+    "stats": {
+      "groups": "Grupos ativos",
+      "countries": "Países",
+      "free": "Gratuito",
+      "languages": "Idiomas"
+    },
+    "how_it_works": {
+      "label": "Como funciona",
+      "heading": "Simples, flexível e gratuito",
+      "desc": "Os encontros não têm data fixa. Acontecem conforme a comunidade local se mobiliza. Você não precisa esperar passivamente — faça o encontro acontecer!",
+      "step1_title": "Entre no grupo da sua cidade",
+      "step1_text": "Encontre o grupo WhatsApp da sua cidade ou região e junte-se a quem já quer praticar idiomas pessoalmente.",
+      "step2_title": "Movimente o grupo — convide!",
+      "step2_text": "Convide amigos enquanto os outros membros fazem o mesmo. Quando a demanda crescer, o organizador anuncia data e local. Quanto mais gente convida, mais rápido o encontro acontece!",
+      "step3_title": "Apareça e viva momentos inesquecíveis",
+      "step3_text": "Vá ao encontro, apresente-se e pratique. Você vai sair com amizades reais, conversas incríveis e histórias que não esperava ter."
+    },
+    "locations": {
+      "label": "Onde estamos",
+      "heading": "Localidades com grupos ativos",
+      "desc": "Estas são as localidades com grupos já formados ao redor do mundo. Encontre a sua região e faça parte da comunidade!",
+      "count_singular": "localidade",
+      "count_plural": "localidades",
+      "city_singular": "cidade",
+      "city_plural": "cidades"
+    },
+    "no_events": "Em breve teremos cidades aqui. Seja o primeiro a organizar na sua cidade!",
+    "expand": {
+      "heading": "Não tem encontro por perto?",
+      "desc": "Você pode ser o primeiro! Basta criar o grupo local, convidar pessoas e, quando juntar uma turma, combinar um lugar e um dia. É isso — sem complicação.",
+      "step1_title": "Crie o grupo e convide",
+      "step1_text": "Abra um grupo WhatsApp para a sua cidade e comece convidando amigos e colegas que queiram praticar idiomas.",
+      "step2_title": "Marque quando tiver turma",
+      "step2_text": "Sem compromisso fixo. Quando sentir que há gente suficiente, combine um dia e pronto.",
+      "step3_title": "Escolha o local",
+      "step3_text": "A praça de alimentação do shopping é perfeita: espaço gratuito, sem consumação obrigatória. Café, parque ou biblioteca também funcionam!",
+      "cta": "Quero ajuda para organizar"
+    },
+    "organizer_cta": {
+      "heading": "Quer ser um organizador?",
+      "desc": "Organizar um encontro vai muito além de juntar pessoas para praticar idiomas. É uma oportunidade real de desenvolver liderança, expandir sua rede e causar impacto na sua cidade. Conheça os benefícios completos de quem faz parte da nossa equipe de voluntários.",
+      "cta_benefits": "Conhecer os benefícios",
+      "cta_contact": "Falar com a equipe"
+    },
+    "seo_region_title": "Explorar por Região",
+    "seo_location_title": "Explorar por Localidade"
+  },
+  "team": {
+    "title": "Equipe",
+    "meta_description": "Conheça a equipe do Encontro de Idiomas - Anfitriões, desenvolvedores e criadores de conteúdo.",
+    "hero_title": "Equipe",
+    "hero_subtitle": "Conheça as pessoas incríveis que <br> tornam o Encontro de Idiomas possível!",
+    "tabs": {
+      "online": "Online",
+      "presencial": "Presenciais",
+      "tecnica": "Equipe Técnica"
+    },
+    "filters": {
+      "lang_placeholder": "Todos os Idiomas",
+      "region_placeholder": "Todas as Cidades",
+      "role_placeholder": "Todos os Papéis",
+      "search_lang": "Buscar idioma...",
+      "search_city": "Buscar cidade...",
+      "search_role": "Buscar área...",
+      "all_languages": "Todos os Idiomas",
+      "all_cities": "Todas as Cidades",
+      "all_roles": "Todos os Papéis",
+      "others_lang": "Outros idiomas...",
+      "others_region": "Outras regiões...",
+      "others_role": "Outras áreas..."
+    },
+    "become_volunteer": {
+      "title": "Torne-se um Voluntário!",
+      "text": "Quer fazer parte da nossa equipe? Conheça as vantagens!",
+      "cta": "Ver Benefícios"
+    },
+    "benefits": {
+      "heading": "Por que ser um Voluntário?",
+      "subtitle": "Muito mais do que voluntariado, uma oportunidade de crescimento real.",
+      "cert_title": "Certificado e Currículo",
+      "cert_text": "Ganhe experiência prática comprovada e um certificado reconhecido para turbinar seu currículo e LinkedIn.",
+      "showcase_title": "Vitrine no Site",
+      "showcase_text": "Seu perfil em destaque no site será seu espaço para divulgar suas redes, projetos e serviços para milhares de visitantes.",
+      "networking_title": "Networking e Bastidores",
+      "networking_text": "Conheça o projeto por dentro e faça conexões estratégicas com outros voluntários e profissionais.",
+      "vip_title": "Comunidade VIP",
+      "vip_text": "Acesso exclusivo ao nosso grupo de Membros da Equipe, com trocas de experiências e materiais exclusivos.",
+      "leadership_title": "Liderança e Mentoria",
+      "leadership_text": "Desenvolva habilidades de liderança e gestão de grupos com supervisão próxima e mentoria direta.",
+      "support_title": "Suporte a Ideias",
+      "support_text": "Coloque suas próprias iniciativas em prática com nosso apoio total e suporte técnico para novos projetos.",
+      "cta": "Quero me candidatar"
+    },
+    "cta_footer": {
+      "title": "Ainda tem dúvidas?",
+      "subtitle": "Nossa equipe está pronta para te ajudar a dar os primeiros passos.",
+      "button": "Fale Conosco"
+    }
+  },
+  "links": {
+    "title": "Links",
+    "meta_description": "Hub de Comunidades do Encontro de Idiomas - Acesse nossos grupos de WhatsApp, cronogramas e recursos exclusivos.",
+    "hero_title": "Links",
+    "hero_subtitle": "Conecte-se com o mundo pelos <br> nossos grupos e recursos.",
+    "central_label": "Central de Links"
+  },
+  "contact": {
+    "title": "Contato",
+    "meta_description": "Entre em contato com o Encontro de Idiomas - Envie uma mensagem para nossa equipe ou participe de nossos grupos.",
+    "hero_title": "Fale Conosco",
+    "hero_subtitle": "Quer tirar dúvidas, dar sugestões ou se juntar ao nosso time de voluntários e anfitriões? Envie sua mensagem!",
+    "success_message": "Sua mensagem foi enviada com sucesso! Responderemos em breve.",
+    "error_message": "Ocorreu um erro ao enviar. Por favor, tente novamente mais tarde.",
+    "form": {
+      "name_label": "Nome Completo",
+      "name_placeholder": "Como podemos te chamar?",
+      "email_label": "Seu melhor E-mail",
+      "email_placeholder": "exemplo@email.com",
+      "message_label": "Sua Mensagem",
+      "message_placeholder": "Escreva sua mensagem, dúvida ou conte-nos como gostaria de colaborar...",
+      "submit_btn": "Enviar Mensagem",
+      "sending_btn": "Enviando..."
+    }
+  },
+  "footer": {
+    "tagline": "Pratique idiomas gratuitamente",
+    "navigation": "Navegação",
+    "social": "Redes Sociais",
+    "copyright": "Todos os direitos reservados."
+  },
+  "days": {
+    "1": "Segunda",
+    "2": "Terça",
+    "3": "Quarta",
+    "4": "Quinta",
+    "5": "Sexta",
+    "6": "Sábado",
+    "7": "Domingo"
+  },
+  "events": {
+    "at_time": "{day} às {hour}h",
+    "live_badge": "AO VIVO",
+    "finished": "Finalizado",
+    "wait": "Aguarde",
+    "join": "Participar",
+    "previous": "Anteriores",
+    "host_label": "Host:",
+    "free_conversation": "Conversação Livre",
+    "organizer_label": "Organizador(a) local",
+    "join_group": "Entrar no grupo"
+  },
+  "authority": {
+    "text": "O maior ecossistema de prática de idiomas do país"
+  }
+}

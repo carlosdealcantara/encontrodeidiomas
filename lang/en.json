@@ -1,0 +1,282 @@
+{
+  "meta": {
+    "lang_code": "en",
+    "og_locale": "en_US",
+    "site_name": "Encontro de Idiomas",
+    "tagline": "Practice languages for free",
+    "og_title_suffix": "Conversation Practice in English and other languages",
+    "org_description": "The best free alternative for those seeking a polyglot club and online and in-person conversation practice.",
+    "website_description": "Community for polyglots and language enthusiasts to practice conversation for free."
+  },
+  "nav": {
+    "home": "Home",
+    "online": "Online",
+    "presencial": "In Person",
+    "team": "Team",
+    "links": "Links",
+    "contact": "Contact"
+  },
+  "home": {
+    "title": "Practice English and Other Languages Through Conversation",
+    "meta_description": "Join free language practice meetups for English, Spanish, French and other languages online and in person.",
+    "hero_heading": "Practice languages with <span class=\"highlight\">real people</span>",
+    "welcome_text": "Practice English, Spanish and other languages for free and naturally. Join a vibrant community with online and in-person meetings across the country.",
+    "cta_participate": "See how to join",
+    "cta_links": "Links Hub",
+    "hero_labels": {
+      "presencial": "In-Person Meetings",
+      "online": "Online Meetings",
+      "replay": "Call Replays",
+      "activities": "Interactive Activities",
+      "mentorship": "Accessible Mentoring",
+      "outdoor": "Outdoor Events",
+      "varied": "Varied Language Groups",
+      "moments": "Memorable Moments",
+      "social": "Social Media Activity"
+    },
+    "modalities": {
+      "eyebrow": "Two ways to join",
+      "heading": "Choose how to practice",
+      "desc": "Whether online from anywhere in the world or in person in your city, we have the ideal format for you to start practicing today.",
+      "online_title": "Online",
+      "online_text": "Weekly video conference meetings with people from all over the world. Filter by language and day, dedicated hosts and defined schedule.",
+      "online_link": "See schedule",
+      "presencial_title": "In Person",
+      "presencial_text": "Face-to-face meetings in cafes, parks and malls. Local groups organized by volunteers, expanding across and beyond the borders.",
+      "presencial_link": "See locations"
+    },
+    "how_it_works": {
+      "eyebrow": "How to join",
+      "heading": "Simple, free and hassle-free",
+      "step1_title": "Choose a meeting",
+      "step1_text": "Browse the online schedule or find a local in-person group in your city.",
+      "step2_title": "Show up and join",
+      "step2_text": "Enter the video call or go to the agreed location. Introduce yourself and start practicing.",
+      "step3_title": "Evolve and connect",
+      "step3_text": "Come back whenever you want. Make friends, improve your fluency and be part of the community."
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "heading": "Common Questions",
+      "q1": "Is Encontro de Idiomas free?",
+      "a1": "Yes, all our meetings, both online and in person, are 100% free and open to the community. Our goal is to democratize language practice.",
+      "q2": "Do I need to be advanced to participate?",
+      "a2": "No! We have participants of all levels. The environment is welcoming and focused on mutual learning. If you can introduce yourself, you can start practicing.",
+      "q3": "How do the in-person meetings work?",
+      "a3": "In-person meetings take place in public places such as cafes and malls. They are organized by local volunteers and don't have fixed dates, occurring according to group mobilization on WhatsApp."
+    },
+    "community": {
+      "heading": "Join our community",
+      "text": "More than just practicing languages, Encontro de Idiomas is about creating real connections. Meet incredible people, make friends and build something truly greater with us.",
+      "team_title": "Meet the Team",
+      "team_text": "Volunteer hosts who make everything happen.",
+      "links_title": "Links Hub",
+      "links_text": "WhatsApp groups, schedules and resources.",
+      "contact_title": "Contact Us",
+      "contact_text": "Questions, suggestions or want to volunteer?",
+      "social_title": "Follow on Instagram",
+      "social_text": "News, tips and project behind the scenes.",
+      "cta_start": "Start now — it's free"
+    },
+    "authority_seal": {
+      "eyebrow": "National Language Reference and Leadership"
+    }
+  },
+  "online": {
+    "title_default": "Practice Languages Online Free - Weekly Schedule",
+    "meta_description_default": "Encontro de Idiomas Online - Free community to practice English, Spanish and more via video conference.",
+    "title_lang": "Practice {lang} Online for Free",
+    "meta_description_lang": "Join our free conversation meetings in {lang} via video conference. Practice with real people.",
+    "event_schema_name": "Practice {lang} - Online Meeting",
+    "event_schema_desc": "Free conversation meeting in {lang} via video conference.",
+    "hero_heading": "Speak <span>Online</span> with real<br>people from all over the planet",
+    "hero_text": "Connect with people from all over the world without leaving home. Join our global community: a free and welcoming online environment to unlock your speaking, make new friends and practice languages with natives.",
+    "hero_cta_calendar": "See Schedule",
+    "hero_cta_host": "Be a Host",
+    "stats": {
+      "meetings": "Meetings",
+      "languages": "Languages",
+      "free": "Free",
+      "connections": "Connections"
+    },
+    "calendar_heading": "Weekly Schedule",
+    "calendar_timezone": "Timezone: GMT-3 (Brasília Time)<br>Calls are recorded and available on Odysee.",
+    "filter_label": "Filter by:",
+    "filter_day": "Day of the Week",
+    "filter_language": "Language",
+    "search_placeholder": "Search language...",
+    "empty_day_title": "How about being the next Host?",
+    "empty_day_text": "If the language or time you're looking for isn't here, you can be the person who makes it happen!",
+    "empty_day_cta": "I want to be a Host",
+    "seo_index_title": "Practice Index by Language"
+  },
+  "presencial": {
+    "title_default": "In-Person Language Meetups - Brazil and the World",
+    "meta_description_default": "In-person meetups of Encontro de Idiomas in several cities in Brazil, Argentina and Paraguay.",
+    "title_city": "Language Practice in {city} | {site_name}",
+    "meta_description_city": "Join our local language community in {city}. Free meetups and real conversation.",
+    "title_state": "Language Meetups in {state} | {site_name}",
+    "meta_description_state": "See all language practice groups in the state of {state}. Free in-person meetups.",
+    "title_region": "Language Meetups in the {region} Region | {site_name}",
+    "meta_description_region": "Explore the in-person language practice groups in the {region} Region. Active and free communities.",
+    "local_business_name": "Encontro de Idiomas - {city}",
+    "local_business_desc": "Free conversation practice in {city} ({country}). Join our local community.",
+    "hero_heading": "&nbsp;<span>In-Person</span> Meetups&nbsp;<br>&nbsp;across the country and beyond&nbsp;",
+    "hero_subtitle": "Practice languages in person with real people, wherever you are. Join an expanding global community. No fixed schedule, no bureaucracy: just genuine conversation and connections for life.",
+    "hero_cta_locations": "See locations",
+    "hero_cta_city": "In your city!",
+    "stats": {
+      "groups": "Active groups",
+      "countries": "Countries",
+      "free": "Free",
+      "languages": "Languages"
+    },
+    "how_it_works": {
+      "label": "How it works",
+      "heading": "Simple, flexible and free",
+      "desc": "Meetups don't have a fixed date. They happen as the local community mobilizes. You don't have to wait passively — make the meetup happen!",
+      "step1_title": "Join your city's group",
+      "step1_text": "Find the WhatsApp group for your city or region and join those who already want to practice languages in person.",
+      "step2_title": "Mobilize the group — invite!",
+      "step2_text": "Invite friends while other members do the same. When demand grows, the organizer announces the date and place. The more people invite, the faster the meetup happens!",
+      "step3_title": "Show up and live unforgettable moments",
+      "step3_text": "Go to the meetup, introduce yourself and practice. You will leave with real friendships, amazing conversations and stories you didn't expect to have."
+    },
+    "locations": {
+      "label": "Where we are",
+      "heading": "Locations with active groups",
+      "desc": "These are the locations with groups already formed around the world. Find your region and be part of the community!",
+      "count_singular": "location",
+      "count_plural": "locations",
+      "city_singular": "city",
+      "city_plural": "cities"
+    },
+    "no_events": "Soon we will have cities here. Be the first to organize in your city!",
+    "expand": {
+      "heading": "No meetup nearby?",
+      "desc": "You can be the first! Just create the local group, invite people and, when a group comes together, agree on a place and a day. That's it — no complication.",
+      "step1_title": "Create the group and invite",
+      "step1_text": "Open a WhatsApp group for your city and start inviting friends and colleagues who want to practice languages.",
+      "step2_title": "Schedule when you have a group",
+      "step2_text": "No fixed commitment. When you feel there are enough people, set a day and that's it.",
+      "step3_title": "Choose the location",
+      "step3_text": "The mall food court is perfect: free space, no mandatory consumption. Cafes, parks or libraries also work!",
+      "cta": "I want help organizing"
+    },
+    "organizer_cta": {
+      "heading": "Want to be an organizer?",
+      "desc": "Organizing a meetup goes far beyond bringing people together to practice languages. It's a real opportunity to develop leadership, expand your network and make an impact in your city. Get to know the full benefits for those who are part of our volunteer team.",
+      "cta_benefits": "Learn about the benefits",
+      "cta_contact": "Talk to the team"
+    },
+    "seo_region_title": "Explore by Region",
+    "seo_location_title": "Explore by Location"
+  },
+  "team": {
+    "title": "Team",
+    "meta_description": "Meet the Encontro de Idiomas team - Hosts, developers and content creators.",
+    "hero_title": "Team",
+    "hero_subtitle": "Meet the amazing people who <br> make Encontro de Idiomas possible!",
+    "tabs": {
+      "online": "Online",
+      "presencial": "In-Person",
+      "tecnica": "Technical Team"
+    },
+    "filters": {
+      "lang_placeholder": "All Languages",
+      "region_placeholder": "All Cities",
+      "role_placeholder": "All Roles",
+      "search_lang": "Search language...",
+      "search_city": "Search city...",
+      "search_role": "Search area...",
+      "all_languages": "All Languages",
+      "all_cities": "All Cities",
+      "all_roles": "All Roles",
+      "others_lang": "Other languages...",
+      "others_region": "Other regions...",
+      "others_role": "Other areas..."
+    },
+    "become_volunteer": {
+      "title": "Become a Volunteer!",
+      "text": "Want to be part of our team? Discover the advantages!",
+      "cta": "See Benefits"
+    },
+    "benefits": {
+      "heading": "Why be a Volunteer?",
+      "subtitle": "Much more than volunteering, a real growth opportunity.",
+      "cert_title": "Certificate and Resume",
+      "cert_text": "Gain proven practical experience and a recognized certificate to boost your resume and LinkedIn.",
+      "showcase_title": "Website Showcase",
+      "showcase_text": "Your featured profile on the site will be your space to share your networks, projects and services with thousands of visitors.",
+      "networking_title": "Networking and Behind the Scenes",
+      "networking_text": "Get to know the project from the inside and make strategic connections with other volunteers and professionals.",
+      "vip_title": "VIP Community",
+      "vip_text": "Exclusive access to our Team Members group, with experience sharing and exclusive materials.",
+      "leadership_title": "Leadership and Mentoring",
+      "leadership_text": "Develop leadership and group management skills with close supervision and direct mentoring.",
+      "support_title": "Support for Ideas",
+      "support_text": "Put your own initiatives into practice with our full support and technical assistance for new projects.",
+      "cta": "I want to apply"
+    },
+    "cta_footer": {
+      "title": "Still have questions?",
+      "subtitle": "Our team is ready to help you take the first steps.",
+      "button": "Contact Us"
+    }
+  },
+  "links": {
+    "title": "Links",
+    "meta_description": "Encontro de Idiomas Community Hub - Access our WhatsApp groups, schedules and exclusive resources.",
+    "hero_title": "Links",
+    "hero_subtitle": "Connect with the world through <br> our groups and resources.",
+    "central_label": "Links Hub"
+  },
+  "contact": {
+    "title": "Contact",
+    "meta_description": "Get in touch with Encontro de Idiomas - Send a message to our team or join our groups.",
+    "hero_title": "Contact Us",
+    "hero_subtitle": "Want to ask questions, give suggestions or join our team of volunteers and hosts? Send your message!",
+    "success_message": "Your message has been sent successfully! We will respond shortly.",
+    "error_message": "An error occurred while sending. Please try again later.",
+    "form": {
+      "name_label": "Full Name",
+      "name_placeholder": "What should we call you?",
+      "email_label": "Your best Email",
+      "email_placeholder": "example@email.com",
+      "message_label": "Your Message",
+      "message_placeholder": "Write your message, question or tell us how you would like to collaborate...",
+      "submit_btn": "Send Message",
+      "sending_btn": "Sending..."
+    }
+  },
+  "footer": {
+    "tagline": "Practice languages for free",
+    "navigation": "Navigation",
+    "social": "Social Media",
+    "copyright": "All rights reserved."
+  },
+  "days": {
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday",
+    "7": "Sunday"
+  },
+  "events": {
+    "at_time": "{day} at {hour}h",
+    "live_badge": "LIVE",
+    "finished": "Finished",
+    "wait": "Coming up",
+    "join": "Join Now",
+    "previous": "Previous",
+    "host_label": "Host:",
+    "free_conversation": "Free Conversation",
+    "organizer_label": "Local Organizer",
+    "join_group": "Join Group"
+  },
+  "authority": {
+    "text": "The largest language practice ecosystem in the country"
+  }
+}

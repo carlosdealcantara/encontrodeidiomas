@@ -17,10 +17,10 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?> <?= $isTarget ? 'scroll-target' : '' ?>">
         <div class="event-header-row">
             <div class="event-tags">
-                <span class="event-tag"><?= getDayName($evDay) ?> às <?= $evHour ?>h</span>
+                <span class="event-tag"><?= t('events.at_time', ['day' => getDayName($evDay), 'hour' => $evHour]) ?></span>
             </div>
             <?php if ($isNow): ?>
-            <span class="now-badge">AO VIVO</span>
+            <span class="now-badge"><?= t('events.live_badge') ?></span>
             <?php endif; ?>
         </div>
         <div class="event-title">
@@ -47,12 +47,12 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
             <?php else: ?>
                 <i class="fas fa-user-circle"></i>
             <?php endif; ?>
-            <span>Host: <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
+            <span><?= t('events.host_label') ?> <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
         </div>
         <?php else: ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
             <div style="width: 24px; height: 24px; border-radius: 50%; background-image: url('assets/images/logo.png'); background-size: 160%; background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); background-color: #fff;" role="img" aria-label="Logo Encontro de Idiomas"></div>
-            <span><strong>Conversação Livre</strong></span>
+            <span><strong><?= t('events.free_conversation') ?></strong></span>
         </div>
         <?php endif; ?>
 
@@ -62,16 +62,16 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         <div class="event-actions">
             <?php if (!empty($ev['meet_link'])): ?>
                 <?php if ($isNow): ?>
-                    <a href="<?= htmlspecialchars($ev['meet_link']) ?>" target="_blank" class="event-button join-button">Participar</a>
+                    <a href="<?= htmlspecialchars($ev['meet_link']) ?>" target="_blank" class="event-button join-button"><?= t('events.join') ?></a>
                 <?php elseif ($isPast): ?>
-                    <div class="event-button join-button disabled"><i class="fa-solid fa-check"></i> Finalizado</div>
+                    <div class="event-button join-button disabled"><i class="fa-solid fa-check"></i> <?= t('events.finished') ?></div>
                 <?php else: ?>
-                    <div class="event-button join-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> Aguarde</div>
+                    <div class="event-button join-button wait-button"><i class="fa-solid fa-clock fa-spin-slow"></i> <?= t('events.wait') ?></div>
                 <?php endif; ?>
             <?php endif; ?>
             <?php if (!empty($ev['replay_link'])): ?>
             <a href="<?= htmlspecialchars($ev['replay_link']) ?>" target="_blank" class="event-button replay-button">
-                <i class="fa-solid fa-circle-play"></i> Anteriores
+                <i class="fa-solid fa-circle-play"></i> <?= t('events.previous') ?>
             </a>
             <?php endif; ?>
         </div>

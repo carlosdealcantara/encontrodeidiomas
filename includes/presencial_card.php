@@ -23,7 +23,7 @@
             <?php endif; ?>
             <div>
                 <div class="city-host-name"><?= htmlspecialchars($ev['host_name']) ?></div>
-                <div class="city-host-label">Organizador(a) local</div>
+                <div class="city-host-label"><?= t('events.organizer_label') ?></div>
             </div>
         </div>
         <?php endif; ?>
@@ -31,7 +31,7 @@
         <div class="city-links">
             <?php if (!empty($ev['whatsapp_link'])): ?>
                 <a href="<?= htmlspecialchars($ev['whatsapp_link']) ?>" target="_blank" rel="noopener" class="city-link city-link-whatsapp">
-                    <i class="fab fa-whatsapp"></i> Entrar no grupo
+                    <i class="fab fa-whatsapp"></i> <?= t('events.join_group') ?>
                 </a>
             <?php endif; ?>
             <?php if (!empty($ev['instagram_link'])): ?>

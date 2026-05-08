@@ -1,0 +1,39 @@
+# ============================================================
+# ENCONTRO DE IDIOMAS - Routing & i18n
+# ============================================================
+RewriteEngine On
+RewriteBase /
+
+# --- Redirect 301: URLs antigas .php -> limpas (preserva SEO) ---
+RewriteCond %{THE_REQUEST} \s/index\.php [NC]
+RewriteRule ^index\.php$ / [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/online\.php [NC]
+RewriteRule ^online\.php$ /online [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/presencial\.php [NC]
+RewriteRule ^presencial\.php$ /presencial [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/equipe\.php [NC]
+RewriteRule ^equipe\.php$ /equipe [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/links\.php [NC]
+RewriteRule ^links\.php$ /links [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/contato\.php [NC]
+RewriteRule ^contato\.php$ /contato [R=301,L]
+
+# --- EN: Prefixo /en/ ---
+RewriteRule ^en/?$             index.php?lang=en [L,QSA]
+RewriteRule ^en/online/?$      online.php?lang=en [L,QSA]
+RewriteRule ^en/in-person/?$   presencial.php?lang=en [L,QSA]
+RewriteRule ^en/team/?$        equipe.php?lang=en [L,QSA]
+RewriteRule ^en/links/?$       links.php?lang=en [L,QSA]
+RewriteRule ^en/contact/?$     contato.php?lang=en [L,QSA]
+
+# --- URLs Limpas PT (sem .php) ---
+RewriteRule ^online/?$       online.php [L,QSA]
+RewriteRule ^presencial/?$   presencial.php [L,QSA]
+RewriteRule ^equipe/?$       equipe.php [L,QSA]
+RewriteRule ^links/?$        links.php [L,QSA]
+RewriteRule ^contato/?$      contato.php [L,QSA]

@@ -18,7 +18,7 @@ $og_description = $og_description ?? getSetting('site_description', 'Comunidade 
 $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="<?= t('meta.lang_code') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,6 +26,12 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <meta name="author" content="Encontro de Idiomas">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#1a1a1a">
+
+    <!-- SEO Internacional -->
+    <!-- SEO Internacional -->
+    <link rel="alternate" hreflang="pt" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
+    <link rel="alternate" hreflang="en" href="<?= SITE_URL . langSpecificUrl($current_page, 'en') ?>">
+    <link rel="alternate" hreflang="x-default" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -41,7 +47,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             "@type": "ImageObject",
             "url": "<?= SITE_URL ?>/assets/images/logo.png"
           },
-          "description": "A melhor alternativa gratuita para quem busca um clube poliglota e prática de conversação online e presencial.",
+          "description": "<?= t('meta.org_description') ?>",
           "sameAs": [
             "https://www.instagram.com/encontrodeidiomas",
             "https://www.tiktok.com/@encontrodeidiomas",
@@ -53,7 +59,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
           "@id": "<?= SITE_URL ?>/#website",
           "url": "<?= SITE_URL ?>",
           "name": "<?= SITE_NAME ?>",
-          "description": "Comunidade para poliglotas e entusiastas de idiomas praticarem conversação grátis.",
+          "description": "<?= t('meta.website_description') ?>",
           "publisher": { "@id": "<?= SITE_URL ?>/#organization" }
         },
         {
@@ -69,17 +75,17 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type"        content="website">
-    <meta property="og:title"       content="<?= sanitize($title) ?> | Prática de Conversação em Inglês e outros idiomas">
+    <meta property="og:title"       content="<?= sanitize($title) ?> | <?= t('meta.og_title_suffix') ?>">
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
     <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
     <meta property="og:site_name"   content="<?= SITE_NAME ?>">
-    <meta property="og:locale"      content="pt_BR">
+    <meta property="og:locale"      content="<?= t('meta.og_locale') ?>">
 
     <!-- Twitter -->
     <meta property="twitter:card"        content="summary">
     <meta property="twitter:url"         content="<?= sanitize($canonical) ?>">
-    <meta property="twitter:title"       content="<?= sanitize($title) ?> | Prática de Conversação em Inglês e outros idiomas">
+    <meta property="twitter:title"       content="<?= sanitize($title) ?> | <?= t('meta.og_title_suffix') ?>">
     <meta property="twitter:description" content="<?= sanitize($og_description) ?>">
     <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
 
@@ -347,6 +353,67 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         }
         body.has-notice { padding-top: 120px; }
 
+        /* Language Switcher */
+        .lang-switch {
+            display: flex;
+            gap: 10px;
+            margin-left: 20px;
+        }
+        .lang-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            transition: var(--transition);
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid transparent;
+        }
+        .lang-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+        }
+        .lang-btn.active {
+            opacity: 1;
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+        }
+        .lang-btn img {
+            width: 20px;
+            height: 15px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        /* Suggestion Banner */
+        #lang-suggestion-banner {
+            background: var(--accent-blue);
+            color: white;
+            text-align: center;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 1100;
+        }
+        #lang-suggestion-banner a {
+            color: var(--accent-yellow);
+            font-weight: 700;
+            margin-left: 10px;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .lang-switch {
+                margin: 15px 0;
+                justify-content: center;
+                order: 2;
+                width: 100%;
+            }
+        }
+
         <?php if (!empty($page_styles)) echo $page_styles; ?>
     </style>
 
@@ -359,6 +426,25 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         </div>
         <script>document.body.classList.add('has-notice');</script>
     <?php endif; ?>
+
+    <?php 
+    // Banner de sugestão de idioma
+    if (CURRENT_LANG === 'pt' && !isset($_COOKIE['lang_suggest_closed'])):
+        $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+        if (strpos(strtolower($accept), 'en') !== false): ?>
+            <div id="lang-suggestion-banner">
+                🌎 This site is also available in English. 
+                <a href="/en<?= $_SERVER['REQUEST_URI'] ?>">Switch to English</a>
+                <button onclick="closeLangSuggest()" style="background:none; border:none; color:white; margin-left:15px; cursor:pointer; opacity:0.7;">&times;</button>
+            </div>
+            <script>
+                function closeLangSuggest() {
+                    document.getElementById('lang-suggestion-banner').style.display = 'none';
+                    document.cookie = "lang_suggest_closed=1; path=/; max-age=" + (86400 * 30);
+                }
+            </script>
+        <?php endif; 
+    endif; ?>
 
     <header class="header">
         <div class="header-content">
@@ -375,12 +461,21 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             </button>
 
             <nav class="nav-links" id="main-nav" aria-label="Navegação principal">
-                <a href="index.php"       <?= $current_page === 'index.php'       ? 'class="active" aria-current="page"' : '' ?>>Início</a>
-                <a href="online.php"      <?= $current_page === 'online.php'      ? 'class="active" aria-current="page"' : '' ?>>Online</a>
-                <a href="presencial.php"  <?= $current_page === 'presencial.php'  ? 'class="active" aria-current="page"' : '' ?>>Presencial</a>
-                <a href="equipe.php"      <?= $current_page === 'equipe.php'      ? 'class="active" aria-current="page"' : '' ?>>Equipe</a>
-                <a href="links.php"       <?= $current_page === 'links.php'       ? 'class="active" aria-current="page"' : '' ?>>Links</a>
-                <a href="contato.php"     <?= $current_page === 'contato.php'     ? 'class="active" aria-current="page"' : '' ?>>Contato</a>
+                <a href="<?= langUrl('index.php') ?>"       <?= $current_page === 'index.php'       ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.home') ?></a>
+                <a href="<?= langUrl('online.php') ?>"      <?= $current_page === 'online.php'      ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.online') ?></a>
+                <a href="<?= langUrl('presencial.php') ?>"  <?= $current_page === 'presencial.php'  ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.presencial') ?></a>
+                <a href="<?= langUrl('equipe.php') ?>"      <?= $current_page === 'equipe.php'      ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.team') ?></a>
+                <a href="<?= langUrl('links.php') ?>"       <?= $current_page === 'links.php'       ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.links') ?></a>
+                <a href="<?= langUrl('contato.php') ?>"     <?= $current_page === 'contato.php'     ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.contact') ?></a>
+                
+                <div class="lang-switch">
+                    <a href="<?= langSpecificUrl($current_page, 'pt') ?>" class="lang-btn <?= CURRENT_LANG === 'pt' ? 'active' : '' ?>" title="Português">
+                        <img src="https://flagcdn.com/w20/br.png" alt="PT"> PT
+                    </a>
+                    <a href="<?= langSpecificUrl($current_page, 'en') ?>" class="lang-btn <?= CURRENT_LANG === 'en' ? 'active' : '' ?>" title="English">
+                        <img src="https://flagcdn.com/w20/us.png" alt="EN"> EN
+                    </a>
+                </div>
             </nav>
         </div>
     </header>

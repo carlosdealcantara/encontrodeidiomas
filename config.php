@@ -26,6 +26,9 @@ define('ADMIN_USER', getenv('ADMIN_USER') ?: 'admin');
 define('ADMIN_PASS', getenv('ADMIN_PASS') ?: 'encontro2023');
 define('SITE_URL',   'https://' . ($_SERVER['HTTP_HOST'] ?? 'encontrodeidiomas.com.br'));
 
+// i18n Engine
+require_once __DIR__ . '/lang/index.php';
+
 function connectDB(): PDO {
     static $conn = null;
     if ($conn !== null) return $conn;
@@ -52,8 +55,7 @@ function sanitize(string $input): string {
 }
 
 function getDayName(int $dayNumber): string {
-    $days = [1 => 'Segunda', 2 => 'Terça', 3 => 'Quarta', 4 => 'Quinta', 5 => 'Sexta', 6 => 'Sábado', 7 => 'Domingo'];
-    return $days[$dayNumber] ?? '';
+    return t('days.' . $dayNumber);
 }
 
 function getLanguages(): array {

@@ -1,12 +1,14 @@
 <?php
 require_once 'config.php';
 
-$title          = 'Prática de Conversação em Inglês e outros Idiomas';
+$title          = t('home.title');
 $current_page   = 'index.php';
-$og_description = 'Participe gratuitamente de encontros para praticar inglês, espanhol, francês e outros idiomas online e presenciais.';
-$canonical      = 'https://encontrodeidiomas.com.br/';
+$og_description = t('home.meta_description');
+$canonical      = SITE_URL . langUrl('index.php');
 $swiper_enabled = true;
 
+$extra_head = '
+<link rel="stylesheet" href="assets/css/home.css">
 $extra_head = '
 <link rel="stylesheet" href="assets/css/home.css">
 <script type="application/ld+json">
@@ -16,26 +18,26 @@ $extra_head = '
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "O Encontro de Idiomas é gratuito?",
+      "name": "' . t('home.faq.q1') . '",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Sim, todos os nossos encontros, tanto online quanto presenciais, são 100% gratuitos e abertos à comunidade."
+        "text": "' . t('home.faq.a1') . '"
       }
     },
     {
       "@type": "Question",
-      "name": "Como posso participar dos encontros?",
+      "name": "' . t('home.faq.q2') . '",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Basta escolher um encontro na nossa programação (online ou presencial), entrar no grupo de WhatsApp correspondente e comparecer no dia e hora marcados. Não há burocracia."
+        "text": "' . t('home.faq.a2') . '"
       }
     },
     {
       "@type": "Question",
-      "name": "Quais idiomas são praticados?",
+      "name": "' . t('home.faq.q3') . '",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Praticamos principalmente inglês e espanhol, mas também temos grupos de francês, alemão, japonês, italiano e outros, dependendo da disponibilidade de anfitriões."
+        "text": "' . t('home.faq.a3') . '"
       }
     }
   ]
@@ -72,14 +74,13 @@ include 'includes/header.php';
                 <div class="hero-premium-grid">
                     <!-- Column 1: Impact & Text -->
                     <div class="hero-content">
-                        <h1>Pratique idiomas com <span class="highlight">pessoas reais</span></h1>
+                        <h1><?= t('home.hero_heading') ?></h1>
                         <p class="welcome-text">
-                            Pratique inglês, espanhol e outros idiomas de forma gratuita e natural. 
-                            Participe de uma comunidade vibrante com encontros online e presenciais em todo o país.
+                            <?= t('home.welcome_text') ?>
                         </p>
                         <div class="hero-cta">
-                            <a href="#modalidades" class="btn-hero-cta">Ver como participar</a>
-                            <a href="links.php" class="btn-hero-secondary">Central de Links <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px; opacity: 0.7;"></i></a>
+                            <a href="#modalidades" class="btn-hero-cta"><?= t('home.cta_participate') ?></a>
+                            <a href="<?= langUrl('links.php') ?>" class="btn-hero-secondary"><?= t('home.cta_links') ?> <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px; opacity: 0.7;"></i></a>
                         </div>
                     </div>
 
@@ -89,56 +90,56 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas - Prática presencial de conversação" fetchpriority="high">
-                                        <div class="photo-label">Encontros Presenciais</div>
+                                        <img src="assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.presencial') ?>" fetchpriority="high">
+                                        <div class="photo-label"><?= t('home.hero_labels.presencial') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - Prática online via videoconferência">
-                                        <div class="photo-label">Encontros Online</div>
+                                        <img src="assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.online') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.online') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/replay.png" alt="Replay das chamadas de prática de idiomas">
-                                        <div class="photo-label">Replay das Chamadas</div>
+                                        <img src="assets/images/replay.png" alt="<?= t('home.hero_labels.replay') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.replay') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades interativas na comunidade de idiomas">
-                                        <div class="photo-label">Atividades Interativas</div>
+                                        <img src="assets/images/encontrodeidiomas-20250408-0013.jpg" alt="<?= t('home.hero_labels.activities') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.activities') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/mentoria.jpg" alt="Mentoria acessível para aprendizado de línguas">
-                                        <div class="photo-label">Mentoria Acessível</div>
+                                        <img src="assets/images/mentoria.jpg" alt="<?= t('home.hero_labels.mentorship') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.mentorship') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/IMG_20250408_175458_304.jpg" alt="Eventos ao ar livre do Encontro de Idiomas">
-                                        <div class="photo-label">Eventos ao Ar Livre</div>
+                                        <img src="assets/images/IMG_20250408_175458_304.jpg" alt="<?= t('home.hero_labels.outdoor') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.outdoor') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/Grupos.png" alt="Grupos de diversos idiomas">
-                                        <div class="photo-label">Grupos de Idiomas Variados</div>
+                                        <img src="assets/images/Grupos.png" alt="<?= t('home.hero_labels.varied') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.varied') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/IMG_20250408_174649_714.jpg" alt="Momentos marcantes da comunidade">
-                                        <div class="photo-label">Momentos Marcantes</div>
+                                        <img src="assets/images/IMG_20250408_174649_714.jpg" alt="<?= t('home.hero_labels.moments') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.moments') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="assets/images/instagram_social.png" alt="Siga o Encontro de Idiomas no Instagram">
-                                        <div class="photo-label">Atividade nas Redes Sociais</div>
+                                        <img src="assets/images/instagram_social.png" alt="<?= t('home.hero_labels.social') ?>">
+                                        <div class="photo-label"><?= t('home.hero_labels.social') ?></div>
                                     </div>
                                 </div>
                             </div>
@@ -155,24 +156,23 @@ include 'includes/header.php';
         <!-- MODALIDADES -->
         <section id="modalidades" class="modalidades-section">
             <div class="container">
-                <p class="section-eyebrow">Duas formas de participar</p>
-                <h2 class="section-heading">Escolha como praticar</h2>
+                <p class="section-eyebrow"><?= t('home.modalities.eyebrow') ?></p>
+                <h2 class="section-heading"><?= t('home.modalities.heading') ?></h2>
                 <p class="section-desc">
-                    Seja online de qualquer lugar do mundo ou presencialmente na sua cidade,
-                    temos o formato ideal para você começar a praticar hoje mesmo.
+                    <?= t('home.modalities.desc') ?>
                 </p>
                 <div class="modalidades-grid">
-                    <a href="online.php" class="mod-card mod-card-online">
+                    <a href="<?= langUrl('online.php') ?>" class="mod-card mod-card-online">
                         <div class="mod-icon"><i class="fas fa-laptop"></i></div>
-                        <h3>Online</h3>
-                        <p>Encontros semanais por videoconferência com pessoas de todo o Brasil e do mundo. Filtros por idioma e dia, anfitriões dedicados e programação definida.</p>
-                        <span class="mod-card-link">Ver programação <i class="fas fa-arrow-right"></i></span>
+                        <h3><?= t('home.modalities.online_title') ?></h3>
+                        <p><?= t('home.modalities.online_text') ?></p>
+                        <span class="mod-card-link"><?= t('home.modalities.online_link') ?> <i class="fas fa-arrow-right"></i></span>
                     </a>
-                    <a href="presencial.php" class="mod-card mod-card-presencial">
+                    <a href="<?= langUrl('presencial.php') ?>" class="mod-card mod-card-presencial">
                         <div class="mod-icon"><i class="fas fa-map-marked-alt"></i></div>
-                        <h3>Presencial</h3>
-                        <p>Encontros cara a cara em cafés, praças e shoppings de diversas cidades. Grupos locais organizados por voluntários, em expansão pelo Brasil e além.</p>
-                        <span class="mod-card-link">Ver localidades <i class="fas fa-arrow-right"></i></span>
+                        <h3><?= t('home.modalities.presencial_title') ?></h3>
+                        <p><?= t('home.modalities.presencial_text') ?></p>
+                        <span class="mod-card-link"><?= t('home.modalities.presencial_link') ?> <i class="fas fa-arrow-right"></i></span>
                     </a>
                 </div>
             </div>
@@ -181,23 +181,23 @@ include 'includes/header.php';
         <!-- COMO FUNCIONA -->
         <section class="how-section">
             <div class="container">
-                <p class="section-eyebrow">Como participar</p>
-                <h2 class="section-heading">Simples, gratuito e sem burocracia</h2>
+                <p class="section-eyebrow"><?= t('home.how_it_works.eyebrow') ?></p>
+                <h2 class="section-heading"><?= t('home.how_it_works.heading') ?></h2>
                 <div class="how-flow">
                     <div class="how-step">
                         <div class="how-step-icon"><i class="fas fa-search"></i></div>
-                        <h3>Escolha um encontro</h3>
-                        <p>Navegue pela programação online ou encontre o grupo presencial da sua cidade.</p>
+                        <h3><?= t('home.how_it_works.step1_title') ?></h3>
+                        <p><?= t('home.how_it_works.step1_text') ?></p>
                     </div>
                     <div class="how-step">
                         <div class="how-step-icon"><i class="fas fa-comments"></i></div>
-                        <h3>Apareça e participe</h3>
-                        <p>Entre na videochamada ou vá ao local combinado. Apresente-se e comece a praticar.</p>
+                        <h3><?= t('home.how_it_works.step2_title') ?></h3>
+                        <p><?= t('home.how_it_works.step2_text') ?></p>
                     </div>
                     <div class="how-step">
                         <div class="how-step-icon"><i class="fas fa-rocket"></i></div>
-                        <h3>Evolua e conecte-se</h3>
-                        <p>Volte sempre que quiser. Faça amizades, melhore sua fluência e faça parte da comunidade.</p>
+                        <h3><?= t('home.how_it_works.step3_title') ?></h3>
+                        <p><?= t('home.how_it_works.step3_text') ?></p>
                     </div>
                 </div>
             </div>
@@ -206,20 +206,20 @@ include 'includes/header.php';
         <!-- FAQ SECTION -->
         <section class="faq-section" style="padding: 90px 0; background: #fff;">
             <div class="container">
-                <p class="section-eyebrow">Dúvidas frequentes</p>
-                <h2 class="section-heading">Perguntas comuns</h2>
+                <p class="section-eyebrow"><?= t('home.faq.eyebrow') ?></p>
+                <h2 class="section-heading"><?= t('home.faq.heading') ?></h2>
                 <div style="max-width: 800px; margin: 40px auto 0;">
                     <div style="margin-bottom: 30px;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);">O Encontro de Idiomas é gratuito?</h3>
-                        <p style="color: #666;">Sim, todos os nossos encontros, tanto online quanto presenciais, são 100% gratuitos e abertos à comunidade. Nosso objetivo é democratizar a prática de idiomas.</p>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);"><?= t('home.faq.q1') ?></h3>
+                        <p style="color: #666;"><?= t('home.faq.a1') ?></p>
                     </div>
                     <div style="margin-bottom: 30px;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);">Preciso ter nível avançado para participar?</h3>
-                        <p style="color: #666;">Não! Temos participantes de todos os níveis. O ambiente é acolhedor e focado no aprendizado mútuo. Se você consegue se apresentar, já pode começar a praticar.</p>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);"><?= t('home.faq.q2') ?></h3>
+                        <p style="color: #666;"><?= t('home.faq.a2') ?></p>
                     </div>
                     <div style="margin-bottom: 30px;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);">Como funcionam os encontros presenciais?</h3>
-                        <p style="color: #666;">Os encontros presenciais acontecem em locais públicos como cafés e shoppings. Eles são organizados por voluntários locais e não têm data fixa, ocorrendo conforme a mobilização do grupo no WhatsApp.</p>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);"><?= t('home.faq.q3') ?></h3>
+                        <p style="color: #666;"><?= t('home.faq.a3') ?></p>
                     </div>
                 </div>
             </div>
@@ -228,10 +228,9 @@ include 'includes/header.php';
         <!-- COMMUNITY CTA -->
         <section class="community-cta">
             <div class="container">
-                <h2>Faça parte da comunidade</h2>
+                <h2><?= t('home.community.heading') ?></h2>
                 <p>
-                    Mais do que praticar idiomas, o Encontro de Idiomas é sobre criar conexões reais.
-                    Conheça pessoas incríveis, faça amizades e construa algo verdadeiramente maior junto com a gente.
+                    <?= t('home.community.text') ?>
                 </p>
 
                 <!-- Authority Seal (Final Trust Point) -->
@@ -241,35 +240,35 @@ include 'includes/header.php';
                             <i class="fas fa-award"></i>
                         </div>
                         <div class="seal-text">
-                            <span class="seal-eyebrow">Referência e Liderança Nacional em Idiomas</span>
-                            <span class="seal-main">O maior ecossistema de prática de idiomas do país</span>
+                            <span class="seal-eyebrow"><?= t('home.authority_seal.eyebrow') ?></span>
+                            <span class="seal-main"><?= t('authority.text') ?></span>
                         </div>
                     </div>
                 </div>
                 <div class="cta-cards">
-                    <a href="equipe.php" class="cta-card">
+                    <a href="<?= langUrl('equipe.php') ?>" class="cta-card">
                         <i class="fas fa-users"></i>
-                        <h3>Conheça a Equipe</h3>
-                        <p>Anfitriões voluntários que fazem tudo acontecer.</p>
+                        <h3><?= t('home.community.team_title') ?></h3>
+                        <p><?= t('home.community.team_text') ?></p>
                     </a>
-                    <a href="links.php" class="cta-card">
+                    <a href="<?= langUrl('links.php') ?>" class="cta-card">
                         <i class="fas fa-link"></i>
-                        <h3>Central de Links</h3>
-                        <p>Grupos de WhatsApp, cronogramas e recursos.</p>
+                        <h3><?= t('home.community.links_title') ?></h3>
+                        <p><?= t('home.community.links_text') ?></p>
                     </a>
-                    <a href="contato.php" class="cta-card">
+                    <a href="<?= langUrl('contato.php') ?>" class="cta-card">
                         <i class="fas fa-envelope"></i>
-                        <h3>Fale Conosco</h3>
-                        <p>Dúvidas, sugestões ou quer ser voluntário?</p>
+                        <h3><?= t('home.community.contact_title') ?></h3>
+                        <p><?= t('home.community.contact_text') ?></p>
                     </a>
                     <a href="https://www.instagram.com/encontrodeidiomas" class="cta-card" target="_blank" rel="noopener noreferrer">
                         <i class="fab fa-instagram"></i>
-                        <h3>Siga no Instagram</h3>
-                        <p>Novidades, dicas e bastidores do projeto.</p>
+                        <h3><?= t('home.community.social_title') ?></h3>
+                        <p><?= t('home.community.social_text') ?></p>
                     </a>
                 </div>
-                <a href="links.php" class="btn-cta-white">
-                    <i class="fas fa-rocket"></i> Comece agora — é gratuito
+                <a href="<?= langUrl('links.php') ?>" class="btn-cta-white">
+                    <i class="fas fa-rocket"></i> <?= t('home.community.cta_start') ?>
                 </a>
             </div>
         </section>

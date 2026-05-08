@@ -3,22 +3,22 @@ require_once 'config.php';
 require_once 'includes/db_online.php';
 require_once 'includes/components.php';
 
-$title          = 'Praticar Idiomas Online Grátis - Programação Semanal';
+$title          = t('online.title_default');
 $current_page   = 'online.php';
-$og_description = 'Encontro de Idiomas Online - Comunidade gratuita para praticar inglês, espanhol e mais via videoconferência.';
+$og_description = t('online.meta_description_default');
 
 // Dinamismo para SEO de Idiomas Específicos
 if (!empty($_GET['idioma'])) {
     foreach ($languages as $lang) {
         if ($lang['id'] == $_GET['idioma']) {
-            $title = 'Prática de ' . $lang['name'] . ' Online Grátis | ' . SITE_NAME;
-            $og_description = 'Participe dos nossos encontros gratuitos de conversação em ' . $lang['name'] . ' via videoconferência. Pratique com pessoas reais.';
+            $title = t('online.title_lang', ['lang' => $lang['name']]) . ' | ' . SITE_NAME;
+            $og_description = t('online.meta_description_lang', ['lang' => $lang['name']]);
             break;
         }
     }
 }
 
-$canonical      = 'https://encontrodeidiomas.com.br/online.php';
+$canonical      = SITE_URL . langUrl('online.php');
 
 // Structured Data: Online Events
 $events_json = [];
@@ -26,8 +26,8 @@ foreach ($meetings as $m) {
     $events_json[] = [
         "@context" => "https://schema.org",
         "@type" => "Event",
-        "name" => "Prática de " . $m['language_name'] . " - Encontro Online",
-        "description" => "Encontro gratuito de conversação em " . $m['language_name'] . " via videoconferência.",
+        "name" => t('online.event_schema_name', ['lang' => $m['language_name']]),
+        "description" => t('online.event_schema_desc', ['lang' => $m['language_name']]),
         "eventAttendanceMode" => "https://schema.org/OnlineEventAttendanceMode",
         "eventStatus" => "https://schema.org/EventScheduled",
         "location" => [
@@ -39,7 +39,7 @@ foreach ($meetings as $m) {
             "@type" => "EducationalOrganization",
             "name" => SITE_NAME,
             "url" => SITE_URL,
-            "description" => "A melhor alternativa gratuita para quem busca um clube poliglota e prática de conversação online e presencial.",
+            "description" => t('meta.org_description'),
             "sameAs" => [
                 "https://www.instagram.com/encontrodeidiomas",
                 "https://www.tiktok.com/@encontrodeidiomas",
@@ -52,8 +52,8 @@ foreach ($meetings as $m) {
             "priceCurrency" => "BRL",
             "availability" => "https://schema.org/InStock"
         ],
-        "startDate" => date('Y-m-d', strtotime("next " . getDayName($m['day_of_week']))) . "T" . sprintf("%02d:00:00-03:00", $m['time_hour']),
-        "endDate" => date('Y-m-d', strtotime("next " . getDayName($m['day_of_week']))) . "T" . sprintf("%02d:00:00-03:00", $m['time_hour'] + 1)
+        "startDate" => date('Y-m-d', strtotime("next " . ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][$m['day_of_week']-1])) . "T" . sprintf("%02d:00:00-03:00", $m['time_hour']),
+        "endDate" => date('Y-m-d', strtotime("next " . ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][$m['day_of_week']-1])) . "T" . sprintf("%02d:00:00-03:00", $m['time_hour'] + 1)
     ];
 }
 
@@ -69,31 +69,31 @@ include 'includes/header.php';
 <main>
     <section class="hero">
         <div class="hero-content container">
-            <h1>Fale <span>Online</span> com pessoas<br>reais de todo o planeta</h1>
+            <h1><?= t('online.hero_heading') ?></h1>
             <p>
-                Conecte-se com pessoas do mundo todo sem sair de casa. Junte-se à nossa comunidade global: um ambiente online gratuito e acolhedor para destravar a fala, fazer novas amizades e praticar idiomas com nativos.
+                <?= t('online.hero_text') ?>
             </p>
             <div class="hero-cta-row">
-                <a href="#calendar" class="hero-button"><i class="fas fa-calendar-alt"></i> Ver Programação</a>
-                <a href="equipe.php#seja-host" class="hero-button-outline"><i class="fas fa-user-plus"></i> Seja um Anfitrião</a>
+                <a href="#calendar" class="hero-button"><i class="fas fa-calendar-alt"></i> <?= t('online.hero_cta_calendar') ?></a>
+                <a href="<?= langUrl('equipe.php') ?>#seja-host" class="hero-button-outline"><i class="fas fa-user-plus"></i> <?= t('online.hero_cta_host') ?></a>
             </div>
             
             <div class="hero-stats">
                 <div class="hero-stat">
                     <div class="num">50+</div>
-                    <div class="lbl">Encontros</div>
+                    <div class="lbl"><?= t('online.stats.meetings') ?></div>
                 </div>
                 <div class="hero-stat">
                     <div class="num">10+</div>
-                    <div class="lbl">Idiomas</div>
+                    <div class="lbl"><?= t('online.stats.languages') ?></div>
                 </div>
                 <div class="hero-stat">
                     <div class="num">100%</div>
-                    <div class="lbl">Gratuito</div>
+                    <div class="lbl"><?= t('online.stats.free') ?></div>
                 </div>
                 <div class="hero-stat">
                     <div class="num">∞</div>
-                    <div class="lbl">Conexões</div>
+                    <div class="lbl"><?= t('online.stats.connections') ?></div>
                 </div>
             </div>
         </div>
@@ -102,14 +102,14 @@ include 'includes/header.php';
 
     <section id="calendar" class="calendar-section">
         <div class="container">
-            <h2 class="section-title">Programação Semanal</h2>
-            <p style="text-align:center;margin-bottom:2rem;">Fuso horário: GMT-3 (Horário de Brasília)<br>As chamadas são gravadas e disponibilizadas no Odysee.</p>
+            <h2 class="section-title"><?= t('online.calendar_heading') ?></h2>
+            <p style="text-align:center;margin-bottom:2rem;"><?= t('online.calendar_timezone') ?></p>
 
             <div class="calendar-nav">
-                <div class="calendar-nav-title">Filtrar por:</div>
+                <div class="calendar-nav-title"><?= t('online.filter_label') ?></div>
                 <div class="view-toggle">
-                    <button class="view-button <?= $initialView === 'day' ? 'active' : '' ?>" id="day-filter-btn" data-view="day">Dia da Semana</button>
-                    <button class="view-button <?= $initialView === 'language' ? 'active' : '' ?>" id="language-filter-btn" data-view="language">Idioma</button>
+                    <button class="view-button <?= $initialView === 'day' ? 'active' : '' ?>" id="day-filter-btn" data-view="day"><?= t('online.filter_day') ?></button>
+                    <button class="view-button <?= $initialView === 'language' ? 'active' : '' ?>" id="language-filter-btn" data-view="language"><?= t('online.filter_language') ?></button>
                 </div>
             </div>
 
@@ -131,7 +131,7 @@ include 'includes/header.php';
                     <div class="dropdown-content" id="lang-dropdown-content">
                         <div class="search-filter">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="search-input" id="language-search" placeholder="Buscar idioma...">
+                            <input type="text" class="search-input" id="language-search" placeholder="<?= t('online.search_placeholder') ?>">
                         </div>
                         <?php foreach ($languages as $lang): 
                             if (empty($byLanguage[$lang['id']])) continue;
@@ -171,10 +171,9 @@ include 'includes/header.php';
             <div id="day-view" class="view-content <?= $initialView === 'day' ? 'active' : '' ?>">
                 <div class="calendar-days">
                     <?php
-                    $dayNames = [1=>'Segunda',2=>'Terça',3=>'Quarta',4=>'Quinta',5=>'Sexta',6=>'Sábado',7=>'Domingo'];
-                    foreach ($dayNames as $num => $name): ?>
-                    <button class="day-button <?= $num == $initialDay ? 'active' : '' ?>" data-day="<?= $num ?>"><?= $name ?></button>
-                    <?php endforeach; ?>
+                    for ($num = 1; $num <= 7; $num++): ?>
+                    <button class="day-button <?= $num == $initialDay ? 'active' : '' ?>" data-day="<?= $num ?>"><?= getDayName($num) ?></button>
+                    <?php endfor; ?>
                 </div>
 
                 <?php foreach ($dayNames as $dayNum => $dayName): ?>
@@ -199,9 +198,9 @@ include 'includes/header.php';
                         } else { ?>
                             <div class="empty-day-card">
                                 <div class="empty-day-icon">🚀</div>
-                                <h3>Que tal ser o próximo Anfitrião?</h3>
-                                <p>Se o idioma ou horário que você procura não está aqui, você pode ser a pessoa que faz ele acontecer!</p>
-                                <a href="equipe.php#seja-host" class="empty-day-button">Quero ser um Host</a>
+                                <h3><?= t('online.empty_day_title') ?></h3>
+                                <p><?= t('online.empty_day_text') ?></p>
+                                <a href="<?= langUrl('equipe.php') ?>#seja-host" class="empty-day-button"><?= t('online.empty_day_cta') ?></a>
                             </div>
                         <?php } ?>
                     </div>
@@ -214,13 +213,13 @@ include 'includes/header.php';
 <!-- SEO Language Navigation — Subtle Professional Index -->
 <section class="seo-language-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
     <div class="container" style="opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-        <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;">Índice de Prática por Idioma</p>
+        <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('online.seo_index_title') ?></p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             <?php foreach ($languages as $lang): 
                 if (empty($byLanguage[$lang['id']])) continue;
             ?>
-            <a href="online.php?view=language&idioma=<?= $lang['id'] ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <?= htmlspecialchars($lang['name']) ?> Online
+            <a href="<?= langUrl('online.php') ?>?view=language&idioma=<?= $lang['id'] ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <?= htmlspecialchars($lang['name']) ?> <?= t('nav.online') ?>
             </a>
             <?php endforeach; ?>
         </div>

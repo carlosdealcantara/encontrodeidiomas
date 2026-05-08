@@ -1,10 +1,10 @@
 <?php
 require_once 'config.php';
 
-$title          = 'Links';
+$title          = t('links.title');
 $current_page   = 'links.php';
-$og_description = 'Hub de Comunidades do Encontro de Idiomas - Acesse nossos grupos de WhatsApp, cronogramas e recursos exclusivos.';
-$canonical      = SITE_URL . '/links.php';
+$og_description = t('links.meta_description');
+$canonical      = SITE_URL . langUrl('links.php');
 
 $page_styles = <<<CSS
     :root {
@@ -246,14 +246,14 @@ $allLinks = getUsefulLinks();
             <div class="hero-image-wrapper">
                 <img src="assets/images/hero_links_v2.png" alt="Hub de Comunidades" class="hero-image">
             </div>
-            <h1>Links</h1>
-            <p>Conecte-se com o mundo pelos <br> nossos grupos e recursos.</p>
+            <h1><?= t('links.hero_title') ?></h1>
+            <p><?= t('links.hero_subtitle') ?></p>
         </header>
     </section>
 
     <div class="links-container">
         <div class="links-wrapper">
-            <div class="section-label">Central de Links</div>
+            <div class="section-label"><?= t('links.central_label') ?></div>
             <?php 
             $i = 0;
             $twins_buffer = [];

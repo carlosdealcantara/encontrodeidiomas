@@ -2,10 +2,10 @@
 require_once 'config.php';
 require_once 'includes/components.php';
 
-$title          = 'Equipe';
+$title          = t('team.title');
 $current_page   = 'equipe.php';
-$og_description = 'Conheça a equipe do Encontro de Idiomas - Anfitriões, desenvolvedores e criadores de conteúdo.';
-$canonical      = 'https://encontrodeidiomas.com.br/equipe.php';
+$og_description = t('team.meta_description');
+$canonical      = SITE_URL . langUrl('equipe.php');
 
 // Busca dados para os filtros
 $hosts     = getHosts();
@@ -280,8 +280,8 @@ include 'includes/header.php';
             <div class="hero-image-wrapper">
                 <img src="assets/images/hero_team.png" alt="Equipe de voluntários e anfitriões do Encontro de Idiomas" class="hero-image" fetchpriority="high">
             </div>
-            <h1>Equipe</h1>
-            <p>Conheça as pessoas incríveis que <br> tornam o Encontro de Idiomas possível!</p>
+            <h1><?= t('team.hero_title') ?></h1>
+            <p><?= t('team.hero_subtitle') ?></p>
         </header>
     </section>
 
@@ -289,9 +289,9 @@ include 'includes/header.php';
 
         <!-- Navegação por Categorias -->
         <div class="category-tabs">
-            <button class="category-tab <?= $initialTab === 'online' ? 'active' : '' ?>" data-tab="online">Online</button>
-            <button class="category-tab <?= $initialTab === 'presencial' ? 'active' : '' ?>" data-tab="presencial">Presenciais</button>
-            <button class="category-tab <?= $initialTab === 'tecnica' ? 'active' : '' ?>" data-tab="tecnica">Equipe Técnica</button>
+            <button class="category-tab <?= $initialTab === 'online' ? 'active' : '' ?>" data-tab="online"><?= t('team.tabs.online') ?></button>
+            <button class="category-tab <?= $initialTab === 'presencial' ? 'active' : '' ?>" data-tab="presencial"><?= t('team.tabs.presencial') ?></button>
+            <button class="category-tab <?= $initialTab === 'tecnica' ? 'active' : '' ?>" data-tab="tecnica"><?= t('team.tabs.tecnica') ?></button>
         </div>
 
         <!-- Filtros Dinâmicos -->
@@ -300,15 +300,15 @@ include 'includes/header.php';
             <div id="filter-online" class="filter-group <?= $initialTab === 'online' ? 'active' : '' ?>">
                 <div class="dropdown-wrapper">
                     <button class="dropdown-button" id="lang-btn">
-                        <span><i class="fas fa-globe"></i> <span id="selected-lang-text">Todos os Idiomas</span></span>
+                        <span><i class="fas fa-globe"></i> <span id="selected-lang-text"><?= t('team.filters.lang_placeholder') ?></span></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content" id="lang-dropdown">
                         <div class="dropdown-search-wrapper">
-                            <input type="text" class="dropdown-search-input" placeholder="Buscar idioma...">
+                            <input type="text" class="dropdown-search-input" placeholder="<?= t('team.filters.search_lang') ?>">
                             <i class="fas fa-search dropdown-search-icon"></i>
                         </div>
-                        <div class="dropdown-item filterable-item" data-value="all">Todos os Idiomas</div>
+                        <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_languages') ?></div>
                         <?php foreach ($languages as $lang): ?>
                             <div class="dropdown-item filterable-item" data-value="<?= strtolower($lang['name']) ?>">
                                 <?php if (!empty($lang['flag_code'])): ?>
@@ -319,7 +319,7 @@ include 'includes/header.php';
                                 <?= htmlspecialchars($lang['name']) ?>
                             </div>
                         <?php endforeach; ?>
-                        <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;">Outros idiomas...</a>
+                        <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_lang') ?></a>
                     </div>
                 </div>
             </div>
@@ -328,17 +328,17 @@ include 'includes/header.php';
             <div id="filter-presencial" class="filter-group <?= $initialTab === 'presencial' ? 'active' : '' ?>">
                 <div class="dropdown-wrapper">
                     <button class="dropdown-button" id="region-btn">
-                        <span><i class="fas fa-map-marker-alt"></i> <span id="selected-region-text">Todas as Cidades</span></span>
+                        <span><i class="fas fa-map-marker-alt"></i> <span id="selected-region-text"><?= t('team.filters.region_placeholder') ?></span></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content" id="region-dropdown">
                         <div class="dropdown-search-wrapper">
-                            <input type="text" class="dropdown-search-input" placeholder="Buscar cidade...">
+                            <input type="text" class="dropdown-search-input" placeholder="<?= t('team.filters.search_city') ?>">
                             <i class="fas fa-search dropdown-search-icon"></i>
                         </div>
-                        <div class="dropdown-item filterable-item" data-value="all">Todas as Cidades</div>
+                        <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_cities') ?></div>
                         <!-- Itens dinâmicos serão inseridos aqui pelo JS -->
-                        <a href="#seja-host" class="dropdown-item dropdown-item-link other-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;">Outras regiões...</a>
+                        <a href="#seja-host" class="dropdown-item dropdown-item-link other-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_region') ?></a>
                     </div>
                 </div>
             </div>
@@ -347,19 +347,19 @@ include 'includes/header.php';
             <div id="filter-tecnica" class="filter-group <?= $initialTab === 'tecnica' ? 'active' : '' ?>">
                 <div class="dropdown-wrapper">
                     <button class="dropdown-button" id="role-btn">
-                        <span><i class="fas fa-user-tag"></i> <span id="selected-role-text">Todos os Papéis</span></span>
+                        <span><i class="fas fa-user-tag"></i> <span id="selected-role-text"><?= t('team.filters.role_placeholder') ?></span></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content" id="role-dropdown">
                         <div class="dropdown-search-wrapper">
-                            <input type="text" class="dropdown-search-input" placeholder="Buscar área...">
+                            <input type="text" class="dropdown-search-input" placeholder="<?= t('team.filters.search_role') ?>">
                             <i class="fas fa-search dropdown-search-icon"></i>
                         </div>
-                        <div class="dropdown-item filterable-item" data-value="all">Todos os Papéis</div>
+                        <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_roles') ?></div>
                         <div class="dropdown-item filterable-item" data-value="desenvolvimento">Desenvolvimento</div>
                         <div class="dropdown-item filterable-item" data-value="design">Design</div>
                         <div class="dropdown-item filterable-item" data-value="conteudo">Conteúdo</div>
-                        <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;">Outras áreas...</a>
+                        <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_role') ?></a>
                     </div>
                 </div>
             </div>
@@ -374,9 +374,9 @@ include 'includes/header.php';
             <div class="host-card special-card" id="become-host-card" style="border:2px dashed #ddd;display:flex;align-items:center;justify-content:center;min-height:400px;">
                 <div style="text-align:center;padding:30px;">
                     <i class="fas fa-user-plus" style="font-size:3rem;color:var(--accent-red);margin-bottom:15px;"></i>
-                    <h3 style="font-size:1.3rem;margin-bottom:10px;">Torne-se um Voluntário!</h3>
-                    <p style="color:#666;margin-bottom:20px;">Quer fazer parte da nossa equipe? Conheça as vantagens!</p>
-                    <a href="#seja-host" class="cta-button" style="display:inline-block; padding:10px 25px; background:var(--accent-red); color:white; text-decoration:none; border-radius:25px;">Ver Benefícios</a>
+                    <h3 style="font-size:1.3rem;margin-bottom:10px;"><?= t('team.become_volunteer.title') ?></h3>
+                    <p style="color:#666;margin-bottom:20px;"><?= t('team.become_volunteer.text') ?></p>
+                    <a href="#seja-host" class="cta-button" style="display:inline-block; padding:10px 25px; background:var(--accent-red); color:white; text-decoration:none; border-radius:25px;"><?= t('team.become_volunteer.cta') ?></a>
                 </div>
             </div>
         </div>
@@ -384,53 +384,53 @@ include 'includes/header.php';
 
     <section class="benefits-section" id="seja-host">
         <div class="container">
-            <h2 class="section-title">Por que ser um Voluntário?</h2>
-            <p class="section-description">Muito mais do que voluntariado, uma oportunidade de crescimento real.</p>
+            <h2 class="section-title"><?= t('team.benefits.heading') ?></h2>
+            <p class="section-description"><?= t('team.benefits.subtitle') ?></p>
             
             <div class="benefits-grid">
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-certificate"></i></div>
-                    <h4>Certificado e Currículo</h4>
-                    <p>Ganhe experiência prática comprovada e um certificado reconhecido para turbinar seu currículo e LinkedIn.</p>
+                    <h4><?= t('team.benefits.cert_title') ?></h4>
+                    <p><?= t('team.benefits.cert_text') ?></p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-id-card"></i></div>
-                    <h4>Vitrine no Site</h4>
-                    <p>Seu perfil em destaque no site será seu espaço para divulgar suas redes, projetos e serviços para milhares de visitantes.</p>
+                    <h4><?= t('team.benefits.showcase_title') ?></h4>
+                    <p><?= t('team.benefits.showcase_text') ?></p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-network-wired"></i></div>
-                    <h4>Networking e Bastidores</h4>
-                    <p>Conheça o projeto por dentro e faça conexões estratégicas com outros voluntários e profissionais.</p>
+                    <h4><?= t('team.benefits.networking_title') ?></h4>
+                    <p><?= t('team.benefits.networking_text') ?></p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-gem"></i></div>
-                    <h4>Comunidade VIP</h4>
-                    <p>Acesso exclusivo ao nosso grupo de Membros da Equipe, com trocas de experiências e materiais exclusivos.</p>
+                    <h4><?= t('team.benefits.vip_title') ?></h4>
+                    <p><?= t('team.benefits.vip_text') ?></p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-bullseye"></i></div>
-                    <h4>Liderança e Mentoria</h4>
-                    <p>Desenvolva habilidades de liderança e gestão de grupos com supervisão próxima e mentoria direta.</p>
+                    <h4><?= t('team.benefits.leadership_title') ?></h4>
+                    <p><?= t('team.benefits.leadership_text') ?></p>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
-                    <h4>Suporte a Ideias</h4>
-                    <p>Coloque suas próprias iniciativas em prática com nosso apoio total e suporte técnico para novos projetos.</p>
+                    <h4><?= t('team.benefits.support_title') ?></h4>
+                    <p><?= t('team.benefits.support_text') ?></p>
                 </div>
             </div>
 
             <div style="text-align:center; margin-top:50px;">
-                <a href="contato.php" class="cta-button-red">Quero me candidatar</a>
+                <a href="<?= langUrl('contato.php') ?>" class="cta-button-red"><?= t('team.benefits.cta') ?></a>
             </div>
         </div>
     </section>
 
     <section class="cta-section">
         <div class="container">
-            <h2 class="cta-title" style="margin-bottom:5px;">Ainda tem dúvidas?</h2>
-            <p class="cta-description" style="margin-bottom:0;">Nossa equipe está pronta para te ajudar a dar os primeiros passos.</p>
-            <a href="contato.php" class="cta-button-footer">Fale Conosco</a>
+            <h2 class="cta-title" style="margin-bottom:5px;"><?= t('team.cta_footer.title') ?></h2>
+            <p class="cta-description" style="margin-bottom:0;"><?= t('team.cta_footer.subtitle') ?></p>
+            <a href="<?= langUrl('contato.php') ?>" class="cta-button-footer"><?= t('team.cta_footer.button') ?></a>
         </div>
     </section>
 </main>

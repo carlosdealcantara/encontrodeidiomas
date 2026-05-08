@@ -1,26 +1,26 @@
 <?php
 require_once 'config.php';
 
-$title          = 'Encontros de Idiomas Presenciais - Brasil e Mundo';
+$title          = t('presencial.title_default');
 $current_page   = 'presencial.php';
-$og_description = 'Encontros presenciais do Encontro de Idiomas em diversas cidades do Brasil, Argentina e Paraguai.';
+$og_description = t('presencial.meta_description_default');
 
 // Dinamismo para SEO de Localidades Específicas (Região, Estado ou Cidade)
 if (!empty($_GET['cidade'])) {
     $cidade_slug = htmlspecialchars($_GET['cidade']);
-    $title = 'Prática de Idiomas em ' . $cidade_slug . ' | ' . SITE_NAME;
-    $og_description = 'Participe da nossa comunidade local de idiomas em ' . $cidade_slug . '. Encontros gratuitos e conversação real.';
+    $title = t('presencial.title_city', ['city' => $cidade_slug, 'site_name' => SITE_NAME]);
+    $og_description = t('presencial.meta_description_city', ['city' => $cidade_slug]);
 } elseif (!empty($_GET['estado'])) {
     $estado_slug = htmlspecialchars($_GET['estado']);
-    $title = 'Encontros de Idiomas em ' . $estado_slug . ' | ' . SITE_NAME;
-    $og_description = 'Veja todos os grupos de prática de idiomas no estado de ' . $estado_slug . '. Encontros presenciais gratuitos.';
+    $title = t('presencial.title_state', ['state' => $estado_slug, 'site_name' => SITE_NAME]);
+    $og_description = t('presencial.meta_description_state', ['state' => $estado_slug]);
 } elseif (!empty($_GET['regiao'])) {
     $regiao_slug = htmlspecialchars($_GET['regiao']);
-    $title = 'Encontros de Idiomas na Região ' . $regiao_slug . ' | ' . SITE_NAME;
-    $og_description = 'Explore os grupos presenciais de prática de idiomas na Região ' . $regiao_slug . '. Comunidades ativas e gratuitas.';
+    $title = t('presencial.title_region', ['region' => $regiao_slug, 'site_name' => SITE_NAME]);
+    $og_description = t('presencial.meta_description_region', ['region' => $regiao_slug]);
 }
 
-$canonical      = 'https://encontrodeidiomas.com.br/presencial.php';
+$canonical      = SITE_URL . langUrl('presencial.php');
 
 function getInPersonEvents(): array {
     try {
@@ -68,8 +68,8 @@ foreach ($events as $ev) {
     $local_schemas[] = [
         "@context" => "https://schema.org",
         "@type" => "LocalBusiness",
-        "name" => "Encontro de Idiomas - " . $ev['city'],
-        "description" => "Prática de conversação gratuita em " . $ev['city'] . " (" . $ev['country'] . "). Participe da nossa comunidade local.",
+        "name" => t('presencial.local_business_name', ['city' => $ev['city']]),
+        "description" => t('presencial.local_business_desc', ['city' => $ev['city'], 'country' => $ev['country']]),
         "image" => SITE_URL . "/assets/images/og_image.png",
         "url" => SITE_URL . "/presencial.php",
         "address" => [
@@ -325,36 +325,35 @@ include 'includes/header.php';
     <section class="hero-presencial">
         <div class="container">
             <h1 class="hero-title">
-                &nbsp;Encontros <span>Presenciais</span>&nbsp;<br>&nbsp;em todo o país e além&nbsp;
+                <?= t('presencial.hero_heading') ?>
             </h1>
             <p class="hero-subtitle">
-                Pratique idiomas pessoalmente com pessoas reais, onde quer que você esteja.
-                Junte-se a uma comunidade global em expansão. Sem horário fixo, sem burocracia: apenas conversação genuína e conexões para a vida toda.
+                <?= t('presencial.hero_subtitle') ?>
             </p>
             <div class="hero-cta-row">
                 <?php if ($totalGroups > 0): ?>
-                    <a href="#localidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> Ver localidades</a>
+                    <a href="#localidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> <?= t('presencial.hero_cta_locations') ?></a>
                 <?php endif; ?>
                 <a href="#seja-organizador" class="btn-hero-outline">
-                    <i class="fas fa-plus-circle"></i> Na sua cidade!
+                    <i class="fas fa-plus-circle"></i> <?= t('presencial.hero_cta_city') ?>
                 </a>
             </div>
             <div class="hero-stats">
                 <div class="hero-stat">
                     <div class="num"><?= $totalGroups ?>+</div>
-                    <div class="lbl">Grupos ativos</div>
+                    <div class="lbl"><?= t('presencial.stats.groups') ?></div>
                 </div>
                 <div class="hero-stat">
                     <div class="num"><?= $totalCountries ?>+</div>
-                    <div class="lbl">Países</div>
+                    <div class="lbl"><?= t('presencial.stats.countries') ?></div>
                 </div>
                 <div class="hero-stat">
                     <div class="num">100%</div>
-                    <div class="lbl">Gratuito</div>
+                    <div class="lbl"><?= t('presencial.stats.free') ?></div>
                 </div>
                 <div class="hero-stat">
                     <div class="num">∞</div>
-                    <div class="lbl">Idiomas</div>
+                    <div class="lbl"><?= t('presencial.stats.languages') ?></div>
                 </div>
             </div>
         </div>
@@ -363,27 +362,26 @@ include 'includes/header.php';
     <!-- COMO FUNCIONA -->
     <section class="how-section" id="como-funciona">
         <div class="container">
-            <p class="section-label">Como funciona</p>
-            <h2 class="section-title-lg">Simples, flexível e gratuito</h2>
+            <p class="section-label"><?= t('presencial.how_it_works.label') ?></p>
+            <h2 class="section-title-lg"><?= t('presencial.how_it_works.heading') ?></h2>
             <p class="section-desc">
-                Os encontros não têm data fixa. Acontecem conforme a comunidade local se mobiliza.
-                Você não precisa esperar passivamente — faça o encontro acontecer!
+                <?= t('presencial.how_it_works.desc') ?>
             </p>
             <div class="steps-grid">
                 <div class="step-card">
                     <div class="step-num">1</div>
-                    <h3>Entre no grupo da sua cidade</h3>
-                    <p>Encontre o grupo WhatsApp da sua cidade ou região e junte-se a quem já quer praticar idiomas pessoalmente.</p>
+                    <h3><?= t('presencial.how_it_works.step1_title') ?></h3>
+                    <p><?= t('presencial.how_it_works.step1_text') ?></p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">2</div>
-                    <h3>Movimente o grupo — convide!</h3>
-                    <p>Convide amigos enquanto os outros membros fazem o mesmo. Quando a demanda crescer, o organizador anuncia data e local. Quanto mais gente convida, mais rápido o encontro acontece!</p>
+                    <h3><?= t('presencial.how_it_works.step2_title') ?></h3>
+                    <p><?= t('presencial.how_it_works.step2_text') ?></p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">3</div>
-                    <h3>Apareça e viva momentos inesquecíveis</h3>
-                    <p>Vá ao encontro, apresente-se e pratique. Você vai sair com amizades reais, conversas incríveis e histórias que não esperava ter.</p>
+                    <h3><?= t('presencial.how_it_works.step3_title') ?></h3>
+                    <p><?= t('presencial.how_it_works.step3_text') ?></p>
                 </div>
             </div>
         </div>
@@ -392,17 +390,16 @@ include 'includes/header.php';
     <!-- LOCALIDADES COM ACCORDION -->
     <section class="cities-section" id="localidades">
         <div class="container">
-            <p class="section-label">Onde estamos</p>
-            <h2 class="section-title-lg">Localidades com grupos ativos</h2>
+            <p class="section-label"><?= t('presencial.locations.label') ?></p>
+            <h2 class="section-title-lg"><?= t('presencial.locations.heading') ?></h2>
             <p class="section-desc">
-                Estas são as localidades com grupos já formados ao redor do mundo.
-                Encontre a sua região e faça parte da comunidade!
+                <?= t('presencial.locations.desc') ?>
             </p>
 
             <?php if (empty($events)): ?>
                 <div class="no-events">
                     <i class="fas fa-map-marked-alt"></i>
-                    <p>Em breve teremos cidades aqui. Seja o primeiro a organizar na sua cidade!</p>
+                    <p><?= t('presencial.no_events') ?></p>
                 </div>
             <?php else: ?>
                 <?php $isFirst = true; foreach ($byCountry as $country => $countryEvents): ?>
@@ -411,7 +408,7 @@ include 'includes/header.php';
                         <span class="country-flag"><?= $countryFlag($country) ?></span>
                         <div class="country-info">
                             <div class="country-name"><?= htmlspecialchars($country) ?></div>
-                            <div class="country-count"><?= count($countryEvents) ?> <?= count($countryEvents) === 1 ? 'localidade' : 'localidades' ?></div>
+                            <div class="country-count"><?= count($countryEvents) ?> <?= count($countryEvents) === 1 ? t('presencial.locations.count_singular') : t('presencial.locations.count_plural') ?></div>
                         </div>
                         <i class="fas fa-chevron-down country-chevron"></i>
                     </button>
@@ -432,7 +429,7 @@ include 'includes/header.php';
                                     <button class="region-header" type="button" onclick="toggleRegion(this)">
                                         <i class="fas fa-map-signs" style="color:var(--accent-red);font-size:0.8rem;"></i>
                                         <span class="region-name"><?= $reg ?></span>
-                                        <span class="region-count"><?= count($byRegion[$reg]) ?> <?= count($byRegion[$reg]) === 1 ? 'cidade' : 'cidades' ?></span>
+                                        <span class="region-count"><?= count($byRegion[$reg]) ?> <?= count($byRegion[$reg]) === 1 ? t('presencial.locations.city_singular') : t('presencial.locations.city_plural') ?></span>
                                         <i class="fas fa-chevron-down region-chevron"></i>
                                     </button>
                                     <div class="region-body">
@@ -462,29 +459,29 @@ include 'includes/header.php';
     <!-- EXPANDA -->
     <section class="expand-section" id="seja-organizador">
         <div class="container">
-            <h2 class="expand-title">Não tem encontro por perto?</h2>
+            <h2 class="expand-title"><?= t('presencial.expand.heading') ?></h2>
             <p class="expand-desc">
-                Você pode ser o primeiro! Basta criar o grupo local, convidar pessoas e, quando juntar uma turma, combinar um lugar e um dia. É isso — sem complicação.
+                <?= t('presencial.expand.desc') ?>
             </p>
             <div class="expand-cards">
                 <div class="expand-card">
                     <i class="fas fa-users"></i>
-                    <h3>Crie o grupo e convide</h3>
-                    <p>Abra um grupo WhatsApp para a sua cidade e comece convidando amigos e colegas que queiram praticar idiomas.</p>
+                    <h3><?= t('presencial.expand.step1_title') ?></h3>
+                    <p><?= t('presencial.expand.step1_text') ?></p>
                 </div>
                 <div class="expand-card">
                     <i class="fas fa-calendar-plus"></i>
-                    <h3>Marque quando tiver turma</h3>
-                    <p>Sem compromisso fixo. Quando sentir que há gente suficiente, combine um dia e pronto.</p>
+                    <h3><?= t('presencial.expand.step2_title') ?></h3>
+                    <p><?= t('presencial.expand.step2_text') ?></p>
                 </div>
                 <div class="expand-card">
                     <i class="fas fa-map-pin"></i>
-                    <h3>Escolha o local</h3>
-                    <p>A praça de alimentação do shopping é perfeita: espaço gratuito, sem consumação obrigatória. Café, parque ou biblioteca também funcionam!</p>
+                    <h3><?= t('presencial.expand.step3_title') ?></h3>
+                    <p><?= t('presencial.expand.step3_text') ?></p>
                 </div>
             </div>
-            <a href="contato.php" class="btn-expand">
-                <i class="fas fa-hand-raised"></i> Quero ajuda para organizar
+            <a href="<?= langUrl('contato.php') ?>" class="btn-expand">
+                <i class="fas fa-hand-raised"></i> <?= t('presencial.expand.cta') ?>
             </a>
         </div>
     </section>
@@ -498,18 +495,16 @@ include 'includes/header.php';
                     <i class="fas fa-comments" style="color:var(--accent-red);font-size:2rem;margin:0 8px;"></i>
                     <i class="fas fa-award" style="color:#f59e0b;"></i>
                 </div>
-                <h2>Quer ser um organizador?</h2>
+                <h2><?= t('presencial.organizer_cta.heading') ?></h2>
                 <p>
-                    Organizar um encontro vai muito além de juntar pessoas para praticar idiomas.
-                    É uma oportunidade real de desenvolver liderança, expandir sua rede e causar impacto na sua cidade.
-                    Conheça os benefícios completos de quem faz parte da nossa equipe de voluntários.
+                    <?= t('presencial.organizer_cta.desc') ?>
                 </p>
                 <div class="host-cta-btns">
-                    <a href="equipe.php?tab=presencial#seja-host" class="btn-primary-red">
-                        <i class="fas fa-users"></i> Conhecer os benefícios
+                    <a href="<?= langUrl('equipe.php') ?>?tab=presencial#seja-host" class="btn-primary-red">
+                        <i class="fas fa-users"></i> <?= t('presencial.organizer_cta.cta_benefits') ?>
                     </a>
-                    <a href="contato.php" class="btn-outline-red">
-                        <i class="fas fa-envelope"></i> Falar com a equipe
+                    <a href="<?= langUrl('contato.php') ?>" class="btn-outline-red">
+                        <i class="fas fa-envelope"></i> <?= t('presencial.organizer_cta.cta_contact') ?>
                     </a>
                 </div>
             </div>
@@ -521,12 +516,12 @@ include 'includes/header.php';
 <section class="seo-location-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
     <div class="container" style="opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
         <div style="margin-bottom: 25px;">
-            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;">Explorar por Região</p>
+            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('presencial.seo_region_title') ?></p>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                 <?php 
                 $unique_regions = array_unique(array_column($events, 'region'));
                 foreach ($unique_regions as $region): if (empty($region)) continue; ?>
-                <a href="presencial.php?regiao=<?= urlencode($region) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <a href="<?= langUrl('presencial.php') ?>?regiao=<?= urlencode($region) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                     <?= htmlspecialchars($region) ?>
                 </a>
                 <?php endforeach; ?>
@@ -534,12 +529,12 @@ include 'includes/header.php';
         </div>
 
         <div>
-            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;">Explorar por Localidade</p>
+            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('presencial.seo_location_title') ?></p>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                 <?php 
                 $unique_cities = array_unique(array_column($events, 'city'));
                 foreach ($unique_cities as $city): ?>
-                <a href="presencial.php?cidade=<?= urlencode($city) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <a href="<?= langUrl('presencial.php') ?>?cidade=<?= urlencode($city) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                     <?= htmlspecialchars($city) ?>
                 </a>
                 <?php endforeach; ?>
