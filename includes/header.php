@@ -550,7 +550,8 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
                 // com a URL de destino (que já tem o prefixo /en ou remove ele)
                 try {
                     const currentParams = new URLSearchParams(window.location.search);
-                    const dest = new URL(targetUrl);
+                    // Adicionando window.location.origin para suportar caminhos relativos
+                    const dest = new URL(targetUrl, window.location.origin);
                     
                     // Transferir todos os parâmetros atuais para o destino
                     currentParams.forEach((value, key) => {

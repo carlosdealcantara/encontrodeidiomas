@@ -600,21 +600,26 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 // Auto-scroll e Auto-expand baseado em parâmetros de SEO ou estado salvo
 window.addEventListener('load', function() {
     // 1. Restaurar Acordeões Salvos (Troca de Idioma)
-    const savedAccordions = JSON.parse(sessionStorage.getItem('openAccordions') || 'null');
-    if (savedAccordions) {
+    const savedAccordionsStr = sessionStorage.getItem('openAccordions');
+    if (savedAccordionsStr) {
+        const savedAccordions = JSON.parse(savedAccordionsStr);
         sessionStorage.removeItem('openAccordions');
         
-        // Se houver estado salvo, fechamos tudo primeiro para garantir a paridade exata
-        document.querySelectorAll('.country-accordion, .region-accordion').forEach(acc => acc.classList.remove('open'));
-        
-        savedAccordions.countries.forEach(slug => {
-            const el = document.querySelector(`.country-accordion[data-country="${slug}"]`);
-            if (el) el.classList.add('open');
-        });
-        savedAccordions.regions.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('open');
-        });
+        // Timeout curto para garantir que o DOM está 100% pronto e outros scripts de init rodaram
+        setTimeout(() => {
+            if (savedAccordions.countries && savedAccordions.countries.length > 0) {
+                savedAccordions.countries.forEach(slug => {
+                    const el = document.querySelector(`.country-accordion[data-country="${slug}"]`);
+                    if (el) el.classList.add('open');
+                });
+            }
+            if (savedAccordions.regions && savedAccordions.regions.length > 0) {
+                savedAccordions.regions.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('open');
+                });
+            }
+        }, 50);
     }
 
     if (window.location.hash) return;
