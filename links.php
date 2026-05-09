@@ -285,7 +285,8 @@ $allLinks = getUsefulLinks();
                 $isEn = (CURRENT_LANG === 'en');
                 $url = htmlspecialchars($link['url']);
                 
-                $title = htmlspecialchars(($isEn && !empty($link['title_en'])) ? $link['title_en'] : $link['title']);
+                $titleRaw = ($isEn && !empty($link['title_en'])) ? $link['title_en'] : $link['title'];
+                $title = strip_tags($titleRaw, '<br>'); // Permite quebra de linha no título
                 $subtitle = htmlspecialchars(($isEn && !empty($link['subtitle_en'])) ? $link['subtitle_en'] : ($link['subtitle'] ?? ''));
                 $badgeRaw = ($isEn && !empty($link['badge_en'])) ? $link['badge_en'] : ($link['badge'] ?? '');
                 $badge = strip_tags($badgeRaw, '<br>'); // Permite apenas a tag <br>
