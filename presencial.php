@@ -312,7 +312,7 @@ ob_start();
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            padding: 100px 20px 60px;
+            padding: 60px 20px 40px;
         }
         .hero-stats { gap: 30px; }
         .steps-grid { grid-template-columns: 1fr 1fr; }

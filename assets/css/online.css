@@ -291,8 +291,8 @@
         overflow: visible;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start; /* Alinha no topo para não cortar no mobile */
-        padding: 100px 20px 60px; /* Padding generoso no topo e fundo */
+        justify-content: flex-start; 
+        padding: 60px 20px 40px; /* Reduzido de 100px para ficar menos baixo */
     }
     .hero h1 { font-size:2.5rem; }
     .calendar-days { padding:0 10px; gap:8px; }

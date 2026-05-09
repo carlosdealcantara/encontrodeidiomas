@@ -223,6 +223,7 @@ $page_styles = <<<CSS
     }
 
     @media (max-width: 480px) {
+        .page-banner { height: auto !important; min-height: 40vh; padding: 60px 0 20px; }
         .hero-header h1 { font-size: 1.7rem; }
         .twin-grid { grid-template-columns: 1fr; }
         .twin-grid .link-card { min-height: auto; padding: 20px; }

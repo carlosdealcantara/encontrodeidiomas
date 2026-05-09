@@ -248,6 +248,7 @@ ob_start();
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     @media (max-width: 768px) {
+        .page-hero { height: auto !important; min-height: 40vh; padding: 60px 0 20px; }
         .category-tabs { flex-direction: column; border-radius: 15px; max-width: 90%; }
         .host-grid { grid-template-columns: 1fr; }
     }
