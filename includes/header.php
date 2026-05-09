@@ -23,6 +23,9 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<?= sanitize($og_description) ?>">
+    <?php if (!empty($meta_keywords)): ?>
+    <meta name="keywords" content="<?= sanitize($meta_keywords) ?>">
+    <?php endif; ?>
     <meta name="author" content="Encontro de Idiomas">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#1a1a1a">

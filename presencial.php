@@ -10,14 +10,19 @@ if (!empty($_GET['cidade'])) {
     $cidade_slug = htmlspecialchars($_GET['cidade']);
     $title = t('presencial.title_city', ['city' => $cidade_slug, 'site_name' => SITE_NAME]);
     $og_description = t('presencial.meta_description_city', ['city' => $cidade_slug]);
+    $meta_keywords = "clube poliglota, praticar idiomas, inglês em {$cidade_slug}, conversação em espanhol, encontro gratuito, {$cidade_slug}, aprender idiomas";
 } elseif (!empty($_GET['estado'])) {
     $estado_slug = htmlspecialchars($_GET['estado']);
     $title = t('presencial.title_state', ['state' => $estado_slug, 'site_name' => SITE_NAME]);
     $og_description = t('presencial.meta_description_state', ['state' => $estado_slug]);
+    $meta_keywords = "clube poliglota, praticar idiomas, inglês no estado de {$estado_slug}, conversação presencial, encontro de idiomas {$estado_slug}";
 } elseif (!empty($_GET['regiao'])) {
     $regiao_slug = htmlspecialchars($_GET['regiao']);
     $title = t('presencial.title_region', ['region' => $regiao_slug, 'site_name' => SITE_NAME]);
     $og_description = t('presencial.meta_description_region', ['region' => $regiao_slug]);
+    $meta_keywords = "clube poliglota, praticar idiomas, inglês na região {$regiao_slug}, encontro gratuito idiomas {$regiao_slug}";
+} else {
+    $meta_keywords = "clube poliglota, encontro de idiomas, praticar inglês, espanhol presencial, conversação gratuita";
 }
 
 $canonical      = SITE_URL . langUrl('presencial.php');
