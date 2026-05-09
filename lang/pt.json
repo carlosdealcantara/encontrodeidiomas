@@ -271,7 +271,7 @@
     "7": "Domingo"
   },
   "events": {
-    "at_time": "{day} às {hour}h",
+    "at_time": "{day} às {hour}",
     "live_badge": "AO VIVO",
     "finished": "Finalizado",
     "wait": "Aguarde",

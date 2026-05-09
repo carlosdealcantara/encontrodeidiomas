@@ -17,7 +17,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?> <?= $isTarget ? 'scroll-target' : '' ?>">
         <div class="event-header-row">
             <div class="event-tags">
-                <span class="event-tag"><?= t('events.at_time', ['day' => getDayName($evDay), 'hour' => $evHour]) ?></span>
+                <span class="event-tag"><?= t('events.at_time', ['day' => getDayName($evDay), 'hour' => formatHour($evHour)]) ?></span>
             </div>
             <?php if ($isNow): ?>
             <span class="now-badge"><?= t('events.live_badge') ?></span>

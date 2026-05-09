@@ -59,6 +59,22 @@ function getDayName(int $dayNumber): string {
     return t('days.' . $dayNumber);
 }
 
+/**
+ * Formata a hora de acordo com o idioma ativo
+ * @param int $hour Hora em formato 24h (0-23)
+ * @return string Hora formatada (ex: 19h ou 7 PM)
+ */
+function formatHour(int $hour): string {
+    if (t('meta.lang_code') === 'en') {
+        $period = ($hour >= 12) ? 'PM' : 'AM';
+        $h12 = ($hour % 12);
+        $h12 = ($h12 === 0) ? 12 : $h12;
+        return "$h12 $period";
+    }
+    // Padrão Português (24h)
+    return "{$hour}h";
+}
+
 
 function getLanguages(): array {
     $conn = connectDB();

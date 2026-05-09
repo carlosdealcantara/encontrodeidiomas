@@ -271,7 +271,7 @@
     "7": "Sunday"
   },
   "events": {
-    "at_time": "{day} at {hour}h",
+    "at_time": "{day} at {hour}",
     "live_badge": "LIVE",
     "finished": "Finished",
     "wait": "Coming up",
