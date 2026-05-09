@@ -287,7 +287,8 @@ $allLinks = getUsefulLinks();
                 
                 $title = htmlspecialchars(($isEn && !empty($link['title_en'])) ? $link['title_en'] : $link['title']);
                 $subtitle = htmlspecialchars(($isEn && !empty($link['subtitle_en'])) ? $link['subtitle_en'] : ($link['subtitle'] ?? ''));
-                $badge = htmlspecialchars(($isEn && !empty($link['badge_en'])) ? $link['badge_en'] : ($link['badge'] ?? ''));
+                $badgeRaw = ($isEn && !empty($link['badge_en'])) ? $link['badge_en'] : ($link['badge'] ?? '');
+                $badge = strip_tags($badgeRaw, '<br>'); // Permite apenas a tag <br>
                 $icon = htmlspecialchars($link['icon'] ?? 'fas fa-link');
                 
                 if ($type === 'twin'): ?>
