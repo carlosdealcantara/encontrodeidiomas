@@ -602,20 +602,27 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 window.addEventListener('load', function() {
     // 1. Restaurar Acordeões Salvos (Troca de Idioma)
     const savedAccordionsStr = sessionStorage.getItem('openAccordions');
+    console.log('DEBUG: Tentando restaurar acordeões. Dados encontrados:', savedAccordionsStr);
+    
     if (savedAccordionsStr) {
         const savedAccordions = JSON.parse(savedAccordionsStr);
         sessionStorage.removeItem('openAccordions');
         
         // Timeout curto para garantir que o DOM está 100% pronto e outros scripts de init rodaram
         setTimeout(() => {
+            console.log('DEBUG: Aplicando restauração de estado...');
             Object.keys(savedAccordions).forEach(id => {
                 const el = document.querySelector(`[data-accordion-id="${id}"]`);
                 if (el) {
-                    if (savedAccordions[id]) el.classList.add('open');
+                    const state = savedAccordions[id];
+                    console.log('DEBUG: Restaurando ' + id + ' para ' + (state ? 'ABERTO' : 'FECHADO'));
+                    if (state) el.classList.add('open');
                     else el.classList.remove('open');
+                } else {
+                    console.warn('DEBUG: Elemento não encontrado para ID:', id);
                 }
             });
-        }, 50);
+        }, 100);
     }
 
     if (window.location.hash) return;
