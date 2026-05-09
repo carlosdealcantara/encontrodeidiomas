@@ -21,7 +21,8 @@ if ($id > 0) {
     
     $social = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
 } else {
-    // Valores padrão para novo cadastro
+    $host = [
+        'full_name' => '', 'status' => 'ativo', 'profile_picture' => '',
         'languages' => '', 'online_description' => '', 'online_description_en' => '', 'special_badge' => '',
         'region' => '', 'category' => 'Online', 'inperson_description' => '', 'inperson_description_en' => '',
         'role' => '', 'technical_status' => 'inativo', 'technical_roles' => '',
