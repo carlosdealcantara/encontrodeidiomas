@@ -535,10 +535,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 
                 // 2. Salvar estado de Acordeões (específico para página presencial)
                 const accordionStates = {};
-                const accs = document.querySelectorAll('[data-accordion-id]');
-                console.log('DEBUG: Salvando estado de ' + accs.length + ' acordeões.');
-                
-                accs.forEach(acc => {
+                document.querySelectorAll('[data-accordion-id]').forEach(acc => {
                     const id = acc.dataset.accordionId;
                     if (id) {
                         accordionStates[id] = acc.classList.contains('open');
@@ -547,7 +544,6 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
                 
                 if (Object.keys(accordionStates).length > 0) {
                     sessionStorage.setItem('openAccordions', JSON.stringify(accordionStates));
-                    console.log('DEBUG: Estado salvo no sessionStorage:', accordionStates);
                 }
 
                 // 3. Mesclar parâmetros da URL atual (capturando mudanças via pushState)
