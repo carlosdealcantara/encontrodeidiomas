@@ -56,8 +56,12 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         </div>
         <?php endif; ?>
 
-        <?php if (!empty($ev['description'])): ?>
-        <p class="event-description"><?= htmlspecialchars($ev['description']) ?></p>
+        <?php 
+            $currentLang = t('meta.lang_code'); // 'pt' ou 'en'
+            $descToShow = ($currentLang === 'en' && !empty($ev['description_en'])) ? $ev['description_en'] : $ev['description'];
+        ?>
+        <?php if (!empty($descToShow)): ?>
+        <p class="event-description"><?= htmlspecialchars($descToShow) ?></p>
         <?php endif; ?>
         <div class="event-actions">
             <?php if (!empty($ev['meet_link'])): ?>

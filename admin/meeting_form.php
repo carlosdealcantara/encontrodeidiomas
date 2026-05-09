@@ -35,28 +35,29 @@ $hosts = $conn->query("SELECT id, full_name FROM hosts WHERE status = 'ativo' OR
 // Processamento do Form
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
-        'lang'   => (int)$_POST['language_id'],
-        'host'   => !empty($_POST['host_id']) ? (int)$_POST['host_id'] : null,
-        'day'    => (int)$_POST['day_of_week'],
-        'hour'   => (int)$_POST['time_hour'],
-        'title'  => $_POST['title'],
-        'desc'   => $_POST['description'],
-        'meet'   => $_POST['meet_link'],
-        'replay' => $_POST['replay_link'],
-        'active' => isset($_POST['active']) ? 1 : 0
+        'lang'    => (int)$_POST['language_id'],
+        'host'    => !empty($_POST['host_id']) ? (int)$_POST['host_id'] : null,
+        'day'     => (int)$_POST['day_of_week'],
+        'hour'    => (int)$_POST['time_hour'],
+        'title'   => $_POST['title'],
+        'desc'    => $_POST['description'],
+        'desc_en' => $_POST['description_en'] ?? '',
+        'meet'    => $_POST['meet_link'],
+        'replay'  => $_POST['replay_link'],
+        'active'  => isset($_POST['active']) ? 1 : 0
     ];
 
     if ($id > 0) {
         $sql = "UPDATE meetings SET 
                 language_id = :lang, host_id = :host, day_of_week = :day, time_hour = :hour,
-                title = :title, description = :desc, meet_link = :meet, 
+                title = :title, description = :desc, description_en = :desc_en, meet_link = :meet, 
                 replay_link = :replay, active = :active 
                 WHERE id = :id";
         $data['id'] = $id;
     } else {
         $sql = "INSERT INTO meetings 
-                (language_id, host_id, day_of_week, time_hour, title, description, meet_link, replay_link, active) 
-                VALUES (:lang, :host, :day, :hour, :title, :desc, :meet, :replay, :active)";
+                (language_id, host_id, day_of_week, time_hour, title, description, description_en, meet_link, replay_link, active) 
+                VALUES (:lang, :host, :day, :hour, :title, :desc, :desc_en, :meet, :replay, :active)";
     }
 
     try {
@@ -197,8 +198,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group full-width">
-                    <label>Descrição Curta</label>
-                    <textarea name="description" rows="3"><?= htmlspecialchars($meeting['description']) ?></textarea>
+                    <label>Descrição Curta (Português)</label>
+                    <textarea name="description" rows="3"><?= htmlspecialchars($meeting['description'] ?? '') ?></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Descrição Curta (Inglês) - Opcional</label>
+                    <textarea name="description_en" rows="3"><?= htmlspecialchars($meeting['description_en'] ?? '') ?></textarea>
                 </div>
 
                 <div class="form-group">
