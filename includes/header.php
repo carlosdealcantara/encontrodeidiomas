@@ -520,8 +520,23 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             this.querySelector('i').classList.toggle('fa-bars', !isOpen);
             this.querySelector('i').classList.toggle('fa-times', isOpen);
             
-            // Opcional: Reajustar se a abertura do menu mudar a altura do header
-            // (Apenas se o menu não for overlay absoluto)
             setTimeout(syncHeaderHeight, 10);
         });
+
+        // Preservação de Scroll ao trocar de idioma
+        document.querySelectorAll('.lang-btn, #lang-suggestion-banner a').forEach(btn => {
+            btn.addEventListener('click', function() {
+                sessionStorage.setItem('restoreScrollY', window.scrollY);
+            });
+        });
+
+        // Restaurar Scroll se houver posição salva
+        const savedY = sessionStorage.getItem('restoreScrollY');
+        if (savedY !== null) {
+            sessionStorage.removeItem('restoreScrollY');
+            // Timeout curto para garantir que o layout/padding do header já estabilizou
+            setTimeout(() => {
+                window.scrollTo({ top: parseInt(savedY), behavior: 'instant' });
+            }, 50);
+        }
     </script>

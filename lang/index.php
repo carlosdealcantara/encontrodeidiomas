@@ -142,7 +142,13 @@ function langUrl($page = '') {
 function altLangUrl() {
     global $current_page;
     $targetLang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
-    return langSpecificUrl($current_page ?? 'index.php', $targetLang);
+    
+    // Preservar parâmetros da URL atual
+    $params = $_GET;
+    unset($params['lang']); // Remove o parâmetro de idioma injetado pelo sistema de rotas
+    $query = !empty($params) ? '?' . http_build_query($params) : '';
+    
+    return langSpecificUrl($current_page ?? 'index.php', $targetLang) . $query;
 }
 
 /**
@@ -173,6 +179,17 @@ function langSpecificUrl($page, $targetLang) {
     $prefix = ($targetLang === 'pt') ? '' : '/en';
     
     $url = $prefix . ($slug ? '/' . $slug : '/');
+    
+    // Preservar parâmetros se estivermos na página atual
+    global $current_page;
+    if ($page === ($current_page ?? '')) {
+        $params = $_GET;
+        unset($params['lang']);
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
+        }
+    }
+    
     return $url === '' ? '/' : $url;
 }
 
