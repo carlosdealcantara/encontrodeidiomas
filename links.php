@@ -350,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     setTimeout(function() {
+        if (window.location.hash) return;
         const wrapper = document.querySelector('.links-wrapper');
         if (wrapper) {
             const offset = 100; // Restaurado para o valor original perfeito

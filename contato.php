@@ -344,6 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     setTimeout(function() {
+        if (window.location.hash) return;
         const formCard = document.querySelector('.contact-form-card');
         if (formCard) {
             const offset = 120; // 80px (header) + 40px (respiro) = Corte perfeito no Hero

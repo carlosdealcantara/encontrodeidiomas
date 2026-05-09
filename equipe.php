@@ -596,6 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     setTimeout(function() {
+        if (window.location.hash) return;
         const tabsEl = document.querySelector('.category-tabs');
         if (tabsEl) {
             const offset = 100; // Restaurado para paridade com Links
