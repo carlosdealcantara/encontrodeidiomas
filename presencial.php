@@ -417,9 +417,10 @@ include 'includes/header.php';
                 </div>
             <?php else: ?>
                 <?php $isFirst = true; foreach ($byCountry as $country => $countryEvents): 
-                    $countrySlug = strtolower(preg_replace('/[^a-z]/i','-', $country));
+                    // Slug estável baseado no nome original do banco de dados (não traduzido)
+                    $countryId = 'country-' . strtolower(preg_replace('/[^a-z]/i','-', $country));
                 ?>
-                <div class="country-accordion <?= $isFirst ? 'open' : '' ?>" data-country="<?= $countrySlug ?>">
+                <div class="country-accordion <?= $isFirst ? 'open' : '' ?>" data-accordion-id="<?= $countryId ?>">
                     <button class="country-header" type="button" onclick="toggleCountry(this)">
                         <span class="country-flag"><?= $countryFlag($country) ?></span>
                         <div class="country-info">
@@ -439,9 +440,9 @@ include 'includes/header.php';
                                 }
                                 foreach ($regionOrder as $reg):
                                     if (empty($byRegion[$reg])) continue;
-                                    $regSlug = strtolower(preg_replace('/[^a-z]/i','-',$reg));
+                                    $regId = 'region-' . strtolower(preg_replace('/[^a-z]/i','-',$reg));
                                 ?>
-                                <div class="region-accordion" id="reg-<?= $regSlug ?>">
+                                <div class="region-accordion" data-accordion-id="<?= $regId ?>">
                                     <button class="region-header" type="button" onclick="toggleRegion(this)">
                                         <i class="fas fa-map-signs" style="color:var(--accent-red);font-size:0.8rem;"></i>
                                         <span class="region-name"><?= $reg ?></span>
@@ -607,18 +608,13 @@ window.addEventListener('load', function() {
         
         // Timeout curto para garantir que o DOM está 100% pronto e outros scripts de init rodaram
         setTimeout(() => {
-            if (savedAccordions.countries && savedAccordions.countries.length > 0) {
-                savedAccordions.countries.forEach(slug => {
-                    const el = document.querySelector(`.country-accordion[data-country="${slug}"]`);
-                    if (el) el.classList.add('open');
-                });
-            }
-            if (savedAccordions.regions && savedAccordions.regions.length > 0) {
-                savedAccordions.regions.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.add('open');
-                });
-            }
+            Object.keys(savedAccordions).forEach(id => {
+                const el = document.querySelector(`[data-accordion-id="${id}"]`);
+                if (el) {
+                    if (savedAccordions[id]) el.classList.add('open');
+                    else el.classList.remove('open');
+                }
+            });
         }, 50);
     }
 

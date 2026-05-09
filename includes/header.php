@@ -534,16 +534,16 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
                 sessionStorage.setItem('restoreScrollY', window.scrollY);
 
                 // 2. Salvar estado de Acordeões (específico para página presencial)
-                const openCountries = [...document.querySelectorAll('.country-accordion.open')]
-                    .map(el => el.dataset.country).filter(Boolean);
-                const openRegions = [...document.querySelectorAll('.region-accordion.open')]
-                    .map(el => el.id).filter(Boolean);
+                const accordionStates = {};
+                document.querySelectorAll('[data-accordion-id]').forEach(acc => {
+                    const id = acc.dataset.accordionId;
+                    if (id) {
+                        accordionStates[id] = acc.classList.contains('open');
+                    }
+                });
                 
-                if (openCountries.length > 0 || openRegions.length > 0) {
-                    sessionStorage.setItem('openAccordions', JSON.stringify({ 
-                        countries: openCountries, 
-                        regions: openRegions 
-                    }));
+                if (Object.keys(accordionStates).length > 0) {
+                    sessionStorage.setItem('openAccordions', JSON.stringify(accordionStates));
                 }
 
                 // 3. Mesclar parâmetros da URL atual (capturando mudanças via pushState)
