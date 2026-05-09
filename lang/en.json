@@ -186,7 +186,8 @@
     "tabs": {
       "online": "Online",
       "presencial": "In-Person",
-      "tecnica": "Technical Team"
+      "bastidores": "Backstage",
+      "iniciativas": "Initiatives"
     },
     "filters": {
       "lang_placeholder": "All Languages",

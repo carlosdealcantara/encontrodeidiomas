@@ -100,7 +100,7 @@ function renderHostCard($host) {
     }
     
     $categoriesAttr = strtolower(implode(' ', $categories));
-    $categoriesAttr = str_replace('técnica', 'tecnica', $categoriesAttr);
+    $categoriesAttr = str_replace(['técnica', 'tecnica'], 'bastidores', $categoriesAttr);
     
     $region = $host['region'] ?? '';
     $langs = !empty($host['languages']) ? array_map('trim', explode(',', $host['languages'])) : [];
@@ -161,13 +161,15 @@ function renderHostCard($host) {
             $onlineDesc = ($isEn && !empty($host['online_description_en'])) ? $host['online_description_en'] : ($host['online_description'] ?? $host['bio'] ?? '');
             $inpersonDesc = ($isEn && !empty($host['inperson_description_en'])) ? $host['inperson_description_en'] : ($host['inperson_description'] ?? $host['bio'] ?? '');
             $techDesc = ($isEn && !empty($host['technical_description_en'])) ? $host['technical_description_en'] : ($host['technical_description'] ?? $host['bio'] ?? '');
+            $initiativeDesc = ($isEn && !empty($host['initiative_description_en'])) ? $host['initiative_description_en'] : ($host['initiative_description'] ?? $host['bio'] ?? '');
             ?>
 
             <p class="host-bio context-online"><?= htmlspecialchars($onlineDesc) ?></p>
             <p class="host-bio context-presencial"><?= htmlspecialchars($inpersonDesc) ?></p>
-            <p class="host-bio context-tecnica"><?= htmlspecialchars($techDesc) ?></p>
+            <p class="host-bio context-bastidores"><?= htmlspecialchars($techDesc) ?></p>
+            <p class="host-bio context-iniciativas"><?= htmlspecialchars($initiativeDesc) ?></p>
 
-            <div class="host-tags context-tecnica" style="margin-top:15px;">
+            <div class="host-tags context-bastidores" style="margin-top:15px;">
                 <?php foreach ($skills as $s): ?>
                     <span class="tag"><?= htmlspecialchars($s) ?></span>
                 <?php endforeach; ?>
@@ -177,7 +179,7 @@ function renderHostCard($host) {
             <a href="<?= htmlspecialchars($initiativeUrl) ?>"
                target="_blank"
                rel="noopener noreferrer"
-               class="initiative-btn<?= $isWhatsApp ? ' whatsapp-initiative' : '' ?>">
+               class="initiative-btn context-iniciativas<?= $isWhatsApp ? ' whatsapp-initiative' : '' ?>">
                 <i class="<?= $isWhatsApp ? 'fab fa-whatsapp' : 'fas fa-users' ?>"></i>
                 <?= htmlspecialchars($initiativeLabel) ?>
             </a>

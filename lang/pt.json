@@ -186,7 +186,8 @@
     "tabs": {
       "online": "Online",
       "presencial": "Presenciais",
-      "tecnica": "Equipe Técnica"
+      "bastidores": "Bastidores",
+      "iniciativas": "Iniciativas"
     },
     "filters": {
       "lang_placeholder": "Todos os Idiomas",

@@ -326,7 +326,8 @@ include 'includes/header.php';
         <div class="category-tabs">
             <button class="category-tab <?= $initialTab === 'online' ? 'active' : '' ?>" data-tab="online"><?= t('team.tabs.online') ?></button>
             <button class="category-tab <?= $initialTab === 'presencial' ? 'active' : '' ?>" data-tab="presencial"><?= t('team.tabs.presencial') ?></button>
-            <button class="category-tab <?= $initialTab === 'tecnica' ? 'active' : '' ?>" data-tab="tecnica"><?= t('team.tabs.tecnica') ?></button>
+            <button class="category-tab <?= $initialTab === 'bastidores' ? 'active' : '' ?>" data-tab="bastidores"><?= t('team.tabs.bastidores') ?></button>
+            <button class="category-tab <?= $initialTab === 'iniciativas' ? 'active' : '' ?>" data-tab="iniciativas"><?= t('team.tabs.iniciativas') ?></button>
         </div>
 
         <!-- Filtros Dinâmicos -->
@@ -378,8 +379,8 @@ include 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Filtro Papel (Técnica) -->
-            <div id="filter-tecnica" class="filter-group <?= $initialTab === 'tecnica' ? 'active' : '' ?>">
+            <!-- Filtro Papel (Bastidores) -->
+            <div id="filter-bastidores" class="filter-group <?= $initialTab === 'bastidores' ? 'active' : '' ?>">
                 <div class="dropdown-wrapper">
                     <button class="dropdown-button" id="role-btn">
                         <span><i class="fas fa-user-tag"></i> <span id="selected-role-text"><?= t('team.filters.role_placeholder') ?></span></span>
@@ -394,10 +395,14 @@ include 'includes/header.php';
                         <div class="dropdown-item filterable-item" data-value="desenvolvimento">Desenvolvimento</div>
                         <div class="dropdown-item filterable-item" data-value="design">Design</div>
                         <div class="dropdown-item filterable-item" data-value="conteudo">Conteúdo</div>
+                        <div class="dropdown-item filterable-item" data-value="coordenacao">Coordenação</div>
                         <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_role') ?></a>
                     </div>
                 </div>
             </div>
+
+            <!-- Filtro (Iniciativas) - Placeholder para consistência -->
+            <div id="filter-iniciativas" class="filter-group <?= $initialTab === 'iniciativas' ? 'active' : '' ?>"></div>
         </div>
 
         <div class="host-grid" id="hosts-grid">
@@ -483,7 +488,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFilters = {
         online: 'all',
         presencial: 'all',
-        tecnica: 'all'
+        bastidores: 'all',
+        iniciativas: 'all'
     };
 
     // Inicialização das cidades no dropdown
@@ -580,12 +586,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (visible) {
                 if (currentTab === 'online' && currentFilters.online !== 'all') visible = cardLangs.includes(currentFilters.online.toLowerCase());
                 else if (currentTab === 'presencial' && currentFilters.presencial !== 'all') visible = cardRegion === currentFilters.presencial.toLowerCase();
-                else if (currentTab === 'tecnica' && currentFilters.tecnica !== 'all') visible = cardRoles.some(r => r.includes(currentFilters.tecnica.toLowerCase()));
+                else if (currentTab === 'bastidores' && currentFilters.bastidores !== 'all') visible = cardRoles.some(r => r.includes(currentFilters.bastidores.toLowerCase()));
             }
 
             card.style.display = visible ? 'block' : 'none';
             if (visible) {
-                card.querySelectorAll('.context-online, .context-presencial, .context-tecnica').forEach(el => {
+                card.querySelectorAll('.context-online, .context-presencial, .context-bastidores, .context-iniciativas').forEach(el => {
                     el.style.display = el.classList.contains('context-' + currentTab) ? '' : 'none';
                     if (el.tagName === 'P') el.classList.add('active');
                 });
@@ -598,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateURL() {
         const url = new URL(window.location);
         url.searchParams.set('tab', currentTab);
-        const paramMap = { online: 'idioma', presencial: 'regiao', tecnica: 'papel' };
+        const paramMap = { online: 'idioma', presencial: 'regiao', bastidores: 'papel', iniciativas: 'projeto' };
         Object.keys(paramMap).forEach(key => {
             if (key === currentTab && currentFilters[key] !== 'all') url.searchParams.set(paramMap[key], currentFilters[key]);
             else url.searchParams.delete(paramMap[key]);

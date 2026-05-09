@@ -26,7 +26,8 @@ if ($id > 0) {
         'languages' => '', 'online_description' => '', 'online_description_en' => '', 'special_badge' => '',
         'region' => '', 'category' => 'Online', 'inperson_description' => '', 'inperson_description_en' => '',
         'role' => '', 'technical_status' => 'inativo', 'technical_roles' => '',
-        'technical_skills' => '', 'technical_description' => '', 'technical_description_en' => ''
+        'technical_skills' => '', 'technical_description' => '', 'technical_description_en' => '',
+        'initiative_description' => '', 'initiative_description_en' => ''
     ];
 }
 
@@ -42,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $categoryArr  = isset($data['category']) && is_array($data['category']) ? $data['category'] : [];
         $categoryStr  = implode(', ', $categoryArr);
         
-        // Status técnico é definido pela presença da categoria 'Técnica'
-        $techStatus = in_array('Técnica', $categoryArr) ? 'ativo' : 'inativo';
+        // Status técnico (Bastidores) é definido pela presença da categoria 'Bastidores'
+        $techStatus = in_array('Bastidores', $categoryArr) ? 'ativo' : 'inativo';
 
         $socialData = [
             'whatsapp'  => $data['whatsapp'] ?? '',
@@ -112,7 +113,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'technical_description_en' => (string)($data['technical_description_en'] ?? ''),
             'social_media_links'    => (string)$socialJson,
             'initiative_label'      => (string)($data['initiative_label'] ?? ''),
-            'initiative_url'        => (string)($data['initiative_url'] ?? '')
+            'initiative_url'        => (string)($data['initiative_url'] ?? ''),
+            'initiative_description' => (string)($data['initiative_description'] ?? ''),
+            'initiative_description_en' => (string)($data['initiative_description_en'] ?? '')
         ];
 
         if ($id > 0) {
@@ -123,7 +126,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     technical_status = :technical_status, technical_roles = :technical_roles,
                     technical_skills = :technical_skills, technical_description = :technical_description, technical_description_en = :technical_description_en,
                     social_media_links = :social_media_links,
-                    initiative_label = :initiative_label, initiative_url = :initiative_url
+                    initiative_label = :initiative_label, initiative_url = :initiative_url,
+                    initiative_description = :initiative_description, initiative_description_en = :initiative_description_en
                     WHERE id = :id";
             $dataToSave['id'] = $id;
         } else {
@@ -131,12 +135,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     full_name, status, profile_picture, languages, online_description, online_description_en,
                     region, category, inperson_description, inperson_description_en, technical_status, technical_roles,
                     technical_skills, technical_description, technical_description_en, social_media_links,
-                    initiative_label, initiative_url
+                    initiative_label, initiative_url, initiative_description, initiative_description_en
                     ) VALUES (
                     :full_name, :status, :profile_picture, :languages, :online_description, :online_description_en,
                     :region, :category, :inperson_description, :inperson_description_en, :technical_status, :technical_roles,
                     :technical_skills, :technical_description, :technical_description_en, :social_media_links,
-                    :initiative_label, :initiative_url
+                    :initiative_label, :initiative_url, :initiative_description, :initiative_description_en
                     ) ";
         }
         
@@ -293,13 +297,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group" style="margin-bottom: 30px;">
                 <div class="tag-grid">
                     <?php 
-                    $availableCats = ['Online', 'Presencial', 'Técnica'];
+                    $availableCats = ['Online', 'Presencial', 'Bastidores', 'Iniciativas'];
                     $currentCats = array_map('trim', explode(',', $host['category'] ?? 'Online'));
                     foreach ($availableCats as $cat): ?>
                         <label class="tag-item">
                             <input type="checkbox" name="category[]" value="<?= $cat ?>" 
                                    <?= in_array($cat, $currentCats) ? 'checked' : '' ?>
-                                   id="check-<?= strtolower(str_replace('é', 'e', $cat)) ?>">
+                                   id="check-<?= strtolower(preg_replace('/[^a-z0-9]/', '', str_replace(['é', 'í'], ['e', 'i'], $cat))) ?>">
                             <span class="tag-label"><?= $cat ?></span>
                         </label>
                     <?php endforeach; ?>
@@ -371,12 +375,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <!-- SEÇÃO: TÉCNICA (Condicional) -->
-            <div id="section-tecnica" class="conditional-section" style="display: none; border-left: 4px solid #f39c12; padding-left: 20px; margin-bottom: 30px;">
-                <div class="section-title"><i class="fas fa-code"></i> Equipe Técnica</div>
+            <!-- SEÇÃO: BASTIDORES (Condicional) -->
+            <div id="section-bastidores" class="conditional-section" style="display: none; border-left: 4px solid #f39c12; padding-left: 20px; margin-bottom: 30px;">
+                <div class="section-title"><i class="fas fa-user-shield"></i> Bastidores (Backstage)</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Papéis Técnicos (ex: Dev, Designer)</label>
+                        <label>Papéis / Funções (ex: Dev, Coordenador)</label>
                         <input type="text" name="technical_roles" value="<?= htmlspecialchars($host['technical_roles'] ?? '') ?>" placeholder="Sua função nos bastidores...">
                     </div>
                     <div class="form-group">
@@ -395,26 +399,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Bio Técnica / Experiência (Português)</label>
+                    <label>Bio nos Bastidores / Experiência (Português)</label>
                     <textarea name="technical_description" rows="3"><?= htmlspecialchars($host['technical_description'] ?? '') ?></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Bio Técnica / Experiência (Inglês)</label>
+                    <label>Bio nos Bastidores / Experiência (Inglês)</label>
                     <textarea name="technical_description_en" rows="3"><?= htmlspecialchars($host['technical_description_en'] ?? '') ?></textarea>
                 </div>
             </div>
 
-            <!-- Iniciativas & Comunidades -->
-            <div class="section-title"><i class="fas fa-users"></i> Iniciativa & Comunidade</div>
-            <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px; margin-top: -10px;">Se este membro organiza um grupo, clube ou iniciativa específica, adicione o nome e o link de acesso (WhatsApp, Telegram, etc.). Um botão aparecerá automaticamente no card público dele.</p>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Nome da Iniciativa</label>
-                    <input type="text" name="initiative_label" value="<?= htmlspecialchars($host['initiative_label'] ?? '') ?>" placeholder="Ex: Clube do Livro de Alemão">
+            <!-- SEÇÃO: INICIATIVAS (Condicional) -->
+            <div id="section-iniciativas" class="conditional-section" style="display: none; border-left: 4px solid #9b59b6; padding-left: 20px; margin-bottom: 30px;">
+                <div class="section-title"><i class="fas fa-users"></i> Iniciativas & Comunidade</div>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px; margin-top: -10px;">Se este membro organiza um grupo, clube ou iniciativa específica, preencha os dados abaixo.</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nome da Iniciativa</label>
+                        <input type="text" name="initiative_label" value="<?= htmlspecialchars($host['initiative_label'] ?? '') ?>" placeholder="Ex: Clube do Livro de Alemão">
+                    </div>
+                    <div class="form-group">
+                        <label>Link de Acesso (WhatsApp, Telegram, etc.)</label>
+                        <input type="url" name="initiative_url" value="<?= htmlspecialchars($host['initiative_url'] ?? '') ?>" placeholder="https://chat.whatsapp.com/...">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Link de Acesso (WhatsApp, Telegram, etc.)</label>
-                    <input type="url" name="initiative_url" value="<?= htmlspecialchars($host['initiative_url'] ?? '') ?>" placeholder="https://chat.whatsapp.com/...">
+                    <label>Descrição da Iniciativa (Português)</label>
+                    <textarea name="initiative_description" rows="3"><?= htmlspecialchars($host['initiative_description'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Descrição da Iniciativa (Inglês)</label>
+                    <textarea name="initiative_description_en" rows="3"><?= htmlspecialchars($host['initiative_description_en'] ?? '') ?></textarea>
                 </div>
             </div>
 
@@ -456,7 +470,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const config = [
         { check: 'check-online', section: 'section-online' },
         { check: 'check-presencial', section: 'section-presencial' },
-        { check: 'check-tecnica', section: 'section-tecnica' }
+        { check: 'check-bastidores', section: 'section-bastidores' },
+        { check: 'check-iniciativas', section: 'section-iniciativas' }
     ];
 
     function updateSections() {
