@@ -122,9 +122,9 @@ include 'includes/header.php';
                                  src="<?= $initialFlagCode ? "https://flagcdn.com/32x24/{$initialFlagCode}.png" : '' ?>" 
                                  class="flag-icon" 
                                  style="<?= $initialFlagCode ? '' : 'display:none;' ?>" 
-                                  alt="Bandeira do idioma <?= htmlspecialchars($initialLangName) ?>">
+                                  alt="Bandeira do idioma <?= t('languages.' . strtolower($initialLangName)) ?>">
                             <span id="selected-language-emoji" style="<?= $initialFlagEmoji ? '' : 'display:none;' ?>"><?= $initialFlagEmoji ?></span>
-                            <span id="selected-language"><?= htmlspecialchars($initialLangName) ?></span>
+                            <span id="selected-language"><?= t('languages.' . strtolower($initialLangName)) ?></span>
                         </div>
                         <i class="fas fa-chevron-down"></i>
                     </button>
