@@ -179,7 +179,7 @@ function renderHostCard($host) {
                target="_blank"
                rel="noopener noreferrer"
                class="initiative-btn context-iniciativas">
-                <i class="fas fa-external-link-alt"></i>
+                <i class="fas fa-link"></i>
                 <?= htmlspecialchars($initiativeLabel) ?>
             </a>
             <?php endif; ?>
