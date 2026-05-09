@@ -416,8 +416,10 @@ include 'includes/header.php';
                     <p><?= t('presencial.no_events') ?></p>
                 </div>
             <?php else: ?>
-                <?php $isFirst = true; foreach ($byCountry as $country => $countryEvents): ?>
-                <div class="country-accordion <?= $isFirst ? 'open' : '' ?>">
+                <?php $isFirst = true; foreach ($byCountry as $country => $countryEvents): 
+                    $countrySlug = strtolower(preg_replace('/[^a-z]/i','-', $country));
+                ?>
+                <div class="country-accordion <?= $isFirst ? 'open' : '' ?>" data-country="<?= $countrySlug ?>">
                     <button class="country-header" type="button" onclick="toggleCountry(this)">
                         <span class="country-flag"><?= $countryFlag($country) ?></span>
                         <div class="country-info">
@@ -595,8 +597,26 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     });
 });
 
-// Auto-scroll e Auto-expand baseado em parâmetros de SEO
+// Auto-scroll e Auto-expand baseado em parâmetros de SEO ou estado salvo
 window.addEventListener('load', function() {
+    // 1. Restaurar Acordeões Salvos (Troca de Idioma)
+    const savedAccordions = JSON.parse(sessionStorage.getItem('openAccordions') || 'null');
+    if (savedAccordions) {
+        sessionStorage.removeItem('openAccordions');
+        
+        // Se houver estado salvo, fechamos tudo primeiro para garantir a paridade exata
+        document.querySelectorAll('.country-accordion, .region-accordion').forEach(acc => acc.classList.remove('open'));
+        
+        savedAccordions.countries.forEach(slug => {
+            const el = document.querySelector(`.country-accordion[data-country="${slug}"]`);
+            if (el) el.classList.add('open');
+        });
+        savedAccordions.regions.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('open');
+        });
+    }
+
     if (window.location.hash) return;
     
     const params = new URLSearchParams(window.location.search);

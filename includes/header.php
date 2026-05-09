@@ -523,20 +523,56 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             setTimeout(syncHeaderHeight, 10);
         });
 
-        // Preservação de Scroll ao trocar de idioma
+        // Preservação de Scroll e Estado ao trocar de idioma
         document.querySelectorAll('.lang-btn, #lang-suggestion-banner a').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                // Prevenir navegação imediata para processar o estado atual
+                e.preventDefault();
+                const targetUrl = this.href;
+
+                // 1. Salvar posição de Scroll
                 sessionStorage.setItem('restoreScrollY', window.scrollY);
+
+                // 2. Salvar estado de Acordeões (específico para página presencial)
+                const openCountries = [...document.querySelectorAll('.country-accordion.open')]
+                    .map(el => el.dataset.country).filter(Boolean);
+                const openRegions = [...document.querySelectorAll('.region-accordion.open')]
+                    .map(el => el.id).filter(Boolean);
+                
+                if (openCountries.length > 0 || openRegions.length > 0) {
+                    sessionStorage.setItem('openAccordions', JSON.stringify({ 
+                        countries: openCountries, 
+                        regions: openRegions 
+                    }));
+                }
+
+                // 3. Mesclar parâmetros da URL atual (capturando mudanças via pushState)
+                // com a URL de destino (que já tem o prefixo /en ou remove ele)
+                try {
+                    const currentParams = new URLSearchParams(window.location.search);
+                    const dest = new URL(targetUrl);
+                    
+                    // Transferir todos os parâmetros atuais para o destino
+                    currentParams.forEach((value, key) => {
+                        if (key !== 'lang') dest.searchParams.set(key, value);
+                    });
+                    
+                    window.location.href = dest.toString();
+                } catch (err) {
+                    // Fallback de segurança caso algo falhe no processamento da URL
+                    window.location.href = targetUrl;
+                }
             });
         });
 
-        // Restaurar Scroll se houver posição salva
-        const savedY = sessionStorage.getItem('restoreScrollY');
-        if (savedY !== null) {
-            sessionStorage.removeItem('restoreScrollY');
-            // Timeout curto para garantir que o layout/padding do header já estabilizou
-            setTimeout(() => {
-                window.scrollTo({ top: parseInt(savedY), behavior: 'instant' });
-            }, 50);
-        }
+        // Restaurar Scroll e Estado se houver dados salvos
+        window.addEventListener('load', function() {
+            const savedY = sessionStorage.getItem('restoreScrollY');
+            if (savedY !== null) {
+                sessionStorage.removeItem('restoreScrollY');
+                setTimeout(() => {
+                    window.scrollTo({ top: parseInt(savedY), behavior: 'instant' });
+                }, 100);
+            }
+        });
     </script>
