@@ -300,10 +300,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $availableCats = ['Online', 'Presencial', 'Bastidores', 'Iniciativas'];
                     $currentCats = array_map('trim', explode(',', $host['category'] ?? 'Online'));
                     foreach ($availableCats as $cat): ?>
+                        <?php 
+                        $catId = 'check-' . strtolower($cat); 
+                        ?>
                         <label class="tag-item">
                             <input type="checkbox" name="category[]" value="<?= $cat ?>" 
                                    <?= in_array($cat, $currentCats) ? 'checked' : '' ?>
-                                   id="check-<?= strtolower(preg_replace('/[^a-z0-9]/', '', str_replace(['é', 'í'], ['e', 'i'], $cat))) ?>">
+                                   id="<?= $catId ?>">
                             <span class="tag-label"><?= $cat ?></span>
                         </label>
                     <?php endforeach; ?>
