@@ -59,38 +59,6 @@ function getDayName(int $dayNumber): string {
     return t('days.' . $dayNumber);
 }
 
-// TEMPORARY MIGRATION SCRIPT - AUTO EXECUTE
-try {
-    $conn = connectDB();
-    
-    // 1. Add description_en column to meetings if it doesn't exist
-    $conn->exec("ALTER TABLE meetings ADD COLUMN IF NOT EXISTS description_en TEXT AFTER description");
-    
-    // 2. Define translations
-    $translations = [
-        "Alemão" => "Practice German in our online meetups. Open for all levels.",
-        "Chinês" => "Come learn and practice Mandarin. Communicative and cultural approach.",
-        "Coreano" => "Learn elements of Korean language and culture in a dynamic meetup.",
-        "Espanhol" => "Practice Spanish with natives and enthusiasts. Cultural topics.",
-        "Francês" => "Come practice French in a welcoming environment for everyone.",
-        "Inglês" => "Improve your English with practical conversation. All levels.",
-        "Italiano" => "Learn Italian in a relaxed environment. Open for all levels.",
-        "Japonês" => "Immerse in Japanese culture by practicing the language. All levels.",
-        "Libras" => "Learn and practice Libras (Brazilian Sign Language) with our instructors.",
-        "Polonês" => "Discover the Polish language and culture with our weekly meetups.",
-        "Português" => "Help foreigners with Brazilian Portuguese. Cultural exchange.",
-        "Russo" => "Learn the basics of Russian language and interesting cultural aspects.",
-        "Servo-Croata" => "Explore Balkan culture by practicing the language. Open to all."
-    ];
-    
-    // 3. Update existing meetings with English descriptions
-    $stmt = $conn->prepare("UPDATE meetings m JOIN languages l ON m.language_id = l.id SET m.description_en = :desc WHERE l.name LIKE :lang");
-    foreach ($translations as $lang => $desc) {
-        $stmt->execute(['desc' => $desc, 'lang' => "%$lang%"]);
-    }
-} catch (Exception $e) {
-    // Ignore errors silently for the temp script
-}
 
 function getLanguages(): array {
     $conn = connectDB();
