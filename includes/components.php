@@ -151,9 +151,16 @@ function renderHostCard($host) {
             </div>
             <?php endif; ?>
 
-            <p class="host-bio context-online"><?= htmlspecialchars($host['online_description'] ?? $host['bio'] ?? '') ?></p>
-            <p class="host-bio context-presencial"><?= htmlspecialchars($host['inperson_description'] ?? $host['bio'] ?? '') ?></p>
-            <p class="host-bio context-tecnica"><?= htmlspecialchars($host['technical_description'] ?? $host['bio'] ?? '') ?></p>
+            <?php 
+            $isEn = (t('meta.lang_code') === 'en');
+            $onlineDesc = ($isEn && !empty($host['online_description_en'])) ? $host['online_description_en'] : ($host['online_description'] ?? $host['bio'] ?? '');
+            $inpersonDesc = ($isEn && !empty($host['inperson_description_en'])) ? $host['inperson_description_en'] : ($host['inperson_description'] ?? $host['bio'] ?? '');
+            $techDesc = ($isEn && !empty($host['technical_description_en'])) ? $host['technical_description_en'] : ($host['technical_description'] ?? $host['bio'] ?? '');
+            ?>
+
+            <p class="host-bio context-online"><?= htmlspecialchars($onlineDesc) ?></p>
+            <p class="host-bio context-presencial"><?= htmlspecialchars($inpersonDesc) ?></p>
+            <p class="host-bio context-tecnica"><?= htmlspecialchars($techDesc) ?></p>
 
             <div class="host-tags context-tecnica" style="margin-top:15px;">
                 <?php foreach ($skills as $s): ?>

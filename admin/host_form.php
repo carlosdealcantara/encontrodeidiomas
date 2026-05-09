@@ -22,12 +22,10 @@ if ($id > 0) {
     $social = !empty($host['social_media_links']) ? json_decode($host['social_media_links'], true) : [];
 } else {
     // Valores padrão para novo cadastro
-    $host = [
-        'full_name' => '', 'status' => 'ativo', 'profile_picture' => '',
-        'languages' => '', 'online_description' => '', 'special_badge' => '',
-        'region' => '', 'category' => 'Online', 'inperson_description' => '',
+        'languages' => '', 'online_description' => '', 'online_description_en' => '', 'special_badge' => '',
+        'region' => '', 'category' => 'Online', 'inperson_description' => '', 'inperson_description_en' => '',
         'role' => '', 'technical_status' => 'inativo', 'technical_roles' => '',
-        'technical_skills' => '', 'technical_description' => ''
+        'technical_skills' => '', 'technical_description' => '', 'technical_description_en' => ''
     ];
 }
 
@@ -101,36 +99,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'profile_picture'       => (string)$profilePic,
             'languages'             => (string)$languagesStr,
             'online_description'    => (string)($data['online_description'] ?? ''),
+            'online_description_en' => (string)($data['online_description_en'] ?? ''),
             'region'                => (string)($data['region'] ?? ''),
             'category'              => (string)$categoryStr,
             'inperson_description'  => (string)($data['inperson_description'] ?? ''),
+            'inperson_description_en' => (string)($data['inperson_description_en'] ?? ''),
             'technical_status'      => (string)$techStatus,
             'technical_roles'       => (string)($data['technical_roles'] ?? ''),
             'technical_skills'      => (string)$skillsStr,
             'technical_description' => (string)($data['technical_description'] ?? ''),
+            'technical_description_en' => (string)($data['technical_description_en'] ?? ''),
             'social_media_links'    => (string)$socialJson
         ];
 
         if ($id > 0) {
             $sql = "UPDATE hosts SET 
                     full_name = :full_name, status = :status, profile_picture = :profile_picture,
-                    languages = :languages, online_description = :online_description,
-                    region = :region, category = :category, inperson_description = :inperson_description,
+                    languages = :languages, online_description = :online_description, online_description_en = :online_description_en,
+                    region = :region, category = :category, inperson_description = :inperson_description, inperson_description_en = :inperson_description_en,
                     technical_status = :technical_status, technical_roles = :technical_roles,
-                    technical_skills = :technical_skills, technical_description = :technical_description,
+                    technical_skills = :technical_skills, technical_description = :technical_description, technical_description_en = :technical_description_en,
                     social_media_links = :social_media_links
                     WHERE id = :id";
             $dataToSave['id'] = $id;
         } else {
             $sql = "INSERT INTO hosts (
-                    full_name, status, profile_picture, languages, online_description,
-                    region, category, inperson_description, technical_status, technical_roles,
-                    technical_skills, technical_description, social_media_links
+                    full_name, status, profile_picture, languages, online_description, online_description_en,
+                    region, category, inperson_description, inperson_description_en, technical_status, technical_roles,
+                    technical_skills, technical_description, technical_description_en, social_media_links
                     ) VALUES (
-                    :full_name, :status, :profile_picture, :languages, :online_description,
-                    :region, :category, :inperson_description, :technical_status, :technical_roles,
-                    :technical_skills, :technical_description, :social_media_links
-                    )";
+                    :full_name, :status, :profile_picture, :languages, :online_description, :online_description_en,
+                    :region, :category, :inperson_description, :inperson_description_en, :technical_status, :technical_roles,
+                    :technical_skills, :technical_description, :technical_description_en, :social_media_links
+                    ) ";
         }
         
         $stmt = $conn->prepare($sql);
@@ -332,8 +333,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Descrição para os Encontros Online</label>
+                    <label>Descrição para os Encontros Online (Português)</label>
                     <textarea name="online_description" rows="3"><?= htmlspecialchars($host['online_description'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Descrição para os Encontros Online (Inglês)</label>
+                    <textarea name="online_description_en" rows="3"><?= htmlspecialchars($host['online_description_en'] ?? '') ?></textarea>
                 </div>
             </div>
 
@@ -351,8 +356,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Descrição para os Encontros Presenciais</label>
+                    <label>Descrição para os Encontros Presenciais (Português)</label>
                     <textarea name="inperson_description" rows="3"><?= htmlspecialchars($host['inperson_description'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Descrição para os Encontros Presenciais (Inglês)</label>
+                    <textarea name="inperson_description_en" rows="3"><?= htmlspecialchars($host['inperson_description_en'] ?? '') ?></textarea>
                 </div>
             </div>
 
@@ -380,8 +389,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Bio Técnica / Experiência</label>
+                    <label>Bio Técnica / Experiência (Português)</label>
                     <textarea name="technical_description" rows="3"><?= htmlspecialchars($host['technical_description'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Bio Técnica / Experiência (Inglês)</label>
+                    <textarea name="technical_description_en" rows="3"><?= htmlspecialchars($host['technical_description_en'] ?? '') ?></textarea>
                 </div>
             </div>
 
