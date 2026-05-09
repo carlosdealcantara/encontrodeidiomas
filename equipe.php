@@ -270,21 +270,21 @@ ob_start();
     .cta-button-red { display:inline-block; padding:15px 40px; background:var(--accent-red); color:white; text-decoration:none; font-weight:700; border-radius:50px; transition: var(--transition); }
     .cta-button-red:hover { background: #c11817; transform: scale(1.05); box-shadow: 0 10px 20px rgba(193, 24, 23, 0.2); }
 
-    /* Botão de Iniciativa */
+    /* Botão de Iniciativa - Versão mais discreta */
     .initiative-btn {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         margin: 12px 0 8px;
-        padding: 9px 18px;
-        background: var(--accent-red);
-        color: #fff;
-        font-size: 0.82rem;
+        padding: 6px 14px;
+        background: transparent;
+        color: var(--accent-red);
+        border: 1.5px solid var(--accent-red);
+        font-size: 0.78rem;
         font-weight: 700;
         border-radius: 50px;
         text-decoration: none;
         transition: var(--transition);
-        box-shadow: 0 4px 12px rgba(227, 29, 28, 0.25);
         letter-spacing: 0.2px;
         max-width: 100%;
         white-space: nowrap;
@@ -292,16 +292,30 @@ ob_start();
         text-overflow: ellipsis;
     }
     .initiative-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(227, 29, 28, 0.35);
-        filter: brightness(1.08);
+        background: var(--accent-red);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(227, 29, 28, 0.2);
     }
+    /* WhatsApp Discreto */
     .initiative-btn.whatsapp-initiative {
-        background: #25D366;
-        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+        color: #128C7E;
+        border-color: #128C7E;
     }
     .initiative-btn.whatsapp-initiative:hover {
-        box-shadow: 0 8px 20px rgba(37, 211, 102, 0.45);
+        background: #128C7E;
+        color: #fff;
+        box-shadow: 0 5px 15px rgba(18, 140, 126, 0.2);
+    }
+    /* Telegram Discreto */
+    .initiative-btn.telegram-initiative {
+        color: #0088cc;
+        border-color: #0088cc;
+    }
+    .initiative-btn.telegram-initiative:hover {
+        background: #0088cc;
+        color: #fff;
+        box-shadow: 0 5px 15px rgba(0, 136, 204, 0.2);
     }
 <?php
 $page_styles = ob_get_clean();

@@ -122,10 +122,11 @@ function renderHostCard($host) {
     $instagram = $social['instagram'] ?? $host['instagram'] ?? '';
     $linkedin  = $social['linkedin']  ?? $host['linkedin']  ?? '';
 
-    $initiativeLabel = trim($host['initiative_label'] ?? '');
+    $initiativeLabel = ($isEn && !empty($host['initiative_label_en'])) ? trim($host['initiative_label_en']) : trim($host['initiative_label'] ?? '');
     $initiativeUrl   = trim($host['initiative_url']   ?? '');
     $hasInitiative   = !empty($initiativeLabel) && !empty($initiativeUrl);
     $isWhatsApp      = $hasInitiative && str_contains($initiativeUrl, 'whatsapp.com');
+    $isTelegram      = $hasInitiative && (str_contains($initiativeUrl, 't.me') || str_contains($initiativeUrl, 'telegram.me'));
     ?>
     <div class="host-card" 
          data-categories="<?= $categoriesAttr ?>" 
@@ -175,12 +176,17 @@ function renderHostCard($host) {
                 <?php endforeach; ?>
             </div>
 
-            <?php if ($hasInitiative): ?>
+            <?php if ($hasInitiative): 
+                $btnClass = '';
+                $iconClass = 'fas fa-users';
+                if ($isWhatsApp) { $btnClass = ' whatsapp-initiative'; $iconClass = 'fab fa-whatsapp'; }
+                elseif ($isTelegram) { $btnClass = ' telegram-initiative'; $iconClass = 'fab fa-telegram-plane'; }
+            ?>
             <a href="<?= htmlspecialchars($initiativeUrl) ?>"
                target="_blank"
                rel="noopener noreferrer"
-               class="initiative-btn context-iniciativas<?= $isWhatsApp ? ' whatsapp-initiative' : '' ?>">
-                <i class="<?= $isWhatsApp ? 'fab fa-whatsapp' : 'fas fa-users' ?>"></i>
+               class="initiative-btn context-iniciativas<?= $btnClass ?>">
+                <i class="<?= $iconClass ?>"></i>
                 <?= htmlspecialchars($initiativeLabel) ?>
             </a>
             <?php endif; ?>

@@ -27,7 +27,8 @@ if ($id > 0) {
         'region' => '', 'category' => 'Online', 'inperson_description' => '', 'inperson_description_en' => '',
         'role' => '', 'technical_status' => 'inativo', 'technical_roles' => '',
         'technical_skills' => '', 'technical_description' => '', 'technical_description_en' => '',
-        'initiative_description' => '', 'initiative_description_en' => ''
+        'initiative_description' => '', 'initiative_description_en' => '',
+        'initiative_label_en' => ''
     ];
 }
 
@@ -115,7 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'initiative_label'      => (string)($data['initiative_label'] ?? ''),
             'initiative_url'        => (string)($data['initiative_url'] ?? ''),
             'initiative_description' => (string)($data['initiative_description'] ?? ''),
-            'initiative_description_en' => (string)($data['initiative_description_en'] ?? '')
+            'initiative_description_en' => (string)($data['initiative_description_en'] ?? ''),
+            'initiative_label_en'      => (string)($data['initiative_label_en'] ?? '')
         ];
 
         if ($id > 0) {
@@ -127,7 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     technical_skills = :technical_skills, technical_description = :technical_description, technical_description_en = :technical_description_en,
                     social_media_links = :social_media_links,
                     initiative_label = :initiative_label, initiative_url = :initiative_url,
-                    initiative_description = :initiative_description, initiative_description_en = :initiative_description_en
+                    initiative_description = :initiative_description, initiative_description_en = :initiative_description_en,
+                    initiative_label_en = :initiative_label_en
                     WHERE id = :id";
             $dataToSave['id'] = $id;
         } else {
@@ -135,12 +138,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     full_name, status, profile_picture, languages, online_description, online_description_en,
                     region, category, inperson_description, inperson_description_en, technical_status, technical_roles,
                     technical_skills, technical_description, technical_description_en, social_media_links,
-                    initiative_label, initiative_url, initiative_description, initiative_description_en
+                    initiative_label, initiative_url, initiative_description, initiative_description_en, initiative_label_en
                     ) VALUES (
                     :full_name, :status, :profile_picture, :languages, :online_description, :online_description_en,
                     :region, :category, :inperson_description, :inperson_description_en, :technical_status, :technical_roles,
                     :technical_skills, :technical_description, :technical_description_en, :social_media_links,
-                    :initiative_label, :initiative_url, :initiative_description, :initiative_description_en
+                    :initiative_label, :initiative_url, :initiative_description, :initiative_description_en, :initiative_label_en
                     ) ";
         }
         
@@ -417,8 +420,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px; margin-top: -10px;">Se este membro organiza um grupo, clube ou iniciativa específica, preencha os dados abaixo.</p>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Nome da Iniciativa</label>
+                        <label>Nome da Iniciativa (Português)</label>
                         <input type="text" name="initiative_label" value="<?= htmlspecialchars($host['initiative_label'] ?? '') ?>" placeholder="Ex: Clube do Livro de Alemão">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome da Iniciativa (Inglês)</label>
+                        <input type="text" name="initiative_label_en" value="<?= htmlspecialchars($host['initiative_label_en'] ?? '') ?>" placeholder="Ex: German Book Club">
                     </div>
                     <div class="form-group">
                         <label>Link de Acesso (WhatsApp, Telegram, etc.)</label>
