@@ -138,16 +138,16 @@ include 'includes/header.php';
                         ?>
                         <button class="language-button <?= $lang['id'] == $initialLang ? 'active-lang' : '' ?>"
                                 data-language-id="<?= $lang['id'] ?>"
-                                data-language="<?= htmlspecialchars($lang['name']) ?>"
+                                data-language="<?= t('languages.' . strtolower($lang['name'])) ?>"
                                 data-flag-code="<?= htmlspecialchars($lang['flag_code'] ?? '') ?>"
                                 data-flag-emoji="<?= htmlspecialchars($lang['flag_emoji'] ?? '') ?>">
                             <div class="language-info">
                                 <?php if (!empty($lang['flag_code'])): ?>
-                                    <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($lang['flag_code']) ?>.png" class="flag-icon" alt="Bandeira - <?= htmlspecialchars($lang['name']) ?>">
+                                    <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($lang['flag_code']) ?>.png" class="flag-icon" alt="Bandeira - <?= t('languages.' . strtolower($lang['name'])) ?>">
                                 <?php elseif (!empty($lang['flag_emoji'])): ?>
-                                    <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= htmlspecialchars($lang['name']) ?>"><?= $lang['flag_emoji'] ?></span>
+                                    <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= t('languages.' . strtolower($lang['name'])) ?>"><?= $lang['flag_emoji'] ?></span>
                                 <?php endif; ?>
-                                <span><?= htmlspecialchars($lang['name']) ?></span>
+                                <span><?= t('languages.' . strtolower($lang['name'])) ?></span>
                             </div>
                         </button>
                         <?php endforeach; ?>
@@ -219,7 +219,7 @@ include 'includes/header.php';
                 if (empty($byLanguage[$lang['id']])) continue;
             ?>
             <a href="<?= langUrl('online.php') ?>?view=language&idioma=<?= $lang['id'] ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <?= htmlspecialchars($lang['name']) ?> <?= t('nav.online') ?>
+                <?= t('languages.' . strtolower($lang['name'])) ?> <?= t('nav.online') ?>
             </a>
             <?php endforeach; ?>
         </div>
