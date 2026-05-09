@@ -590,21 +590,56 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     });
 });
 
-// Auto-scroll para as localidades se não houver hash na URL
+// Auto-scroll e Auto-expand baseado em parâmetros de SEO
 window.addEventListener('load', function() {
     if (window.location.hash) return;
     
+    const params = new URLSearchParams(window.location.search);
+    const regiao = params.get('regiao');
+    const cidade = params.get('cidade');
+    
+    let targetElement = null;
+
+    if (cidade) {
+        document.querySelectorAll('.city-name').forEach(card => {
+            if (card.textContent.trim().toLowerCase() === cidade.toLowerCase()) {
+                targetElement = card.closest('.city-card');
+                
+                const regionAcc = targetElement.closest('.region-accordion');
+                if (regionAcc) regionAcc.classList.add('open');
+                
+                const countryAcc = targetElement.closest('.country-accordion');
+                if (countryAcc) countryAcc.classList.add('open');
+                
+                targetElement.style.border = '2px solid var(--accent-red)';
+                targetElement.style.boxShadow = '0 10px 30px rgba(227,29,28,0.15)';
+            }
+        });
+    } else if (regiao) {
+        document.querySelectorAll('.region-name').forEach(rn => {
+            if (rn.textContent.trim().toLowerCase() === regiao.toLowerCase()) {
+                targetElement = rn.closest('.region-accordion');
+                targetElement.classList.add('open');
+                
+                const countryAcc = targetElement.closest('.country-accordion');
+                if (countryAcc) countryAcc.classList.add('open');
+            }
+        });
+    }
+
     setTimeout(() => {
-        // Mira direta no texto "ONDE ESTAMOS" — elimina ambiguidade de padding da section
-        const sectionLabel = document.querySelector('#localidades .section-label');
-        const target = sectionLabel || document.getElementById('localidades');
-        if (target) {
+        let scrollDest = targetElement;
+        if (!scrollDest) {
+            scrollDest = document.querySelector('#localidades .section-label') || document.getElementById('localidades');
+        }
+        
+        if (scrollDest) {
             const header = document.querySelector('.header');
             const headerHeight = header ? header.offsetHeight : 80;
-            const targetY = target.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+            const targetY = scrollDest.getBoundingClientRect().top + window.pageYOffset - headerHeight - 40;
             smoothScrollTo(targetY, 1500);
         }
-    }, 2000); 
+    }, 1200); 
 });
 </script>
 JS;

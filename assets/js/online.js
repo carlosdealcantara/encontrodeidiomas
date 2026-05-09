@@ -209,10 +209,16 @@ window.addEventListener('load', function() {
     if (window.location.hash) return;
     
     setTimeout(() => {
-        // Mira: evento ativo do dia atual, senão calendário
-        const activePanel = document.querySelector('.day-events.active');
-        const scrollTarget = (activePanel ? activePanel.querySelector('.scroll-target') : null) 
-                           || document.querySelector('.calendar-nav');
+        let scrollTarget = null;
+        const params = new URLSearchParams(window.location.search);
+        
+        if (params.get('idioma') || params.get('view') === 'language') {
+            scrollTarget = document.querySelector('.calendar-nav');
+        } else {
+            const activePanel = document.querySelector('.day-events.active');
+            scrollTarget = (activePanel ? activePanel.querySelector('.scroll-target') : null) 
+                               || document.querySelector('.calendar-nav');
+        }
         
         if (scrollTarget) {
             const header = document.querySelector('.header');
@@ -224,7 +230,7 @@ window.addEventListener('load', function() {
             
             window.onlineSmoothScrollTo(targetY, 1500); 
         }
-    }, 2000); 
+    }, 1000); 
 
 });
 
