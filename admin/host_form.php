@@ -110,7 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'technical_skills'      => (string)$skillsStr,
             'technical_description' => (string)($data['technical_description'] ?? ''),
             'technical_description_en' => (string)($data['technical_description_en'] ?? ''),
-            'social_media_links'    => (string)$socialJson
+            'social_media_links'    => (string)$socialJson,
+            'initiative_label'      => (string)($data['initiative_label'] ?? ''),
+            'initiative_url'        => (string)($data['initiative_url'] ?? '')
         ];
 
         if ($id > 0) {
@@ -120,18 +122,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     region = :region, category = :category, inperson_description = :inperson_description, inperson_description_en = :inperson_description_en,
                     technical_status = :technical_status, technical_roles = :technical_roles,
                     technical_skills = :technical_skills, technical_description = :technical_description, technical_description_en = :technical_description_en,
-                    social_media_links = :social_media_links
+                    social_media_links = :social_media_links,
+                    initiative_label = :initiative_label, initiative_url = :initiative_url
                     WHERE id = :id";
             $dataToSave['id'] = $id;
         } else {
             $sql = "INSERT INTO hosts (
                     full_name, status, profile_picture, languages, online_description, online_description_en,
                     region, category, inperson_description, inperson_description_en, technical_status, technical_roles,
-                    technical_skills, technical_description, technical_description_en, social_media_links
+                    technical_skills, technical_description, technical_description_en, social_media_links,
+                    initiative_label, initiative_url
                     ) VALUES (
                     :full_name, :status, :profile_picture, :languages, :online_description, :online_description_en,
                     :region, :category, :inperson_description, :inperson_description_en, :technical_status, :technical_roles,
-                    :technical_skills, :technical_description, :technical_description_en, :social_media_links
+                    :technical_skills, :technical_description, :technical_description_en, :social_media_links,
+                    :initiative_label, :initiative_url
                     ) ";
         }
         
@@ -396,6 +401,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label>Bio Técnica / Experiência (Inglês)</label>
                     <textarea name="technical_description_en" rows="3"><?= htmlspecialchars($host['technical_description_en'] ?? '') ?></textarea>
+                </div>
+            </div>
+
+            <!-- Iniciativas & Comunidades -->
+            <div class="section-title"><i class="fas fa-users"></i> Iniciativa & Comunidade</div>
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px; margin-top: -10px;">Se este membro organiza um grupo, clube ou iniciativa específica, adicione o nome e o link de acesso (WhatsApp, Telegram, etc.). Um botão aparecerá automaticamente no card público dele.</p>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nome da Iniciativa</label>
+                    <input type="text" name="initiative_label" value="<?= htmlspecialchars($host['initiative_label'] ?? '') ?>" placeholder="Ex: Clube do Livro de Alemão">
+                </div>
+                <div class="form-group">
+                    <label>Link de Acesso (WhatsApp, Telegram, etc.)</label>
+                    <input type="url" name="initiative_url" value="<?= htmlspecialchars($host['initiative_url'] ?? '') ?>" placeholder="https://chat.whatsapp.com/...">
                 </div>
             </div>
 

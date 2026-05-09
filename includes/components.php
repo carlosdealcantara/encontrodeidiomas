@@ -121,6 +121,11 @@ function renderHostCard($host) {
     $email     = $social['email']     ?? $host['email']     ?? '';
     $instagram = $social['instagram'] ?? $host['instagram'] ?? '';
     $linkedin  = $social['linkedin']  ?? $host['linkedin']  ?? '';
+
+    $initiativeLabel = trim($host['initiative_label'] ?? '');
+    $initiativeUrl   = trim($host['initiative_url']   ?? '');
+    $hasInitiative   = !empty($initiativeLabel) && !empty($initiativeUrl);
+    $isWhatsApp      = $hasInitiative && str_contains($initiativeUrl, 'whatsapp.com');
     ?>
     <div class="host-card" 
          data-categories="<?= $categoriesAttr ?>" 
@@ -167,6 +172,16 @@ function renderHostCard($host) {
                     <span class="tag"><?= htmlspecialchars($s) ?></span>
                 <?php endforeach; ?>
             </div>
+
+            <?php if ($hasInitiative): ?>
+            <a href="<?= htmlspecialchars($initiativeUrl) ?>"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="initiative-btn<?= $isWhatsApp ? ' whatsapp-initiative' : '' ?>">
+                <i class="<?= $isWhatsApp ? 'fab fa-whatsapp' : 'fas fa-users' ?>"></i>
+                <?= htmlspecialchars($initiativeLabel) ?>
+            </a>
+            <?php endif; ?>
 
             <div class="host-contact">
                 <?php if (!empty($whatsapp)): ?>
