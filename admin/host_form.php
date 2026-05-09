@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $profilePic = $host['profile_picture'] ?? 'HostSemFoto.png';
         if (!empty($_FILES['photo']['name'])) {
             $ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
-            $newFileName = str_replace(' ', '_', $data['full_name'] ?? 'host') . '_' . time() . '.' . $ext;
+            $newFileName = str_replace(' ', '_', $data['full_name'] ?? 'host') . '.' . $ext;
             $targetPath = '../assets/images/' . $newFileName;
             
             if (move_uploaded_file($_FILES['photo']['tmp_name'], $targetPath)) {
