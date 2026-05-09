@@ -257,11 +257,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Informações Básicas -->
             <div class="section-title"><i class="fas fa-id-card"></i> Informações Básicas</div>
             <div class="photo-preview">
-                <?php if ($host['profile_picture']): ?>
-                    <img src="../assets/images/<?= $host['profile_picture'] ?>" class="preview-img">
-                <?php else: ?>
-                    <div class="preview-img" style="background: #333; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
-                <?php endif; ?>
+                <?php 
+                    $photoUrl = getHostPhotoUrl($host['profile_picture'] ?? null);
+                ?>
+                <img src="<?= $photoUrl ?>" class="preview-img" onerror="this.src='../assets/images/HostSemFoto.png'">
                 <div>
                     <label>Trocar Foto de Perfil</label>
                     <input type="file" name="photo" accept="image/*">

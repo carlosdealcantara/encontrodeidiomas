@@ -151,4 +151,36 @@ function getUsefulLinks(): array {
         return [];
     }
 }
+/**
+ * Retorna a URL da foto do anfitrião com fallback inteligente entre ambientes
+ * @param string|null $fileName Nome do arquivo no banco
+ * @return string URL completa ou relativa para a imagem
+ */
+function getHostPhotoUrl(?string $fileName): string {
+    $fallback = '/assets/images/HostSemFoto.png';
+    if (empty($fileName) || $fileName === 'HostSemFoto.png') return $fallback;
+    
+    $is_admin = (strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false);
+    $relative_prefix = $is_admin ? '../' : '/';
+    $v = defined('ASSET_VERSION') ? ASSET_VERSION : '1';
+    
+    // Caminho absoluto no disco para o check
+    $filePath = __DIR__ . '/assets/images/' . $fileName;
+    
+    if (file_exists($filePath)) {
+        return $relative_prefix . 'assets/images/' . $fileName . '?v=' . $v;
+    } else {
+        // Fallback dinâmico entre domínios (Dev <-> Prod)
+        $currentHost = $_SERVER['HTTP_HOST'] ?? '';
+        $prodDomain = 'encontrodeidiomas.com.br';
+        
+        if (strpos($currentHost, $prodDomain) !== false && strpos($currentHost, 'dev') === false) {
+            // Estamos na Produção -> Busca no Dev
+            return 'https://dev.' . $prodDomain . '/assets/images/' . $fileName;
+        } else {
+            // Estamos no Dev (ou localhost) -> Busca na Produção
+            return 'https://' . $prodDomain . '/assets/images/' . $fileName;
+        }
+    }
+}
 ?>

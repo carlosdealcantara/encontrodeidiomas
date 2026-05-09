@@ -154,7 +154,7 @@ if (isset($_GET['toggle_status']) && isset($_GET['id'])) {
                 </thead>
                 <tbody>
                     <?php foreach ($hosts as $host): 
-                        $photo = !empty($host['profile_picture']) ? '../assets/images/' . $host['profile_picture'] : '../assets/images/HostSemFoto.png';
+                        $photo = getHostPhotoUrl($host['profile_picture'] ?? $host['photo'] ?? null);
                     ?>
                     <tr>
                         <td>

@@ -42,28 +42,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         
         <?php if (!empty($ev['host_name'])): ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
-            <?php 
-                $hostPhoto = $ev['host_photo'];
-                $v = defined('ASSET_VERSION') ? ASSET_VERSION : time();
-                $hostPhotoUrl = '/assets/images/logo.png'; // Fallback padrão
-                
-                if (!empty($hostPhoto)) {
-                    $hostPhotoPath = __DIR__ . '/../assets/images/' . $hostPhoto;
-                    if (file_exists($hostPhotoPath)) {
-                        $hostPhotoUrl = '/assets/images/' . $hostPhoto;
-                    } else {
-                        // Fallback dinâmico entre domínios
-                        $currentHost = $_SERVER['HTTP_HOST'] ?? '';
-                        $prodDomain = 'encontrodeidiomas.com.br';
-                        if (strpos($currentHost, $prodDomain) !== false && strpos($currentHost, 'dev') === false) {
-                            $hostPhotoUrl = 'https://dev.' . $prodDomain . '/assets/images/' . $hostPhoto;
-                        } else {
-                            $hostPhotoUrl = 'https://' . $prodDomain . '/assets/images/' . $hostPhoto;
-                        }
-                    }
-                }
-                $hostPhotoUrl .= '?v=' . $v;
-            ?>
+            <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null); ?>
             <img src="<?= $hostPhotoUrl ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Foto do Host <?= htmlspecialchars($ev['host_name']) ?>" onerror="this.src='/assets/images/logo.png'">
             <span><?= t('events.host_label') ?> <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
         </div>
@@ -105,31 +84,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
  * Renderiza um card de anfitrião — estrutura original usada por equipe.php
  */
 function renderHostCard($host) {
-    // Lógica de Foto com Fallback Inteligente e Cache-Busting
-    $fileName = !empty($host['profile_picture']) ? $host['profile_picture'] : (!empty($host['photo']) ? $host['photo'] : 'HostSemFoto.png');
-    $photo = '/assets/images/' . $fileName;
-    $v = defined('ASSET_VERSION') ? ASSET_VERSION : time();
-
-    if ($fileName !== 'HostSemFoto.png') {
-        $filePath = __DIR__ . '/../assets/images/' . $fileName;
-        
-        if (!file_exists($filePath)) {
-            // Detecção dinâmica para fallback entre Dev e Prod
-            $currentHost = $_SERVER['HTTP_HOST'] ?? '';
-            $prodDomain = 'encontrodeidiomas.com.br';
-            
-            if (strpos($currentHost, $prodDomain) !== false && strpos($currentHost, 'dev') === false) {
-                // Estamos na Produção, mas o arquivo não existe aqui -> Busca no Dev
-                $photo = 'https://dev.' . $prodDomain . '/assets/images/' . $fileName;
-            } else {
-                // Estamos no Dev (ou localhost), mas o arquivo não existe aqui -> Busca na Produção
-                $photo = 'https://' . $prodDomain . '/assets/images/' . $fileName;
-            }
-        }
-    }
-    
-    // Adiciona cache-busting
-    $photoUrl = $photo . '?v=' . $v;
+    $photoUrl = getHostPhotoUrl($host['profile_picture'] ?? $host['photo'] ?? null);
     
     $rawCats = $host['category'] ?? $host['categories'] ?? '';
     $categories = array_map('trim', explode(',', $rawCats));
