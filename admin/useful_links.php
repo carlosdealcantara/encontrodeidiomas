@@ -19,23 +19,25 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
     exit;
 }
 
-// Lógica de salvamento (Novo/Editar)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title    = $_POST['title'];
+    $title_en = $_POST['title_en'];
     $url      = $_POST['url'];
     $subtitle = $_POST['subtitle'];
+    $subtitle_en = $_POST['subtitle_en'];
     $badge    = $_POST['badge'];
+    $badge_en = $_POST['badge_en'];
     $icon     = $_POST['icon'];
     $layout   = $_POST['layout_type'];
     $order    = (int)$_POST['order_index'];
     $id       = (int)$_POST['id'];
 
     if ($id > 0) {
-        $stmt = $conn->prepare("UPDATE useful_links SET title = ?, url = ?, subtitle = ?, badge = ?, icon = ?, layout_type = ?, order_index = ? WHERE id = ?");
-        $stmt->execute([$title, $url, $subtitle, $badge, $icon, $layout, $order, $id]);
+        $stmt = $conn->prepare("UPDATE useful_links SET title = ?, title_en = ?, url = ?, subtitle = ?, subtitle_en = ?, badge = ?, badge_en = ?, icon = ?, layout_type = ?, order_index = ? WHERE id = ?");
+        $stmt->execute([$title, $title_en, $url, $subtitle, $subtitle_en, $badge, $badge_en, $icon, $layout, $order, $id]);
     } else {
-        $stmt = $conn->prepare("INSERT INTO useful_links (title, url, subtitle, badge, icon, layout_type, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $url, $subtitle, $badge, $icon, $layout, $order]);
+        $stmt = $conn->prepare("INSERT INTO useful_links (title, title_en, url, subtitle, subtitle_en, badge, badge_en, icon, layout_type, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $title_en, $url, $subtitle, $subtitle_en, $badge, $badge_en, $icon, $layout, $order]);
     }
     header('Location: useful_links.php?msg=Link salvo com sucesso');
     exit;
@@ -138,27 +140,38 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
 
         <form method="POST" class="form-inline">
             <input type="hidden" name="id" id="linkId" value="0">
-            <div class="form-grid">
                 <div class="form-group">
-                    <label>Título</label>
+                    <label>Título (PT)</label>
                     <input type="text" name="title" id="linkTitle" placeholder="Ex: Grupo WhatsApp" required>
                 </div>
                 <div class="form-group">
-                    <label>Descrição (Subtitle)</label>
+                    <label>Título (EN)</label>
+                    <input type="text" name="title_en" id="linkTitleEn" placeholder="Ex: WhatsApp Group">
+                </div>
+                <div class="form-group">
+                    <label>Descrição (Subtitle PT)</label>
                     <input type="text" name="subtitle" id="linkSubtitle" placeholder="Ex: O maior grupo do projeto">
+                </div>
+                <div class="form-group">
+                    <label>Descrição (Subtitle EN)</label>
+                    <input type="text" name="subtitle_en" id="linkSubtitleEn" placeholder="Ex: The project's biggest group">
                 </div>
                 <div class="form-group">
                     <label>URL</label>
                     <input type="url" name="url" id="linkUrl" placeholder="https://..." required oninput="suggestIcon(this.value)">
                 </div>
+                <div class="form-group">
+                    <label>Selo (Badge PT)</label>
+                    <input type="text" name="badge" id="linkBadge" placeholder="Ex: Comece por aqui">
+                </div>
+                <div class="form-group">
+                    <label>Selo (Badge EN)</label>
+                    <input type="text" name="badge_en" id="linkBadgeEn" placeholder="Ex: Start here">
+                </div>
                 <button type="submit" class="btn-add" id="btnSubmit">Salvar Link</button>
             </div>
             
             <div class="form-row-2">
-                <div class="form-group">
-                    <label>Selo (Badge)</label>
-                    <input type="text" name="badge" id="linkBadge" placeholder="Ex: Comece por aqui">
-                </div>
                 <div class="form-group">
                     <label>Layout</label>
                     <select name="layout_type" id="linkLayout">
@@ -287,9 +300,12 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
         function editLink(link) {
             document.getElementById('linkId').value = link.id;
             document.getElementById('linkTitle').value = link.title;
+            document.getElementById('linkTitleEn').value = link.title_en || '';
             document.getElementById('linkSubtitle').value = link.subtitle || '';
+            document.getElementById('linkSubtitleEn').value = link.subtitle_en || '';
             document.getElementById('linkUrl').value = link.url;
             document.getElementById('linkBadge').value = link.badge || '';
+            document.getElementById('linkBadgeEn').value = link.badge_en || '';
             document.getElementById('linkIcon').value = link.icon;
             document.getElementById('linkLayout').value = link.layout_type || 'standard';
             document.getElementById('linkOrder').value = link.order_index;

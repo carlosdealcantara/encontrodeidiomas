@@ -282,10 +282,12 @@ $allLinks = getUsefulLinks();
             }
             
             function renderLinkCard($link, $type, $animation) {
+                $isEn = (CURRENT_LANG === 'en');
                 $url = htmlspecialchars($link['url']);
-                $title = htmlspecialchars($link['title']);
-                $subtitle = htmlspecialchars($link['subtitle'] ?? '');
-                $badge = htmlspecialchars($link['badge'] ?? '');
+                
+                $title = htmlspecialchars(($isEn && !empty($link['title_en'])) ? $link['title_en'] : $link['title']);
+                $subtitle = htmlspecialchars(($isEn && !empty($link['subtitle_en'])) ? $link['subtitle_en'] : ($link['subtitle'] ?? ''));
+                $badge = htmlspecialchars(($isEn && !empty($link['badge_en'])) ? $link['badge_en'] : ($link['badge'] ?? ''));
                 $icon = htmlspecialchars($link['icon'] ?? 'fas fa-link');
                 
                 if ($type === 'twin'): ?>
