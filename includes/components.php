@@ -84,6 +84,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
  * Renderiza um card de anfitrião — estrutura original usada por equipe.php
  */
 function renderHostCard($host) {
+    $isEn = (t('meta.lang_code') === 'en');
     $photoUrl = getHostPhotoUrl($host['profile_picture'] ?? $host['photo'] ?? null);
     
     $rawCats = $host['category'] ?? $host['categories'] ?? '';
@@ -125,8 +126,6 @@ function renderHostCard($host) {
     $initiativeLabel = ($isEn && !empty($host['initiative_label_en'])) ? trim($host['initiative_label_en']) : trim($host['initiative_label'] ?? '');
     $initiativeUrl   = trim($host['initiative_url']   ?? '');
     $hasInitiative   = !empty($initiativeLabel) && !empty($initiativeUrl);
-    $isWhatsApp      = $hasInitiative && str_contains($initiativeUrl, 'whatsapp.com');
-    $isTelegram      = $hasInitiative && (str_contains($initiativeUrl, 't.me') || str_contains($initiativeUrl, 'telegram.me'));
     ?>
     <div class="host-card" 
          data-categories="<?= $categoriesAttr ?>" 
@@ -158,7 +157,6 @@ function renderHostCard($host) {
             <?php endif; ?>
 
             <?php 
-            $isEn = (t('meta.lang_code') === 'en');
             $onlineDesc = ($isEn && !empty($host['online_description_en'])) ? $host['online_description_en'] : ($host['online_description'] ?? $host['bio'] ?? '');
             $inpersonDesc = ($isEn && !empty($host['inperson_description_en'])) ? $host['inperson_description_en'] : ($host['inperson_description'] ?? $host['bio'] ?? '');
             $techDesc = ($isEn && !empty($host['technical_description_en'])) ? $host['technical_description_en'] : ($host['technical_description'] ?? $host['bio'] ?? '');
@@ -176,17 +174,12 @@ function renderHostCard($host) {
                 <?php endforeach; ?>
             </div>
 
-            <?php if ($hasInitiative): 
-                $btnClass = '';
-                $iconClass = 'fas fa-users';
-                if ($isWhatsApp) { $btnClass = ' whatsapp-initiative'; $iconClass = 'fab fa-whatsapp'; }
-                elseif ($isTelegram) { $btnClass = ' telegram-initiative'; $iconClass = 'fab fa-telegram-plane'; }
-            ?>
+            <?php if ($hasInitiative): ?>
             <a href="<?= htmlspecialchars($initiativeUrl) ?>"
                target="_blank"
                rel="noopener noreferrer"
-               class="initiative-btn context-iniciativas<?= $btnClass ?>">
-                <i class="<?= $iconClass ?>"></i>
+               class="initiative-btn context-iniciativas">
+                <i class="fas fa-external-link-alt"></i>
                 <?= htmlspecialchars($initiativeLabel) ?>
             </a>
             <?php endif; ?>
