@@ -524,7 +524,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         });
 
         // Preservação de Scroll e Estado ao trocar de idioma
-        document.querySelectorAll('.lang-btn, #lang-suggestion-banner a').forEach(btn => {
+        document.querySelectorAll('.lang-btn:not(.active), #lang-suggestion-banner a').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 // Prevenir navegação imediata para processar o estado atual
                 e.preventDefault();
@@ -558,10 +558,15 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
                         if (key !== 'lang') dest.searchParams.set(key, value);
                     });
                     
-                    window.location.href = dest.toString();
+                    // Pequeno delay de 10ms para garantir que o sessionStorage persista antes da navegação
+                    setTimeout(() => {
+                        window.location.href = dest.toString();
+                    }, 10);
                 } catch (err) {
                     // Fallback de segurança caso algo falhe no processamento da URL
-                    window.location.href = targetUrl;
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 10);
                 }
             });
         });
