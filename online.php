@@ -8,6 +8,9 @@ $current_page   = 'online.php';
 $og_description = t('online.meta_description_default');
 
 // Dinamismo para SEO de Idiomas Específicos
+$allLangNames = array_map(function($l) { return $l['name']; }, $languages);
+$meta_keywords = "encontro de idiomas, praticar inglês, conversação online, " . implode(', ', $allLangNames) . ", clube do livro, consultoria de carreira, oportunidades internacionais, intercâmbio, nomadismo digital";
+
 if (!empty($_GET['idioma'])) {
     $currentLangCode = t('meta.lang_code');
     foreach ($languages as $lang) {
