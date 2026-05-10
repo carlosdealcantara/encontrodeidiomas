@@ -35,7 +35,7 @@ if ($initialTab === 'iniciativas' && !empty($projeto)) {
                 $label = ($current_lang === 'en') ? ($row['initiative_label_en'] ?: $row['initiative_label']) : ($row['initiative_label'] ?: $row['initiative_label_en']);
                 $desc = ($current_lang === 'en') ? ($row['initiative_description_en'] ?: $row['initiative_description']) : ($row['initiative_description'] ?: $row['initiative_description_en']);
                 
-                $title = htmlspecialchars($label) . ' | ' . SITE_NAME;
+                $title = htmlspecialchars($label);
                 if (!empty($desc)) {
                     $og_description = mb_strimwidth(strip_tags($desc), 0, 160, "...");
                 }
@@ -46,6 +46,8 @@ if ($initialTab === 'iniciativas' && !empty($projeto)) {
     } catch (Exception $e) {
         error_log("Erro de SEO Iniciativas: " . $e->getMessage());
     }
+} else if ($initialTab === 'iniciativas') {
+    $title = t('team.tabs.iniciativas');
 }
 $canonical = SITE_URL . langUrl('equipe.php');
 if ($initialTab === 'iniciativas' && !empty($projeto)) $canonical .= "?tab=iniciativas&projeto=" . urlencode($projeto);
