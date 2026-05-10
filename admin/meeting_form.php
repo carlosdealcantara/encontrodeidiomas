@@ -88,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --text-dim: #94a3b8;
             --card-bg: #1e293b;
             --input-bg: #0f172a;
+            --success: #10b981;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
@@ -118,12 +119,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(227, 29, 28, 0.3); }
         .btn-cancel { background: rgba(255,255,255,0.05); color: var(--text-dim); text-decoration: none; padding: 14px 35px; border-radius: 12px; font-weight: 600; }
 
-        .switch { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
         .switch input { display: none; }
-        .slider { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; transition: .4s; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        .slider { 
+            width: 44px; height: 22px; background: #334155; border-radius: 20px; position: relative; transition: .3s; flex-shrink: 0;
+        }
+        .slider:before { 
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; 
+        }
         input:checked + .slider { background: var(--success); }
-        input:checked + .slider:before { transform: translateX(24px); }
+        input:checked + .slider:before { transform: translateX(22px); }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
