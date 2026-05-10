@@ -171,21 +171,22 @@ ob_start();
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 20px;
+        padding: 15px 20px;
         background: var(--accent-red);
         color: var(--white);
-        border: 2px solid var(--accent-red);
+        border: none;
         border-radius: 25px;
         width: 100%;
         cursor: pointer;
+        font-size: 16px;
         font-weight: 600;
-        transition: var(--transition);
+        box-shadow: 0 4px 10px rgba(227,29,28,.3);
+        transition: all 0.3s;
         font-family: inherit;
     }
 
     .dropdown-button:hover { 
         background: #c11817;
-        border-color: #c11817;
     }
 
     .dropdown-content {
