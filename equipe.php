@@ -297,26 +297,6 @@ ob_start();
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(227, 29, 28, 0.2);
     }
-    /* WhatsApp Discreto */
-    .initiative-btn.whatsapp-initiative {
-        color: #128C7E;
-        border-color: #128C7E;
-    }
-    .initiative-btn.whatsapp-initiative:hover {
-        background: #128C7E;
-        color: #fff;
-        box-shadow: 0 5px 15px rgba(18, 140, 126, 0.2);
-    }
-    /* Telegram Discreto */
-    .initiative-btn.telegram-initiative {
-        color: #0088cc;
-        border-color: #0088cc;
-    }
-    .initiative-btn.telegram-initiative:hover {
-        background: #0088cc;
-        color: #fff;
-        box-shadow: 0 5px 15px rgba(0, 136, 204, 0.2);
-    }
 <?php
 $page_styles = ob_get_clean();
 

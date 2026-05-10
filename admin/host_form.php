@@ -320,7 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div id="section-online" class="conditional-section" style="display: none; border-left: 4px solid var(--accent-red); padding-left: 20px; margin-bottom: 30px;">
                 <div class="section-title"><i class="fas fa-globe"></i> Encontros Online</div>
                 <div class="form-group">
-                    <label>Idiomas que domina</label>
+                    <label>Idiomas como Host (Programação)</label>
                     <div class="tag-grid">
                         <?php 
                         $stmtLangs = $conn->query("SELECT name FROM languages ORDER BY name ASC");
