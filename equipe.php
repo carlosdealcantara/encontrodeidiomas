@@ -2,9 +2,21 @@
 require_once 'config.php';
 require_once 'includes/components.php';
 
-$title          = t('team.title');
 $current_page   = 'equipe.php';
-$og_description = t('team.meta_description');
+$initialTab     = $_GET['tab'] ?? 'online';
+$projeto        = $_GET['projeto'] ?? '';
+
+if ($initialTab === 'iniciativas') {
+    if (!empty($projeto)) {
+        $title = htmlspecialchars($projeto) . ' | ' . SITE_NAME;
+    } else {
+        $title = t('team.tabs.iniciativas') . ' | ' . SITE_NAME;
+    }
+    $og_description = "Conheça nossas iniciativas especiais como o " . (!empty($projeto) ? htmlspecialchars($projeto) : "Clube do Livro e Consultoria de Carreira") . ". Projetos criados pela comunidade para você.";
+} else {
+    $title = t('team.title');
+    $og_description = t('team.meta_description');
+}
 $canonical      = SITE_URL . langUrl('equipe.php');
 
 // Busca dados para os filtros
@@ -642,5 +654,32 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 JS;
 
+<?php if ($initialTab === 'iniciativas'): ?>
+<!-- SEO Index: Iniciativas -->
+<section class="seo-language-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
+    <div class="container" style="opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+        <?php
+        $currentLangCode = t('meta.lang_code');
+        $conn = connectDB();
+        $stmt = $conn->query("SELECT DISTINCT initiative_label, initiative_label_en FROM hosts WHERE status = 'ativo' AND initiative_label IS NOT NULL AND TRIM(initiative_label) != ''");
+        $initiatives = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!empty($initiatives)):
+        ?>
+        <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('team.tabs.iniciativas') ?></p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <?php foreach ($initiatives as $ini): 
+                $iniName = ($currentLangCode === 'en' && !empty($ini['initiative_label_en'])) ? $ini['initiative_label_en'] : $ini['initiative_label'];
+            ?>
+            <a href="<?= langUrl('equipe.php') ?>?tab=iniciativas&projeto=<?= urlencode($iniName) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <?= htmlspecialchars($iniName) ?>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php
 include 'includes/footer.php';
 ?>
