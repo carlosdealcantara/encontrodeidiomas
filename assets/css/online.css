@@ -15,9 +15,11 @@
 .hero::before {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -27%; /* Aumenta o contêiner interno para permitir o zoom out sem sobrar espaços */
     background: url('../images/encontrodeidiomas-20250407-0002.jpg') center 15% / cover no-repeat;
     opacity: .3;
+    transform: scale(0.65);
+    transform-origin: center 15%;
 }
 .hero-content {
     position: relative;
