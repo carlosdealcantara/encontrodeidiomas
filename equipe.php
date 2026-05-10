@@ -446,23 +446,8 @@ include 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Filtro (Iniciativas) - Bolhas Visuais -->
-            <div id="filter-iniciativas" class="filter-group <?= $initialTab === 'iniciativas' ? 'active' : '' ?>">
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px;">
-                    <button class="iniciativa-bubble language-button <?= empty($projeto) || $projeto === 'all' ? 'active-lang' : '' ?>" data-value="all" style="padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
-                        <span>Todas as Iniciativas</span>
-                    </button>
-                    <?php foreach ($iniciativas_list as $ini): 
-                        $isActive = ($projeto === $ini['label'] || $projeto === $ini['label_en']);
-                        $current_lang = $_SESSION['lang'] ?? 'pt';
-                        $displayLabel = ($current_lang === 'en' && !empty($ini['label_en'])) ? $ini['label_en'] : $ini['label'];
-                    ?>
-                    <button class="iniciativa-bubble language-button <?= $isActive ? 'active-lang' : '' ?>" data-value="<?= htmlspecialchars($ini['label']) ?>" data-title="<?= htmlspecialchars($displayLabel) ?>" style="padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
-                        <span><?= htmlspecialchars($displayLabel) ?></span>
-                    </button>
-                    <?php endforeach; ?>
-                </div>
-            </div>
+            <!-- Filtro (Iniciativas) - Placeholder para consistência -->
+            <div id="filter-iniciativas" class="filter-group <?= $initialTab === 'iniciativas' ? 'active' : '' ?>"></div>
         </div>
 
         <div class="host-grid" id="hosts-grid">
@@ -635,24 +620,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Lógica para as bolhas de Iniciativas
-    document.querySelectorAll('.iniciativa-bubble').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.iniciativa-bubble').forEach(b => b.classList.remove('active-lang'));
-            this.classList.add('active-lang');
-            currentFilters.iniciativas = this.dataset.value;
-            applyFilters();
-            updateURL();
-            
-            // Atualiza o título da página para a experiência do usuário
-            const baseTitle = "<?= SITE_NAME ?>";
-            if (this.dataset.value === 'all') {
-                document.title = "<?= t('team.tabs.iniciativas') ?> | " + baseTitle;
-            } else {
-                document.title = this.dataset.title + " | " + baseTitle;
-            }
-        });
-    });
 
     function applyFilters() {
         hostCards.forEach(card => {
