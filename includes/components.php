@@ -12,7 +12,9 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
     
     $flagCode  = $ev['flag_code'] ?? '';
     $flagEmoji = $ev['flag_emoji'] ?? '';
-    $langName  = $ev['language_name'];
+    
+    $current_lang = $_SESSION['lang'] ?? 'pt';
+    $langDisplayName = ($current_lang === 'en' && !empty($ev['language_name_en'])) ? $ev['language_name_en'] : ($ev['language_name'] ?? '');
     ?>
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?> <?= $isTarget ? 'scroll-target' : '' ?>">
         <div class="event-header-row">
@@ -25,9 +27,9 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         </div>
         <div class="event-title">
             <?php if ($flagCode): ?>
-                <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="flag-icon" alt="Bandeira do idioma <?= htmlspecialchars($langName) ?>">
+                <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="flag-icon" alt="Bandeira do idioma <?= htmlspecialchars($langDisplayName) ?>">
             <?php elseif ($flagEmoji): ?>
-                <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= htmlspecialchars($langName) ?>"><?= $flagEmoji ?></span>
+                <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= htmlspecialchars($langDisplayName) ?>"><?= $flagEmoji ?></span>
             <?php endif; ?>
             <span><?= htmlspecialchars($langDisplayName) ?></span>
             <div class="event-social-links">
