@@ -110,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .section-divider h3 { font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:0; }
 
         /* Estilo do Toggle */
-        .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
-        .switch input { display: none; }
+        .form-group .switch { display: inline-flex !important; align-items: center; gap: 12px; cursor: pointer; user-select: none; width: auto; }
+        .form-group .switch input { display: none; }
         .slider { 
             width: 44px; height: 22px; background: #334155; border-radius: 20px; position: relative; transition: .3s; flex-shrink: 0;
         }

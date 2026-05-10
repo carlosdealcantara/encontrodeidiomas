@@ -119,8 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(227, 29, 28, 0.3); }
         .btn-cancel { background: rgba(255,255,255,0.05); color: var(--text-dim); text-decoration: none; padding: 14px 35px; border-radius: 12px; font-weight: 600; }
 
-        .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
-        .switch input { display: none; }
+        .form-group .switch { display: inline-flex !important; align-items: center; gap: 12px; cursor: pointer; user-select: none; width: auto; }
+        .form-group .switch input { display: none; }
         .slider { 
             width: 44px; height: 22px; background: #334155; border-radius: 20px; position: relative; transition: .3s; flex-shrink: 0;
         }
