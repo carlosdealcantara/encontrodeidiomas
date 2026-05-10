@@ -16,9 +16,8 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: url('../images/encontrodeidiomas-20250407-0002.jpg') center/cover no-repeat;
+    background: url('../images/encontrodeidiomas-20250407-0002.jpg') center top / 100% auto no-repeat;
     opacity: .3;
-    transform: scale(0.85);
 }
 .hero-content {
     position: relative;
