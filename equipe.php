@@ -601,7 +601,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const wrapper = item.closest('.filter-group');
             const type = wrapper.id.replace('filter-', '');
             currentFilters[type] = item.dataset.value;
-            wrapper.querySelector('.dropdown-button span span').textContent = item.textContent.trim();
+            
+            const btnContent = wrapper.querySelector('.dropdown-button > span');
+            const textSpan = btnContent.querySelector('span[id^="selected-"]');
+            textSpan.textContent = item.textContent.trim();
+            
+            if (type === 'online') {
+                const img = item.querySelector('img');
+                const emoji = item.querySelector('.flag-emoji');
+                
+                const oldIcon = btnContent.querySelector('i.fa-globe, .lang-icon-display');
+                if (oldIcon) oldIcon.remove();
+                
+                if (item.dataset.value === 'all' || (!img && !emoji)) {
+                    const newIcon = document.createElement('i');
+                    newIcon.className = 'fas fa-globe';
+                    newIcon.style.marginRight = '8px';
+                    btnContent.insertBefore(newIcon, textSpan);
+                } else if (img) {
+                    const newIcon = document.createElement('img');
+                    newIcon.src = img.src;
+                    newIcon.className = 'lang-icon-display';
+                    newIcon.style.width = '20px';
+                    newIcon.style.height = '15px';
+                    newIcon.style.borderRadius = '2px';
+                    newIcon.style.marginRight = '8px';
+                    newIcon.style.verticalAlign = 'middle';
+                    btnContent.insertBefore(newIcon, textSpan);
+                } else if (emoji) {
+                    const newIcon = document.createElement('span');
+                    newIcon.className = 'lang-icon-display flag-emoji';
+                    newIcon.textContent = emoji.textContent;
+                    newIcon.style.marginRight = '8px';
+                    btnContent.insertBefore(newIcon, textSpan);
+                }
+            }
+            
             document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
             applyFilters();
             updateURL();
