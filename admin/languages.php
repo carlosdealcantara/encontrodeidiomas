@@ -41,6 +41,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
     }
 }
 
+// Lógica de Adicionar Novo Idioma
+if (isset($_POST['add_new'])) {
+    try {
+        $stmt = $conn->prepare("INSERT INTO languages (name, active) VALUES ('Novo Idioma', 0)");
+        $stmt->execute();
+        $msg = "Novo idioma criado! Edite o nome e os detalhes na lista abaixo.";
+    } catch (Exception $e) {
+        $error = "Erro ao adicionar: " . $e->getMessage();
+    }
+}
+
 // Busca idiomas
 $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll();
 ?>
@@ -97,10 +108,15 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
         <form method="POST">
             <header class="header">
                 <div>
-                    <h2 style="font-size: 2rem; font-weight: 800;">Edição em Lote</h2>
-                    <p style="color: var(--text-dim);">Atualize os links de todos os idiomas em uma única tela.</p>
+                    <h2 style="font-size: 2rem; font-weight: 800;">Gestão de Idiomas</h2>
+                    <p style="color: var(--text-dim);">Edite ou adicione novos idiomas à plataforma.</p>
                 </div>
-                <button type="submit" name="bulk_save" class="btn-save">Salvar Tudo</button>
+                <div style="display: flex; gap: 15px;">
+                    <button type="submit" name="add_new" class="btn-save" style="background: var(--sidebar-bg); border: 1px solid var(--accent-red); color: var(--accent-red);">
+                        <i class="fas fa-plus"></i> Novo Idioma
+                    </button>
+                    <button type="submit" name="bulk_save" class="btn-save">Salvar Tudo</button>
+                </div>
             </header>
 
             <?php if (isset($msg)): ?> <div class="alert"><i class="fas fa-check-circle"></i> <?= $msg ?></div> <?php endif; ?>
