@@ -13,7 +13,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
     $flagCode  = $ev['flag_code'] ?? '';
     $flagEmoji = $ev['flag_emoji'] ?? '';
     
-    $current_lang = $_SESSION['lang'] ?? 'pt';
+    $current_lang = t('meta.lang_code');
     $langDisplayName = ($current_lang === 'en' && !empty($ev['language_name_en'])) ? $ev['language_name_en'] : ($ev['language_name'] ?? '');
     ?>
     <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?> <?= $isTarget ? 'scroll-target' : '' ?>">
