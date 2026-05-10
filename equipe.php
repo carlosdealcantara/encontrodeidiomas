@@ -31,6 +31,7 @@ $initialRole     = $_GET['papel']   ?? 'all';
 
 ob_start();
 ?>
+<style>
     /* ---- EQUIPE PAGE STYLES ---- */
     .page-hero {
         width: 100%;
@@ -56,7 +57,6 @@ ob_start();
         width: 100%;
         max-width: 220px;
         margin: 0 auto 10px;
-        position: relative;
     }
 
     .hero-image {
@@ -81,13 +81,6 @@ ob_start();
         margin: 0 auto;
     }
 
-    /* Layout & Filters */
-    .page-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-
     .category-tabs {
         display: flex;
         justify-content: center;
@@ -105,12 +98,6 @@ ob_start();
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-    }
-
-    .category-tab:hover {
-        border-color: var(--accent-red);
-        color: var(--accent-red);
     }
 
     .category-tab.active {
@@ -120,92 +107,88 @@ ob_start();
         box-shadow: 0 5px 15px rgba(227, 29, 28, 0.2);
     }
 
-    /* Filter Groups */
     .filter-section {
         margin-bottom: 50px;
         background: #fdfdfd;
         padding: 30px;
         border-radius: 20px;
         border: 1px solid #f0f0f0;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .filter-group {
         display: none;
-        animation: fadeIn 0.4s ease;
     }
 
     .filter-group.active {
         display: block;
     }
 
-    /* Grid & Cards */
     .host-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 30px;
         margin-bottom: 80px;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    /* Empty State */
-    #no-results {
+    /* Dropdown Reset */
+    .dropdown-content {
         display: none;
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 100px 20px;
-        background: #f9f9f9;
-        border-radius: 20px;
-        border: 2px dashed #eee;
+        position: absolute;
+        background-color: #fff;
+        min-width: 250px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+        z-index: 100;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        margin-top: 5px;
+    }
+    .dropdown-content.show {
+        display: block;
+    }
+    
+    .dropdown-button {
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 12px 20px;
+        border-radius: 12px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        font-weight: 500;
+        color: #444;
     }
 
-    #no-results i {
-        font-size: 3rem;
-        color: #ccc;
-        margin-bottom: 20px;
+    .custom-dropdown-wrapper {
+        position: relative;
+        max-width: 400px;
+        margin: 0 auto;
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .page-hero { height: 35vh !important; }
-        .hero-header h1 { font-size: 1.8rem; }
-        .host-grid { grid-template-columns: 1fr; }
+    .dropdown-item {
+        padding: 12px 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: background 0.2s;
     }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .dropdown-item:hover {
+        background-color: #f8f8f8;
+        color: var(--accent-red);
     }
 
     @keyframes fadeInDown {
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-
-    /* Custom Initiative Badge */
-    .initiative-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #fff;
-        color: var(--accent-red);
-        border: 1px solid var(--accent-red);
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        margin-top: 15px;
-        max-width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .initiative-btn:hover {
-        background: var(--accent-red);
-        color: #fff;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(227, 29, 28, 0.2);
-    }
+</style>
 <?php
 $page_styles = ob_get_clean();
 
@@ -237,18 +220,14 @@ include 'includes/header.php';
             <!-- Filtro (Online) -->
             <div id="filter-online" class="filter-group <?= $initialTab === 'online' ? 'active' : '' ?>">
                 <div class="custom-dropdown-wrapper">
-                    <button class="dropdown-button" id="online-lang-btn">
+                    <button class="dropdown-button">
                         <span><i class="fas fa-language"></i> <span id="selected-lang-text"><?= t('team.filters.lang_placeholder') ?></span></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="dropdown-content" id="online-dropdown">
-                        <div class="dropdown-search-wrapper">
-                            <input type="text" class="dropdown-search-input" placeholder="<?= t('team.filters.search_lang') ?>">
-                            <i class="fas fa-search dropdown-search-icon"></i>
-                        </div>
-                        <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_languages') ?></div>
+                    <div class="dropdown-content">
+                        <div class="dropdown-item" data-value="all"><?= t('team.filters.all_languages') ?></div>
                         <?php foreach ($languages as $l): ?>
-                        <div class="dropdown-item filterable-item" data-value="<?= htmlspecialchars($l['name']) ?>">
+                        <div class="dropdown-item" data-value="<?= htmlspecialchars($l['name']) ?>">
                             <img src="https://flagcdn.com/20x15/<?= htmlspecialchars($l['flag_code']) ?>.png" alt="" style="margin-right:10px;">
                             <?= htmlspecialchars($l['name']) ?>
                         </div>
@@ -260,17 +239,12 @@ include 'includes/header.php';
             <!-- Filtro (Presencial) -->
             <div id="filter-presencial" class="filter-group <?= $initialTab === 'presencial' ? 'active' : '' ?>">
                 <div class="custom-dropdown-wrapper">
-                    <button class="dropdown-button" id="presencial-city-btn">
+                    <button class="dropdown-button">
                         <span><i class="fas fa-map-marker-alt"></i> <span id="selected-city-text"><?= t('team.filters.region_placeholder') ?></span></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown-content" id="presencial-dropdown">
-                        <div class="dropdown-search-wrapper">
-                            <input type="text" class="dropdown-search-input" placeholder="<?= t('team.filters.search_region') ?>">
-                            <i class="fas fa-search dropdown-search-icon"></i>
-                        </div>
-                        <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_regions') ?></div>
-                        <!-- Cidades serão populadas via JS dinamicamente -->
+                        <div class="dropdown-item" data-value="all"><?= t('team.filters.all_regions') ?></div>
                     </div>
                 </div>
             </div>
@@ -278,20 +252,16 @@ include 'includes/header.php';
             <!-- Filtro (Bastidores) -->
             <div id="filter-bastidores" class="filter-group <?= $initialTab === 'bastidores' ? 'active' : '' ?>">
                 <div class="custom-dropdown-wrapper">
-                    <button class="dropdown-button" id="bastidores-role-btn">
+                    <button class="dropdown-button">
                         <span><i class="fas fa-user-tag"></i> <span id="selected-role-text"><?= t('team.filters.role_placeholder') ?></span></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="dropdown-content" id="role-dropdown">
-                        <div class="dropdown-search-wrapper">
-                            <input type="text" class="dropdown-search-input" placeholder="<?= t('team.filters.search_role') ?>">
-                            <i class="fas fa-search dropdown-search-icon"></i>
-                        </div>
-                        <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_roles') ?></div>
-                        <div class="dropdown-item filterable-item" data-value="desenvolvimento">Desenvolvimento</div>
-                        <div class="dropdown-item filterable-item" data-value="design">Design</div>
-                        <div class="dropdown-item filterable-item" data-value="conteudo">Conteúdo</div>
-                        <div class="dropdown-item filterable-item" data-value="coordenacao">Coordenação</div>
+                    <div class="dropdown-content">
+                        <div class="dropdown-item" data-value="all"><?= t('team.filters.all_roles') ?></div>
+                        <div class="dropdown-item" data-value="desenvolvimento">Desenvolvimento</div>
+                        <div class="dropdown-item" data-value="design">Design</div>
+                        <div class="dropdown-item" data-value="conteudo">Conteúdo</div>
+                        <div class="dropdown-item" data-value="coordenacao">Coordenação</div>
                     </div>
                 </div>
             </div>
@@ -362,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (presencialDropdown) {
         regions.forEach(reg => {
             const div = document.createElement('div');
-            div.className = 'dropdown-item filterable-item';
+            div.className = 'dropdown-item';
             div.dataset.value = reg;
             div.textContent = reg;
             presencialDropdown.appendChild(div);
@@ -382,18 +352,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.addEventListener('click', (e) => {
-        if (e.target.closest('.dropdown-button')) {
-            const content = e.target.closest('.custom-dropdown-wrapper').querySelector('.dropdown-content');
-            document.querySelectorAll('.dropdown-content').forEach(c => { if (c !== content) c.classList.remove('show'); });
+        const btn = e.target.closest('.dropdown-button');
+        if (btn) {
+            const content = btn.nextElementSibling;
             content.classList.toggle('show');
             e.stopPropagation();
         } else if (e.target.classList.contains('dropdown-item')) {
             const item = e.target;
+            const content = item.parentElement;
             const wrapper = item.closest('.filter-group');
             const type = wrapper.id.replace('filter-', '');
             currentFilters[type] = item.dataset.value;
             wrapper.querySelector('.dropdown-button span span').textContent = item.textContent.trim();
-            document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
+            content.classList.remove('show');
             applyFilters();
         } else {
             document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
