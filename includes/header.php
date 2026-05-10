@@ -14,6 +14,7 @@
 
 $current_page   = $current_page   ?? basename($_SERVER['PHP_SELF']);
 $title          = $title          ?? getSetting('site_title', 'Encontro de Idiomas');
+$og_title       = $og_title       ?? ($title . ' | ' . t('meta.og_title_suffix'));
 $og_description = $og_description ?? getSetting('site_description', 'Comunidade gratuita para praticar idiomas via videoconferência.');
 $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 ?>
@@ -78,7 +79,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type"        content="website">
-    <meta property="og:title"       content="<?= sanitize($title) ?> | <?= t('meta.og_title_suffix') ?>">
+    <meta property="og:title"       content="<?= sanitize($og_title) ?>">
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
     <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
@@ -88,7 +89,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <!-- Twitter -->
     <meta property="twitter:card"        content="summary">
     <meta property="twitter:url"         content="<?= sanitize($canonical) ?>">
-    <meta property="twitter:title"       content="<?= sanitize($title) ?> | <?= t('meta.og_title_suffix') ?>">
+    <meta property="twitter:title"       content="<?= sanitize($og_title) ?>">
     <meta property="twitter:description" content="<?= sanitize($og_description) ?>">
     <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
 

@@ -2,6 +2,7 @@
 require_once 'config.php';
 
 $title          = t('home.title');
+$og_title       = t('home.og_title');
 $current_page   = 'index.php';
 $og_description = t('home.meta_description');
 $canonical      = SITE_URL . langUrl('index.php');

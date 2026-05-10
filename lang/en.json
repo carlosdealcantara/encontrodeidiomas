@@ -20,7 +20,8 @@
   },
   "home": {
     "title": "Practice English and Other Languages Through Conversation",
-    "meta_description": "Join free language practice meetups for English, Spanish, French and other languages online and in person.",
+    "og_title": "Encontro de Idiomas - Free community to practice languages",
+    "meta_description": "Join free language practice meetups for English, Spanish, French, German, Japanese and other languages online and in person.",
     "hero_heading": "Practice languages with <span class=\"highlight\">real people</span>",
     "welcome_text": "Practice English, Spanish and other languages for free and naturally. Join a vibrant community with online and in-person meetups across the country.",
     "cta_participate": "See how to join",
