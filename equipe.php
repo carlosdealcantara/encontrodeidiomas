@@ -24,7 +24,6 @@ $hosts     = getHosts();
 $languages = getLanguages();
 
 // Parâmetros iniciais da URL
-$initialTab      = $_GET['tab']     ?? 'online';
 $initialLanguage = $_GET['idioma']  ?? 'all';
 $initialRegion   = $_GET['regiao']  ?? 'all';
 $initialRole     = $_GET['papel']   ?? 'all';
@@ -661,9 +660,12 @@ JS;
     <div class="container" style="opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
         <?php
         $currentLangCode = t('meta.lang_code');
-        $conn = connectDB();
-        $stmt = $conn->query("SELECT DISTINCT initiative_label, initiative_label_en FROM hosts WHERE status = 'ativo' AND initiative_label IS NOT NULL AND TRIM(initiative_label) != ''");
-        $initiatives = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $initiatives = [];
+        try {
+            $conn = connectDB();
+            $stmt = $conn->query("SELECT DISTINCT initiative_label, initiative_label_en FROM hosts WHERE status = 'ativo' AND initiative_label IS NOT NULL AND TRIM(initiative_label) != ''");
+            $initiatives = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) { /* coluna pode não existir no banco */ }
         if (!empty($initiatives)):
         ?>
         <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('team.tabs.iniciativas') ?></p>
