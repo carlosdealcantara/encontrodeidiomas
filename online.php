@@ -123,9 +123,7 @@ include 'includes/header.php';
                     <button class="dropdown-button" id="lang-dropdown-btn">
                         <?php 
                             $currentLangCode = t('meta.lang_code');
-                            $initialDisplayName = ($currentLangCode === 'en' && !empty($initialLangNameEn)) ? $initialLangNameEn : t('languages.' . strtolower($initialLangName));
-                            // Se o t() falhar (idioma novo), usa o nome do banco
-                            if (strpos($initialDisplayName, 'languages.') === 0) $initialDisplayName = $initialLangName;
+                            $initialDisplayName = ($currentLangCode === 'en' && !empty($initialLangNameEn)) ? $initialLangNameEn : $initialLangName;
                         ?>
                         <div class="dropdown-flag-container">
                             <img id="selected-language-flag" 
@@ -230,7 +228,7 @@ include 'includes/header.php';
                 if (empty($byLanguage[$lang['id']])) continue;
             ?>
             <a href="<?= langUrl('online.php') ?>?view=language&idioma=<?= $lang['id'] ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <?= t('languages.' . strtolower($lang['name'])) ?> <?= t('nav.online') ?>
+                <?= htmlspecialchars(($currentLangCode === 'en' && !empty($lang['name_en'])) ? $lang['name_en'] : $lang['name']) ?> <?= t('nav.online') ?>
             </a>
             <?php endforeach; ?>
         </div>

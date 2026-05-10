@@ -55,7 +55,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
 
         <?php 
             $currentLangCode = t('meta.lang_code'); // 'pt' ou 'en'
-            $langDisplayName = ($currentLangCode === 'en' && !empty($ev['language_name_en'])) ? $ev['language_name_en'] : t('languages.' . strtolower($langName));
+            $langDisplayName = ($currentLangCode === 'en' && !empty($ev['language_name_en'])) ? $ev['language_name_en'] : $ev['language_name'];
             $descToShow = ($currentLangCode === 'en' && !empty($ev['description_en'])) ? $ev['description_en'] : $ev['description'];
         ?>
         <?php if (!empty($descToShow)): ?>
