@@ -227,9 +227,7 @@ include 'includes/header.php';
     <div class="container" style="opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
         <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('online.seo_index_title') ?></p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <?php foreach ($languages as $lang): 
-                if (empty($byLanguage[$lang['id']])) continue;
-            ?>
+            <?php foreach ($languages as $lang): ?>
             <a href="<?= langUrl('online.php') ?>?view=language&idioma=<?= $lang['id'] ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <?= htmlspecialchars(($currentLangCode === 'en' && !empty($lang['name_en'])) ? $lang['name_en'] : $lang['name']) ?> <?= t('nav.online') ?>
             </a>
