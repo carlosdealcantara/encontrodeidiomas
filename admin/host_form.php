@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Preparação de dados
         $dataToSave = [
             'full_name'             => (string)($data['full_name'] ?? ''),
-            'status'                => (string)($data['status'] ?? 'ativo'),
+            'status'                => isset($_POST['status']) ? 'ativo' : 'inativo',
             'profile_picture'       => (string)$profilePic,
             'languages'             => (string)$languagesStr,
             'online_description'    => (string)($data['online_description'] ?? ''),
@@ -149,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $stmt = $conn->prepare($sql);
         $stmt->execute($dataToSave);
-        header('Location: hosts.php?msg=Dados salvos com sucesso');
+        header('Location: hosts.php?success=1');
         exit;
     } catch (Exception $e) {
         $error = "Erro ao salvar: " . $e->getMessage();
@@ -174,6 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --text-dim: #94a3b8;
             --card-bg: #1e293b;
             --input-bg: rgba(15, 23, 42, 0.6);
+            --success: #10b981;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
@@ -249,6 +250,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: 700;
         }
         .sortable-ghost { opacity: 0.4; background: var(--accent-red) !important; }
+
+        /* Estilo do Toggle */
+        .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+        .switch input { display: none; }
+        .slider { 
+            width: 44px; height: 22px; background: #334155; border-radius: 20px; position: relative; transition: .3s; flex-shrink: 0;
+        }
+        .slider:before { 
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; 
+        }
+        input:checked + .slider { background: var(--success); }
+        input:checked + .slider:before { transform: translateX(22px); }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
@@ -288,10 +301,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="form-group">
                     <label>Status Global</label>
-                    <select name="status">
-                        <option value="ativo" <?= $host['status'] === 'ativo' ? 'selected' : '' ?>>Ativo</option>
-                        <option value="inativo" <?= $host['status'] === 'inativo' ? 'selected' : '' ?>>Inativo</option>
-                    </select>
+                    <label class="switch">
+                        <input type="checkbox" name="status" value="ativo" <?= ($host['status'] ?? 'ativo') === 'ativo' ? 'checked' : '' ?>>
+                        <span class="slider"></span>
+                        <span style="color: var(--text-dim); font-size: 0.85rem;">Ativo para exibição</span>
+                    </label>
                 </div>
             </div>
 

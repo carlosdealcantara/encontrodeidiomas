@@ -137,9 +137,32 @@ function renderHostCard($host) {
         <div class="host-badges-container">
             <?php 
             $displayBadges = !empty($langs) ? $langs : (!empty($host['badge']) ? [$host['badge']] : []);
-            foreach ($displayBadges as $badge): 
+            
+            // Buscar nomes traduzidos se houver idiomas
+            $localizedBadges = [];
+            if (!empty($displayBadges)) {
+                $conn = connectDB();
+                $placeholders = implode(',', array_fill(0, count($displayBadges), '?'));
+                $stmt = $conn->prepare("SELECT name, name_en FROM languages WHERE name IN ($placeholders)");
+                $stmt->execute($displayBadges);
+                $dbLangs = $stmt->fetchAll();
+                
+                foreach ($displayBadges as $b) {
+                    $found = false;
+                    foreach ($dbLangs as $dbL) {
+                        if ($dbL['name'] === $b) {
+                            $localizedBadges[] = ($isEn && !empty($dbL['name_en'])) ? $dbL['name_en'] : $dbL['name'];
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if (!$found) $localizedBadges[] = $b;
+                }
+            }
+
+            foreach ($localizedBadges as $badgeName): 
             ?>
-                <span class="host-badge"><?= t('languages.' . strtolower($badge)) ?></span>
+                <span class="host-badge"><?= htmlspecialchars($badgeName) ?></span>
             <?php endforeach; ?>
         </div>
 

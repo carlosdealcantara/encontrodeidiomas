@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $stmt = $conn->prepare($sql);
         $stmt->execute($data);
-        header('Location: meetings.php?msg=Salvo com sucesso!');
+        header('Location: meetings.php?success=1');
         exit;
     } catch (PDOException $e) {
         $error = "Erro ao salvar: " . $e->getMessage();

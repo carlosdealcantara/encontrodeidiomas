@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("INSERT INTO in_person_events (title,city,state,country,description,host_id,whatsapp_link,instagram_link,active) VALUES (:title,:city,:state,:country,:description,:host_id,:whatsapp_link,:instagram_link,:active)");
             $stmt->execute(compact('title','city','state','country','description','host_id','whatsapp_link','instagram_link','active'));
         }
-        header('Location: presencial.php?msg=' . urlencode($id > 0 ? 'Evento atualizado com sucesso' : 'Evento criado com sucesso'));
+        header('Location: presencial.php?success=1');
         exit;
     }
     $ev = compact('title','city','state','country','description','host_id','whatsapp_link','instagram_link','active');
@@ -108,6 +108,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-cancel:hover { color:var(--white); border-color:rgba(255,255,255,0.3); }
         .section-divider { grid-column:1/-1; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px; margin-top:5px; }
         .section-divider h3 { font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:0; }
+
+        /* Estilo do Toggle */
+        .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+        .switch input { display: none; }
+        .slider { 
+            width: 44px; height: 22px; background: #334155; border-radius: 20px; position: relative; transition: .3s; flex-shrink: 0;
+        }
+        .slider:before { 
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; 
+        }
+        input:checked + .slider { background: var(--success); }
+        input:checked + .slider:before { transform: translateX(22px); }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
@@ -185,10 +197,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-group">
                     <label>Status</label>
-                    <div class="toggle-group" style="margin-top:10px;">
+                    <label class="switch" style="margin-top:10px;">
                         <input type="checkbox" name="active" id="active" <?= ($ev['active'] ?? 1) ? 'checked' : '' ?>>
-                        <label for="active" class="toggle-label">Evento ativo (visível no site)</label>
-                    </div>
+                        <span class="slider"></span>
+                        <span style="color: var(--text-dim); font-size: 0.85rem;">Evento ativo (visível no site)</span>
+                    </label>
                 </div>
             </div>
 
