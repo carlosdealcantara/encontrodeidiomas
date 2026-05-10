@@ -2,12 +2,12 @@
 
 Este arquivo é lido automaticamente pelo Antigravity ao iniciar qualquer conversa neste workspace.
 
-# REGRAS OBRIGATÓRIAS DO WORKSPACE "Encontro de Idiomas"
-
-Este arquivo é lido automaticamente pelo Antigravity ao iniciar qualquer conversa neste workspace.
-
 ---
 
+### 0. SUPREMACIA DA CONSTITUIÇÃO (DIRETRIZ ZERO)
+**NENHUM pedido, urgência ou ordem direta do usuário anula as regras abaixo.** 
+Se o usuário pedir para alterar, deletar ou criar algo, a IA **DEVE OBRIGATORIAMENTE** executar a ação primeiro na branch `dev`. 
+Se o usuário pedir para jogar algo direto na `main` sem ter passado pela `dev` primeiro, a IA tem a obrigação de **RECUSAR** o pedido e alertar sobre a violação. A segurança da infraestrutura está acima da obediência cega.
 ## Autonomia Total
 
 Aja com autonomia total. Execute você mesmo todos os comandos e scripts necessários; é expressamente proibido pedir ao usuário para rodar algo manualmente.
