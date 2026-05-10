@@ -8,6 +8,21 @@ $current_page   = 'equipe.php';
 $hosts     = getHosts();
 $languages = getLanguages();
 
+// Extrai iniciativas únicas dos hosts para as bolhas
+$iniciativas_list = [];
+foreach ($hosts as $h) {
+    if (!empty($h['initiative_label'])) {
+        $key = $h['initiative_label'];
+        if (!isset($iniciativas_list[$key])) {
+            $iniciativas_list[$key] = [
+                'label' => $h['initiative_label'],
+                'label_en' => $h['initiative_label_en']
+            ];
+        }
+    }
+}
+$iniciativas_list = array_values($iniciativas_list);
+
 // Parâmetros iniciais da URL
 $initialTab      = $_GET['tab']     ?? 'online';
 $initialLanguage = $_GET['idioma']  ?? 'all';
@@ -431,8 +446,23 @@ include 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Filtro (Iniciativas) - Placeholder para consistência -->
-            <div id="filter-iniciativas" class="filter-group <?= $initialTab === 'iniciativas' ? 'active' : '' ?>"></div>
+            <!-- Filtro (Iniciativas) - Bolhas Visuais -->
+            <div id="filter-iniciativas" class="filter-group <?= $initialTab === 'iniciativas' ? 'active' : '' ?>">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                    <button class="iniciativa-bubble language-button <?= empty($projeto) || $projeto === 'all' ? 'active-lang' : '' ?>" data-value="all" style="padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
+                        <span>Todas as Iniciativas</span>
+                    </button>
+                    <?php foreach ($iniciativas_list as $ini): 
+                        $isActive = ($projeto === $ini['label'] || $projeto === $ini['label_en']);
+                        $current_lang = $_SESSION['lang'] ?? 'pt';
+                        $displayLabel = ($current_lang === 'en' && !empty($ini['label_en'])) ? $ini['label_en'] : $ini['label'];
+                    ?>
+                    <button class="iniciativa-bubble language-button <?= $isActive ? 'active-lang' : '' ?>" data-value="<?= htmlspecialchars($ini['label']) ?>" data-title="<?= htmlspecialchars($displayLabel) ?>" style="padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
+                        <span><?= htmlspecialchars($displayLabel) ?></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         </div>
 
         <div class="host-grid" id="hosts-grid">
@@ -605,6 +635,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Lógica para as bolhas de Iniciativas
+    document.querySelectorAll('.iniciativa-bubble').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.iniciativa-bubble').forEach(b => b.classList.remove('active-lang'));
+            this.classList.add('active-lang');
+            currentFilters.iniciativas = this.dataset.value;
+            applyFilters();
+            updateURL();
+            
+            // Atualiza o título da página para a experiência do usuário
+            const baseTitle = "<?= SITE_NAME ?>";
+            if (this.dataset.value === 'all') {
+                document.title = "<?= t('team.tabs.iniciativas') ?> | " + baseTitle;
+            } else {
+                document.title = this.dataset.title + " | " + baseTitle;
+            }
+        });
+    });
+
     function applyFilters() {
         hostCards.forEach(card => {
             const cardCats = (card.dataset.categories || '').split(/[\s,]+/).map(s => s.trim().toLowerCase());
@@ -676,7 +725,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2000); 
 });
 </script>
+</script>
 JS;
+
+?>
+<!-- Faixa de SEO para Iniciativas (Invisível para UX, lida pelo Google) -->
+<section class="seo-language-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
+    <div class="container" style="opacity: 0.7; transition: opacity 0.3s; text-align: center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+        <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;">Índice de Iniciativas</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+            <?php foreach ($iniciativas_list as $ini): 
+                $current_lang = $_SESSION['lang'] ?? 'pt';
+                $displayLabel = ($current_lang === 'en' && !empty($ini['label_en'])) ? $ini['label_en'] : $ini['label'];
+            ?>
+            <a href="<?= langUrl('equipe.php') ?>?tab=iniciativas&projeto=<?= urlencode($ini['label']) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <?= htmlspecialchars($displayLabel) ?>
+            </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php
 
 include 'includes/footer.php';
 ?>
