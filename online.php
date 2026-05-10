@@ -9,10 +9,12 @@ $og_description = t('online.meta_description_default');
 
 // Dinamismo para SEO de Idiomas Específicos
 if (!empty($_GET['idioma'])) {
+    $currentLangCode = t('meta.lang_code');
     foreach ($languages as $lang) {
         if ($lang['id'] == $_GET['idioma']) {
-            $title = t('online.title_lang', ['lang' => $lang['name']]) . ' | ' . SITE_NAME;
-            $og_description = t('online.meta_description_lang', ['lang' => $lang['name']]);
+            $displayName = ($currentLangCode === 'en' && !empty($lang['name_en'])) ? $lang['name_en'] : $lang['name'];
+            $title = t('online.title_lang', ['lang' => $displayName]) . ' | ' . SITE_NAME;
+            $og_description = t('online.meta_description_lang', ['lang' => $displayName]);
             break;
         }
     }
@@ -22,12 +24,14 @@ $canonical      = SITE_URL . langUrl('online.php');
 
 // Structured Data: Online Events
 $events_json = [];
+$currentLangCode = t('meta.lang_code');
 foreach ($meetings as $m) {
+    $m_lang_name = ($currentLangCode === 'en' && !empty($m['language_name_en'])) ? $m['language_name_en'] : $m['language_name'];
     $events_json[] = [
         "@context" => "https://schema.org",
         "@type" => "Event",
-        "name" => t('online.event_schema_name', ['lang' => $m['language_name']]),
-        "description" => t('online.event_schema_desc', ['lang' => $m['language_name']]),
+        "name" => t('online.event_schema_name', ['lang' => $m_lang_name]),
+        "description" => t('online.event_schema_desc', ['lang' => $m_lang_name]),
         "eventAttendanceMode" => "https://schema.org/OnlineEventAttendanceMode",
         "eventStatus" => "https://schema.org/EventScheduled",
         "location" => [
@@ -117,14 +121,20 @@ include 'includes/header.php';
             <div id="language-view" class="view-content <?= $initialView === 'language' ? 'active' : '' ?>">
                 <div class="mobile-dropdown">
                     <button class="dropdown-button" id="lang-dropdown-btn">
+                        <?php 
+                            $currentLangCode = t('meta.lang_code');
+                            $initialDisplayName = ($currentLangCode === 'en' && !empty($initialLangNameEn)) ? $initialLangNameEn : t('languages.' . strtolower($initialLangName));
+                            // Se o t() falhar (idioma novo), usa o nome do banco
+                            if (strpos($initialDisplayName, 'languages.') === 0) $initialDisplayName = $initialLangName;
+                        ?>
                         <div class="dropdown-flag-container">
                             <img id="selected-language-flag" 
                                  src="<?= $initialFlagCode ? "https://flagcdn.com/32x24/{$initialFlagCode}.png" : '' ?>" 
                                  class="flag-icon" 
                                  style="<?= $initialFlagCode ? '' : 'display:none;' ?>" 
-                                  alt="Bandeira do idioma <?= t('languages.' . strtolower($initialLangName)) ?>">
+                                  alt="Bandeira">
                             <span id="selected-language-emoji" style="<?= $initialFlagEmoji ? '' : 'display:none;' ?>"><?= $initialFlagEmoji ?></span>
-                            <span id="selected-language"><?= t('languages.' . strtolower($initialLangName)) ?></span>
+                            <span id="selected-language"><?= htmlspecialchars($initialDisplayName) ?></span>
                         </div>
                         <i class="fas fa-chevron-down"></i>
                     </button>
@@ -135,19 +145,20 @@ include 'includes/header.php';
                         </div>
                         <?php foreach ($languages as $lang): 
                             if (empty($byLanguage[$lang['id']])) continue;
+                            $langBtnName = ($currentLangCode === 'en' && !empty($lang['name_en'])) ? $lang['name_en'] : $lang['name'];
                         ?>
                         <button class="language-button <?= $lang['id'] == $initialLang ? 'active-lang' : '' ?>"
                                 data-language-id="<?= $lang['id'] ?>"
-                                data-language="<?= t('languages.' . strtolower($lang['name'])) ?>"
+                                data-language="<?= htmlspecialchars($langBtnName) ?>"
                                 data-flag-code="<?= htmlspecialchars($lang['flag_code'] ?? '') ?>"
                                 data-flag-emoji="<?= htmlspecialchars($lang['flag_emoji'] ?? '') ?>">
                             <div class="language-info">
                                 <?php if (!empty($lang['flag_code'])): ?>
-                                    <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($lang['flag_code']) ?>.png" class="flag-icon" alt="Bandeira - <?= t('languages.' . strtolower($lang['name'])) ?>">
+                                    <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($lang['flag_code']) ?>.png" class="flag-icon" alt="Bandeira">
                                 <?php elseif (!empty($lang['flag_emoji'])): ?>
-                                    <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= t('languages.' . strtolower($lang['name'])) ?>"><?= $lang['flag_emoji'] ?></span>
+                                    <span style="font-size:1.2rem;" role="img" aria-label="Emoji"><?= $lang['flag_emoji'] ?></span>
                                 <?php endif; ?>
-                                <span><?= t('languages.' . strtolower($lang['name'])) ?></span>
+                                <span><?= htmlspecialchars($langBtnName) ?></span>
                             </div>
                         </button>
                         <?php endforeach; ?>

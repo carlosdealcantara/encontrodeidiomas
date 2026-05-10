@@ -29,7 +29,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
             <?php elseif ($flagEmoji): ?>
                 <span style="font-size:1.2rem;" role="img" aria-label="Emoji <?= htmlspecialchars($langName) ?>"><?= $flagEmoji ?></span>
             <?php endif; ?>
-            <span><?= t('languages.' . strtolower($langName)) ?></span>
+            <span><?= htmlspecialchars($langDisplayName) ?></span>
             <div class="event-social-links">
                 <?php if (!empty($ev['final_whatsapp'])): ?>
                 <a href="<?= htmlspecialchars($ev['final_whatsapp']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
@@ -54,8 +54,9 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         <?php endif; ?>
 
         <?php 
-            $currentLang = t('meta.lang_code'); // 'pt' ou 'en'
-            $descToShow = ($currentLang === 'en' && !empty($ev['description_en'])) ? $ev['description_en'] : $ev['description'];
+            $currentLangCode = t('meta.lang_code'); // 'pt' ou 'en'
+            $langDisplayName = ($currentLangCode === 'en' && !empty($ev['language_name_en'])) ? $ev['language_name_en'] : t('languages.' . strtolower($langName));
+            $descToShow = ($currentLangCode === 'en' && !empty($ev['description_en'])) ? $ev['description_en'] : $ev['description'];
         ?>
         <?php if (!empty($descToShow)): ?>
         <p class="event-description"><?= htmlspecialchars($descToShow) ?></p>

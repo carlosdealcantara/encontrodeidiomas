@@ -22,9 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
     try {
         $conn->beginTransaction();
         foreach ($_POST['langs'] as $id => $data) {
-            $stmt = $conn->prepare("UPDATE languages SET name = ?, flag_code = ?, flag_emoji = ?, whatsapp_link = ?, instagram_link = ?, active = ? WHERE id = ?");
+            $stmt = $conn->prepare("UPDATE languages SET name = ?, name_en = ?, flag_code = ?, flag_emoji = ?, whatsapp_link = ?, instagram_link = ?, active = ? WHERE id = ?");
             $stmt->execute([
                 $data['name'], 
+                $data['name_en'] ?? '',
                 $data['flag_code'], 
                 $data['flag_emoji'], 
                 trim($data['whatsapp_link'], '/ '), 
@@ -125,7 +126,8 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 15%;">Idioma</th>
+                            <th style="width: 15%;">Idioma (PT)</th>
+                            <th style="width: 15%;">Idioma (EN)</th>
                             <th style="width: 10%;">Bandeira / Emoji</th>
                             <th>Link WhatsApp</th>
                             <th>Link Instagram</th>
@@ -135,7 +137,8 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                     <tbody>
                         <?php foreach ($languages as $l): ?>
                         <tr>
-                            <td><input type="text" name="langs[<?= $l['id'] ?>][name]" value="<?= htmlspecialchars($l['name']) ?>"></td>
+                            <td><input type="text" name="langs[<?= $l['id'] ?>][name]" value="<?= htmlspecialchars($l['name']) ?>" placeholder="Português"></td>
+                            <td><input type="text" name="langs[<?= $l['id'] ?>][name_en]" value="<?= htmlspecialchars($l['name_en'] ?? '') ?>" placeholder="English"></td>
                             <td>
                                 <div style="display:flex; gap:5px;">
                                     <input type="text" name="langs[<?= $l['id'] ?>][flag_code]" value="<?= htmlspecialchars($l['flag_code'] ?? '') ?>" placeholder="us">
