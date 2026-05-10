@@ -99,6 +99,18 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
         .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(227, 29, 28, 0.3); }
 
         .alert { padding: 15px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: var(--success); border-radius: 12px; margin-bottom: 20px; }
+
+        /* Estilo do Toggle */
+        .switch { display: inline-flex; align-items: center; cursor: pointer; user-select: none; }
+        .switch input { display: none; }
+        .slider { 
+            width: 40px; height: 20px; background: #334155; border-radius: 20px; position: relative; transition: .3s; flex-shrink: 0;
+        }
+        .slider:before { 
+            position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; 
+        }
+        input:checked + .slider { background: var(--success); }
+        input:checked + .slider:before { transform: translateX(20px); }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
@@ -148,7 +160,10 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                             <td><input type="url" name="langs[<?= $l['id'] ?>][whatsapp_link]" value="<?= htmlspecialchars($l['whatsapp_link'] ?? '') ?>" placeholder="https://chat.whatsapp.com/..."></td>
                             <td><input type="url" name="langs[<?= $l['id'] ?>][instagram_link]" value="<?= htmlspecialchars($l['instagram_link'] ?? '') ?>" placeholder="https://instagram.com/..."></td>
                             <td style="text-align:center;">
-                                <input type="checkbox" name="langs[<?= $l['id'] ?>][active]" <?= $l['active'] ? 'checked' : '' ?> style="width:20px; height:20px; cursor:pointer;">
+                                <label class="switch">
+                                    <input type="checkbox" name="langs[<?= $l['id'] ?>][active]" <?= $l['active'] ? 'checked' : '' ?>>
+                                    <span class="slider"></span>
+                                </label>
                             </td>
                         </tr>
                         <?php endforeach; ?>
