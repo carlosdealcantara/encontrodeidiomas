@@ -653,6 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 JS;
+?>
 
 <?php if ($initialTab === 'iniciativas'): ?>
 <!-- SEO Index: Iniciativas -->
