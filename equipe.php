@@ -2,10 +2,7 @@
 require_once 'config.php';
 require_once 'includes/components.php';
 
-$title          = t('team.title');
 $current_page   = 'equipe.php';
-$og_description = t('team.meta_description');
-$canonical      = SITE_URL . langUrl('equipe.php');
 
 // Busca dados para os filtros
 $hosts     = getHosts();
@@ -16,6 +13,43 @@ $initialTab      = $_GET['tab']     ?? 'online';
 $initialLanguage = $_GET['idioma']  ?? 'all';
 $initialRegion   = $_GET['regiao']  ?? 'all';
 $initialRole     = $_GET['papel']   ?? 'all';
+$projeto         = $_GET['projeto'] ?? '';
+
+// Valores padrão de SEO
+$title          = t('team.title');
+$og_description = t('team.meta_description');
+
+// SEO Dinâmico e Bolhas de Indexação
+if ($initialTab === 'iniciativas' && !empty($projeto)) {
+    try {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        if (!$conn->connect_error) {
+            $stmt = $conn->prepare("SELECT initiative_label, initiative_label_en, initiative_description, initiative_description_en FROM hosts WHERE initiative_label = ? OR initiative_label_en = ? LIMIT 1");
+            $projeto_clean = htmlspecialchars($projeto);
+            $stmt->bind_param("ss", $projeto_clean, $projeto_clean);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($row = $result->fetch_assoc()) {
+                $current_lang = $_SESSION['lang'] ?? 'pt';
+                $label = ($current_lang === 'en') ? ($row['initiative_label_en'] ?: $row['initiative_label']) : ($row['initiative_label'] ?: $row['initiative_label_en']);
+                $desc = ($current_lang === 'en') ? ($row['initiative_description_en'] ?: $row['initiative_description']) : ($row['initiative_description'] ?: $row['initiative_description_en']);
+                
+                $title = htmlspecialchars($label) . ' | ' . SITE_NAME;
+                if (!empty($desc)) {
+                    $og_description = mb_strimwidth(strip_tags($desc), 0, 160, "...");
+                }
+            }
+            $stmt->close();
+            $conn->close();
+        }
+    } catch (Exception $e) {
+        error_log("Erro de SEO Iniciativas: " . $e->getMessage());
+    }
+}
+$canonical = SITE_URL . langUrl('equipe.php');
+if ($initialTab === 'iniciativas' && !empty($projeto)) $canonical .= "?tab=iniciativas&projeto=" . urlencode($projeto);
+
 
 ob_start();
 ?>
