@@ -117,7 +117,7 @@ function getMeetings(): array {
         $stmt = $conn->prepare("
             SELECT 
                 m.*, 
-                l.name AS language_name, l.flag_code, l.flag_emoji,
+                l.name AS language_name, l.name_en AS language_name_en, l.flag_code, l.flag_emoji,
                 l.whatsapp_link AS final_whatsapp,
                 l.instagram_link AS final_instagram,
                 COALESCE(h.full_name, h_auto.full_name) AS host_name,
