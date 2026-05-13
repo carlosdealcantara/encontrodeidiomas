@@ -95,7 +95,7 @@
     "hero_heading": "Speak <span>Online</span> with real<br>people from all over the planet",
     "hero_text": "Connect with people from all over the world without leaving home. Join our global community: a free and welcoming online environment to unlock your speaking, make new friends and practice languages with natives.",
     "hero_cta_calendar": "See Schedule",
-    "hero_cta_host": "Be a Host",
+    "hero_cta_host": "I Want to Be a Host",
     "stats": {
       "meetings": "Meetups",
       "languages": "Languages",
@@ -108,9 +108,9 @@
     "filter_day": "Day of the Week",
     "filter_language": "Language",
     "search_placeholder": "Search language...",
-    "empty_day_title": "How about being the next Host?",
-    "empty_day_text": "If the language or time you're looking for isn't here, you can be the person who makes it happen!",
-    "empty_day_cta": "I want to be a Host",
+    "empty_day_title": "Want a meetup on this day?",
+    "empty_day_text": "We don't have a meetup on this day yet, but we can help you start one! Our team supports every new host from day one.",
+    "empty_day_cta": "I'd like help starting one",
     "seo_index_title": "Practice Index by Language"
   },
   "presencial": {
@@ -158,12 +158,12 @@
       "city_singular": "city",
       "city_plural": "cities"
     },
-    "no_events": "Soon we will have cities here. Be the first to organize in your city!",
+    "no_events": "Soon we will have cities here. We can help you be the first to organize in your city!",
     "expand": {
       "heading": "No meetup nearby?",
-      "desc": "You can be the first! Just create the local group, invite people and, when a group comes together, agree on a place and a day. That's it — no complication.",
-      "step1_title": "Create the group and invite",
-      "step1_text": "Open a WhatsApp group for your city and start inviting friends and colleagues who want to practice languages.",
+      "desc": "We can create a space for your city! Get in touch and we'll set up a group within our community. You won't be alone — we'll support you every step of the way.",
+      "step1_title": "A group will be created for you",
+      "step1_text": "Once you reach out, we create a group for your city inside our community. You don't need to build anything from scratch — we handle everything together with you.",
       "step2_title": "Schedule when you have a group",
       "step2_text": "No fixed commitment. When you feel there are enough people, set a day and that's it.",
       "step3_title": "Choose the location",
@@ -171,8 +171,8 @@
       "cta": "I want help organizing"
     },
     "organizer_cta": {
-      "heading": "Want to be an organizer?",
-      "desc": "Organizing a meetup goes far beyond bringing people together to practice languages. It's a real opportunity to develop leadership, expand your network and make an impact in your city. Get to know the full benefits for those who are part of our volunteer team.",
+      "heading": "Can we help you become an organizer?",
+      "desc": "Organizing a meetup goes far beyond bringing people together to practice languages. No need to know everything beforehand. Our team supports you every step of the way. Get to know the full benefits for those who are part of our volunteer team.",
       "cta_benefits": "Learn about the benefits",
       "cta_contact": "Talk to the team"
     },
@@ -206,12 +206,12 @@
       "others_role": "Other areas..."
     },
     "become_volunteer": {
-      "title": "Become a Volunteer!",
-      "text": "Want to be part of our team? Discover the advantages!",
+      "title": "Want to volunteer? We've got your back!",
+      "text": "No prior experience needed. Our team guides you every step of the way. Check out the perks!",
       "cta": "See Benefits"
     },
     "benefits": {
-      "heading": "Why be a Volunteer?",
+      "heading": "Why volunteer with our support?",
       "subtitle": "Much more than volunteering, a real growth opportunity.",
       "cert_title": "Certificate and Resume",
       "cert_text": "Gain proven practical experience and a recognized certificate to boost your resume and LinkedIn.",
@@ -225,7 +225,7 @@
       "leadership_text": "Develop leadership and group management skills with close supervision and direct mentoring.",
       "support_title": "Support for Ideas",
       "support_text": "Put your own initiatives into practice with our full support and technical assistance for new projects.",
-      "cta": "I want to apply"
+      "cta": "I want to start with team support"
     },
     "cta_footer": {
       "title": "Still have questions?",
