@@ -234,6 +234,12 @@ $page_styles = <<<CSS
             color: var(--accent-blue) !important;
         }
     }
+
+    /* Remove destaque automático de âncora */
+    .link-card:target {
+        outline: none;
+        box-shadow: none;
+    }
 CSS;
 
 include 'includes/header.php';
