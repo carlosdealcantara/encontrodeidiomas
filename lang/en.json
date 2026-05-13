@@ -151,10 +151,10 @@
     },
     "locations": {
       "label": "Where we are",
-      "heading": "Locations with active groups",
+      "heading": "Cities with active groups",
       "desc": "These are the locations with groups already formed around the world. Find your region and be part of the community!",
-      "count_singular": "location",
-      "count_plural": "locations",
+      "count_singular": "city",
+      "count_plural": "cities",
       "city_singular": "city",
       "city_plural": "cities"
     },
@@ -178,7 +178,7 @@
     },
     "seo_region_title": "Explore by Region",
     "seo_state_title": "Explore by State",
-    "seo_location_title": "Explore by Location"
+    "seo_location_title": "Explore by City"
   },
   "team": {
     "title": "Team",

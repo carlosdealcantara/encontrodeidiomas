@@ -130,7 +130,7 @@
     "local_business_desc": "Prática de conversação gratuita em {city} ({country}). Participe da nossa comunidade local.",
     "hero_heading": "&nbsp;Encontros <span>Presenciais</span>&nbsp;<br>&nbsp;em todo o país e além&nbsp;",
     "hero_subtitle": "Pratique idiomas pessoalmente com pessoas reais, onde quer que você esteja. Junte-se a uma comunidade global em expansão. Sem horário fixo, sem burocracia: apenas conversação genuína e conexões para a vida toda.",
-    "hero_cta_locations": "Ver localidades",
+    "hero_cta_locations": "Ver cidades",
     "hero_cta_city": "Na sua cidade!",
     "stats": {
       "groups": "Grupos ativos",
@@ -151,10 +151,10 @@
     },
     "locations": {
       "label": "Onde estamos",
-      "heading": "Localidades com grupos ativos",
-      "desc": "Estas são as localidades com grupos já formados ao redor do mundo. Encontre a sua região e faça parte da comunidade!",
-      "count_singular": "localidade",
-      "count_plural": "localidades",
+      "heading": "Cidades com grupos ativos",
+      "desc": "Estas são as cidades com grupos já formados ao redor do mundo. Encontre a sua região e faça parte da comunidade!",
+      "count_singular": "cidade",
+      "count_plural": "cidades",
       "city_singular": "cidade",
       "city_plural": "cidades"
     },
@@ -178,7 +178,7 @@
     },
     "seo_region_title": "Explorar por Região",
     "seo_state_title": "Explorar por Estado",
-    "seo_location_title": "Explorar por Localidade"
+    "seo_location_title": "Explorar por Cidade"
   },
   "team": {
     "title": "Equipe",

@@ -346,7 +346,7 @@ include 'includes/header.php';
             </p>
             <div class="hero-cta-row">
                 <?php if ($totalGroups > 0): ?>
-                    <a href="#localidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> <?= t('presencial.hero_cta_locations') ?></a>
+                    <a href="#cidades" class="btn-primary-red"><i class="fas fa-map-marked-alt"></i> <?= t('presencial.hero_cta_locations') ?></a>
                 <?php endif; ?>
                 <a href="#seja-organizador" class="btn-hero-outline">
                     <i class="fas fa-plus-circle"></i> <?= t('presencial.hero_cta_city') ?>
@@ -401,8 +401,8 @@ include 'includes/header.php';
         </div>
     </section>
 
-    <!-- LOCALIDADES COM ACCORDION -->
-    <section class="cities-section" id="localidades">
+    <!-- CIDADES COM ACCORDION -->
+    <section class="cities-section" id="cidades">
         <div class="container">
             <p class="section-label"><?= t('presencial.locations.label') ?></p>
             <h2 class="section-title-lg"><?= t('presencial.locations.heading') ?></h2>
@@ -672,7 +672,7 @@ window.addEventListener('load', function() {
     setTimeout(() => {
         let scrollDest = targetElement;
         if (!scrollDest) {
-            scrollDest = document.querySelector('#localidades .section-label') || document.getElementById('localidades');
+            scrollDest = document.querySelector('#cidades .section-label') || document.getElementById('cidades');
         }
         
         if (scrollDest) {
