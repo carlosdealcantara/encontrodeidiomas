@@ -487,7 +487,7 @@ include 'includes/header.php';
                     <p><?= t('presencial.expand.step1_text') ?></p>
                 </div>
                 <div class="expand-card">
-                    <i class="fas fa-calendar-plus"></i>
+                    <i class="fas fa-signal"></i>
                     <h3><?= t('presencial.expand.step2_title') ?></h3>
                     <p><?= t('presencial.expand.step2_text') ?></p>
                 </div>
