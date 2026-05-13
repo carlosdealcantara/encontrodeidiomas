@@ -24,8 +24,10 @@ RewriteCond %{THE_REQUEST} \s/contato\.php [NC]
 RewriteRule ^contato\.php$ /contato [R=301,L]
 
 # --- Redirect 301: URLs antigas .html -> limpas (preserva SEO) ---
+RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{THE_REQUEST} \s/+(.*?)\.html [NC]
 RewriteRule ^ /%1 [R=301,L]
+
 
 
 # --- EN: Prefixo /en/ ---
