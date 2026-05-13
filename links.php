@@ -292,8 +292,12 @@ $allLinks = getUsefulLinks();
                 $badge = strip_tags($badgeRaw, '<br>'); // Permite apenas a tag <br>
                 $icon = htmlspecialchars($link['icon'] ?? 'fas fa-link');
 
-                // Gera um ID amigável (slug) para âncoras
-                $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title), '-'));
+                // Gera um ID amigável (slug) para âncoras, removendo acentos
+                $slug = strtr(mb_convert_encoding($title, 'ISO-8859-1', 'UTF-8'), 
+                    mb_convert_encoding('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ', 'ISO-8859-1', 'UTF-8'), 
+                    'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUYY');
+                $slug = mb_convert_encoding($slug, 'UTF-8', 'ISO-8859-1');
+                $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slug), '-'));
                 
                 if ($type === 'twin'): ?>
                     <a href="<?= $url ?>" id="<?= $slug ?>" class="link-card <?= $animation ?>" target="_blank">
