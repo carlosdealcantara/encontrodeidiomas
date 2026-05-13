@@ -291,9 +291,12 @@ $allLinks = getUsefulLinks();
                 $badgeRaw = ($isEn && !empty($link['badge_en'])) ? $link['badge_en'] : ($link['badge'] ?? '');
                 $badge = strip_tags($badgeRaw, '<br>'); // Permite apenas a tag <br>
                 $icon = htmlspecialchars($link['icon'] ?? 'fas fa-link');
+
+                // Gera um ID amigável (slug) para âncoras
+                $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title), '-'));
                 
                 if ($type === 'twin'): ?>
-                    <a href="<?= $url ?>" class="link-card <?= $animation ?>" target="_blank">
+                    <a href="<?= $url ?>" id="<?= $slug ?>" class="link-card <?= $animation ?>" target="_blank">
                         <?php if ($badge): ?><div class="badge-top"><?= $badge ?></div><?php endif; ?>
                         <div class="icon-box">
                             <i class="<?= $icon ?>"></i>
@@ -304,7 +307,7 @@ $allLinks = getUsefulLinks();
                         </div>
                     </a>
                 <?php else: ?>
-                    <a href="<?= $url ?>" class="link-card <?= $animation ?>" target="_blank">
+                    <a href="<?= $url ?>" id="<?= $slug ?>" class="link-card <?= $animation ?>" target="_blank">
                         <?php if ($badge): ?><div class="badge-top"><?= $badge ?></div><?php endif; ?>
                         <div class="icon-box">
                             <i class="<?= $icon ?>"></i>
