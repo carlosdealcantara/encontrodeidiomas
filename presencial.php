@@ -624,7 +624,7 @@ window.addEventListener('load', function() {
         });
     } 
     // 2. Fallback para Parâmetros de SEO (Se não houver restauração manual)
-    else if (cidade || regiao) {
+    else if (cidade || regiao || estado) {
         if (cidade) {
             document.querySelectorAll('.city-name').forEach(card => {
                 if (card.textContent.trim().toLowerCase() === cidade.toLowerCase()) {
@@ -644,11 +644,15 @@ window.addEventListener('load', function() {
                 if (badge.textContent.trim().toLowerCase() === estado.toLowerCase()) {
                     const card = badge.closest('.city-card');
                     if (card) {
-                        targetElement = card;
-                        const regionAcc = targetElement.closest('.region-accordion');
+                        if (!targetElement) targetElement = card; // Scroll para o primeiro
+                        const regionAcc = card.closest('.region-accordion');
                         if (regionAcc) regionAcc.classList.add('open');
-                        const countryAcc = targetElement.closest('.country-accordion');
+                        const countryAcc = card.closest('.country-accordion');
                         if (countryAcc) countryAcc.classList.add('open');
+                        
+                        // Destaque visual em todos os cards do estado
+                        card.style.border = '2px solid var(--accent-red)';
+                        card.style.boxShadow = '0 10px 30px rgba(227,29,28,0.15)';
                     }
                 }
             });
