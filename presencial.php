@@ -533,13 +533,14 @@ include 'includes/header.php';
 <section class="seo-location-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
     <div class="container" style="opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
         <div style="margin-bottom: 25px;">
-            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('presencial.seo_region_title') ?></p>
+            <p style="margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('presencial.seo_state_title') ?></p>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                 <?php 
-                $unique_regions = array_unique(array_column($events, 'region'));
-                foreach ($unique_regions as $region): if (empty($region)) continue; ?>
-                <a href="<?= langUrl('presencial.php') ?>?regiao=<?= urlencode($region) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <?= htmlspecialchars($region) ?>
+                $unique_states = array_unique(array_filter(array_column($events, 'state')));
+                sort($unique_states);
+                foreach ($unique_states as $state): ?>
+                <a href="<?= langUrl('presencial.php') ?>?estado=<?= urlencode($state) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <?= htmlspecialchars($state) ?>
                 </a>
                 <?php endforeach; ?>
             </div>
@@ -604,6 +605,7 @@ window.addEventListener('load', function() {
     const params = new URLSearchParams(window.location.search);
     const regiao = params.get('regiao');
     const cidade = params.get('cidade');
+    const estado = params.get('estado');
     
     let targetElement = null;
 
@@ -634,6 +636,19 @@ window.addEventListener('load', function() {
                         if (countryAcc) countryAcc.classList.add('open');
                         targetElement.style.border = '2px solid var(--accent-red)';
                         targetElement.style.boxShadow = '0 10px 30px rgba(227,29,28,0.15)';
+                    }
+                }
+            });
+        } else if (estado) {
+            document.querySelectorAll('.city-state-badge').forEach(badge => {
+                if (badge.textContent.trim().toLowerCase() === estado.toLowerCase()) {
+                    const card = badge.closest('.city-card');
+                    if (card) {
+                        targetElement = card;
+                        const regionAcc = targetElement.closest('.region-accordion');
+                        if (regionAcc) regionAcc.classList.add('open');
+                        const countryAcc = targetElement.closest('.country-accordion');
+                        if (countryAcc) countryAcc.classList.add('open');
                     }
                 }
             });
