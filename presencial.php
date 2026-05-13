@@ -538,9 +538,14 @@ include 'includes/header.php';
                 <?php 
                 $unique_states = array_unique(array_filter(array_column($events, 'state')));
                 sort($unique_states);
-                foreach ($unique_states as $state): ?>
+                foreach ($unique_states as $state): 
+                    $current_lang = t('meta.lang_code');
+                    // Tenta traduzir o estado, se falhar mantém o original
+                    $displayState = t('states.' . strtolower($state));
+                    if ($displayState === 'states.' . strtolower($state)) $displayState = $state;
+                ?>
                 <a href="<?= langUrl('presencial.php') ?>?estado=<?= urlencode($state) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <?= htmlspecialchars($state) ?>
+                    <?= htmlspecialchars($displayState) ?>
                 </a>
                 <?php endforeach; ?>
             </div>
@@ -551,9 +556,15 @@ include 'includes/header.php';
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                 <?php 
                 $unique_cities = array_unique(array_column($events, 'city'));
-                foreach ($unique_cities as $city): ?>
+                sort($unique_cities);
+                foreach ($unique_cities as $city): 
+                    $current_lang = t('meta.lang_code');
+                    // Tenta traduzir a cidade, se falhar mantém o original
+                    $displayCity = t('cities.' . strtolower(str_replace(' ', '_', $city)));
+                    if ($displayCity === 'cities.' . strtolower(str_replace(' ', '_', $city))) $displayCity = $city;
+                ?>
                 <a href="<?= langUrl('presencial.php') ?>?cidade=<?= urlencode($city) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <?= htmlspecialchars($city) ?>
+                    <?= htmlspecialchars($displayCity) ?>
                 </a>
                 <?php endforeach; ?>
             </div>

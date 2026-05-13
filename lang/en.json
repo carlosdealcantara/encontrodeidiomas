@@ -316,5 +316,15 @@
     "Brasil": "Brazil",
     "Argentina": "Argentina",
     "Paraguai": "Paraguay"
+  },
+  "states": {
+    "df": "Federal District",
+    "sp": "São Paulo",
+    "rj": "Rio de Janeiro"
+  },
+  "cities": {
+    "são_paulo": "Sao Paulo",
+    "brasília": "Brasilia",
+    "rio_de_janeiro": "Rio de Janeiro"
   }
 }

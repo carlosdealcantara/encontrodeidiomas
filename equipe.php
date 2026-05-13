@@ -12,12 +12,17 @@ $languages = getLanguages();
 $iniciativas_list = [];
 foreach ($hosts as $h) {
     if (!empty($h['initiative_label'])) {
-        $key = $h['initiative_label'];
+        $key = strtolower(trim($h['initiative_label'])); // Chave padronizada
         if (!isset($iniciativas_list[$key])) {
             $iniciativas_list[$key] = [
                 'label' => $h['initiative_label'],
                 'label_en' => $h['initiative_label_en']
             ];
+        } else {
+            // Se já existe mas o label_en estava vazio, tenta preencher com este host
+            if (empty($iniciativas_list[$key]['label_en']) && !empty($h['initiative_label_en'])) {
+                $iniciativas_list[$key]['label_en'] = $h['initiative_label_en'];
+            }
         }
     }
 }
@@ -46,7 +51,7 @@ if ($initialTab === 'iniciativas' && !empty($projeto)) {
             $result = $stmt->get_result();
             
             if ($row = $result->fetch_assoc()) {
-                $current_lang = $_SESSION['lang'] ?? 'pt';
+                $current_lang = CURRENT_LANG;
                 $label = ($current_lang === 'en') ? ($row['initiative_label_en'] ?: $row['initiative_label']) : ($row['initiative_label'] ?: $row['initiative_label_en']);
                 $desc = ($current_lang === 'en') ? ($row['initiative_description_en'] ?: $row['initiative_description']) : ($row['initiative_description'] ?: $row['initiative_description_en']);
                 
@@ -439,10 +444,10 @@ include 'includes/header.php';
                             <i class="fas fa-search dropdown-search-icon"></i>
                         </div>
                         <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_roles') ?></div>
-                        <div class="dropdown-item filterable-item" data-value="desenvolvimento">Desenvolvimento</div>
-                        <div class="dropdown-item filterable-item" data-value="design">Design</div>
-                        <div class="dropdown-item filterable-item" data-value="conteudo">Conteúdo</div>
-                        <div class="dropdown-item filterable-item" data-value="coordenacao">Coordenação</div>
+                        <div class="dropdown-item filterable-item" data-value="development"><?= t('team.roles.development') ?></div>
+                        <div class="dropdown-item filterable-item" data-value="design"><?= t('team.roles.design') ?></div>
+                        <div class="dropdown-item filterable-item" data-value="content"><?= t('team.roles.content') ?></div>
+                        <div class="dropdown-item filterable-item" data-value="coordination"><?= t('team.roles.coordination') ?></div>
                         <a href="#seja-host" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_role') ?></a>
                     </div>
                 </div>
@@ -736,10 +741,10 @@ JS;
 <!-- Faixa de SEO para Iniciativas (Invisível para UX, lida pelo Google) -->
 <section class="seo-language-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
     <div class="container" style="opacity: 0.7; transition: opacity 0.3s; text-align: center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-        <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;">Índice de Iniciativas</p>
+        <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('team.seo_initiatives_title') ?></p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
             <?php foreach ($iniciativas_list as $ini): 
-                $current_lang = $_SESSION['lang'] ?? 'pt';
+                $current_lang = CURRENT_LANG;
                 $displayLabel = ($current_lang === 'en' && !empty($ini['label_en'])) ? $ini['label_en'] : $ini['label'];
             ?>
             <a href="<?= langUrl('equipe.php') ?>?tab=iniciativas&projeto=<?= urlencode($ini['label']) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
