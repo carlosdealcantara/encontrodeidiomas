@@ -16,11 +16,10 @@
 
         <?php if (!empty($ev['host_name'])): ?>
         <div class="city-host">
-            <?php if (!empty($ev['host_photo'])): ?>
-                <img src="/assets/images/<?= htmlspecialchars($ev['host_photo']) ?>" alt="<?= htmlspecialchars($ev['host_name']) ?>">
-            <?php else: ?>
-                <div class="city-host-icon"><i class="fas fa-user"></i></div>
-            <?php endif; ?>
+            <?php 
+                $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null);
+            ?>
+            <img src="<?= $hostPhotoUrl ?>" alt="<?= htmlspecialchars($ev['host_name']) ?>" onerror="this.src='/assets/images/HostSemFoto.png'">
             <div>
                 <div class="city-host-name"><?= htmlspecialchars($ev['host_name']) ?></div>
                 <div class="city-host-label"><?= t('events.organizer_label') ?></div>
