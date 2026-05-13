@@ -18,6 +18,10 @@
     "links": "Links",
     "contact": "Contato"
   },
+  "seo": {
+    "presencial_bubble": "Idiomas em {city}",
+    "presencial_state_bubble": "Idiomas em {state}"
+  },
   "home": {
     "title": "Prática de Conversação em Inglês e outros Idiomas",
     "og_title": "Encontro de Idiomas - Comunidade gratuita para praticar idiomas",

@@ -586,6 +586,13 @@ document.addEventListener('DOMContentLoaded', function() {
             filterGroups.forEach(g => g.classList.remove('active'));
             const filterGroup = document.getElementById('filter-' + currentTab);
             if (filterGroup) filterGroup.classList.add('active');
+            
+            // Toggle SEO Initiatives Index Visibility
+            const seoIndex = document.getElementById('seo-index-initiatives');
+            if (seoIndex) {
+                seoIndex.style.display = (currentTab === 'iniciativas') ? 'block' : 'none';
+            }
+
             applyFilters();
             updateURL();
         });
@@ -739,7 +746,7 @@ JS;
 
 ?>
 <!-- Faixa de SEO para Iniciativas (Invisível para UX, lida pelo Google) -->
-<section class="seo-language-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee;">
+<section id="seo-index-initiatives" class="seo-language-nav" style="padding: 40px 0; background: #fafafa; border-top: 1px solid #eee; display: <?= $initialTab === 'iniciativas' ? 'block' : 'none' ?>;">
     <div class="container" style="opacity: 0.7; transition: opacity 0.3s; text-align: center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
         <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('team.seo_initiatives_title') ?></p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">

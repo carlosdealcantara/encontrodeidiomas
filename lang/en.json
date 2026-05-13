@@ -18,6 +18,10 @@
     "links": "Links",
     "contact": "Contact"
   },
+  "seo": {
+    "presencial_bubble": "Languages in {city}",
+    "presencial_state_bubble": "Languages in {state}"
+  },
   "home": {
     "title": "Practice English and Other Languages Through Conversation",
     "og_title": "Encontro de Idiomas - Free community to practice languages",

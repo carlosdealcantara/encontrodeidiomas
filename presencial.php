@@ -545,7 +545,7 @@ include 'includes/header.php';
                     if ($displayState === 'states.' . strtolower($state)) $displayState = $state;
                 ?>
                 <a href="<?= langUrl('presencial.php') ?>?estado=<?= urlencode($state) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <?= htmlspecialchars($displayState) ?>
+                    <?= t('seo.presencial_state_bubble', ['state' => $displayState]) ?>
                 </a>
                 <?php endforeach; ?>
             </div>
@@ -564,7 +564,7 @@ include 'includes/header.php';
                     if ($displayCity === 'cities.' . strtolower(str_replace(' ', '_', $city))) $displayCity = $city;
                 ?>
                 <a href="<?= langUrl('presencial.php') ?>?cidade=<?= urlencode($city) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <?= htmlspecialchars($displayCity) ?>
+                    <?= t('seo.presencial_bubble', ['city' => $displayCity]) ?>
                 </a>
                 <?php endforeach; ?>
             </div>
