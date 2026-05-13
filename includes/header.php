@@ -450,9 +450,9 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         <?php 
         // Banner de sugestão de idioma (melhorado e internacionalizado)
         $alt_lang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
-        if (!isset($_COOKIE['lang_suggest_closed']) || isset($_GET['test_banner'])):
+        if (!isset($_COOKIE['lang_suggest_closed'])):
             $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
-            if (strpos(strtolower($accept), $alt_lang) !== false || isset($_GET['test_banner'])): ?>
+            if (strpos(strtolower($accept), $alt_lang) !== false): ?>
                 <div id="lang-suggestion-banner">
                     🌎 <?= (CURRENT_LANG === 'pt') ? 'This site is also available in English.' : 'Este site também está disponível em Português.' ?> 
                     <a href="<?= altLangUrl() ?>"><?= (CURRENT_LANG === 'pt') ? 'Switch to English' : 'Mudar para Português' ?></a>
