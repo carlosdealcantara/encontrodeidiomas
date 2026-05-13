@@ -19,8 +19,8 @@
     "contact": "Contato"
   },
   "seo": {
-    "presencial_bubble": "Idiomas em {city}",
-    "presencial_state_bubble": "Idiomas em {state}"
+    "presencial_bubble": "Idiomas {city}",
+    "presencial_state_bubble": "Idiomas {state}"
   },
   "home": {
     "title": "Prática de Conversação em Inglês e outros Idiomas",

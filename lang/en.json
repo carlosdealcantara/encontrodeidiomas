@@ -19,8 +19,8 @@
     "contact": "Contact"
   },
   "seo": {
-    "presencial_bubble": "Languages in {city}",
-    "presencial_state_bubble": "Languages in {state}"
+    "presencial_bubble": "Languages {city}",
+    "presencial_state_bubble": "Languages {state}"
   },
   "home": {
     "title": "Practice English and Other Languages Through Conversation",
