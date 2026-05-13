@@ -120,7 +120,6 @@ $page_styles = <<<CSS
         box-shadow: var(--shadow-sm);
         position: relative;
         overflow: hidden;
-        scroll-margin-top: 170px; /* Margem de segurança generosa para headers fixos + banners mobile */
     }
 
     .link-card:hover {

@@ -419,6 +419,11 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
             text-decoration: underline;
         }
 
+        /* Blindagem Global para Âncora: Qualquer elemento com ID respeita o menu fixo */
+        [id] {
+            scroll-margin-top: var(--header-offset, 100px);
+        }
+
         @media (max-width: 768px) {
             .lang-switch {
                 margin: 15px 0;
@@ -501,7 +506,10 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
         function syncHeaderHeight() {
             const header = document.querySelector('.header');
             if (header) {
-                document.body.style.paddingTop = header.offsetHeight + 'px';
+                const height = header.offsetHeight;
+                document.body.style.paddingTop = height + 'px';
+                // Define variável CSS global para ser usada no scroll-margin-top
+                document.documentElement.style.setProperty('--header-offset', height + 'px');
             }
         }
 
