@@ -304,6 +304,7 @@ $allLinks = getUsefulLinks();
                     'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUYY');
                 $slug = mb_convert_encoding($slug, 'UTF-8', 'ISO-8859-1');
                 $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slug), '-'));
+                $slug = preg_replace('/-+/', '-', $slug); // Remove traços duplicados
                 
                 if ($type === 'twin'): ?>
                     <a href="<?= $url ?>" id="<?= $slug ?>" class="link-card <?= $animation ?>" target="_blank">
