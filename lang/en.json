@@ -161,11 +161,11 @@
     "no_events": "Soon we will have cities here. We can help you be the first to organize in your city!",
     "expand": {
       "heading": "No meetup nearby?",
-      "desc": "We can create a space for your city! Get in touch and we'll set up a group within our community. You won't be alone — we'll support you every step of the way.",
-      "step1_title": "A group will be created for you",
-      "step1_text": "Once you reach out, we create a group for your city inside our community. You don't need to build anything from scratch — we handle everything together with you.",
-      "step2_title": "Schedule when you have a group",
-      "step2_text": "No fixed commitment. When you feel there are enough people, set a day and that's it.",
+      "desc": "We can create a space for your city! Get in touch and we'll set up a group within our community. You won't be alone and we'll support you every step of the way.",
+      "step1_title": "The group will be created",
+      "step1_text": "Once you reach out, we create a group for your city inside our community. You don't need to build anything from scratch! We handle it together with you.",
+      "step2_title": "Schedule when there's a quorum",
+      "step2_text": "No fixed commitment. While the community grows, you can take the opportunity to share the news with your friends and watch the group fill up naturally.",
       "step3_title": "Choose the location",
       "step3_text": "The mall food court is perfect: free space, no mandatory consumption. Cafes, parks or libraries also work!",
       "cta": "I want help organizing"
@@ -231,6 +231,13 @@
       "title": "Still have questions?",
       "subtitle": "Our team is ready to help you take the first steps.",
       "button": "Contact Us"
+    },
+    "seo_initiatives_title": "Initiatives Index",
+    "roles": {
+      "development": "Development",
+      "design": "Design",
+      "content": "Content",
+      "coordination": "Coordination"
     }
   },
   "links": {

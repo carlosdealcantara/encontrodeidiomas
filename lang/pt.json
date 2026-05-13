@@ -161,11 +161,11 @@
     "no_events": "Em breve teremos cidades aqui. Podemos te ajudar a ser o primeiro a organizar na sua cidade!",
     "expand": {
       "heading": "Não tem encontro por perto?",
-      "desc": "Podemos criar um espaço para a sua cidade! Entre em contato e nós criamos o grupo dentro da nossa comunidade. Você não fica sozinho — a gente te acompanha em cada etapa.",
-      "step1_title": "Um grupo será criado para você",
-      "step1_text": "Ao entrar em contato, criamos um grupo da sua cidade dentro da nossa comunidade. Você não precisa estruturar nada do zero — a gente cuida de tudo junto com você.",
-      "step2_title": "Marque quando tiver turma",
-      "step2_text": "Sem compromisso fixo. Quando sentir que há gente suficiente, combine um dia e pronto.",
+      "desc": "Podemos criar um espaço para a sua cidade! Entre em contato e nós criamos o grupo dentro da nossa comunidade. Você não fica sozinho e a gente te acompanha em cada etapa.",
+      "step1_title": "O grupo será criado",
+      "step1_text": "Ao entrar em contato, criamos um grupo da sua cidade dentro da nossa comunidade. Você não precisa estruturar nada do zero! A gente faz isso junto com você.",
+      "step2_title": "Marque quando tiver quórum",
+      "step2_text": "Sem compromisso fixo. Enquanto a comunidade cresce, você pode aproveitar para compartilhar a novidade com seus amigos e ver o grupo encher naturalmente.",
       "step3_title": "Escolha o local",
       "step3_text": "A praça de alimentação do shopping é perfeita: espaço gratuito, sem consumação obrigatória. Café, parque ou biblioteca também funcionam!",
       "cta": "Quero ajuda para organizar"
@@ -231,6 +231,13 @@
       "title": "Ainda tem dúvidas?",
       "subtitle": "Nossa equipe está pronta para te ajudar a dar os primeiros passos.",
       "button": "Fale Conosco"
+    },
+    "seo_initiatives_title": "Índice de Iniciativas",
+    "roles": {
+      "development": "Desenvolvimento",
+      "design": "Design",
+      "content": "Conteúdo",
+      "coordination": "Coordenação"
     }
   },
   "links": {
