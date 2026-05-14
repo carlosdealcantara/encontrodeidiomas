@@ -8,7 +8,14 @@
     "site_name": "Encontro de Idiomas",
     "tagline": "Pratique idiomas gratuitamente",
     "banner_text": "Este site também está disponível em Inglês.",
-    "banner_cta": "Mudar para Inglês"
+    "banner_cta": "Mudar para Inglês",
+    "seo_org_desc": "Encontro de Idiomas: Um clube vibrante e gratuito para estudantes e o público poliglota praticarem conversação real em todos os níveis.",
+    "seo_web_desc": "O Encontro de Idiomas é o clube ideal para o estudante poliglota praticar conversação grátis com pessoas reais.",
+    "alt_presencial": "Encontro de Idiomas - Prática em um clube de conversação para o público poliglota e estudantes de todos os níveis",
+    "alt_online": "Encontro de Idiomas - Encontros virtuais em um clube gratuito e acolhedor para o estudante poliglota",
+    "alt_replay": "Encontro de Idiomas - Replay das sessões de um clube focado no desenvolvimento do poliglota e estudantes",
+    "alt_activities": "Encontro de Idiomas - Atividades de um clube para o público poliglota praticar idiomas livremente",
+    "alt_mentorship": "Encontro de Idiomas - Mentoria e apoio em nosso clube para o estudante poliglota"
   },
   "nav": {
     "home": "Início",

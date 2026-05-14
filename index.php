@@ -89,31 +89,31 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas: Um clube vibrante e gratuito para estudantes e o público poliglota praticarem conversação real em todos os níveis." fetchpriority="high">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.jpg" alt="<?= t('meta.alt_presencial') ?>" fetchpriority="high">
                                         <div class="photo-label"><?= t('home.hero_labels.presencial') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - Encontros virtuais em um clube gratuito e acolhedor para o estudante poliglota">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.jpg" alt="<?= t('meta.alt_online') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.online') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/replay.png" alt="Encontro de Idiomas - Replay das sessões de um clube focado no desenvolvimento do poliglota e estudantes">
+                                        <img src="/assets/images/replay.png" alt="<?= t('meta.alt_replay') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.replay') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Encontro de Idiomas - Atividades de um clube para o público poliglota praticar idiomas livremente">
+                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.jpg" alt="<?= t('meta.alt_activities') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.activities') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/mentoria.jpg" alt="Encontro de Idiomas - Mentoria e apoio em nosso clube para o estudante poliglota">
+                                        <img src="/assets/images/mentoria.jpg" alt="<?= t('meta.alt_mentorship') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.mentorship') ?></div>
                                     </div>
                                 </div>

@@ -8,7 +8,14 @@
     "site_name": "Encontro de Idiomas",
     "tagline": "Practice languages for free",
     "banner_text": "This site is also available in Portuguese.",
-    "banner_cta": "Switch to Portuguese"
+    "banner_cta": "Switch to Portuguese",
+    "seo_org_desc": "Encontro de Idiomas: A vibrant and free club for language students and the polyglot community to practice real conversation at all levels.",
+    "seo_web_desc": "Encontro de Idiomas is the ideal club for the polyglot student to practice free conversation with real people.",
+    "alt_presencial": "Encontro de Idiomas - Practice in a conversation club for the polyglot public and students of all levels",
+    "alt_online": "Encontro de Idiomas - Virtual meetings in a free and welcoming club for the polyglot student",
+    "alt_replay": "Encontro de Idiomas - Replay of sessions from a club focused on polyglot development and students",
+    "alt_activities": "Encontro de Idiomas - Activities from a club for the polyglot community to practice languages freely",
+    "alt_mentorship": "Encontro de Idiomas - Mentorship and support in our club for the polyglot student"
   },
   "nav": {
     "home": "Home",

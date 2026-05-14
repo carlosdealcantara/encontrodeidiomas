@@ -54,7 +54,7 @@ $canonical      = $canonical      ?? 'https://encontrodeidiomas.com.br' . langUr
             "@type": "ImageObject",
             "url": "<?= SITE_URL ?>/assets/images/logo.png"
           },
-          "description": "Encontro de Idiomas: Um clube vibrante e gratuito para estudantes e o público poliglota praticarem conversação real em todos os níveis.",
+          "description": "<?= t('meta.seo_org_desc') ?>",
           "sameAs": [
             "https://www.instagram.com/encontrodeidiomas",
             "https://www.tiktok.com/@encontrodeidiomas",
@@ -66,7 +66,7 @@ $canonical      = $canonical      ?? 'https://encontrodeidiomas.com.br' . langUr
           "@id": "<?= SITE_URL ?>/#website",
           "url": "<?= SITE_URL ?>",
           "name": "<?= SITE_NAME ?>",
-          "description": "O Encontro de Idiomas é o clube ideal para o estudante poliglota praticar conversação grátis com pessoas reais.",
+          "description": "<?= t('meta.seo_web_desc') ?>",
           "publisher": { "@id": "<?= SITE_URL ?>/#organization" }
         },
         {
