@@ -89,31 +89,31 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.presencial') ?>" fetchpriority="high">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.presencial') ?> - Prática em clube poliglota para estudantes de todos os níveis" fetchpriority="high">
                                         <div class="photo-label"><?= t('home.hero_labels.presencial') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.online') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.jpg" alt="Encontro de Idiomas - <?= t('home.hero_labels.online') ?> - Encontros virtuais em um clube poliglota gratuito e acolhedor">
                                         <div class="photo-label"><?= t('home.hero_labels.online') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/replay.png" alt="<?= t('home.hero_labels.replay') ?>">
+                                        <img src="/assets/images/replay.png" alt="Replay das sessões de conversação do nosso clube poliglota para estudantes">
                                         <div class="photo-label"><?= t('home.hero_labels.replay') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.jpg" alt="<?= t('home.hero_labels.activities') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.jpg" alt="Atividades práticas de idiomas em um clube poliglota aberto a todos">
                                         <div class="photo-label"><?= t('home.hero_labels.activities') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/mentoria.jpg" alt="<?= t('home.hero_labels.mentorship') ?>">
+                                        <img src="/assets/images/mentoria.jpg" alt="Mentoria e apoio para estudantes no clube poliglota Encontro de Idiomas">
                                         <div class="photo-label"><?= t('home.hero_labels.mentorship') ?></div>
                                     </div>
                                 </div>
