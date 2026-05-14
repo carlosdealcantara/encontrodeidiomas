@@ -70,6 +70,30 @@ $canonical      = $canonical      ?? 'https://encontrodeidiomas.com.br' . langUr
           "publisher": { "@id": "<?= SITE_URL ?>/#organization" }
         },
         {
+          "@type": "BreadcrumbList",
+          "@id": "<?= SITE_URL ?>/#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@id": "<?= SITE_URL ?>",
+                "name": "<?= SITE_NAME ?>"
+              }
+            }
+            <?php if (isset($title) && $current_page !== 'index.php'): ?>
+            ,{
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@id": "<?= SITE_URL . $_SERVER['REQUEST_URI'] ?>",
+                "name": "<?= sanitize($title) ?>"
+              }
+            }
+            <?php endif; ?>
+          ]
+        },
+        {
           "@type": "Person",
           "name": "Carlos de Alcântara",
           "jobTitle": "Fundador e Professor",
