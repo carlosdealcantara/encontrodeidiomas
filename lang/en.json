@@ -2,11 +2,11 @@
   "meta": {
     "lang_code": "en",
     "og_locale": "en_US",
-    "site_name": "Encontro de Idiomas",
-    "tagline": "Practice languages for free",
-    "og_title_suffix": "Conversation Practice in English and other languages",
+    "og_title_suffix": "Free Conversation in English and more",
     "org_description": "The best free alternative for those seeking a polyglot club and online and in-person conversation practice.",
     "website_description": "Community for polyglots and language enthusiasts to practice conversation for free.",
+    "site_name": "Encontro de Idiomas",
+    "tagline": "Practice languages for free",
     "banner_text": "This site is also available in Portuguese.",
     "banner_cta": "Switch to Portuguese"
   },
@@ -23,9 +23,9 @@
     "presencial_state_bubble": "Languages {state}"
   },
   "home": {
-    "title": "Practice English and Other Languages Through Conversation",
-    "og_title": "Encontro de Idiomas - Free community to practice languages",
-    "meta_description": "Join free language practice meetups for English, Spanish, French, German, Japanese and other languages online and in person.",
+    "title": "Free Conversation in English and more",
+    "og_title": "Free Conversation in English and more — Encontro de Idiomas",
+    "meta_description": "Join free language conversation meetups. Practice English, Spanish, and more online or in-person with a global and welcoming community.",
     "hero_heading": "Practice languages with <span class=\"highlight\">real people</span>",
     "welcome_text": "Practice English, Spanish and other languages for free and naturally. Join a vibrant community with online and in-person meetups across the country.",
     "cta_participate": "See how to join",
@@ -90,8 +90,8 @@
     }
   },
   "online": {
-    "title_default": "Practice Languages Online Free - Weekly Schedule",
-    "meta_description_default": "Encontro de Idiomas Online - Free community to practice English, Spanish and more via video conference.",
+    "title_default": "Free Online Conversation — Live Weekly Meetups",
+    "meta_description_default": "Practice languages from anywhere! Free weekly video meetings for all levels. Check our schedule and start speaking today.",
     "title_lang": "Practice {lang} Online for Free",
     "meta_description_lang": "Join our free conversation meetups in {lang} via video conference. Practice with real people.",
     "event_schema_name": "Practice {lang} - Online Meeting",
@@ -118,8 +118,8 @@
     "seo_index_title": "Practice Index by Language"
   },
   "presencial": {
-    "title_default": "In-Person Language Meetups - Brazil and the World",
-    "meta_description_default": "In-person meetups of Encontro de Idiomas in several cities in Brazil, Argentina and Paraguay.",
+    "title_default": "Free In-Person Language Meetups — Brazil and Beyond",
+    "meta_description_default": "Find real people to practice languages in your city. Free meetups in cafes and parks across Brazil and more. Join our community!",
     "title_city": "Language Practice in {city} | {site_name}",
     "meta_description_city": "Join our local language community in {city}. Free meetups and real conversation.",
     "title_state": "Language Meetups in {state} | {site_name}",
@@ -185,8 +185,8 @@
     "seo_location_title": "Explore by City"
   },
   "team": {
-    "title": "Team",
-    "meta_description": "Meet the Encontro de Idiomas team - Hosts, developers and content creators.",
+    "title": "Our Team — Meet the Volunteers behind the Project",
+    "meta_description": "Meet the hosts and volunteers who make Encontro de Idiomas possible. A community made by people, for people.",
     "hero_title": "Team",
     "hero_subtitle": "Meet the amazing people who <br> make Encontro de Idiomas possible!",
     "tabs": {
@@ -245,15 +245,15 @@
     }
   },
   "links": {
-    "title": "Links",
-    "meta_description": "Encontro de Idiomas Community Hub - Access our WhatsApp groups, schedules and exclusive resources.",
+    "title": "Links Hub — WhatsApp Groups and Communities",
+    "meta_description": "Access all our WhatsApp groups, social media, and free resources. Everything you need to start practicing today.",
     "hero_title": "Links",
     "hero_subtitle": "Connect with the world through <br> our groups and resources.",
     "central_label": "Links Hub"
   },
   "contact": {
-    "title": "Contact",
-    "meta_description": "Get in touch with Encontro de Idiomas - Send a message to our team or join our groups.",
+    "title": "Contact Us — Questions, Suggestions and Volunteering",
+    "meta_description": "Have a question or want to bring Encontro de Idiomas to your city? Get in touch and speak directly with our team.",
     "hero_title": "Contact Us",
     "hero_subtitle": "Want to ask questions, give suggestions or join our team of volunteers and hosts? Send your message!",
     "success_message": "Your message has been sent successfully! We will respond shortly.",

@@ -14,9 +14,9 @@
 
 $current_page   = $current_page   ?? basename($_SERVER['PHP_SELF']);
 $title          = $title          ?? getSetting('site_title', 'Encontro de Idiomas');
-$og_title       = $og_title       ?? ($title . ' | ' . t('meta.og_title_suffix'));
-$og_description = $og_description ?? getSetting('site_description', 'Comunidade gratuita para praticar idiomas via videoconferência.');
-$canonical      = $canonical      ?? SITE_URL . langUrl($current_page);
+$og_title       = $og_title       ?? ($title . ' — ' . t('meta.og_title_suffix'));
+$og_description = $og_description ?? t('home.meta_description'); // Puxa da tradução da Home como fallback global
+$canonical      = $canonical      ?? 'https://encontrodeidiomas.com.br' . langUrl($current_page);
 ?>
 <!DOCTYPE html>
 <html lang="<?= t('meta.lang_code') ?>">
@@ -28,7 +28,11 @@ $canonical      = $canonical      ?? SITE_URL . langUrl($current_page);
     <meta name="keywords" content="<?= sanitize($meta_keywords) ?>">
     <?php endif; ?>
     <meta name="author" content="Encontro de Idiomas">
+    <?php if ($_SERVER['HTTP_HOST'] !== 'encontrodeidiomas.com.br'): ?>
+    <meta name="robots" content="noindex, nofollow">
+    <?php else: ?>
     <meta name="robots" content="index, follow">
+    <?php endif; ?>
     <meta name="theme-color" content="#1a1a1a">
 
     <!-- SEO Internacional -->
@@ -93,7 +97,7 @@ $canonical      = $canonical      ?? SITE_URL . langUrl($current_page);
     <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
 
     <link rel="canonical" href="<?= sanitize($canonical) ?>">
-    <title><?= sanitize($title) ?> | <?= SITE_NAME ?></title>
+    <title><?= sanitize($title) ?> — <?= SITE_NAME ?></title>
 
     <!-- Favicon -->
     <link rel="icon"             type="image/png" href="/assets/images/favicon.png">

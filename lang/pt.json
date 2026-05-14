@@ -2,7 +2,7 @@
   "meta": {
     "lang_code": "pt",
     "og_locale": "pt_BR",
-    "og_title_suffix": "Prática de Conversação em Inglês e outros idiomas",
+    "og_title_suffix": "Conversação Grátis em Inglês e outros Idiomas",
     "org_description": "A melhor alternativa gratuita para quem busca um clube poliglota e prática de conversação online e presencial.",
     "website_description": "Comunidade para poliglotas e entusiastas de idiomas praticarem conversação grátis.",
     "site_name": "Encontro de Idiomas",
@@ -23,9 +23,9 @@
     "presencial_state_bubble": "Idiomas {state}"
   },
   "home": {
-    "title": "Prática de Conversação em Inglês e outros Idiomas",
-    "og_title": "Encontro de Idiomas - Comunidade gratuita para praticar idiomas",
-    "meta_description": "Participe gratuitamente de encontros para praticar inglês, espanhol, francês, alemão, japonês e outros idiomas online e presenciais.",
+    "title": "Conversação Grátis em Inglês e outros Idiomas",
+    "og_title": "Conversação Grátis em Inglês e outros Idiomas — Encontro de Idiomas",
+    "meta_description": "Participe grátis de encontros de conversação em inglês, espanhol e mais. Pratique online ou presencial em uma comunidade acolhedora e real.",
     "hero_heading": "Pratique idiomas com <span class=\"highlight\">pessoas reais</span>",
     "welcome_text": "Pratique inglês, espanhol e outros idiomas de forma gratuita e natural. Participe de uma comunidade vibrante com encontros online e presenciais em todo o país.",
     "cta_participate": "Ver como participar",
@@ -90,8 +90,8 @@
     }
   },
   "online": {
-    "title_default": "Praticar Idiomas Online Grátis - Programação Semanal",
-    "meta_description_default": "Encontro de Idiomas Online - Comunidade gratuita para praticar inglês, espanhol e mais via videoconferência.",
+    "title_default": "Conversação Online Grátis — Encontros ao Vivo Toda Semana",
+    "meta_description_default": "Pratique idiomas sem sair de casa! Encontros semanais por vídeo, gratuitos e abertos para todos os níveis. Veja a programação e participe.",
     "title_lang": "Prática de {lang} Online Grátis",
     "meta_description_lang": "Participe dos nossos encontros gratuitos de conversação em {lang} via videoconferência. Pratique com pessoas reais.",
     "event_schema_name": "Prática de {lang} - Encontro Online",
@@ -118,8 +118,8 @@
     "seo_index_title": "Índice de Prática por Idioma"
   },
   "presencial": {
-    "title_default": "Encontros de Idiomas Presenciais - Brasil e Mundo",
-    "meta_description_default": "Encontros presenciais do Encontro de Idiomas em diversas cidades do Brasil, Argentina e Paraguai.",
+    "title_default": "Encontros de Conversação Presenciais e Gratuitos — Brasil e Mundo",
+    "meta_description_default": "Encontre pessoas reais para praticar idiomas na sua cidade. Grupos presenciais gratuitos em cafés e parques por todo o Brasil. Junte-se a nós!",
     "title_city": "Prática de Idiomas em {city} | {site_name}",
     "meta_description_city": "Participe da nossa comunidade local de idiomas em {city}. Encontros gratuitos e conversação real.",
     "title_state": "Encontros de Idiomas em {state} | {site_name}",
@@ -185,8 +185,8 @@
     "seo_location_title": "Explorar por Cidade"
   },
   "team": {
-    "title": "Equipe",
-    "meta_description": "Conheça a equipe do Encontro de Idiomas - Anfitriões, desenvolvedores e criadores de conteúdo.",
+    "title": "Nossa Equipe — Conheça os Voluntários por trás do Projeto",
+    "meta_description": "Conheça os anfitriões e voluntários que tornam o Encontro de Idiomas possível. Uma comunidade feita de pessoas para pessoas.",
     "hero_title": "Equipe",
     "hero_subtitle": "Conheça as pessoas incríveis que <br> tornam o Encontro de Idiomas possível!",
     "tabs": {
@@ -245,15 +245,15 @@
     }
   },
   "links": {
-    "title": "Links",
-    "meta_description": "Hub de Comunidades do Encontro de Idiomas - Acesse nossos grupos de WhatsApp, cronogramas e recursos exclusivos.",
+    "title": "Central de Links — Grupos de WhatsApp e Comunidades",
+    "meta_description": "Acesse todos os nossos grupos de WhatsApp, redes sociais e recursos gratuitos. Tudo o que você precisa para começar a praticar hoje.",
     "hero_title": "Links",
     "hero_subtitle": "Conecte-se com o mundo pelos <br> nossos grupos e recursos.",
     "central_label": "Central de Links"
   },
   "contact": {
-    "title": "Contato",
-    "meta_description": "Entre em contato com o Encontro de Idiomas - Envie uma mensagem para nossa equipe ou participe de nossos grupos.",
+    "title": "Fale Conosco — Dúvidas, Sugestões e Voluntariado",
+    "meta_description": "Tem alguma dúvida ou quer levar o Encontro de Idiomas para sua cidade? Entre em contato e fale diretamente com nossa equipe.",
     "hero_title": "Fale Conosco",
     "hero_subtitle": "Quer tirar dúvidas, dar sugestões ou se juntar ao nosso time de voluntários e anfitriões? Envie sua mensagem!",
     "success_message": "Sua mensagem foi enviada com sucesso! Responderemos em breve.",
