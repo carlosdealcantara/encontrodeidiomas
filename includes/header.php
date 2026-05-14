@@ -16,7 +16,7 @@ $current_page   = $current_page   ?? basename($_SERVER['PHP_SELF']);
 $title          = $title          ?? getSetting('site_title', 'Encontro de Idiomas');
 $og_title       = $og_title       ?? ($title . ' | ' . t('meta.og_title_suffix'));
 $og_description = $og_description ?? getSetting('site_description', 'Comunidade gratuita para praticar idiomas via videoconferência.');
-$canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
+$canonical      = $canonical      ?? SITE_URL . langUrl($current_page);
 ?>
 <!DOCTYPE html>
 <html lang="<?= t('meta.lang_code') ?>">
@@ -32,7 +32,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
     <meta name="theme-color" content="#1a1a1a">
 
     <!-- SEO Internacional -->
-    <!-- SEO Internacional -->
+    // SEO Internacional
     <link rel="alternate" hreflang="pt" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
     <link rel="alternate" hreflang="en" href="<?= SITE_URL . langSpecificUrl($current_page, 'en') ?>">
     <link rel="alternate" hreflang="x-default" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
@@ -70,7 +70,7 @@ $canonical      = $canonical      ?? SITE_URL . '/' . $current_page;
           "@type": "Person",
           "name": "Carlos de Alcântara",
           "jobTitle": "Fundador e Professor",
-          "url": "<?= SITE_URL ?>/equipe.php",
+          "url": "<?= SITE_URL . langUrl('equipe.php') ?>",
           "worksFor": { "@id": "<?= SITE_URL ?>/#organization" }
         }
       ]
