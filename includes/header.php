@@ -32,7 +32,6 @@ $canonical      = $canonical      ?? SITE_URL . langUrl($current_page);
     <meta name="theme-color" content="#1a1a1a">
 
     <!-- SEO Internacional -->
-    // SEO Internacional
     <link rel="alternate" hreflang="pt" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
     <link rel="alternate" hreflang="en" href="<?= SITE_URL . langSpecificUrl($current_page, 'en') ?>">
     <link rel="alternate" hreflang="x-default" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
