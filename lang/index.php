@@ -164,9 +164,14 @@ function altLangUrl() {
     global $current_page;
     $targetLang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
     
-    // Preservar parâmetros da URL atual
+    // Se for online.php com idioma selecionado, langSpecificUrl já retorna o slug limpo e completo
+    if (($current_page ?? '') === 'online.php' && !empty($_GET['idioma'])) {
+        return langSpecificUrl($current_page, $targetLang);
+    }
+    
+    // Preservar parâmetros da URL atual para outras páginas
     $params = $_GET;
-    unset($params['lang']); // Remove o parâmetro de idioma injetado pelo sistema de rotas
+    unset($params['lang'], $params['slug']);
     $query = !empty($params) ? '?' . http_build_query($params) : '';
     
     return langSpecificUrl($current_page ?? 'index.php', $targetLang) . $query;
@@ -177,6 +182,24 @@ function altLangUrl() {
  */
 function langSpecificUrl($page, $targetLang) {
     $page = ltrim($page, '/');
+    global $current_page;
+
+    // Se for online.php e tivermos um idioma selecionado, retorna direto o slug premium do idioma no targetLang!
+    if ($page === 'online.php' && !empty($_GET['idioma'])) {
+        try {
+            $conn = connectDB();
+            $stmt = $conn->prepare("SELECT slug_pt, slug_en FROM languages WHERE id = ? LIMIT 1");
+            $stmt->execute([(int)$_GET['idioma']]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $targetSlug = ($targetLang === 'en') ? ($row['slug_en'] ?? '') : ($row['slug_pt'] ?? '');
+                if (!empty($targetSlug)) {
+                    return '/' . $targetSlug; // Sem prefixo /en, limpo e direto!
+                }
+            }
+        } catch (Exception $e) {}
+    }
+
     $slugs = [
         'en' => [
             'presencial.php' => 'in-person',
@@ -202,10 +225,9 @@ function langSpecificUrl($page, $targetLang) {
     $url = $prefix . ($slug ? '/' . $slug : '/');
     
     // Preservar parâmetros se estivermos na página atual
-    global $current_page;
     if ($page === ($current_page ?? '')) {
         $params = $_GET;
-        unset($params['lang']);
+        unset($params['lang'], $params['slug']);
         if (!empty($params)) {
             $url .= '?' . http_build_query($params);
         }
