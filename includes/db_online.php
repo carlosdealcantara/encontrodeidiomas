@@ -23,6 +23,30 @@ foreach (range(1, 7) as $d) {
 $currentDayOfWeek = (int)date('N'); // 1=Seg ... 7=Dom
 $currentHour      = (int)date('G');
 
+// Resolução de Slug (Links Curtos)
+if (!empty($_GET['slug'])) {
+    $slug = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['slug']));
+    $slugFound = false;
+    
+    foreach ($languages as $lang) {
+        if (($lang['slug_pt'] ?? '') === $slug || ($lang['slug_en'] ?? '') === $slug) {
+            $_GET['view']   = 'language';
+            $_GET['idioma'] = $lang['id'];
+            $slugFound = true;
+            break;
+        }
+    }
+    
+    // FUTURO: Se não achou no online, buscar na tabela de cidades do presencial (ex: /brasilia) antes de dar 404
+
+    // Se o slug não corresponde a nenhum idioma, retorna 404
+    if (!$slugFound) {
+        http_response_code(404);
+        include __DIR__ . '/../includes/404.php';
+        exit;
+    }
+}
+
 // Parâmetros iniciais da URL
 $initialView = $_GET['view'] ?? 'day';
 

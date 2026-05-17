@@ -17,6 +17,21 @@ $title          = $title          ?? getSetting('site_title', 'Encontro de Idiom
 $og_title       = $og_title       ?? ($title . ' — ' . t('meta.og_title_suffix'));
 $og_description = $og_description ?? t('home.meta_description'); // Puxa da tradução da Home como fallback global
 $canonical      = $canonical      ?? 'https://encontrodeidiomas.com.br' . langUrl($current_page);
+
+// SEO Internacional & Slugs
+$hreflang_pt = SITE_URL . langSpecificUrl($current_page, 'pt');
+$hreflang_en = SITE_URL . langSpecificUrl($current_page, 'en');
+
+if ($current_page === 'online.php' && !empty($_GET['idioma'])) {
+    $languages = $languages ?? getLanguages();
+    foreach ($languages as $lang) {
+        if ($lang['id'] == $_GET['idioma']) {
+            if (!empty($lang['slug_pt'])) $hreflang_pt = SITE_URL . '/' . $lang['slug_pt'];
+            if (!empty($lang['slug_en'])) $hreflang_en = SITE_URL . '/en/' . $lang['slug_en'];
+            break;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= t('meta.lang_code') ?>">
@@ -36,9 +51,9 @@ $canonical      = $canonical      ?? 'https://encontrodeidiomas.com.br' . langUr
     <meta name="theme-color" content="#1a1a1a">
 
     <!-- SEO Internacional -->
-    <link rel="alternate" hreflang="pt" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
-    <link rel="alternate" hreflang="en" href="<?= SITE_URL . langSpecificUrl($current_page, 'en') ?>">
-    <link rel="alternate" hreflang="x-default" href="<?= SITE_URL . langSpecificUrl($current_page, 'pt') ?>">
+    <link rel="alternate" hreflang="pt" href="<?= sanitize($hreflang_pt) ?>">
+    <link rel="alternate" hreflang="en" href="<?= sanitize($hreflang_en) ?>">
+    <link rel="alternate" hreflang="x-default" href="<?= sanitize($hreflang_pt) ?>">
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">

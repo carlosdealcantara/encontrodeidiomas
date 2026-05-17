@@ -193,3 +193,21 @@ function langSpecificUrl($page, $targetLang) {
     return $url === '' ? '/' : $url;
 }
 
+/**
+ * Retorna a URL curta (slug) para um idioma específico no idioma atual do site
+ * @param array $lang Array do idioma (da tabela languages)
+ * @return string URL como '/ingles' ou '/en/english'
+ */
+function langSlugUrl(array $lang): string {
+    $slugField = (CURRENT_LANG === 'en') ? 'slug_en' : 'slug_pt';
+    $slug = $lang[$slugField] ?? null;
+    
+    // Fallback: se não tiver slug cadastrado, usa a URL antiga
+    if (empty($slug)) {
+        return langUrl('online.php') . '?view=language&idioma=' . $lang['id'];
+    }
+    
+    $prefix = (CURRENT_LANG === 'pt') ? '' : '/en';
+    return $prefix . '/' . $slug;
+}
+

@@ -27,14 +27,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateURL() {
+        if (currentView === 'language') {
+            const activeBtn = document.querySelector('.language-button.active-lang');
+            if (activeBtn && activeBtn.dataset.slug) {
+                window.history.replaceState({}, '', activeBtn.dataset.slug);
+                return;
+            }
+        }
+
         const url = new URL(window.location);
+        if (!url.pathname.includes('/online')) {
+            url.pathname = window.location.pathname.startsWith('/en/') ? '/en/online' : '/online';
+        }
         url.searchParams.set('view', currentView);
         if (currentView === 'day') {
             url.searchParams.set('dia', currentDay);
             url.searchParams.delete('idioma');
+            url.searchParams.delete('slug');
         } else {
             url.searchParams.set('idioma', currentLang);
             url.searchParams.delete('dia');
+            url.searchParams.delete('slug');
         }
         window.history.replaceState({}, '', url);
     }

@@ -45,3 +45,12 @@ RewriteRule ^presencial/?$   presencial.php?lang=pt [L,QSA]
 RewriteRule ^equipe/?$       equipe.php?lang=pt [L,QSA]
 RewriteRule ^links/?$        links.php?lang=pt [L,QSA]
 RewriteRule ^contato/?$      contato.php?lang=pt [L,QSA]
+
+# --- Slugs de Idioma (Links Curtos Dinâmicos) ---
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^en/([a-zA-Z0-9-]+)/?$ online.php?lang=en&slug=$1 [L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-zA-Z0-9-]+)/?$ online.php?lang=pt&slug=$1 [L,QSA]

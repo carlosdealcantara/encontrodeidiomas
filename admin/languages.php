@@ -8,24 +8,69 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
-$conn = connectDB();
-
-// Auto-Migração: Tenta criar colunas (silencioso se já existirem)
+$conn = connectDB();// Auto-Migração: Tenta criar colunas (silencioso se já existirem)
 try { $conn->exec("ALTER TABLE languages ADD COLUMN whatsapp_link VARCHAR(255) AFTER active"); } catch (PDOException $e) {}
 try { $conn->exec("ALTER TABLE languages ADD COLUMN instagram_link VARCHAR(255) AFTER whatsapp_link"); } catch (PDOException $e) {}
+try { $conn->exec("ALTER TABLE languages ADD COLUMN slug_pt VARCHAR(50) DEFAULT NULL AFTER name_en"); } catch (PDOException $e) {}
+try { $conn->exec("ALTER TABLE languages ADD COLUMN slug_en VARCHAR(50) DEFAULT NULL AFTER slug_pt"); } catch (PDOException $e) {}
+try { $conn->exec("ALTER TABLE languages ADD UNIQUE INDEX idx_slug_pt (slug_pt)"); } catch (PDOException $e) {}
+try { $conn->exec("ALTER TABLE languages ADD UNIQUE INDEX idx_slug_en (slug_en)"); } catch (PDOException $e) {}
+
+// Auto-população inicial de slugs conhecidos se estiverem vazios
+try {
+    $conn->exec("UPDATE languages SET slug_pt = 'ingles', slug_en = 'english' WHERE name LIKE '%Inglês%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'espanhol', slug_en = 'spanish' WHERE name LIKE '%Espanhol%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'frances', slug_en = 'french' WHERE name LIKE '%Francês%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'alemao', slug_en = 'german' WHERE name LIKE '%Alemão%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'italiano', slug_en = 'italian' WHERE name LIKE '%Italiano%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'coreano', slug_en = 'korean' WHERE name LIKE '%Coreano%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'japones', slug_en = 'japanese' WHERE name LIKE '%Japonês%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET offset = 0 WHERE 1=0"); // dummy
+    $conn->exec("UPDATE languages SET slug_pt = 'mandarim', slug_en = 'mandarin' WHERE name LIKE '%Mandarim%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'russo', slug_en = 'russian' WHERE name LIKE '%Russo%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'arabe', slug_en = 'arabic' WHERE name LIKE '%Árabe%' AND slug_pt IS NULL");
+    $conn->exec("UPDATE languages SET slug_pt = 'portugues', slug_en = 'portuguese' WHERE name LIKE '%Português%' AND slug_pt IS NULL");
+} catch (PDOException $e) {}
 
 // Limpeza de barras finais
 try { $conn->exec("UPDATE languages SET instagram_link = TRIM(TRAILING '/' FROM instagram_link), whatsapp_link = TRIM(TRAILING '/' FROM whatsapp_link)"); } catch (PDOException $e) {}
+
+function slugify(string $text): ?string {
+    $text = mb_strtolower(trim($text), 'UTF-8');
+    $text = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
+    $text = preg_replace('/[^a-z0-9-]/', '', $text);
+    $text = trim($text, '-');
+    return $text !== '' ? $text : null;
+}
+
+$RESERVED_SLUGS = [
+    'admin', 'ajax', 'assets', 'includes', 'lang', 'static', 'templates',
+    'online', 'presencial', 'equipe', 'links', 'contato', 'index',
+    'en', 'team', 'in-person', 'contact',
+    'scratch', 'check', 'config', 'robots', 'sitemap', 'login', 'logout', 'settings', 'hosts', 'meetings'
+];
 
 // Lógica de Salvar em Lote (Bulk Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
     try {
         $conn->beginTransaction();
         foreach ($_POST['langs'] as $id => $data) {
-            $stmt = $conn->prepare("UPDATE languages SET name = ?, name_en = ?, flag_code = ?, flag_emoji = ?, whatsapp_link = ?, instagram_link = ?, active = ? WHERE id = ?");
+            $slug_pt = !empty($data['slug_pt']) ? slugify($data['slug_pt']) : null;
+            $slug_en = !empty($data['slug_en']) ? slugify($data['slug_en']) : null;
+
+            if ($slug_pt && in_array($slug_pt, $RESERVED_SLUGS)) {
+                throw new Exception("O link curto '$slug_pt' é uma palavra reservada do sistema.");
+            }
+            if ($slug_en && in_array($slug_en, $RESERVED_SLUGS)) {
+                throw new Exception("O link curto '$slug_en' é uma palavra reservada do sistema.");
+            }
+
+            $stmt = $conn->prepare("UPDATE languages SET name = ?, name_en = ?, slug_pt = ?, slug_en = ?, flag_code = ?, flag_emoji = ?, whatsapp_link = ?, instagram_link = ?, active = ? WHERE id = ?");
             $stmt->execute([
                 $data['name'], 
                 $data['name_en'] ?? '',
+                $slug_pt,
+                $slug_en,
                 $data['flag_code'], 
                 $data['flag_emoji'], 
                 trim($data['whatsapp_link'], '/ '), 
@@ -37,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
         $conn->commit();
         $msg = "Todos os idiomas foram atualizados com sucesso!";
     } catch (Exception $e) {
-        $conn->rollBack();
+        if ($conn->inTransaction()) $conn->rollBack();
         $error = "Erro ao salvar: " . $e->getMessage();
     }
 }
@@ -133,6 +178,7 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
             </header>
 
             <?php if (isset($msg)): ?> <div class="alert"><i class="fas fa-check-circle"></i> <?= $msg ?></div> <?php endif; ?>
+            <?php if (isset($error)): ?> <div class="alert" style="background: rgba(227, 29, 28, 0.1); border: 1px solid rgba(227, 29, 28, 0.2); color: var(--accent-red);"><i class="fas fa-exclamation-triangle"></i> <?= $error ?></div> <?php endif; ?>
 
             <div class="bulk-card">
                 <table>
@@ -140,6 +186,7 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                         <tr>
                             <th style="width: 15%;">Idioma (PT)</th>
                             <th style="width: 15%;">Idioma (EN)</th>
+                            <th style="width: 15%;">Link Curto (PT/EN)</th>
                             <th style="width: 10%;">Bandeira / Emoji</th>
                             <th>Link WhatsApp</th>
                             <th>Link Instagram</th>
@@ -151,6 +198,12 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                         <tr>
                             <td><input type="text" name="langs[<?= $l['id'] ?>][name]" value="<?= htmlspecialchars($l['name']) ?>" placeholder="Português"></td>
                             <td><input type="text" name="langs[<?= $l['id'] ?>][name_en]" value="<?= htmlspecialchars($l['name_en'] ?? '') ?>" placeholder="English"></td>
+                            <td>
+                                <div style="display:flex; gap:5px;">
+                                    <input type="text" name="langs[<?= $l['id'] ?>][slug_pt]" value="<?= htmlspecialchars($l['slug_pt'] ?? '') ?>" placeholder="ingles">
+                                    <input type="text" name="langs[<?= $l['id'] ?>][slug_en]" value="<?= htmlspecialchars($l['slug_en'] ?? '') ?>" placeholder="english">
+                                </div>
+                            </td>
                             <td>
                                 <div style="display:flex; gap:5px;">
                                     <input type="text" name="langs[<?= $l['id'] ?>][flag_code]" value="<?= htmlspecialchars($l['flag_code'] ?? '') ?>" placeholder="us">

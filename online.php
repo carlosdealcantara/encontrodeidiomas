@@ -18,12 +18,13 @@ if (!empty($_GET['idioma'])) {
             $displayName = ($currentLangCode === 'en' && !empty($lang['name_en'])) ? $lang['name_en'] : $lang['name'];
             $title = t('online.title_lang', ['lang' => $displayName]) . ' | ' . SITE_NAME;
             $og_description = t('online.meta_description_lang', ['lang' => $displayName]);
+            $canonical = SITE_URL . langSlugUrl($lang);
             break;
         }
     }
 }
 
-$canonical      = SITE_URL . langUrl('online.php');
+$canonical      = $canonical ?? SITE_URL . langUrl('online.php');
 
 // Structured Data: Online Events
 $events_json = [];
@@ -152,7 +153,8 @@ include 'includes/header.php';
                                 data-language-id="<?= $lang['id'] ?>"
                                 data-language="<?= htmlspecialchars($langBtnName) ?>"
                                 data-flag-code="<?= htmlspecialchars($lang['flag_code'] ?? '') ?>"
-                                data-flag-emoji="<?= htmlspecialchars($lang['flag_emoji'] ?? '') ?>">
+                                data-flag-emoji="<?= htmlspecialchars($lang['flag_emoji'] ?? '') ?>"
+                                data-slug="<?= htmlspecialchars(langSlugUrl($lang)) ?>">
                             <div class="language-info">
                                 <?php if (!empty($lang['flag_code'])): ?>
                                     <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($lang['flag_code']) ?>.png" class="flag-icon" alt="Bandeira">
@@ -228,7 +230,7 @@ include 'includes/header.php';
         <p style="margin-bottom: 15px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #888;"><?= t('online.seo_index_title') ?></p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             <?php foreach ($languages as $lang): ?>
-            <a href="<?= langUrl('online.php') ?>?view=language&idioma=<?= $lang['id'] ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <a href="<?= SITE_URL . langSlugUrl($lang) ?>" style="color: #666; text-decoration: none; font-size: 0.75rem; border: 1px solid #d0d0d0; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <?= htmlspecialchars(($currentLangCode === 'en' && !empty($lang['name_en'])) ? $lang['name_en'] : $lang['name']) ?> <?= t('nav.online') ?>
             </a>
             <?php endforeach; ?>
