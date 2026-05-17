@@ -16,32 +16,7 @@ try { $conn->exec("ALTER TABLE languages ADD COLUMN slug_en VARCHAR(50) DEFAULT 
 try { $conn->exec("ALTER TABLE languages ADD UNIQUE INDEX idx_slug_pt (slug_pt)"); } catch (PDOException $e) {}
 try { $conn->exec("ALTER TABLE languages ADD UNIQUE INDEX idx_slug_en (slug_en)"); } catch (PDOException $e) {}
 
-// Auto-população inicial de slugs conhecidos se estiverem vazios (cada um isolado para máxima robustez)
-$autoSlugs = [
-    ['Inglês', 'ingles', 'english'],
-    ['Espanhol', 'espanhol', 'spanish'],
-    ['Francês', 'frances', 'french'],
-    ['Alemão', 'alemao', 'german'],
-    ['Italiano', 'italiano', 'italian'],
-    ['Coreano', 'coreano', 'korean'],
-    ['Japonês', 'japones', 'japanese'],
-    ['Chinês', 'chines', 'chinese'],
-    ['Mandarim', 'mandarim', 'mandarin'],
-    ['Russo', 'russo', 'russian'],
-    ['Árabe', 'arabe', 'arabic'],
-    ['Português', 'portugues', 'portuguese'],
-    ['Indonésio', 'indonesio', 'indonesian'],
-    ['Libras', 'libras', 'libras'],
-    ['Polonês', 'polones', 'polish'],
-    ['Servo-Croata', 'servocroata', 'serbocroatian'],
-    ['Servo Croata', 'servocroata', 'serbocroatian'],
-];
-foreach ($autoSlugs as [$nome, $sPt, $sEn]) {
-    try {
-        $stmt = $conn->prepare("UPDATE languages SET slug_pt = ?, slug_en = ? WHERE name LIKE ? AND slug_pt IS NULL");
-        $stmt->execute([$sPt, $sEn, "%$nome%"]);
-    } catch (PDOException $e) {}
-}
+
 
 // Limpeza de barras finais
 try { $conn->exec("UPDATE languages SET instagram_link = TRIM(TRAILING '/' FROM instagram_link), whatsapp_link = TRIM(TRAILING '/' FROM whatsapp_link)"); } catch (PDOException $e) {}
