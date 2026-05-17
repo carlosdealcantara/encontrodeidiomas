@@ -16,21 +16,32 @@ try { $conn->exec("ALTER TABLE languages ADD COLUMN slug_en VARCHAR(50) DEFAULT 
 try { $conn->exec("ALTER TABLE languages ADD UNIQUE INDEX idx_slug_pt (slug_pt)"); } catch (PDOException $e) {}
 try { $conn->exec("ALTER TABLE languages ADD UNIQUE INDEX idx_slug_en (slug_en)"); } catch (PDOException $e) {}
 
-// Auto-população inicial de slugs conhecidos se estiverem vazios
-try {
-    $conn->exec("UPDATE languages SET slug_pt = 'ingles', slug_en = 'english' WHERE name LIKE '%Inglês%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'espanhol', slug_en = 'spanish' WHERE name LIKE '%Espanhol%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'frances', slug_en = 'french' WHERE name LIKE '%Francês%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'alemao', slug_en = 'german' WHERE name LIKE '%Alemão%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'italiano', slug_en = 'italian' WHERE name LIKE '%Italiano%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'coreano', slug_en = 'korean' WHERE name LIKE '%Coreano%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'japones', slug_en = 'japanese' WHERE name LIKE '%Japonês%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET offset = 0 WHERE 1=0"); // dummy
-    $conn->exec("UPDATE languages SET slug_pt = 'mandarim', slug_en = 'mandarin' WHERE name LIKE '%Mandarim%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'russo', slug_en = 'russian' WHERE name LIKE '%Russo%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'arabe', slug_en = 'arabic' WHERE name LIKE '%Árabe%' AND slug_pt IS NULL");
-    $conn->exec("UPDATE languages SET slug_pt = 'portugues', slug_en = 'portuguese' WHERE name LIKE '%Português%' AND slug_pt IS NULL");
-} catch (PDOException $e) {}
+// Auto-população inicial de slugs conhecidos se estiverem vazios (cada um isolado para máxima robustez)
+$autoSlugs = [
+    ['Inglês', 'ingles', 'english'],
+    ['Espanhol', 'espanhol', 'spanish'],
+    ['Francês', 'frances', 'french'],
+    ['Alemão', 'alemao', 'german'],
+    ['Italiano', 'italiano', 'italian'],
+    ['Coreano', 'coreano', 'korean'],
+    ['Japonês', 'japones', 'japanese'],
+    ['Chinês', 'chines', 'chinese'],
+    ['Mandarim', 'mandarim', 'mandarin'],
+    ['Russo', 'russo', 'russian'],
+    ['Árabe', 'arabe', 'arabic'],
+    ['Português', 'portugues', 'portuguese'],
+    ['Indonésio', 'indonesio', 'indonesian'],
+    ['Libras', 'libras', 'libras'],
+    ['Polonês', 'polones', 'polish'],
+    ['Servo-Croata', 'servocroata', 'serbocroatian'],
+    ['Servo Croata', 'servocroata', 'serbocroatian'],
+];
+foreach ($autoSlugs as [$nome, $sPt, $sEn]) {
+    try {
+        $stmt = $conn->prepare("UPDATE languages SET slug_pt = ?, slug_en = ? WHERE name LIKE ? AND slug_pt IS NULL");
+        $stmt->execute([$sPt, $sEn, "%$nome%"]);
+    } catch (PDOException $e) {}
+}
 
 // Limpeza de barras finais
 try { $conn->exec("UPDATE languages SET instagram_link = TRIM(TRAILING '/' FROM instagram_link), whatsapp_link = TRIM(TRAILING '/' FROM whatsapp_link)"); } catch (PDOException $e) {}
@@ -200,8 +211,8 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                             <td><input type="text" name="langs[<?= $l['id'] ?>][name_en]" value="<?= htmlspecialchars($l['name_en'] ?? '') ?>" placeholder="English"></td>
                             <td>
                                 <div style="display:flex; gap:5px;">
-                                    <input type="text" name="langs[<?= $l['id'] ?>][slug_pt]" value="<?= htmlspecialchars($l['slug_pt'] ?? '') ?>" placeholder="ingles">
-                                    <input type="text" name="langs[<?= $l['id'] ?>][slug_en]" value="<?= htmlspecialchars($l['slug_en'] ?? '') ?>" placeholder="english">
+                                    <input type="text" name="langs[<?= $l['id'] ?>][slug_pt]" value="<?= htmlspecialchars($l['slug_pt'] ?? '') ?>" placeholder="ex: ingles">
+                                    <input type="text" name="langs[<?= $l['id'] ?>][slug_en]" value="<?= htmlspecialchars($l['slug_en'] ?? '') ?>" placeholder="ex: english">
                                 </div>
                             </td>
                             <td>
