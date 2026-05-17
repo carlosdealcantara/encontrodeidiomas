@@ -27,7 +27,7 @@ if ($current_page === 'online.php' && !empty($_GET['idioma'])) {
     foreach ($languages as $lang) {
         if ($lang['id'] == $_GET['idioma']) {
             if (!empty($lang['slug_pt'])) $hreflang_pt = SITE_URL . '/' . $lang['slug_pt'];
-            if (!empty($lang['slug_en'])) $hreflang_en = SITE_URL . '/en/' . $lang['slug_en'];
+            if (!empty($lang['slug_en'])) $hreflang_en = SITE_URL . '/' . $lang['slug_en'];
             break;
         }
     }

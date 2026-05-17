@@ -14,6 +14,27 @@ function initLang() {
     if (isset($_GET['lang']) && in_array($_GET['lang'], SUPPORTED_LANGS)) {
         $lang = $_GET['lang'];
     } 
+
+    // Interceptação Inteligente de Slugs (Ex: /english ou /ingles sem prefixo /en/)
+    if (!empty($_GET['slug'])) {
+        try {
+            $conn = connectDB();
+            $slugClean = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['slug']));
+            $stmt = $conn->prepare("SELECT slug_pt, slug_en FROM languages WHERE slug_pt = ? OR slug_en = ? LIMIT 1");
+            $stmt->execute([$slugClean, $slugClean]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                if ($row['slug_en'] === $slugClean) {
+                    $lang = 'en'; // Força inglês se o slug for em inglês!
+                    $_GET['lang'] = 'en'; // Ajusta $_GET para consistência global
+                } elseif ($row['slug_pt'] === $slugClean) {
+                    $lang = 'pt'; // Força português se o slug for em português!
+                    $_GET['lang'] = 'pt';
+                }
+            }
+        } catch (Exception $e) {}
+    }
+
     // 2. Detectar via Cookie
     elseif (isset($_COOKIE['lang']) && in_array($_COOKIE['lang'], SUPPORTED_LANGS)) {
         $lang = $_COOKIE['lang'];
@@ -196,7 +217,7 @@ function langSpecificUrl($page, $targetLang) {
 /**
  * Retorna a URL curta (slug) para um idioma específico no idioma atual do site
  * @param array $lang Array do idioma (da tabela languages)
- * @return string URL como '/ingles' ou '/en/english'
+ * @return string URL como '/ingles' ou '/english'
  */
 function langSlugUrl(array $lang): string {
     $slugField = (CURRENT_LANG === 'en') ? 'slug_en' : 'slug_pt';
@@ -207,7 +228,7 @@ function langSlugUrl(array $lang): string {
         return langUrl('online.php') . '?view=language&idioma=' . $lang['id'];
     }
     
-    $prefix = (CURRENT_LANG === 'pt') ? '' : '/en';
-    return $prefix . '/' . $slug;
+    // Retorna direto /slug (sem prefixo /en), pois a própria palavra do slug já define o idioma!
+    return '/' . $slug;
 }
 

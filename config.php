@@ -27,9 +27,6 @@ define('ADMIN_USER', getenv('ADMIN_USER') ?: 'admin');
 define('ADMIN_PASS', getenv('ADMIN_PASS') ?: 'encontro2023');
 define('SITE_URL',   'https://' . ($_SERVER['HTTP_HOST'] ?? 'encontrodeidiomas.com.br'));
 
-// i18n Engine
-require_once __DIR__ . '/lang/index.php';
-
 function connectDB(): PDO {
     static $conn = null;
     if ($conn !== null) return $conn;
@@ -50,6 +47,9 @@ function connectDB(): PDO {
         die("Serviço temporariamente indisponível.");
     }
 }
+
+// i18n Engine
+require_once __DIR__ . '/lang/index.php';
 
 function sanitize(string $input): string {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
