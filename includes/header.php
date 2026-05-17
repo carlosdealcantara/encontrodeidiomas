@@ -577,9 +577,19 @@ if ($current_page === 'online.php' && !empty($_GET['idioma'])) {
         // Preservação de Scroll e Estado ao trocar de idioma
         document.querySelectorAll('.lang-btn:not(.active), #lang-suggestion-banner a').forEach(btn => {
             btn.addEventListener('click', function(e) {
-                // Prevenir navegação imediata para processar o estado atual
-                e.preventDefault();
                 const targetUrl = this.href;
+                const currentPath = window.location.pathname;
+                
+                // Se estivermos no online ou em um slug premium limpo de idioma (/italiano, /japanese, etc.),
+                // NÃO interceptar com JS! Deixe o navegador fazer a navegação limpa e direta para a URL premium gerada pelo PHP!
+                const isOnlineOrPremiumSlug = currentPath.includes('/online') || (!currentPath.includes('/presencial') && !currentPath.includes('/equipe') && !currentPath.includes('/links') && !currentPath.includes('/contato') && currentPath !== '/' && currentPath !== '/en/');
+                
+                if (isOnlineOrPremiumSlug) {
+                    return; // Deixa o clique fluir nativamente no HTML sem interferência de JS!
+                }
+
+                // Prevenir navegação imediata para processar o estado atual nas páginas complexas
+                e.preventDefault();
 
                 // 1. Salvar posição de Scroll
                 sessionStorage.setItem('restoreScrollY', window.scrollY);

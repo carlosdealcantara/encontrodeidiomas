@@ -26,6 +26,21 @@ document.addEventListener('DOMContentLoaded', function() {
         preloader.src = cachedSrc;
     }
 
+    // Sincroniza os botões do cabeçalho no carregamento inicial se for visualização por idioma
+    if (currentView === 'language') {
+        const activeBtn = document.querySelector('.language-button.active-lang');
+        if (activeBtn) {
+            const slugPt = activeBtn.dataset.slugPt;
+            const slugEn = activeBtn.dataset.slugEn;
+            if (slugPt && slugEn) {
+                const ptBtn = document.querySelector('.lang-switch a[title="Português"]');
+                const enBtn = document.querySelector('.lang-switch a[title="English"]');
+                if (ptBtn) ptBtn.href = window.location.origin + slugPt;
+                if (enBtn) enBtn.href = window.location.origin + slugEn;
+            }
+        }
+    }
+
     function updateURL() {
         if (currentView === 'language') {
             const activeBtn = document.querySelector('.language-button.active-lang');
@@ -36,7 +51,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const url = new URL(window.location);
-        if (!url.pathname.includes('/online')) {
+        // Se a URL atual for um slug premium limpo de idioma (/italiano, /japanese, etc.),
+        // não sobrescrever com /online se continuarmos na visualização de idioma!
+        if (!url.pathname.includes('/online') && currentView === 'day') {
             url.pathname = window.location.pathname.startsWith('/en/') ? '/en/online' : '/online';
         }
         url.searchParams.set('view', currentView);
@@ -232,9 +249,10 @@ window.addEventListener('load', function() {
     
     setTimeout(() => {
         let scrollTarget = null;
-        const params = new URLSearchParams(window.location.search);
+        const config = window.onlineConfig || {};
+        const isLangView = config.initialView === 'language' || config.initialLang;
         
-        if (params.get('idioma') || params.get('view') === 'language') {
+        if (isLangView) {
             scrollTarget = document.querySelector('.calendar-nav');
         } else {
             const activePanel = document.querySelector('.day-events.active');
