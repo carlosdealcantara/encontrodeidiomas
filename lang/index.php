@@ -35,12 +35,12 @@ function initLang() {
         } catch (Exception $e) {}
     }
 
-    // 2. Detectar via Cookie
-    elseif (isset($_COOKIE['lang']) && in_array($_COOKIE['lang'], SUPPORTED_LANGS)) {
+    // 2. Detectar via Cookie (somente se não veio lang na URL nem slug)
+    if (empty($_GET['lang']) && empty($_GET['slug']) && isset($_COOKIE['lang']) && in_array($_COOKIE['lang'], SUPPORTED_LANGS)) {
         $lang = $_COOKIE['lang'];
     }
     // 3. Detectar via Browser (Accept-Language)
-    elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+    elseif (empty($_GET['lang']) && empty($_GET['slug']) && isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
         $browserLang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
         if (in_array($browserLang, SUPPORTED_LANGS)) {
             $lang = $browserLang;

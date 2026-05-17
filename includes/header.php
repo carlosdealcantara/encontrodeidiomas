@@ -604,9 +604,16 @@ if ($current_page === 'online.php' && !empty($_GET['idioma'])) {
                     // Adicionando window.location.origin para suportar caminhos relativos
                     const dest = new URL(targetUrl, window.location.origin);
                     
-                    // Transferir todos os parâmetros atuais para o destino
+                    // Se o destino for um slug premium limpo (não contém /online, /presencial, etc.),
+                    // não poluir com parâmetros antigos de view ou idioma!
+                    const isPremiumSlug = !dest.pathname.includes('/online') && !dest.pathname.includes('/presencial') && dest.pathname !== '/' && dest.pathname !== '/en/';
+                    
+                    // Transferir parâmetros atuais para o destino (filtrando resíduos)
                     currentParams.forEach((value, key) => {
-                        if (key !== 'lang') dest.searchParams.set(key, value);
+                        if (key !== 'lang' && key !== 'slug') {
+                            if (isPremiumSlug && (key === 'view' || key === 'idioma' || key === 'dia')) return;
+                            dest.searchParams.set(key, value);
+                        }
                     });
                     
                     // Pequeno delay de 10ms para garantir que o sessionStorage persista antes da navegação

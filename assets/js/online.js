@@ -212,6 +212,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Atualiza título da aba dinamicamente para SEO e UX
             document.title = 'Prática de ' + langName + ' Online Grátis | Encontro de Idiomas';
 
+            const slugPt = this.dataset.slugPt;
+            const slugEn = this.dataset.slugEn;
+            if (slugPt && slugEn) {
+                const ptBtn = document.querySelector('.lang-switch a[title="Português"]');
+                const enBtn = document.querySelector('.lang-switch a[title="English"]');
+                if (ptBtn) ptBtn.href = window.location.origin + slugPt;
+                if (enBtn) enBtn.href = window.location.origin + slugEn;
+            }
+
             updateURL();
         });
     });
