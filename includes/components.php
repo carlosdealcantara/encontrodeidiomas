@@ -125,6 +125,7 @@ function renderHostCard($host) {
     $email     = $social['email']     ?? $host['email']     ?? '';
     $instagram = $social['instagram'] ?? $host['instagram'] ?? '';
     $linkedin  = $social['linkedin']  ?? $host['linkedin']  ?? '';
+    $youtube   = $social['youtube']   ?? '';
 
     $initiativeLabel = ($isEn && !empty($host['initiative_label_en'])) ? trim($host['initiative_label_en']) : trim($host['initiative_label'] ?? '');
     $initiativeUrl   = trim($host['initiative_url']   ?? '');
@@ -222,6 +223,9 @@ function renderHostCard($host) {
                 <?php endif; ?>
                 <?php if (!empty($linkedin)): ?>
                     <a href="<?= htmlspecialchars($linkedin) ?>" target="_blank" class="contact-btn" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <?php endif; ?>
+                <?php if (!empty($youtube)): ?>
+                    <a href="<?= htmlspecialchars($youtube) ?>" target="_blank" class="contact-btn" title="YouTube"><i class="fab fa-youtube"></i></a>
                 <?php endif; ?>
             </div>
         </div>

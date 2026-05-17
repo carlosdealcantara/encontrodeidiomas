@@ -52,7 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'email'     => $data['email'] ?? '',
             'instagram' => $data['instagram'] ?? '',
             'linkedin'  => $data['linkedin'] ?? '',
-            'github'    => $data['github'] ?? ''
+            'github'    => $data['github'] ?? '',
+            'youtube'   => $data['youtube'] ?? ''
         ];
         $socialJson = json_encode($socialData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);        // Tratamento de Upload de Foto - Só altera se enviar uma nova
         $profilePic = $host['profile_picture'] ?? 'HostSemFoto.png';
@@ -478,6 +479,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label>GitHub</label>
                     <input type="text" name="github" value="<?= htmlspecialchars($social['github'] ?? '') ?>">
+                </div>
+                <div class="form-group">
+                    <label>YouTube</label>
+                    <input type="text" name="youtube" value="<?= htmlspecialchars($social['youtube'] ?? '') ?>">
                 </div>
             </div>
 
