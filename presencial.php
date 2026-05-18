@@ -63,6 +63,25 @@ $countryFlag  = function(string $c) use ($countryCodes): string {
 };
 
 $events    = getInPersonEvents();
+
+// Otimização de SEO: Inclui a sigla do estado no título da cidade se disponível
+if (!empty($_GET['cidade'])) {
+    $cidade_slug = htmlspecialchars($_GET['cidade']);
+    $foundState = '';
+    foreach ($events as $ev) {
+        if (strcasecmp($ev['city'], $cidade_slug) === 0 && !empty($ev['state'])) {
+            $foundState = $ev['state'];
+            break;
+        }
+    }
+    if (!empty($foundState)) {
+        $displayCityName = $cidade_slug . ' - ' . $foundState;
+        $title = t('presencial.title_city', ['city' => $displayCityName, 'site_name' => SITE_NAME]);
+        $og_description = t('presencial.meta_description_city', ['city' => $displayCityName]);
+        $meta_keywords = t('presencial.meta_keywords_city', ['city' => $displayCityName]);
+    }
+}
+
 $byCountry = [];
 $local_schemas = [];
 
@@ -222,7 +241,7 @@ ob_start();
 
     /* City card redesign — clean white, no heavy dark header */
     .city-card {
-        background:#fff; border-radius:16px; overflow:hidden;
+        background:#fff; border-radius:16px; overflow:visible;
         box-shadow:0 3px 15px rgba(0,0,0,0.07);
         transition: transform 0.3s, box-shadow 0.3s;
         border: 1px solid #ebebeb; border-top: 3px solid var(--accent-red);

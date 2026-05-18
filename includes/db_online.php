@@ -29,7 +29,7 @@ $currentHour      = (int)date('G');
 
 
 // Parâmetros iniciais da URL
-$initialView = $_GET['view'] ?? 'day';
+$initialView = $_GET['view'] ?? (!empty($_GET['idioma']) ? 'language' : 'day');
 
 // 1. Inteligência para o Dia Padrão (Sempre carrega o dia atual)
 $initialDay = $_GET['dia'] ?? $currentDayOfWeek;
