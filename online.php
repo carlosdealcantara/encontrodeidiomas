@@ -156,7 +156,7 @@ include 'includes/header.php';
                                 data-flag-emoji="<?= htmlspecialchars($lang['flag_emoji'] ?? '') ?>"
                                 data-slug="<?= htmlspecialchars(langSlugUrl($lang)) ?>"
                                 data-slug-pt="<?= htmlspecialchars(!empty($lang['slug_pt']) ? '/' . $lang['slug_pt'] : '/online?view=language&idioma='.$lang['id']) ?>"
-                                data-slug-en="<?= htmlspecialchars(!empty($lang['slug_en']) ? '/' . $lang['slug_en'] : '/online?view=language&idioma='.$lang['id']) ?>">
+                                data-slug-en="<?= htmlspecialchars(!empty($lang['slug_en']) ? '/en/' . $lang['slug_en'] : '/en/online?view=language&idioma='.$lang['id']) ?>">
                             <div class="language-info">
                                 <?php if (!empty($lang['flag_code'])): ?>
                                     <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($lang['flag_code']) ?>.png" class="flag-icon" alt="Bandeira">

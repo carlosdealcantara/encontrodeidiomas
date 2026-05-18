@@ -215,7 +215,8 @@ function langSpecificUrl($page, $targetLang) {
             if ($row) {
                 $targetSlug = ($targetLang === 'en') ? ($row['slug_en'] ?? '') : ($row['slug_pt'] ?? '');
                 if (!empty($targetSlug)) {
-                    return '/' . $targetSlug;
+                    $prefix = ($targetLang === 'en') ? '/en' : '';
+                    return $prefix . '/' . $targetSlug;
                 }
             }
         } catch (Exception $e) {}
@@ -293,7 +294,7 @@ function langSlugUrl(array $lang): string {
         return langUrl('online.php') . '?view=language&idioma=' . $lang['id'];
     }
     
-    // Retorna direto /slug (sem prefixo /en), pois a própria palavra do slug já define o idioma!
-    return '/' . $slug;
+    $prefix = (CURRENT_LANG === 'en') ? '/en' : '';
+    return $prefix . '/' . $slug;
 }
 
