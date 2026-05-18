@@ -328,6 +328,7 @@ ob_start();
         .steps-grid { grid-template-columns: 1fr; }
         .country-header { padding: 16px 20px; }
         .country-body-inner { padding: 20px 16px; }
+    }
     /* Copy City Link Button */
     .copy-city-link-btn {
         margin-left: auto;
