@@ -528,6 +528,7 @@ include 'includes/header.php';
 </main>
 
 <?php
+$scrollToTarget = htmlspecialchars($_GET['scroll_to'] ?? '');
 $page_scripts = <<<JS
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -731,6 +732,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     setTimeout(function() {
+        const scrollToTarget = '{$scrollToTarget}';
+        if (scrollToTarget) {
+            const targetEl = document.getElementById(scrollToTarget);
+            if (targetEl) {
+                const targetY = targetEl.getBoundingClientRect().top + window.pageYOffset - 100;
+                smoothScrollTo(targetY, 1500);
+                return;
+            }
+        }
+
         if (window.location.hash) return;
         const tabsEl = document.querySelector('.category-tabs');
         if (tabsEl) {

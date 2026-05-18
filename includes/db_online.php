@@ -54,15 +54,17 @@ if (empty($initialLang)) {
 }
 
 // 3. Prepara dados para o botão de Dropdown inicial
-$initialLangName  = 'Carregando...';
-$initialFlagCode  = '';
-$initialFlagEmoji = '';
+$initialLangName   = 'Carregando...';
+$initialLangNameEn = 'Loading...';
+$initialFlagCode   = '';
+$initialFlagEmoji  = '';
 
 foreach ($languages as $lang) {
     if ($lang['id'] == $initialLang) {
-        $initialLangName  = $lang['name'];
-        $initialFlagCode  = $lang['flag_code']  ?? '';
-        $initialFlagEmoji = $lang['flag_emoji'] ?? '';
+        $initialLangName   = $lang['name'];
+        $initialLangNameEn = $lang['name_en'] ?? $lang['name'];
+        $initialFlagCode   = $lang['flag_code']  ?? '';
+        $initialFlagEmoji  = $lang['flag_emoji'] ?? '';
         break;
     }
 }

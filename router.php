@@ -11,6 +11,14 @@ require_once __DIR__ . '/config.php';
 $slug = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['slug'] ?? ''));
 $lang = (isset($_GET['lang']) && in_array($_GET['lang'], ['pt','en'])) ? $_GET['lang'] : 'pt';
 
+// Interceptação premium para sejahost/beahost para evitar redirecionamento e manter a URL curta na barra do navegador
+if ($slug === 'sejahost' || $slug === 'beahost') {
+    $_GET['slug'] = $slug;
+    $_GET['scroll_to'] = 'seja-host';
+    include __DIR__ . '/equipe.php';
+    exit;
+}
+
 if (empty($slug)) {
     http_response_code(404);
     include __DIR__ . '/includes/404.php';
