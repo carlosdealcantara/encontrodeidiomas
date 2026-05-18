@@ -605,9 +605,45 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         // Preservação de Scroll e Estado ao trocar de idioma
         document.querySelectorAll('.lang-btn:not(.active), #lang-suggestion-banner a').forEach(btn => {
             btn.addEventListener('click', function(e) {
-                const targetUrl = this.href;
                 const currentPath = window.location.pathname;
                 
+                // ── Mapa de tradução dinâmica das abas de equipe ────────────────────────────
+                // Quando o JS faz pushState (ex: /equipe/bastidores), o href do botão ainda
+                // aponta para o tab do load inicial. Recalculamos dinamicamente aqui.
+                const teamTabMapToEn = { 'online': 'online', 'presencial': 'in-person', 'bastidores': 'backstage', 'iniciativas': 'initiatives' };
+                const teamTabMapToPt = { 'online': 'online', 'in-person': 'presencial', 'backstage': 'bastidores', 'initiatives': 'iniciativas' };
+                
+                const isTeamPt = currentPath.startsWith('/equipe/');
+                const isTeamEn = currentPath.startsWith('/en/team/');
+                
+                if (isTeamPt || isTeamEn) {
+                    e.preventDefault();
+                    sessionStorage.setItem('restoreScrollY', window.scrollY);
+                    
+                    // Extrair o tabslug atual do pathname
+                    const currentTabSlug = isTeamPt
+                        ? currentPath.replace('/equipe/', '')
+                        : currentPath.replace('/en/team/', '');
+                    
+                    // Determinar o idioma de destino pelo href do botão
+                    const targetIsEn = this.href.includes('/en/');
+                    
+                    // Traduzir o tabslug para o idioma alvo
+                    const translatedSlug = targetIsEn
+                        ? (teamTabMapToEn[currentTabSlug] || currentTabSlug)
+                        : (teamTabMapToPt[currentTabSlug] || currentTabSlug);
+                    
+                    const newPath = targetIsEn ? '/en/team/' + translatedSlug : '/equipe/' + translatedSlug;
+                    
+                    // Preservar query params ativos (ex: ?projeto=X para iniciativas)
+                    const currentSearch = window.location.search;
+                    setTimeout(() => {
+                        window.location.href = window.location.origin + newPath + currentSearch;
+                    }, 10);
+                    return;
+                }
+                // ────────────────────────────────────────────────────────────────────────────
+
                 // Se estivermos no online ou em um slug premium limpo de idioma (/italiano, /japanese, etc.),
                 // NÃO interceptar com JS! Deixe o navegador fazer a navegação limpa e direta para a URL premium gerada pelo PHP!
                 const isOnlineOrPremiumSlug = currentPath.includes('/online') || 
@@ -645,7 +681,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 try {
                     const currentParams = new URLSearchParams(window.location.search);
                     // Adicionando window.location.origin para suportar caminhos relativos
-                    const dest = new URL(targetUrl, window.location.origin);
+                    const dest = new URL(this.href, window.location.origin);
                     
                     // Se o destino for um slug premium limpo (não contém /online, /presencial, etc.),
                     // não poluir com parâmetros antigos de view ou idioma!
@@ -666,7 +702,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 } catch (err) {
                     // Fallback de segurança caso algo falhe no processamento da URL
                     setTimeout(() => {
-                        window.location.href = targetUrl;
+                        window.location.href = this.href;
                     }, 10);
                 }
             });
