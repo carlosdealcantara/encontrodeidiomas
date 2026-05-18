@@ -301,7 +301,10 @@
     "host_label": "Host:",
     "free_conversation": "Free Conversation",
     "organizer_label": "Local Organizer",
-    "join_group": "Join Group"
+    "join_group": "Join Group",
+    "copy_link_aria": "Copy meetup link",
+    "copy_link_title": "Copy this meetup link",
+    "copy_link_tooltip": "Link copied!"
   },
   "authority": {
     "text": "The largest language practice ecosystem in the country"

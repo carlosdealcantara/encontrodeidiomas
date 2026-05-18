@@ -1,3 +1,9 @@
+<?php
+$citySlugVal = getCitySlug($ev['city']);
+$cityHref = $citySlugVal
+    ? SITE_URL . (CURRENT_LANG === 'pt' ? '/' : '/en/') . $citySlugVal
+    : SITE_URL . langUrl('presencial.php') . '?cidade=' . urlencode($ev['city']);
+?>
 <div class="city-card">
     <div class="city-card-header">
         <i class="fas fa-map-marker-alt city-pin"></i>
@@ -7,6 +13,10 @@
                 <span class="city-state-badge"><?= htmlspecialchars($ev['state']) ?></span>
             <?php endif; ?>
         </div>
+        <button class="copy-city-link-btn" data-share-url="<?= $cityHref ?>" aria-label="<?= t('events.copy_link_aria') ?>" title="<?= t('events.copy_link_title') ?>">
+            <i class="far fa-copy"></i>
+            <span class="tooltip-text"><?= t('events.copy_link_tooltip') ?></span>
+        </button>
     </div>
     <div class="city-card-body">
         <div class="city-event-title"><?= htmlspecialchars($ev['title']) ?></div>

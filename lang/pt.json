@@ -301,7 +301,10 @@
     "host_label": "Host:",
     "free_conversation": "Conversação Livre",
     "organizer_label": "Organizador(a) local",
-    "join_group": "Entrar no grupo"
+    "join_group": "Entrar no grupo",
+    "copy_link_aria": "Copiar link do encontro",
+    "copy_link_title": "Copiar link deste encontro",
+    "copy_link_tooltip": "Link copiado!"
   },
   "authority": {
     "text": "O maior ecossistema de prática de idiomas do país"

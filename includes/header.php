@@ -610,7 +610,12 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 
                 // Se estivermos no online ou em um slug premium limpo de idioma (/italiano, /japanese, etc.),
                 // NÃO interceptar com JS! Deixe o navegador fazer a navegação limpa e direta para a URL premium gerada pelo PHP!
-                const isOnlineOrPremiumSlug = currentPath.includes('/online') || (!currentPath.includes('/presencial') && !currentPath.includes('/equipe') && !currentPath.includes('/links') && !currentPath.includes('/contato') && currentPath !== '/' && currentPath !== '/en/');
+                const isOnlineOrPremiumSlug = currentPath.includes('/online') || 
+                    (!currentPath.includes('/presencial') && !currentPath.includes('/in-person') &&
+                     !currentPath.includes('/equipe') && !currentPath.includes('/team') &&
+                     !currentPath.includes('/links') &&
+                     !currentPath.includes('/contato') && !currentPath.includes('/contact') &&
+                     currentPath !== '/' && currentPath !== '/en/');
                 
                 if (isOnlineOrPremiumSlug) {
                     return; // Deixa o clique fluir nativamente no HTML sem interferência de JS!

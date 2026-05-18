@@ -328,6 +328,68 @@ ob_start();
         .steps-grid { grid-template-columns: 1fr; }
         .country-header { padding: 16px 20px; }
         .country-body-inner { padding: 20px 16px; }
+    /* Copy City Link Button */
+    .copy-city-link-btn {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        position: relative;
+        font-size: 0.95rem;
+        outline: none;
+    }
+    .copy-city-link-btn:hover {
+        color: var(--accent-red);
+        background: #f1f5f9;
+    }
+    .copy-city-link-btn .tooltip-text {
+        visibility: hidden;
+        width: 100px;
+        background-color: #1e293b;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 100;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -50px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.72rem;
+        font-weight: 600;
+        pointer-events: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .copy-city-link-btn .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #1e293b transparent transparent transparent;
+    }
+    .copy-city-link-btn.copied {
+        color: #16a34a !important;
+        background: #f0fdf4 !important;
+    }
+    .copy-city-link-btn.copied .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+        background-color: #16a34a;
+    }
+    .copy-city-link-btn.copied .tooltip-text::after {
+        border-color: #16a34a transparent transparent transparent;
     }
 <?php
 $page_styles = ob_get_clean();
@@ -517,7 +579,7 @@ include 'includes/header.php';
                     <?= t('presencial.organizer_cta.desc') ?>
                 </p>
                 <div class="host-cta-btns">
-                    <a href="<?= langUrl('equipe.php') ?>?tab=presencial#seja-host" class="btn-primary-red">
+                    <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="btn-primary-red">
                         <i class="fas fa-users"></i> <?= t('presencial.organizer_cta.cta_benefits') ?>
                     </a>
                     <a href="<?= langUrl('contato.php') ?>" class="btn-outline-red">
@@ -583,6 +645,35 @@ $seoParamsJson = json_encode([
 
 $page_scripts = <<<JS
 <script>
+// Cópia de link amigável premium com animação e feedback visual
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.copy-city-link-btn');
+    if (!btn) return;
+    
+    e.stopPropagation();
+    e.preventDefault();
+    
+    const shareUrl = btn.dataset.shareUrl;
+    if (!shareUrl) return;
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        btn.classList.add('copied');
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = 'fas fa-check';
+        }
+        
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            if (icon) {
+                icon.className = 'far fa-copy';
+            }
+        }, 2000);
+    }).catch(err => {
+        console.error('Falha ao copiar link: ', err);
+    });
+});
+
 function toggleCountry(btn) {
     const acc = btn.closest('.country-accordion');
     acc.classList.toggle('open');

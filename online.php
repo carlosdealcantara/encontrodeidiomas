@@ -83,7 +83,7 @@ include 'includes/header.php';
             </p>
             <div class="hero-cta-row">
                 <a href="#calendar" class="hero-button"><i class="fas fa-calendar-alt"></i> <?= t('online.hero_cta_calendar') ?></a>
-                <a href="<?= langUrl('equipe.php') ?>#seja-host" class="hero-button-outline"><i class="fas fa-user-plus"></i> <?= t('online.hero_cta_host') ?></a>
+                <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="hero-button-outline"><i class="fas fa-user-plus"></i> <?= t('online.hero_cta_host') ?></a>
             </div>
             
             <div class="hero-stats">
@@ -216,7 +216,7 @@ include 'includes/header.php';
                                 <div class="empty-day-icon">🚀</div>
                                 <h3><?= t('online.empty_day_title') ?></h3>
                                 <p><?= t('online.empty_day_text') ?></p>
-                                <a href="<?= langUrl('equipe.php') ?>#seja-host" class="empty-day-button"><?= t('online.empty_day_cta') ?></a>
+                                <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="empty-day-button"><?= t('online.empty_day_cta') ?></a>
                             </div>
                         <?php } ?>
                     </div>
