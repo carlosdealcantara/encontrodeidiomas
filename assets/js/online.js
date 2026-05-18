@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateURL() {
+        // LANGUAGE VIEW: usa slug do idioma
         if (currentView === 'language') {
             const activeBtn = document.querySelector('.language-button.active-lang');
             if (activeBtn && activeBtn.dataset.slug) {
@@ -50,9 +51,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // DAY VIEW: usa slug do dia se disponível
+        if (currentView === 'day' && config.daySlugMap && config.daySlugMap[currentDay]) {
+            const siteLang = config.siteLang || 'pt';
+            const daySlug = config.daySlugMap[currentDay][siteLang];
+            if (daySlug) {
+                const prefix = siteLang === 'en' ? '/en/' : '/';
+                window.history.replaceState({}, '', prefix + daySlug);
+                return;
+            }
+        }
+
+        // FALLBACK: URL com parâmetros
         const url = new URL(window.location);
-        // Se a URL atual for um slug premium limpo de idioma (/italiano, /japanese, etc.),
-        // não sobrescrever com /online se continuarmos na visualização de idioma!
         if (!url.pathname.includes('/online') && currentView === 'day') {
             url.pathname = window.location.pathname.startsWith('/en/') ? '/en/online' : '/online';
         }
@@ -67,6 +78,19 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.delete('slug');
         }
         window.history.replaceState({}, '', url);
+    }
+
+    // Sincroniza os botões PT/EN do cabeçalho para o dia atual
+    function syncHeaderButtonsForDay(dayNum) {
+        if (!config.daySlugMap || !config.daySlugMap[dayNum]) return;
+        const ptSlug = config.daySlugMap[dayNum]['pt'];
+        const enSlug = config.daySlugMap[dayNum]['en'];
+        if (ptSlug && enSlug) {
+            const ptBtn = document.querySelector('.lang-switch a[title="Português"]');
+            const enBtn = document.querySelector('.lang-switch a[title="English"]');
+            if (ptBtn) ptBtn.href = window.location.origin + '/' + ptSlug;
+            if (enBtn) enBtn.href = window.location.origin + '/en/' + enSlug;
+        }
     }
 
     function smoothScrollTo(endY, duration) {
@@ -150,6 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.day-button').forEach(btn => {
         btn.addEventListener('click', function() {
             activateDay(this.dataset.day);
+            syncHeaderButtonsForDay(this.dataset.day);
             updateURL();
             scrollToRelevantEvent();
         });
@@ -158,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial scroll & State
     if (currentView === 'day') {
         activateDay(currentDay);
-        // O scroll inicial agora é tratado apenas pelo listener de 'load' abaixo
+        syncHeaderButtonsForDay(currentDay);
     }
 
     // Dropdown toggle

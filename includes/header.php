@@ -18,10 +18,11 @@ $og_title       = $og_title       ?? ($title . ' — ' . t('meta.og_title_suffix
 $og_description = $og_description ?? t('home.meta_description'); // Puxa da tradução da Home como fallback global
 $canonical      = $canonical      ?? 'https://encontrodeidiomas.com.br' . langUrl($current_page);
 
-// SEO Internacional & Slugs
+// SEO Internacional & Slugs — Canonical e Hreflang
 $hreflang_pt = SITE_URL . langSpecificUrl($current_page, 'pt');
 $hreflang_en = SITE_URL . langSpecificUrl($current_page, 'en');
 
+// ONLINE + IDIOMA
 if ($current_page === 'online.php' && !empty($_GET['idioma'])) {
     $languages = $languages ?? getLanguages();
     foreach ($languages as $lang) {
@@ -32,6 +33,33 @@ if ($current_page === 'online.php' && !empty($_GET['idioma'])) {
         }
     }
 }
+
+// ONLINE + DIA DA SEMANA
+if ($current_page === 'online.php' && !empty($_GET['dia']) && empty($_GET['idioma'])) {
+    $dSlugPt = getDaySlug((int)$_GET['dia'], 'pt');
+    $dSlugEn = getDaySlug((int)$_GET['dia'], 'en');
+    if ($dSlugPt) $hreflang_pt = SITE_URL . '/' . $dSlugPt;
+    if ($dSlugEn) $hreflang_en = SITE_URL . '/en/' . $dSlugEn;
+}
+
+// PRESENCIAL + CIDADE
+if ($current_page === 'presencial.php' && !empty($_GET['cidade'])) {
+    $cSlug = getCitySlug($_GET['cidade']);
+    if ($cSlug) {
+        $hreflang_pt = SITE_URL . '/' . $cSlug;
+        $hreflang_en = SITE_URL . '/en/' . $cSlug;
+    }
+}
+
+// PRESENCIAL + ESTADO
+if ($current_page === 'presencial.php' && !empty($_GET['estado'])) {
+    $sSlug = strtolower(trim($_GET['estado']));
+    $hreflang_pt = SITE_URL . '/' . $sSlug;
+    $hreflang_en = SITE_URL . '/en/' . $sSlug;
+}
+
+// Canonical: usa hreflang do idioma atual
+$canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en);
 ?>
 <!DOCTYPE html>
 <html lang="<?= t('meta.lang_code') ?>">

@@ -248,7 +248,9 @@ ob_start(); ?>
     window.onlineConfig = {
         initialView: '<?= $initialView ?>',
         initialDay: '<?= $initialDay ?>',
-        initialLang: '<?= $initialLang ?>'
+        initialLang: '<?= $initialLang ?>',
+        daySlugMap: <?= json_encode(getDaySlugMap(), JSON_UNESCAPED_UNICODE) ?>,
+        siteLang: '<?= CURRENT_LANG ?>'
     };
 </script>
 <script src="/assets/js/online.js?v=<?= ASSET_VERSION ?>"></script>

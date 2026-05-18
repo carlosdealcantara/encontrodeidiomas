@@ -163,17 +163,38 @@ function langUrl($page = '') {
 function altLangUrl() {
     global $current_page;
     $targetLang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
-    
-    // Se for online.php com idioma selecionado, langSpecificUrl já retorna o slug limpo e completo
+
+    // CASO 1: Online + idioma selecionado → slug premium do idioma
     if (($current_page ?? '') === 'online.php' && !empty($_GET['idioma'])) {
         return langSpecificUrl($current_page, $targetLang);
     }
-    
-    // Preservar parâmetros da URL atual para outras páginas
+
+    // CASO 2: Online + dia selecionado → slug do dia no idioma destino
+    if (($current_page ?? '') === 'online.php' && !empty($_GET['dia']) && empty($_GET['idioma'])) {
+        $daySlug = getDaySlug((int)$_GET['dia'], $targetLang);
+        if ($daySlug) {
+            return ($targetLang === 'pt') ? '/' . $daySlug : '/en/' . $daySlug;
+        }
+    }
+
+    // CASO 3: Presencial + cidade → /sao-paulo ou /en/sao-paulo
+    if (($current_page ?? '') === 'presencial.php' && !empty($_GET['cidade'])) {
+        $citySlug = getCitySlug($_GET['cidade']);
+        if ($citySlug) {
+            return ($targetLang === 'pt') ? '/' . $citySlug : '/en/' . $citySlug;
+        }
+    }
+
+    // CASO 4: Presencial + estado → /sp ou /en/sp
+    if (($current_page ?? '') === 'presencial.php' && !empty($_GET['estado'])) {
+        $stateSlug = strtolower(trim($_GET['estado']));
+        return ($targetLang === 'pt') ? '/' . $stateSlug : '/en/' . $stateSlug;
+    }
+
+    // PADRÃO: URL da página no idioma destino
     $params = $_GET;
     unset($params['lang'], $params['slug']);
     $query = !empty($params) ? '?' . http_build_query($params) : '';
-    
     return langSpecificUrl($current_page ?? 'index.php', $targetLang) . $query;
 }
 
@@ -184,7 +205,7 @@ function langSpecificUrl($page, $targetLang) {
     $page = ltrim($page, '/');
     global $current_page;
 
-    // Se for online.php e tivermos um idioma selecionado, retorna direto o slug premium do idioma no targetLang!
+    // ONLINE + idioma → slug premium do idioma
     if ($page === 'online.php' && !empty($_GET['idioma'])) {
         try {
             $conn = connectDB();
@@ -194,10 +215,32 @@ function langSpecificUrl($page, $targetLang) {
             if ($row) {
                 $targetSlug = ($targetLang === 'en') ? ($row['slug_en'] ?? '') : ($row['slug_pt'] ?? '');
                 if (!empty($targetSlug)) {
-                    return '/' . $targetSlug; // Sem prefixo /en, limpo e direto!
+                    return '/' . $targetSlug;
                 }
             }
         } catch (Exception $e) {}
+    }
+
+    // ONLINE + dia → slug do dia
+    if ($page === 'online.php' && !empty($_GET['dia']) && empty($_GET['idioma'])) {
+        $daySlug = getDaySlug((int)$_GET['dia'], $targetLang);
+        if ($daySlug) {
+            return ($targetLang === 'pt') ? '/' . $daySlug : '/en/' . $daySlug;
+        }
+    }
+
+    // PRESENCIAL + cidade → slug da cidade
+    if ($page === 'presencial.php' && !empty($_GET['cidade'])) {
+        $citySlug = getCitySlug($_GET['cidade']);
+        if ($citySlug) {
+            return ($targetLang === 'pt') ? '/' . $citySlug : '/en/' . $citySlug;
+        }
+    }
+
+    // PRESENCIAL + estado → sigla do estado
+    if ($page === 'presencial.php' && !empty($_GET['estado'])) {
+        $stateSlug = strtolower(trim($_GET['estado']));
+        return ($targetLang === 'pt') ? '/' . $stateSlug : '/en/' . $stateSlug;
     }
 
     $slugs = [

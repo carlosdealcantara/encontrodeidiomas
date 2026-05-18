@@ -183,4 +183,46 @@ function getHostPhotoUrl(?string $fileName): string {
         }
     }
 }
+
+/**
+ * Retorna mapa de slugs de dias da semana indexado por número do dia
+ * Ex: ['1' => ['pt' => 'segunda', 'en' => 'monday'], ...]
+ */
+function getDaySlugMap(): array {
+    try {
+        $conn = connectDB();
+        $rows = $conn->query("SELECT slug, lang, target_param_value FROM slugs WHERE type='day'")->fetchAll();
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r['target_param_value']][$r['lang']] = $r['slug'];
+        }
+        return $map;
+    } catch (Exception $e) { return []; }
+}
+
+/**
+ * Retorna o slug de um dia da semana no idioma especificado
+ */
+function getDaySlug(int $dayNum, string $targetLang): ?string {
+    try {
+        $conn = connectDB();
+        $stmt = $conn->prepare("SELECT slug FROM slugs WHERE type='day' AND lang=? AND target_param_value=? LIMIT 1");
+        $stmt->execute([$targetLang, (string)$dayNum]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $row['slug'] : null;
+    } catch (Exception $e) { return null; }
+}
+
+/**
+ * Retorna o slug de uma cidade (universal, sem prefixo de lang)
+ */
+function getCitySlug(string $cityName): ?string {
+    try {
+        $conn = connectDB();
+        $stmt = $conn->prepare("SELECT slug FROM slugs WHERE type='city' AND target_param_value=? LIMIT 1");
+        $stmt->execute([$cityName]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $row['slug'] : null;
+    } catch (Exception $e) { return null; }
+}
 ?>
