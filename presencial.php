@@ -575,6 +575,12 @@ include 'includes/header.php';
 </section>
 
 <?php
+$seoParamsJson = json_encode([
+    'regiao' => $_GET['regiao'] ?? null,
+    'cidade' => $_GET['cidade'] ?? null,
+    'estado' => $_GET['estado'] ?? null
+], JSON_UNESCAPED_UNICODE);
+
 $page_scripts = <<<JS
 <script>
 function toggleCountry(btn) {
@@ -616,13 +622,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 window.addEventListener('load', function() {
     const savedAccordionsStr = sessionStorage.getItem('openAccordions');
     
-    // O router.php injeta os parâmetros de SEO diretamente no PHP, então a URL no navegador 
-    // é limpa (/paranagua) e não tem search params. Lemos direto do PHP:
-    const seoParams = {
-        regiao: <?= json_encode($_GET['regiao'] ?? null) ?>,
-        cidade: <?= json_encode($_GET['cidade'] ?? null) ?>,
-        estado: <?= json_encode($_GET['estado'] ?? null) ?>
-    };
+    const seoParams = {$seoParamsJson};
     
     const regiao = seoParams.regiao;
     const cidade = seoParams.cidade;
