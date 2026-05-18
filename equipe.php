@@ -423,7 +423,7 @@ include 'includes/header.php';
                                 <?= t('languages.' . strtolower($lang['name'])) ?>
                             </div>
                         <?php endforeach; ?>
-                        <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_lang') ?></a>
+                        <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/seja-host' : '/en/be-a-host') ?>" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_lang') ?></a>
                     </div>
                 </div>
             </div>
@@ -442,7 +442,7 @@ include 'includes/header.php';
                         </div>
                         <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_cities') ?></div>
                         <!-- Itens dinâmicos serão inseridos aqui pelo JS -->
-                        <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="dropdown-item dropdown-item-link other-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_region') ?></a>
+                        <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/seja-host' : '/en/be-a-host') ?>" class="dropdown-item dropdown-item-link other-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_region') ?></a>
                     </div>
                 </div>
             </div>
@@ -464,7 +464,7 @@ include 'includes/header.php';
                         <div class="dropdown-item filterable-item" data-value="design"><?= t('team.roles.design') ?></div>
                         <div class="dropdown-item filterable-item" data-value="content"><?= t('team.roles.content') ?></div>
                         <div class="dropdown-item filterable-item" data-value="coordination"><?= t('team.roles.coordination') ?></div>
-                        <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_role') ?></a>
+                        <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/seja-host' : '/en/be-a-host') ?>" class="dropdown-item dropdown-item-link" style="color:var(--accent-red); font-weight:600; justify-content:center; border-top:1px solid #eee;"><?= t('team.filters.others_role') ?></a>
                     </div>
                 </div>
             </div>
@@ -484,7 +484,7 @@ include 'includes/header.php';
                     <i class="fas fa-user-plus" style="font-size:3rem;color:var(--accent-red);margin-bottom:15px;"></i>
                     <h3 style="font-size:1.3rem;margin-bottom:10px;"><?= t('team.become_volunteer.title') ?></h3>
                     <p style="color:#666;margin-bottom:20px;"><?= t('team.become_volunteer.text') ?></p>
-                    <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="cta-button" style="display:inline-block; padding:10px 25px; background:var(--accent-red); color:white; text-decoration:none; border-radius:25px;"><?= t('team.become_volunteer.cta') ?></a>
+                    <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/seja-host' : '/en/be-a-host') ?>" class="cta-button" style="display:inline-block; padding:10px 25px; background:var(--accent-red); color:white; text-decoration:none; border-radius:25px;"><?= t('team.become_volunteer.cta') ?></a>
                 </div>
             </div>
         </div>
@@ -545,7 +545,7 @@ include 'includes/header.php';
 
 <?php
 $currentLang    = CURRENT_LANG;
-$scrollToTarget = $_GET['scroll_to'] ?? ((isset($_GET['slug']) && ($_GET['slug'] === 'sejahost' || $_GET['slug'] === 'beahost')) ? 'seja-host' : '');
+$scrollToTarget = $_GET['scroll_to'] ?? ((isset($_GET['slug']) && ($_GET['slug'] === 'seja-host' || $_GET['slug'] === 'be-a-host')) ? 'seja-host' : '');
 $page_scripts = <<<JS
 <script>
 document.addEventListener('DOMContentLoaded', function() {

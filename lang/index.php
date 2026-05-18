@@ -205,9 +205,9 @@ function langSpecificUrl($page, $targetLang) {
     $page = ltrim($page, '/');
     global $current_page;
 
-    // Roteamento Premium: sejahost/beahost para manter as URLs enxutas e transparentes ao mudar o idioma
-    if ($page === 'equipe.php' && !empty($_GET['slug']) && ($_GET['slug'] === 'sejahost' || $_GET['slug'] === 'beahost')) {
-        return ($targetLang === 'pt') ? '/sejahost' : '/en/beahost';
+    // Roteamento Premium: seja-host/be-a-host para manter as URLs enxutas e transparentes ao mudar o idioma
+    if ($page === 'equipe.php' && !empty($_GET['slug']) && ($_GET['slug'] === 'seja-host' || $_GET['slug'] === 'be-a-host')) {
+        return ($targetLang === 'pt') ? '/seja-host' : '/en/be-a-host';
     }
 
     // EQUIPE + tab ativo → sub-path limpo por categoria
