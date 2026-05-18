@@ -528,7 +528,7 @@ include 'includes/header.php';
 </main>
 
 <?php
-$scrollToTarget = htmlspecialchars($_GET['scroll_to'] ?? '');
+$scrollToTarget = $_GET['scroll_to'] ?? ((isset($_GET['slug']) && ($_GET['slug'] === 'sejahost' || $_GET['slug'] === 'beahost')) ? 'seja-host' : '');
 $page_scripts = <<<JS
 <script>
 document.addEventListener('DOMContentLoaded', function() {

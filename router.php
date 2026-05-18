@@ -14,7 +14,6 @@ $lang = (isset($_GET['lang']) && in_array($_GET['lang'], ['pt','en'])) ? $_GET['
 // Interceptação premium para sejahost/beahost para evitar redirecionamento e manter a URL curta na barra do navegador
 if ($slug === 'sejahost' || $slug === 'beahost') {
     $_GET['slug'] = $slug;
-    $_GET['scroll_to'] = 'seja-host';
     include __DIR__ . '/equipe.php';
     exit;
 }

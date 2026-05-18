@@ -205,6 +205,11 @@ function langSpecificUrl($page, $targetLang) {
     $page = ltrim($page, '/');
     global $current_page;
 
+    // Roteamento Premium: sejahost/beahost para manter as URLs enxutas e transparentes ao mudar o idioma
+    if ($page === 'equipe.php' && !empty($_GET['slug']) && ($_GET['slug'] === 'sejahost' || $_GET['slug'] === 'beahost')) {
+        return ($targetLang === 'pt') ? '/sejahost' : '/en/beahost';
+    }
+
     // ONLINE + idioma → slug premium do idioma
     if ($page === 'online.php' && !empty($_GET['idioma'])) {
         try {
