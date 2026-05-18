@@ -599,7 +599,7 @@ include 'includes/header.php';
                     <?= t('presencial.organizer_cta.desc') ?>
                 </p>
                 <div class="host-cta-btns">
-                    <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/sejahost' : '/en/beahost') ?>" class="btn-primary-red">
+                    <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/seja-host' : '/en/be-a-host') ?>" class="btn-primary-red">
                         <i class="fas fa-users"></i> <?= t('presencial.organizer_cta.cta_benefits') ?>
                     </a>
                     <a href="<?= langUrl('contato.php') ?>" class="btn-outline-red">
