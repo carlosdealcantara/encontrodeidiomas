@@ -615,10 +615,18 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 // Auto-scroll e Auto-expand baseado em parâmetros de SEO ou estado salvo
 window.addEventListener('load', function() {
     const savedAccordionsStr = sessionStorage.getItem('openAccordions');
-    const params = new URLSearchParams(window.location.search);
-    const regiao = params.get('regiao');
-    const cidade = params.get('cidade');
-    const estado = params.get('estado');
+    
+    // O router.php injeta os parâmetros de SEO diretamente no PHP, então a URL no navegador 
+    // é limpa (/paranagua) e não tem search params. Lemos direto do PHP:
+    const seoParams = {
+        regiao: <?= json_encode($_GET['regiao'] ?? null) ?>,
+        cidade: <?= json_encode($_GET['cidade'] ?? null) ?>,
+        estado: <?= json_encode($_GET['estado'] ?? null) ?>
+    };
+    
+    const regiao = seoParams.regiao;
+    const cidade = seoParams.cidade;
+    const estado = seoParams.estado;
     
     let targetElement = null;
 
