@@ -193,7 +193,7 @@ function altLangUrl() {
 
     // PADRÃO: URL da página no idioma destino
     $params = $_GET;
-    unset($params['lang'], $params['slug']);
+    unset($params['lang'], $params['slug'], $params['tabslug'], $params['tab']);
     $query = !empty($params) ? '?' . http_build_query($params) : '';
     return langSpecificUrl($current_page ?? 'index.php', $targetLang) . $query;
 }
@@ -208,6 +208,21 @@ function langSpecificUrl($page, $targetLang) {
     // Roteamento Premium: sejahost/beahost para manter as URLs enxutas e transparentes ao mudar o idioma
     if ($page === 'equipe.php' && !empty($_GET['slug']) && ($_GET['slug'] === 'sejahost' || $_GET['slug'] === 'beahost')) {
         return ($targetLang === 'pt') ? '/sejahost' : '/en/beahost';
+    }
+
+    // EQUIPE + tab ativo → sub-path limpo por categoria
+    if ($page === 'equipe.php' && !empty($_GET['tab'])) {
+        $tabMapPt = ['online' => 'online', 'presencial' => 'presencial', 'bastidores' => 'bastidores', 'iniciativas' => 'iniciativas'];
+        $tabMapEn = ['online' => 'online', 'presencial' => 'in-person', 'bastidores' => 'backstage', 'iniciativas' => 'initiatives'];
+        $tabMap   = ($targetLang === 'en') ? $tabMapEn : $tabMapPt;
+        $tabSlug  = $tabMap[$_GET['tab']] ?? $_GET['tab'];
+        $prefix   = ($targetLang === 'pt') ? '/equipe' : '/en/team';
+        $url      = $prefix . '/' . $tabSlug;
+        // Preservar apenas sub-filtros (projeto, etc.), nunca artefatos de roteamento
+        $params = $_GET;
+        unset($params['lang'], $params['slug'], $params['tabslug'], $params['tab']);
+        if (!empty($params)) $url .= '?' . http_build_query($params);
+        return $url;
     }
 
     // ONLINE + idioma → slug premium do idioma
@@ -276,7 +291,7 @@ function langSpecificUrl($page, $targetLang) {
     // Preservar parâmetros se estivermos na página atual
     if ($page === ($current_page ?? '')) {
         $params = $_GET;
-        unset($params['lang'], $params['slug']);
+        unset($params['lang'], $params['slug'], $params['tabslug'], $params['tab']);
         if (!empty($params)) {
             $url .= '?' . http_build_query($params);
         }

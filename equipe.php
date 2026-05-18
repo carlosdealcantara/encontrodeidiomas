@@ -28,6 +28,16 @@ foreach ($hosts as $h) {
 }
 $iniciativas_list = array_values($iniciativas_list);
 
+// Resolve tabslug from URL sub-path (ex: /equipe/presencial ou /en/team/in-person)
+if (!empty($_GET['tabslug'])) {
+    $tsMapPt = ['online' => 'online', 'presencial' => 'presencial', 'bastidores' => 'bastidores', 'iniciativas' => 'iniciativas'];
+    $tsMapEn = ['online' => 'online', 'in-person' => 'presencial', 'backstage' => 'bastidores', 'initiatives' => 'iniciativas'];
+    $tsMap   = (CURRENT_LANG === 'en') ? $tsMapEn : $tsMapPt;
+    if (isset($tsMap[$_GET['tabslug']])) {
+        $_GET['tab'] = $tsMap[$_GET['tabslug']];
+    }
+}
+
 // Parâmetros iniciais da URL
 $initialTab      = $_GET['tab']     ?? 'online';
 $initialLanguage = $_GET['idioma']  ?? 'all';
@@ -69,8 +79,14 @@ if ($initialTab === 'iniciativas' && !empty($projeto)) {
 } else if ($initialTab === 'iniciativas') {
     $title = t('team.tabs.iniciativas');
 }
-$canonical = SITE_URL . langUrl('equipe.php');
-if ($initialTab === 'iniciativas' && !empty($projeto)) $canonical .= "?tab=iniciativas&projeto=" . urlencode($projeto);
+// Canonical URL — sub-path limpo por aba
+$_tcMapPt  = ['online' => 'online', 'presencial' => 'presencial', 'bastidores' => 'bastidores', 'iniciativas' => 'iniciativas'];
+$_tcMapEn  = ['online' => 'online', 'presencial' => 'in-person', 'bastidores' => 'backstage', 'iniciativas' => 'initiatives'];
+$_tcMap    = (CURRENT_LANG === 'en') ? $_tcMapEn : $_tcMapPt;
+$_cPrefix  = (CURRENT_LANG === 'en') ? '/en/team' : '/equipe';
+$_cTabSlug = $_tcMap[$initialTab] ?? $initialTab;
+$canonical = SITE_URL . $_cPrefix . '/' . $_cTabSlug;
+if ($initialTab === 'iniciativas' && !empty($projeto)) $canonical .= '?projeto=' . urlencode($projeto);
 
 
 ob_start();
@@ -528,6 +544,7 @@ include 'includes/header.php';
 </main>
 
 <?php
+$currentLang    = CURRENT_LANG;
 $scrollToTarget = $_GET['scroll_to'] ?? ((isset($_GET['slug']) && ($_GET['slug'] === 'sejahost' || $_GET['slug'] === 'beahost')) ? 'seja-host' : '');
 $page_scripts = <<<JS
 <script>
@@ -697,13 +714,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const _teamLang    = '{$currentLang}';
+    const _tabSlugsPt  = { online: 'online', presencial: 'presencial', bastidores: 'bastidores', iniciativas: 'iniciativas' };
+    const _tabSlugsEn  = { online: 'online', presencial: 'in-person', bastidores: 'backstage', iniciativas: 'initiatives' };
+
     function updateURL() {
+        const slugMap  = _teamLang === 'en' ? _tabSlugsEn : _tabSlugsPt;
+        const prefix   = _teamLang === 'en' ? '/en/team' : '/equipe';
+        const tabSlug  = slugMap[currentTab] || currentTab;
+
         const url = new URL(window.location);
-        url.searchParams.set('tab', currentTab);
+        url.pathname = prefix + '/' + tabSlug;
+        url.search   = '';
+
         const paramMap = { online: 'idioma', presencial: 'regiao', bastidores: 'papel', iniciativas: 'projeto' };
         Object.keys(paramMap).forEach(key => {
-            if (key === currentTab && currentFilters[key] !== 'all') url.searchParams.set(paramMap[key], currentFilters[key]);
-            else url.searchParams.delete(paramMap[key]);
+            if (key === currentTab && currentFilters[key] !== 'all') {
+                url.searchParams.set(paramMap[key], currentFilters[key]);
+            }
         });
         window.history.pushState({}, '', url);
     }
