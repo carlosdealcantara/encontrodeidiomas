@@ -11,17 +11,27 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 $conn = connectDB();
 
 // Lógica de Salvar as alterações
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['msgs'])) {
-    $stmt = $conn->prepare("UPDATE mentoria_mensagens SET texto = :texto, dias_antes = :dias, ativo = :ativo WHERE id = :id");
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    foreach ($_POST['msgs'] as $id => $dados) {
-        $ativo = isset($dados['ativo']) ? 1 : 0;
-        $stmt->execute([
-            'texto' => $dados['texto'],
-            'dias'  => (int)$dados['dias'],
-            'ativo' => $ativo,
-            'id'    => (int)$id
-        ]);
+    // Salvar o Rodapé Global PIX
+    if (isset($_POST['pix_footer'])) {
+        $pix_footer = $_POST['pix_footer'];
+        $stmtPix = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('mentoria_pix_footer', :val) ON DUPLICATE KEY UPDATE setting_value = :val");
+        $stmtPix->execute(['val' => $pix_footer]);
+    }
+
+    if (isset($_POST['msgs'])) {
+        $stmt = $conn->prepare("UPDATE mentoria_mensagens SET texto = :texto, dias_antes = :dias, ativo = :ativo WHERE id = :id");
+        
+        foreach ($_POST['msgs'] as $id => $dados) {
+            $ativo = isset($dados['ativo']) ? 1 : 0;
+            $stmt->execute([
+                'texto' => $dados['texto'],
+                'dias'  => (int)$dados['dias'],
+                'ativo' => $ativo,
+                'id'    => (int)$id
+            ]);
+        }
     }
     
     header('Location: mentoria_settings.php?msg=Configurações salvas com sucesso!');
@@ -31,6 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['msgs'])) {
 // Busca todas as mensagens cadastradas
 $stmt = $conn->query("SELECT * FROM mentoria_mensagens ORDER BY dias_antes DESC");
 $mensagens = $stmt->fetchAll();
+
+// Busca o rodapé atual
+$pix_footer_atual = getSetting('mentoria_pix_footer', "🔑 Chave PIX para renovação:\n01811018157\nFavorecido: Carlos Alberto de Alcântara Júnior");
 
 ?>
 <!DOCTYPE html>
@@ -151,6 +164,17 @@ $mensagens = $stmt->fetchAll();
         </div>
 
         <form method="POST" action="">
+            <!-- RODAPÉ GLOBAL PIX -->
+            <div class="msg-card" style="margin-bottom: 30px; border-color: var(--accent-blue);">
+                <div class="msg-header">
+                    <div class="msg-title" style="color: var(--accent-blue);"><i class="fas fa-money-check-alt"></i> Rodapé Padrão de Cobrança (PIX)</div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 15px;">Este texto será adicionado automaticamente no final de TODAS as mensagens que o robô enviar, para que você não precise copiar e colar o PIX em cada uma delas.</p>
+                <div class="form-group">
+                    <textarea name="pix_footer" rows="4" required><?= htmlspecialchars($pix_footer_atual) ?></textarea>
+                </div>
+            </div>
+
             <div class="cards-grid">
                 <?php foreach ($mensagens as $msg): ?>
                 <div class="msg-card">
