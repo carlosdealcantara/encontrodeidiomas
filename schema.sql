@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS mentoria_alunos (
     status_pagamento ENUM('Pendente', 'Pago', 'Suspenso', 'Isento') DEFAULT 'Pendente',
     grupo_atual VARCHAR(100) DEFAULT 'Our Meetups',
     observacoes TEXT,
+    data_inicio DATE NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

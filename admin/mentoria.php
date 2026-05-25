@@ -214,7 +214,7 @@ $alunos = $stmt->fetchAll();
                         </td>
                         <td>
                             <div style="font-weight:600;">R$ <?= number_format($aluno['valor_mensalidade'], 2, ',', '.') ?></div>
-                            <div style="font-size:0.8rem; color:var(--text-dim);">Dia <?= htmlspecialchars($aluno['dia_vencimento']) ?></div>
+                            <div style="font-size:0.8rem; color:var(--text-dim);">LTV: R$ <?= number_format($aluno['total_investido'] ?? 0, 2, ',', '.') ?></div>
                         </td>
                         <td>
                             <div class="<?= $vencimentoClass ?>"><?= $vencimentoText ?></div>
@@ -230,19 +230,15 @@ $alunos = $stmt->fetchAll();
                         </td>
                         <td>
                             <div class="actions">
-                                <!-- Botão de Renovação Rápida -->
+                                <!-- Botão de Renovação (Registrar Pagamento) -->
                                 <form action="mentoria_renovar.php" method="POST" style="display:inline;">
                                     <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
-                                    <button type="submit" class="action-btn btn-renew" title="Renovar +1 Mês e Marcar Pendente para o próximo ciclo" onclick="return confirm('Renovar o aluno <?= htmlspecialchars($aluno['nome']) ?> para o próximo mês?');">
-                                        <i class="fas fa-sync-alt"></i>
+                                    <button type="submit" class="action-btn btn-renew" title="Registrar Pagamento: Renova +1 Mês e Adiciona R$ <?= number_format($aluno['valor_mensalidade'], 2, ',', '.') ?> no LTV" onclick="return confirm('Registrar pagamento de <?= htmlspecialchars($aluno['nome']) ?>? Isso avançará o vencimento para o próximo mês.');">
+                                        <i class="fas fa-check-circle"></i>
                                     </button>
                                 </form>
 
-                                <a href="mentoria_form.php?id=<?= $aluno['id'] ?>" class="action-btn btn-edit" title="Editar Dados"><i class="fas fa-edit"></i></a>
-                                
-                                <a href="mentoria.php?toggle_pagamento=<?= $aluno['status_pagamento'] ?>&id=<?= $aluno['id'] ?>" class="action-btn btn-toggle" title="Alterar Pagamento Manualmente (Pago <-> Pendente)">
-                                    <i class="fas fa-exchange-alt"></i>
-                                </a>
+                                <a href="mentoria_form.php?id=<?= $aluno['id'] ?>" class="action-btn btn-edit" title="Editar Dados / LTV / Data de Início"><i class="fas fa-edit"></i></a>
                             </div>
                         </td>
                     </tr>

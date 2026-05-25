@@ -25,8 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $telefone = $_POST['telefone'] ?? '';
     $status_aluno = $_POST['status_aluno'] ?? 'Ativo';
     $valor_mensalidade = str_replace(',', '.', $_POST['valor_mensalidade'] ?? '0');
+    $total_investido = str_replace(',', '.', $_POST['total_investido'] ?? '0');
     $dia_vencimento = (int)($_POST['dia_vencimento'] ?? 1);
     $proximo_vencimento = $_POST['proximo_vencimento'] ?? date('Y-m-d');
+    
+    // Tratamento da data de início (pode ser null)
+    $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
+    
     $grupo_atual = $_POST['grupo_atual'] ?? 'Our Meetups';
     $observacoes = $_POST['observacoes'] ?? '';
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
@@ -38,28 +43,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // UPDATE
         $sql = "UPDATE mentoria_alunos SET 
                 nome = :nome, telefone = :telefone, status_aluno = :status_aluno, 
-                valor_mensalidade = :valor_mensalidade, dia_vencimento = :dia_vencimento, 
-                proximo_vencimento = :proximo_vencimento, grupo_atual = :grupo_atual, 
+                valor_mensalidade = :valor_mensalidade, total_investido = :total_investido,
+                dia_vencimento = :dia_vencimento, proximo_vencimento = :proximo_vencimento, 
+                data_inicio = :data_inicio, grupo_atual = :grupo_atual, 
                 observacoes = :observacoes 
                 WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno,
-            'valor_mensalidade' => $valor_mensalidade, 'dia_vencimento' => $dia_vencimento,
-            'proximo_vencimento' => $proximo_vencimento, 'grupo_atual' => $grupo_atual,
+            'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
+            'dia_vencimento' => $dia_vencimento, 'proximo_vencimento' => $proximo_vencimento, 
+            'data_inicio' => $data_inicio, 'grupo_atual' => $grupo_atual,
             'observacoes' => $observacoes, 'id' => $id
         ]);
         header('Location: mentoria.php?msg=Aluno atualizado com sucesso');
         exit;
     } else {
         // INSERT
-        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, valor_mensalidade, dia_vencimento, proximo_vencimento, grupo_atual, observacoes) 
-                VALUES (:nome, :telefone, :status_aluno, :valor_mensalidade, :dia_vencimento, :proximo_vencimento, :grupo_atual, :observacoes)";
+        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, valor_mensalidade, total_investido, dia_vencimento, proximo_vencimento, data_inicio, grupo_atual, observacoes) 
+                VALUES (:nome, :telefone, :status_aluno, :valor_mensalidade, :total_investido, :dia_vencimento, :proximo_vencimento, :data_inicio, :grupo_atual, :observacoes)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno,
-            'valor_mensalidade' => $valor_mensalidade, 'dia_vencimento' => $dia_vencimento,
-            'proximo_vencimento' => $proximo_vencimento, 'grupo_atual' => $grupo_atual,
+            'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
+            'dia_vencimento' => $dia_vencimento, 'proximo_vencimento' => $proximo_vencimento, 
+            'data_inicio' => $data_inicio, 'grupo_atual' => $grupo_atual,
             'observacoes' => $observacoes
         ]);
         header('Location: mentoria.php?msg=Novo aluno cadastrado com sucesso');
@@ -127,6 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 100%; 
         }
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); }
+        
+        .obs-hint { font-size: 0.75rem; color: var(--text-dim); font-weight: 400; margin-top: -5px; }
     </style>
 </head>
 <body>
@@ -172,22 +182,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="form-group">
-                        <label>Grupo Atual (Nome exato do WhatsApp)</label>
-                        <input type="text" name="grupo_atual" value="<?= htmlspecialchars($aluno['grupo_atual'] ?? 'Our Meetups') ?>">
+                        <label>Total Já Investido / LTV (R$)</label>
+                        <input type="text" name="total_investido" value="<?= htmlspecialchars($aluno['total_investido'] ?? '0.00') ?>">
+                        <div class="obs-hint">Ao bater R$ 3.000, vira Vitalício.</div>
                     </div>
-
+                    
                     <div class="form-group">
-                        <label>Dia Fixo de Vencimento (1 a 31)</label>
-                        <input type="number" name="dia_vencimento" min="1" max="31" required value="<?= htmlspecialchars($aluno['dia_vencimento'] ?? '') ?>">
+                        <label>Data de Início (Para estatísticas)</label>
+                        <input type="date" name="data_inicio" value="<?= htmlspecialchars($aluno['data_inicio'] ?? '') ?>">
                     </div>
 
                     <div class="form-group">
                         <label>Data Exata do Próximo Vencimento</label>
                         <input type="date" name="proximo_vencimento" required value="<?= htmlspecialchars($aluno['proximo_vencimento'] ?? date('Y-m-d')) ?>">
                     </div>
+                    
+                    <div class="form-group">
+                        <label>Dia Fixo de Vencimento (1 a 31)</label>
+                        <input type="number" name="dia_vencimento" min="1" max="31" required value="<?= htmlspecialchars($aluno['dia_vencimento'] ?? '') ?>">
+                    </div>
 
                     <div class="form-group full">
                         <label>Observações</label>
+                        <div class="obs-hint">Ex: "Paga apenas R$ 150 por acordo antigo", "Aluno do exterior", etc.</div>
                         <textarea name="observacoes" rows="3"><?= htmlspecialchars($aluno['observacoes'] ?? '') ?></textarea>
                     </div>
                 </div>
