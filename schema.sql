@@ -44,3 +44,39 @@ INSERT IGNORE INTO settings (setting_key, setting_value, label, category, type) 
 ('global_notice_active', '0', 'Ativar Aviso Global', 'Aviso', 'boolean'),
 ('global_notice_text', 'Feriado! Não haverá encontros nesta sexta.', 'Texto do Aviso', 'Aviso', 'textarea'),
 ('contact_email', 'contato@encontrodeidiomas.com.br', 'E-mail de Contato', 'Perfil', 'text');
+
+-- ==========================================
+-- MÓDULO MENTORIA & COBRANÇAS
+-- ==========================================
+
+-- Table: mentoria_alunos
+CREATE TABLE IF NOT EXISTS mentoria_alunos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    telefone VARCHAR(50) NOT NULL,
+    status_aluno ENUM('Ativo', 'Inativo', 'Vitalício') DEFAULT 'Ativo',
+    valor_mensalidade DECIMAL(10,2) DEFAULT 0.00,
+    total_investido DECIMAL(10,2) DEFAULT 0.00,
+    dia_vencimento INT NOT NULL,
+    proximo_vencimento DATE NOT NULL,
+    status_pagamento ENUM('Pendente', 'Pago', 'Suspenso', 'Isento') DEFAULT 'Pendente',
+    grupo_atual VARCHAR(100) DEFAULT 'Our Meetups',
+    observacoes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: mentoria_mensagens (Dashboard de textos)
+CREATE TABLE IF NOT EXISTS mentoria_mensagens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cenario VARCHAR(100) NOT NULL,
+    dias_antes INT NOT NULL,
+    texto TEXT NOT NULL,
+    ativo TINYINT(1) DEFAULT 1
+);
+
+-- Insert Default Messages
+INSERT IGNORE INTO mentoria_mensagens (cenario, dias_antes, texto) VALUES
+('Aviso Amigável (Prévio)', 3, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. Consta no Sistema que o seu ciclo de acesso vence em 3 dias.\nPara evitar a suspensão automática pelo servidor, realize a renovação e nos envie o comprovante.'),
+('Aviso de Véspera', 1, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. O seu ciclo de acesso vence amanhã.\nPor favor, realize a renovação.'),
+('Aviso de Vencimento', 0, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. O prazo de renovação do seu acesso encerra hoje.'),
+('Aviso de Suspensão', -1, '🤖 AVISO DE SUSPENSÃO:\nOlá, {nome}. O sistema suspendeu seu acesso devido à não identificação da renovação.\nEntre em contato com o suporte para reativarmos manualmente.');
