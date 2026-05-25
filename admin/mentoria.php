@@ -2,7 +2,6 @@
 session_start();
 require_once '../config.php';
 
-// Proteção da página
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
     exit;
@@ -10,7 +9,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $conn = connectDB();
 
-// Lógica de alternar status_pagamento (Ex: Pago para Pendente)
 if (isset($_GET['toggle_pagamento']) && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $newStatus = $_GET['toggle_pagamento'] === 'Pago' ? 'Pendente' : 'Pago';
@@ -22,8 +20,13 @@ if (isset($_GET['toggle_pagamento']) && isset($_GET['id'])) {
     exit;
 }
 
-// Busca todos os alunos
-$stmt = $conn->query("SELECT * FROM mentoria_alunos ORDER BY proximo_vencimento ASC");
+// Busca todos os alunos, ordenando os Ativos primeiro, e depois por data de vencimento
+$stmt = $conn->query("
+    SELECT * FROM mentoria_alunos 
+    ORDER BY 
+        CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, 
+        proximo_vencimento ASC
+");
 $alunos = $stmt->fetchAll();
 
 ?>
@@ -54,7 +57,7 @@ $alunos = $stmt->fetchAll();
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header-title h2 { font-size: 1.8rem; font-weight: 700; }
 
         .header-actions { display: flex; gap: 15px; }
@@ -64,16 +67,28 @@ $alunos = $stmt->fetchAll();
         .btn-settings { background: var(--sidebar-bg); border: 1px solid rgba(255,255,255,0.1); }
         .btn-settings:hover { background: rgba(255,255,255,0.1); }
 
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; flex-wrap: wrap; }
+        .filter-group { display: flex; gap: 5px; background: var(--sidebar-bg); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .filter-btn { padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; }
+        .filter-btn:hover { color: var(--white); }
+        .filter-btn.active { background: var(--accent-red); color: white; box-shadow: 0 4px 10px rgba(227, 29, 28, 0.2); }
+        
+        .search-group { position: relative; flex: 1; max-width: 400px; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
+        .search-group input { width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 15px 12px 45px; color: var(--text-main); outline: none; transition: all 0.3s ease; }
+        .search-group input:focus { border-color: var(--accent-red); box-shadow: 0 0 0 4px rgba(227, 29, 28, 0.1); }
+
+
         .table-container { background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 20px; background: rgba(0,0,0,0.1); color: var(--text-dim); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
         td { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
 
-        .aluno-name { font-weight: 600; color: var(--white); font-size: 1.1rem; }
-        .aluno-phone { font-size: 0.85rem; color: var(--text-dim); }
+        .aluno-name { font-weight: 600; color: var(--white); font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .aluno-phone { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; }
 
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
         
         .badge-pago { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .badge-pendente { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
@@ -81,9 +96,11 @@ $alunos = $stmt->fetchAll();
         .badge-isento { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
 
         .badge-ativo { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); }
+        .badge-inativo { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
+        .badge-vitalicio { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 
         .actions { display: flex; gap: 10px; }
-        .action-btn { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); }
+        .action-btn { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; background: transparent; }
         .btn-edit { color: var(--accent-blue); }
         .btn-edit:hover { background: var(--accent-blue); color: white; }
         .btn-toggle { color: var(--text-dim); }
@@ -95,6 +112,8 @@ $alunos = $stmt->fetchAll();
         
         .vencimento-hoje { color: var(--warning); font-weight: bold; }
         .vencimento-atrasado { color: var(--danger); font-weight: bold; }
+        .vencimento-normal { color: var(--text-main); }
+        .vencimento-inativo { color: var(--text-dim); font-style: italic; }
     </style>
 </head>
 <body>
@@ -122,6 +141,19 @@ $alunos = $stmt->fetchAll();
             </div>
         <?php endif; ?>
 
+        <div class="controls">
+            <div class="filter-group">
+                <button class="filter-btn active" data-status="Ativo">Ativos</button>
+                <button class="filter-btn" data-status="Inativo">Inativos</button>
+                <button class="filter-btn" data-status="Vitalício">Vitalícios</button>
+                <button class="filter-btn" data-status="all">Todos</button>
+            </div>
+            <div class="search-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="alunoSearch" placeholder="Pesquisar por nome...">
+            </div>
+        </div>
+
         <div class="table-container">
             <table>
                 <thead>
@@ -140,18 +172,44 @@ $alunos = $stmt->fetchAll();
                     
                     <?php foreach ($alunos as $aluno): 
                         $hoje = new DateTime();
-                        $vencimento = new DateTime($aluno['proximo_vencimento']);
-                        $diff = $hoje->diff($vencimento);
-                        $dias = (int)$diff->format('%R%a'); // Negativo se já passou
                         
-                        $vencimentoClass = '';
-                        $vencimentoText = $vencimento->format('d/m/Y');
-                        if ($dias === 0) { $vencimentoClass = 'vencimento-hoje'; $vencimentoText .= ' (Hoje)'; }
-                        elseif ($dias < 0) { $vencimentoClass = 'vencimento-atrasado'; $vencimentoText .= " (Atrasado $dias dias)"; }
+                        // Fallback para datas bizarras do legado (como 0001)
+                        if(strpos($aluno['proximo_vencimento'], '-0001') !== false || substr($aluno['proximo_vencimento'], 0, 4) == '1900') {
+                            $vencimentoText = "1900";
+                            $dias = 0;
+                        } else {
+                            $vencimento = new DateTime($aluno['proximo_vencimento']);
+                            $diff = $hoje->diff($vencimento);
+                            $dias = (int)$diff->format('%R%a'); // Negativo se já passou
+                            $vencimentoText = $vencimento->format('d/m/Y');
+                        }
+                        
+                        $vencimentoClass = 'vencimento-normal';
+                        
+                        // Só calcula atraso se for um aluno Ativo
+                        if ($aluno['status_aluno'] === 'Ativo' && $aluno['status_pagamento'] !== 'Isento') {
+                            if ($dias === 0) { 
+                                $vencimentoClass = 'vencimento-hoje'; 
+                                $vencimentoText .= ' (Hoje)'; 
+                            } elseif ($dias < 0) { 
+                                $vencimentoClass = 'vencimento-atrasado'; 
+                                $vencimentoText .= " (Atrasado " . abs($dias) . " dias)"; 
+                            }
+                        } else {
+                            $vencimentoClass = 'vencimento-inativo';
+                        }
                     ?>
-                    <tr>
+                    <tr class="aluno-row" data-status-aluno="<?= htmlspecialchars($aluno['status_aluno']) ?>">
                         <td>
-                            <div class="aluno-name"><?= htmlspecialchars($aluno['nome']) ?> <span class="badge badge-ativo" style="font-size:0.6rem; padding: 2px 6px; margin-left:5px; vertical-align: middle;"><?= htmlspecialchars($aluno['status_aluno']) ?></span></div>
+                            <div class="aluno-name">
+                                <?= htmlspecialchars($aluno['nome']) ?> 
+                                <?php 
+                                    $badgeStClass = 'badge-inativo';
+                                    if($aluno['status_aluno'] === 'Ativo') $badgeStClass = 'badge-ativo';
+                                    if($aluno['status_aluno'] === 'Vitalício') $badgeStClass = 'badge-vitalicio';
+                                ?>
+                                <span class="badge <?= $badgeStClass ?>"><?= htmlspecialchars($aluno['status_aluno']) ?></span>
+                            </div>
                             <div class="aluno-phone"><i class="fab fa-whatsapp"></i> <?= htmlspecialchars($aluno['telefone']) ?></div>
                         </td>
                         <td>
@@ -175,14 +233,14 @@ $alunos = $stmt->fetchAll();
                                 <!-- Botão de Renovação Rápida -->
                                 <form action="mentoria_renovar.php" method="POST" style="display:inline;">
                                     <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
-                                    <button type="submit" class="action-btn btn-renew" title="Renovar +1 Mês e Marcar Pago" onclick="return confirm('Renovar o aluno <?= htmlspecialchars($aluno['nome']) ?> para o próximo mês?');">
+                                    <button type="submit" class="action-btn btn-renew" title="Renovar +1 Mês e Marcar Pendente para o próximo ciclo" onclick="return confirm('Renovar o aluno <?= htmlspecialchars($aluno['nome']) ?> para o próximo mês?');">
                                         <i class="fas fa-sync-alt"></i>
                                     </button>
                                 </form>
 
-                                <a href="mentoria_form.php?id=<?= $aluno['id'] ?>" class="action-btn btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
+                                <a href="mentoria_form.php?id=<?= $aluno['id'] ?>" class="action-btn btn-edit" title="Editar Dados"><i class="fas fa-edit"></i></a>
                                 
-                                <a href="mentoria.php?toggle_pagamento=<?= $aluno['status_pagamento'] ?>&id=<?= $aluno['id'] ?>" class="action-btn btn-toggle" title="Alternar Pago/Pendente">
+                                <a href="mentoria.php?toggle_pagamento=<?= $aluno['status_pagamento'] ?>&id=<?= $aluno['id'] ?>" class="action-btn btn-toggle" title="Alterar Pagamento Manualmente (Pago <-> Pendente)">
                                     <i class="fas fa-exchange-alt"></i>
                                 </a>
                             </div>
@@ -193,5 +251,43 @@ $alunos = $stmt->fetchAll();
             </table>
         </div>
     </main>
+
+    <script>
+        const searchInput = document.getElementById('alunoSearch');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const tableRows = document.querySelectorAll('.aluno-row');
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.status;
+
+            tableRows.forEach(row => {
+                const name = row.querySelector('.aluno-name').textContent.toLowerCase();
+                const statusAluno = row.dataset.statusAluno;
+                
+                const matchesSearch = name.includes(searchTerm);
+                const matchesStatus = activeFilter === 'all' || statusAluno === activeFilter;
+
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterTable);
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterTable();
+            });
+        });
+
+        // Inicializa o filtro (Ativos por padrão)
+        filterTable();
+    </script>
 </body>
 </html>
