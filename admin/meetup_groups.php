@@ -62,9 +62,15 @@ if (isset($_GET['fetch_api'])) {
     curl_close($ch);
     
     if ($http_code === 200 && $res) {
-        $api_groups = json_decode($res, true);
+        $decoded = json_decode($res, true);
+        if (is_array($decoded)) {
+            // A Evolution API às vezes retorna direto o array, ou dentro de uma chave
+            $api_groups = $decoded;
+        } else {
+            $api_error = "A API retornou HTTP 200, mas o JSON é inválido ou não é um array. Resposta Bruta: " . htmlspecialchars($res);
+        }
     } else {
-        $api_error = "Erro ao buscar na API (HTTP $http_code). Verifique se o WhatsApp está conectado no painel da Oracle.";
+        $api_error = "Erro na API (HTTP $http_code). Resposta: " . htmlspecialchars($res ?: 'Vazia');
     }
 }
 
