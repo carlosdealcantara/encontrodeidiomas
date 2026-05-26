@@ -70,7 +70,14 @@ if (isset($_GET['fetch_api'])) {
             $api_error = "A API retornou HTTP 200, mas o JSON é inválido ou não é um array. Resposta Bruta: " . htmlspecialchars($res);
         }
     } else {
-        $api_error = "Erro na API (HTTP $http_code). Resposta: " . htmlspecialchars($res ?: 'Vazia');
+        // Tenta pegar o status da conexão para depurar
+        $ch2 = curl_init("http://136.248.92.126:8080/instance/connectionState/meetups");
+        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch2, CURLOPT_HTTPHEADER, ["apikey: SenhaMeetups2026"]);
+        $res2 = curl_exec($ch2);
+        curl_close($ch2);
+        
+        $api_error = "Erro na API de Grupos (HTTP $http_code). Resp: " . htmlspecialchars($res ?: 'Vazia') . " | Status da Instância: " . htmlspecialchars($res2 ?: 'Vazia');
     }
 }
 
