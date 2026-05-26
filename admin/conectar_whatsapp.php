@@ -26,11 +26,45 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
         curl_exec($ch);
         curl_close($ch);
         
-        // Também vamos fazer um delete no banco/reiniciar sessão se necessário
         header("Location: conectar_whatsapp.php?msg=Sessão finalizada!");
         exit;
     } catch (Exception $e) {
         $error = "Erro ao desconectar: " . $e->getMessage();
+    }
+}
+
+// Lógica de Reset Completo (Deletar e Recriar Instância)
+if (isset($_GET['action']) && $_GET['action'] === 'reset') {
+    try {
+        // 1. Deleta a instância atual
+        $ch = curl_init("$apiUrl/instance/delete/$instance");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
+        curl_exec($ch);
+        curl_close($ch);
+        
+        // 2. Recria a instância zerada
+        $body = json_encode([
+            "instanceName" => $instance,
+            "qrcode" => true,
+            "integration" => "WHATSAPP-BAILEYS"
+        ]);
+        $ch = curl_init("$apiUrl/instance/create");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "apikey: $apiKey",
+            "Content-Type: application/json"
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+        curl_exec($ch);
+        curl_close($ch);
+
+        header("Location: conectar_whatsapp.php?msg=Sessão recriada com sucesso! Escaneie o novo QR Code rapidamente.");
+        exit;
+    } catch (Exception $e) {
+        $error = "Erro ao resetar a conexão: " . $e->getMessage();
     }
 }
 
@@ -172,8 +206,9 @@ if ($state !== 'open' && $state !== 'connected') {
                     </div>
                 <?php endif; ?>
 
-                <div style="margin-top: 10px;">
+                <div style="margin-top: 10px; display: flex; gap: 15px; justify-content: center;">
                     <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-sync"></i> Atualizar QR Code</a>
+                    <a href="?action=reset" class="btn btn-secondary" style="border-color: rgba(227, 29, 28, 0.5); color: #ff8a8a;" onclick="return confirm('Isso vai apagar a sessão atual na API e gerar uma nova do zero. Tem certeza?')"><i class="fas fa-trash-alt"></i> Forçar Nova Sessão</a>
                 </div>
             <?php endif; ?>
         </div>
