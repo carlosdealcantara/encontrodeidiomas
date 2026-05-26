@@ -14,11 +14,9 @@ $token_secreto = '83x9aZ2pLQw1'; // Altere se desejar
 if (!isset($_GET['token']) || $_GET['token'] !== $token_secreto) {
     http_response_code(403);
     die("Acesso Negado.");
-}
-
-// Configurações da Evolution API (Máquina da Oracle)
+}// Configurações da Evolution API (Máquina da Oracle)
 $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-$EVOLUTION_API_KEY = "B6D711FCDE4D4FD5936544120E713976";
+$EVOLUTION_API_KEY = "SenhaMeetups2026";
 
 $conn = connectDB();
 
@@ -91,8 +89,8 @@ foreach ($alunos as $aluno) {
             // 1. Substitui a variável {nome} pelo nome real do aluno
             $textoFinal = str_replace('{nome}', trim(explode(' ', $aluno['nome'])[0]), $msgConfig['texto']);
             
-            // 2. Anexa o Rodapé Global PIX
-            $textoFinal .= "\n\n" . $pix_footer;
+            // 2. Anexa o Rodapé Global PIX com 2 quebras de linha para espaçamento perfeito
+            $textoFinal .= "\n\n" . trim($pix_footer);
             
             // == ENVIA PARA A ORACLE (cURL) ==
             // Se o telefone não tiver o código do país (55), vamos adicionar (assumindo Brasil)
@@ -101,9 +99,16 @@ foreach ($alunos as $aluno) {
                 $telefoneLimpo = "55" . $telefoneLimpo;
             }
             
+            // Payload no formato exato da Evolution API v1
             $payload = json_encode([
                 "number" => $telefoneLimpo,
-                "text" => $textoFinal
+                "options" => [
+                    "delay" => 1500,
+                    "presence" => "composing"
+                ],
+                "textMessage" => [
+                    "text" => $textoFinal
+                ]
             ]);
             
             $ch = curl_init($EVOLUTION_API_URL);
@@ -115,8 +120,7 @@ foreach ($alunos as $aluno) {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
             
-            // Executa a requisição
-            // DESCOMENTE A LINHA ABAIXO PARA ENVIAR DE VERDADE QUANDO ESTIVER EM PRODUÇÃO
+            // Executa a requisição DE VERDADE
             $response = curl_exec($ch); 
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);

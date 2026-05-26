@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Salvar o Rodapé Global PIX
     if (isset($_POST['pix_footer'])) {
         $pix_footer = $_POST['pix_footer'];
-        $stmtPix = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('mentoria_pix_footer', :val) ON DUPLICATE KEY UPDATE setting_value = :val");
-        $stmtPix->execute(['val' => $pix_footer]);
+        $stmtPix = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('mentoria_pix_footer', :val1) ON DUPLICATE KEY UPDATE setting_value = :val2");
+        $stmtPix->execute(['val1' => $pix_footer, 'val2' => $pix_footer]);
     }
 
     if (isset($_POST['msgs'])) {
