@@ -109,6 +109,9 @@ if (isset($_GET['fetch_api'])) {
     }
 }
 
+// Reconectar ao banco de dados após a requisição demorada da API (Evita erro 2006 MySQL server has gone away)
+$conn = connectDB();
+
 // Buscar idiomas para o select
 $languages = [];
 try {
