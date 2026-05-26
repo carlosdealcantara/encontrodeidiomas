@@ -51,33 +51,59 @@ if (isset($_GET['delete'])) {
 // Lógica de Buscar IDs da API
 $api_groups = [];
 if (isset($_GET['fetch_api'])) {
-    $url = "http://136.248.92.126:8080/group/fetchAllGroups/meetups?getParticipants=false";
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "apikey: SenhaMeetups2026"
-    ]);
-    $res = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    $headers = ["apikey: SenhaMeetups2026"];
     
-    if ($http_code === 200 && $res) {
-        $decoded = json_decode($res, true);
-        if (is_array($decoded)) {
-            // A Evolution API às vezes retorna direto o array, ou dentro de uma chave
-            $api_groups = $decoded;
-        } else {
-            $api_error = "A API retornou HTTP 200, mas o JSON é inválido ou não é um array. Resposta Bruta: " . htmlspecialchars($res);
+    // Tentativa 1: fetchAllGroups (sem getParticipants)
+    $ch1 = curl_init("http://136.248.92.126:8080/group/fetchAllGroups/meetups");
+    curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch1, CURLOPT_HTTPHEADER, $headers);
+    $res1 = curl_exec($ch1);
+    $code1 = curl_getinfo($ch1, CURLINFO_HTTP_CODE);
+    curl_close($ch1);
+    
+    // Tentativa 2: findChats
+    $ch2 = curl_init("http://136.248.92.126:8080/chat/findChats/meetups");
+    curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch2, CURLOPT_HTTPHEADER, $headers);
+    $res2 = curl_exec($ch2);
+    $code2 = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
+    curl_close($ch2);
+
+    $found = false;
+    
+    if ($code1 === 200 && $res1) {
+        $dec1 = json_decode($res1, true);
+        if (is_array($dec1) && !empty($dec1)) {
+            $api_groups = $dec1;
+            $found = true;
         }
-    } else {
-        // Tenta pegar o status da conexão para depurar
-        $ch2 = curl_init("http://136.248.92.126:8080/instance/connectionState/meetups");
-        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch2, CURLOPT_HTTPHEADER, ["apikey: SenhaMeetups2026"]);
-        $res2 = curl_exec($ch2);
-        curl_close($ch2);
-        
-        $api_error = "Erro na API de Grupos (HTTP $http_code). Resp: " . htmlspecialchars($res ?: 'Vazia') . " | Status da Instância: " . htmlspecialchars($res2 ?: 'Vazia');
+    }
+    
+    if (!$found && $code2 === 200 && $res2) {
+        $dec2 = json_decode($res2, true);
+        if (is_array($dec2) && !empty($dec2)) {
+            // FindChats retorna todas as conversas, filtramos por grupo
+            foreach ($dec2 as $chat) {
+                // Algumas versoes da API trazem o array em chaves diferentes
+                $id = $chat['id'] ?? ($chat['remoteJid'] ?? '');
+                $name = $chat['name'] ?? ($chat['pushName'] ?? 'Sem Nome');
+                
+                if (strpos($id, '@g.us') !== false) {
+                    $api_groups[] = [
+                        'id' => $id,
+                        'subject' => $name
+                    ];
+                }
+            }
+            if (!empty($api_groups)) $found = true;
+        }
+    }
+    
+    if (!$found) {
+        // Formata os retornos para depuracao
+        $r1_debug = htmlspecialchars(substr($res1 ?: 'Vazio', 0, 100));
+        $r2_debug = htmlspecialchars(substr($res2 ?: 'Vazio', 0, 100));
+        $api_error = "Nenhum grupo localizado. fetchAllGroups($code1): $r1_debug | findChats($code2): $r2_debug";
     }
 }
 
