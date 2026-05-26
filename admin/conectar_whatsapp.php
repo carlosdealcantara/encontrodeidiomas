@@ -64,6 +64,28 @@ if (isset($_GET['action']) && $_GET['action'] === 'reset') {
         curl_exec($ch);
         curl_close($ch);
 
+        // 3. Atualiza as configurações para NÃO ignorar grupos (necessário para buscar IDs)
+        $settingsBody = json_encode([
+            "reject_call" => false,
+            "msg_call" => "",
+            "groups_ignore" => false,
+            "always_online" => false,
+            "read_messages" => false,
+            "read_status" => false,
+            "sync_full_history" => false
+        ]);
+        $chSet = curl_init("$apiUrl/settings/set/$instance");
+        curl_setopt($chSet, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($chSet, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($chSet, CURLOPT_HTTPHEADER, [
+            "apikey: $apiKey",
+            "Content-Type: application/json"
+        ]);
+        curl_setopt($chSet, CURLOPT_POSTFIELDS, $settingsBody);
+        curl_exec($chSet);
+        curl_close($chSet);
+
+
         header("Location: conectar_whatsapp.php?msg=Sessão recriada com sucesso! Escaneie o novo QR Code rapidamente.");
         exit;
     } catch (Exception $e) {
