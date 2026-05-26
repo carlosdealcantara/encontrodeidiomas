@@ -11,7 +11,9 @@ require_once __DIR__ . '/config.php';
 
 // Segurança: Proteja este arquivo para que curiosos não disparem as mensagens
 $token_secreto = '83x9aZ2pLQw1'; // Altere se desejar
-if (!isset($_GET['token']) || $_GET['token'] !== $token_secreto) {
+$is_cli = (php_sapi_name() === 'cli');
+
+if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     http_response_code(403);
     die("Acesso Negado.");
 }// Configurações da Evolution API (Máquina da Oracle)
