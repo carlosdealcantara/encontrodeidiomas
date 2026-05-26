@@ -18,26 +18,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $language_id = ($categoria === 'especifico' && !empty($_POST['language_id'])) ? (int)$_POST['language_id'] : null;
         $ativo = isset($_POST['ativo']) ? 1 : 0;
         
-        if (!empty($_POST['id'])) {
-            // Atualizar
-            $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_id = ?, ativo = ? WHERE id = ?");
-            $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo, $_POST['id']]);
-            $msg = "Grupo atualizado com sucesso!";
-        } else {
-            // Inserir
-            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo]);
-            $msg = "Novo grupo adicionado com sucesso!";
+        try {
+            if (!empty($_POST['id'])) {
+                // Atualizar
+                $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_id = ?, ativo = ? WHERE id = ?");
+                $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo, $_POST['id']]);
+                $msg = "Grupo atualizado com sucesso!";
+            } else {
+                // Inserir
+                $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo]);
+                $msg = "Novo grupo adicionado com sucesso!";
+            }
+        } catch (PDOException $e) {
+            $msg = "Erro ao salvar: " . $e->getMessage();
         }
     }
 }
 
 // Lógica de Excluir
 if (isset($_GET['delete'])) {
-    $stmt = $conn->prepare("DELETE FROM meetup_whatsapp_groups WHERE id = ?");
-    $stmt->execute([(int)$_GET['delete']]);
-    header('Location: meetup_groups.php?msg=Grupo excluido');
-    exit;
+    try {
+        $stmt = $conn->prepare("DELETE FROM meetup_whatsapp_groups WHERE id = ?");
+        $stmt->execute([(int)$_GET['delete']]);
+        header('Location: meetup_groups.php?msg=Grupo excluido');
+        exit;
+    } catch (PDOException $e) {
+        $msg = "Erro ao excluir: " . $e->getMessage();
+    }
 }
 
 // Lógica de Buscar IDs da API
@@ -61,16 +69,26 @@ if (isset($_GET['fetch_api'])) {
 }
 
 // Buscar idiomas para o select
-$languages = $conn->query("SELECT id, name FROM languages ORDER BY name ASC")->fetchAll();
+$languages = [];
+try {
+    $languages = $conn->query("SELECT id, name FROM languages ORDER BY name ASC")->fetchAll();
+} catch (PDOException $e) {
+    // Falha silenciosa ou avisa
+}
 
 // Buscar grupos cadastrados
-$stmt = $conn->query("
-    SELECT g.*, l.name as language_name 
-    FROM meetup_whatsapp_groups g 
-    LEFT JOIN languages l ON g.language_id = l.id 
-    ORDER BY g.categoria, g.nome ASC
-");
-$groups = $stmt->fetchAll();
+$groups = [];
+try {
+    $stmt = $conn->query("
+        SELECT g.*, l.name as language_name 
+        FROM meetup_whatsapp_groups g 
+        LEFT JOIN languages l ON g.language_id = l.id 
+        ORDER BY g.categoria, g.nome ASC
+    ");
+    $groups = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $api_error = "Erro no banco: " . $e->getMessage() . ". As tabelas provavelmente ainda não foram criadas.";
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

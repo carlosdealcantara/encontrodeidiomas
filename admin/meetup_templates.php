@@ -16,26 +16,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $texto = trim($_POST['template_texto']);
         $ativo = isset($_POST['ativo']) ? 1 : 0;
         
-        if (!empty($_POST['id'])) {
-            $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ? WHERE id = ?");
-            $stmt->execute([$cenario, $minutos, $texto, $ativo, $_POST['id']]);
-        } else {
-            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$cenario, $minutos, $texto, $ativo]);
+        try {
+            if (!empty($_POST['id'])) {
+                $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ? WHERE id = ?");
+                $stmt->execute([$cenario, $minutos, $texto, $ativo, $_POST['id']]);
+            } else {
+                $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$cenario, $minutos, $texto, $ativo]);
+            }
+            header('Location: meetup_templates.php?msg=Template salvo com sucesso!');
+            exit;
+        } catch (PDOException $e) {
+            $msg = "Erro ao salvar: " . $e->getMessage();
+            $_GET['msg'] = $msg;
         }
-        header('Location: meetup_templates.php?msg=Template salvo com sucesso!');
-        exit;
     }
 }
 
 if (isset($_GET['delete'])) {
-    $stmt = $conn->prepare("DELETE FROM meetup_whatsapp_templates WHERE id = ?");
-    $stmt->execute([(int)$_GET['delete']]);
-    header('Location: meetup_templates.php?msg=Template excluido');
-    exit;
+    try {
+        $stmt = $conn->prepare("DELETE FROM meetup_whatsapp_templates WHERE id = ?");
+        $stmt->execute([(int)$_GET['delete']]);
+        header('Location: meetup_templates.php?msg=Template excluido');
+        exit;
+    } catch (PDOException $e) {
+        $_GET['msg'] = "Erro ao excluir: " . $e->getMessage();
+    }
 }
 
-$templates = $conn->query("SELECT * FROM meetup_whatsapp_templates ORDER BY minutos_antes DESC")->fetchAll();
+$templates = [];
+try {
+    $templates = $conn->query("SELECT * FROM meetup_whatsapp_templates ORDER BY minutos_antes DESC")->fetchAll();
+} catch (PDOException $e) {
+    $_GET['msg'] = "Erro no banco: " . $e->getMessage() . ". As tabelas provavelmente ainda não foram criadas.";
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

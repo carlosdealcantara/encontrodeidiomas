@@ -23,21 +23,26 @@ $logged_in = $_SESSION['hosts_logged_in'] ?? false;
 
 // Busca idiomas que possuem encontros ativos
 $idiomas_disponiveis = [];
+$template_db = "";
 if ($logged_in) {
-    $stmt = $conn->query("
-        SELECT DISTINCT l.id, l.name, l.flag_emoji, l.instagram_link, l.greeting, m.meet_link
-        FROM languages l
-        JOIN meetings m ON l.id = m.language_id
-        WHERE m.active = 1
-        ORDER BY l.name ASC
-    ");
-    $idiomas_disponiveis = $stmt->fetchAll();
-    
-    // Busca o template padrao (Hora Exata)
-    $stmtT = $conn->query("SELECT template_texto FROM meetup_whatsapp_templates WHERE minutos_antes = 0 AND ativo = 1 LIMIT 1");
-    $template_db = $stmtT->fetchColumn();
-    if (!$template_db) {
-        $template_db = "Template padrão não configurado.";
+    try {
+        $stmt = $conn->query("
+            SELECT DISTINCT l.id, l.name, l.flag_emoji, l.instagram_link, l.greeting, m.meet_link
+            FROM languages l
+            JOIN meetings m ON l.id = m.language_id
+            WHERE m.active = 1
+            ORDER BY l.name ASC
+        ");
+        $idiomas_disponiveis = $stmt->fetchAll();
+        
+        // Busca o template padrao (Hora Exata)
+        $stmtT = $conn->query("SELECT template_texto FROM meetup_whatsapp_templates WHERE minutos_antes = 0 AND ativo = 1 LIMIT 1");
+        $template_db = $stmtT->fetchColumn();
+        if (!$template_db) {
+            $template_db = "Template padrão não configurado.";
+        }
+    } catch (PDOException $e) {
+        $error = "Sistema em manutenção. Tabelas não encontradas no banco de dados.";
     }
 }
 ?>
