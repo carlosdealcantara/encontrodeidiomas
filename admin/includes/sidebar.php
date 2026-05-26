@@ -12,8 +12,10 @@ $nav_items = [
     'meetings.php'     => ['icon' => 'fas fa-calendar-alt',   'label' => 'Online'],
     'presencial.php'   => ['icon' => 'fas fa-map-marker-alt', 'label' => 'Presencial'],
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
-    'mentoria.php'     => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
-    'useful_links.php' => ['icon' => 'fas fa-link',           'label' => 'Links'],
+    'mentoria.php'         => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
+    'meetup_groups.php'    => ['icon' => 'fab fa-whatsapp',       'label' => 'Wpp Grupos'],
+    'meetup_templates.php' => ['icon' => 'fas fa-comment-dots',   'label' => 'Wpp Templates'],
+    'useful_links.php'     => ['icon' => 'fas fa-link',           'label' => 'Links'],
     'settings.php'     => ['icon' => 'fas fa-cog',            'label' => 'Configurações'],
 ];
 ?>
