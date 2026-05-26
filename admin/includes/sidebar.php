@@ -14,6 +14,7 @@ $nav_items = [
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
     'mentoria.php'         => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
     'meetup_groups.php'    => ['icon' => 'fab fa-whatsapp',       'label' => 'Wpp Grupos'],
+    'conectar_whatsapp.php' => ['icon' => 'fas fa-qrcode',         'label' => 'Conectar Wpp'],
     'meetup_templates.php' => ['icon' => 'fas fa-comment-dots',   'label' => 'Wpp Templates'],
     'useful_links.php'     => ['icon' => 'fas fa-link',           'label' => 'Links'],
     'settings.php'     => ['icon' => 'fas fa-cog',            'label' => 'Configurações'],

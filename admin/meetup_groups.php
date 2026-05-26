@@ -8,31 +8,67 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 $conn = connectDB();
+$msg = null;
+$api_error = null;
 
-// Lógica de Salvar/Adicionar
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['save_group'])) {
-        $nome = trim($_POST['nome']);
-        $group_id = trim($_POST['group_id']);
-        $categoria = $_POST['categoria'];
-        $language_id = ($categoria === 'especifico' && !empty($_POST['language_id'])) ? (int)$_POST['language_id'] : null;
-        $ativo = isset($_POST['ativo']) ? 1 : 0;
-        
+// Lógica de Importação em Lote (Batch Import)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
+    $selected_groups = $_POST['selected_groups'] ?? [];
+    $categoria = $_POST['batch_categoria'];
+    $language_id = ($categoria === 'especifico' && !empty($_POST['batch_language_id'])) ? (int)$_POST['batch_language_id'] : null;
+    $ativo = isset($_POST['batch_ativo']) ? 1 : 0;
+    
+    if (!empty($selected_groups)) {
         try {
-            if (!empty($_POST['id'])) {
-                // Atualizar
-                $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_id = ?, ativo = ? WHERE id = ?");
-                $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo, $_POST['id']]);
-                $msg = "Grupo atualizado com sucesso!";
-            } else {
-                // Inserir
-                $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo]);
-                $msg = "Novo grupo adicionado com sucesso!";
+            $imported = 0;
+            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
+            $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_groups WHERE group_id = ?");
+            
+            foreach ($selected_groups as $group_json) {
+                $group_data = json_decode($group_json, true);
+                if ($group_data && isset($group_data['id'])) {
+                    $g_id = $group_data['id'];
+                    $g_subject = $group_data['subject'] ?? 'Sem Nome';
+                    
+                    // Verificar duplicidade
+                    $stmtCheck->execute([$g_id]);
+                    if ($stmtCheck->rowCount() === 0) {
+                        $stmt->execute([$g_subject, $g_id, $categoria, $language_id, $ativo]);
+                        $imported++;
+                    }
+                }
             }
+            $msg = "Importação em lote concluída! $imported novos grupos cadastrados.";
         } catch (PDOException $e) {
-            $msg = "Erro ao salvar: " . $e->getMessage();
+            $api_error = "Erro ao importar em lote: " . $e->getMessage();
         }
+    } else {
+        $api_error = "Nenhum grupo foi selecionado para importação.";
+    }
+}
+
+// Lógica de Salvar/Adicionar/Editar Individual
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_group'])) {
+    $nome = trim($_POST['nome']);
+    $group_id = trim($_POST['group_id']);
+    $categoria = $_POST['categoria'];
+    $language_id = ($categoria === 'especifico' && !empty($_POST['language_id'])) ? (int)$_POST['language_id'] : null;
+    $ativo = isset($_POST['ativo']) ? 1 : 0;
+    
+    try {
+        if (!empty($_POST['id'])) {
+            // Atualizar
+            $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_id = ?, ativo = ? WHERE id = ?");
+            $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo, $_POST['id']]);
+            $msg = "Grupo atualizado com sucesso!";
+        } else {
+            // Inserir
+            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo]);
+            $msg = "Novo grupo adicionado com sucesso!";
+        }
+    } catch (PDOException $e) {
+        $api_error = "Erro ao salvar grupo: " . $e->getMessage();
     }
 }
 
@@ -41,10 +77,10 @@ if (isset($_GET['delete'])) {
     try {
         $stmt = $conn->prepare("DELETE FROM meetup_whatsapp_groups WHERE id = ?");
         $stmt->execute([(int)$_GET['delete']]);
-        header('Location: meetup_groups.php?msg=Grupo excluido');
+        header('Location: meetup_groups.php?msg=Grupo excluído com sucesso!');
         exit;
     } catch (PDOException $e) {
-        $msg = "Erro ao excluir: " . $e->getMessage();
+        $api_error = "Erro ao excluir grupo: " . $e->getMessage();
     }
 }
 
@@ -53,57 +89,23 @@ $api_groups = [];
 if (isset($_GET['fetch_api'])) {
     $headers = ["apikey: SenhaMeetups2026"];
     
-    // Tentativa 1: fetchAllGroups (sem getParticipants)
-    $ch1 = curl_init("http://136.248.92.126:8080/group/fetchAllGroups/meetups");
+    // v2 usa fetchAllGroups
+    $ch1 = curl_init("http://136.248.92.126:8080/group/fetchAllGroups/meetups?getParticipants=false");
     curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch1, CURLOPT_HTTPHEADER, $headers);
     $res1 = curl_exec($ch1);
     $code1 = curl_getinfo($ch1, CURLINFO_HTTP_CODE);
     curl_close($ch1);
     
-    // Tentativa 2: findChats
-    $ch2 = curl_init("http://136.248.92.126:8080/chat/findChats/meetups");
-    curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch2, CURLOPT_HTTPHEADER, $headers);
-    $res2 = curl_exec($ch2);
-    $code2 = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
-    curl_close($ch2);
-
-    $found = false;
-    
     if ($code1 === 200 && $res1) {
         $dec1 = json_decode($res1, true);
-        if (is_array($dec1) && !empty($dec1)) {
+        if (is_array($dec1)) {
             $api_groups = $dec1;
-            $found = true;
+        } else {
+            $api_error = "Formato de retorno da API inválido.";
         }
-    }
-    
-    if (!$found && $code2 === 200 && $res2) {
-        $dec2 = json_decode($res2, true);
-        if (is_array($dec2) && !empty($dec2)) {
-            // FindChats retorna todas as conversas, filtramos por grupo
-            foreach ($dec2 as $chat) {
-                // Algumas versoes da API trazem o array em chaves diferentes
-                $id = $chat['id'] ?? ($chat['remoteJid'] ?? '');
-                $name = $chat['name'] ?? ($chat['pushName'] ?? 'Sem Nome');
-                
-                if (strpos($id, '@g.us') !== false) {
-                    $api_groups[] = [
-                        'id' => $id,
-                        'subject' => $name
-                    ];
-                }
-            }
-            if (!empty($api_groups)) $found = true;
-        }
-    }
-    
-    if (!$found) {
-        // Formata os retornos para depuracao
-        $r1_debug = htmlspecialchars(substr($res1 ?: 'Vazio', 0, 100));
-        $r2_debug = htmlspecialchars(substr($res2 ?: 'Vazio', 0, 100));
-        $api_error = "Nenhum grupo localizado. fetchAllGroups($code1): $r1_debug | findChats($code2): $r2_debug";
+    } else {
+        $api_error = "Erro ao conectar com a Evolution API (Status: $code1). Verifique a conexão.";
     }
 }
 
@@ -112,7 +114,7 @@ $languages = [];
 try {
     $languages = $conn->query("SELECT id, name FROM languages ORDER BY name ASC")->fetchAll();
 } catch (PDOException $e) {
-    // Falha silenciosa ou avisa
+    // Falha silenciosa
 }
 
 // Buscar grupos cadastrados
@@ -126,8 +128,10 @@ try {
     ");
     $groups = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $api_error = "Erro no banco: " . $e->getMessage() . ". As tabelas provavelmente ainda não foram criadas.";
+    $api_error = "Erro no banco: " . $e->getMessage();
 }
+
+$registered_ids = array_column($groups, 'group_id');
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -158,28 +162,32 @@ try {
         .alert { padding: 15px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16, 185, 129, 0.2); }
         .alert.error { background: rgba(227, 29, 28, 0.1); color: var(--accent-red); border-color: rgba(227, 29, 28, 0.2); }
         
-        table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; overflow: hidden; margin-bottom: 30px; }
         th { text-align: left; padding: 15px; background: rgba(0,0,0,0.1); color: var(--text-dim); }
         td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
         .badge.multi { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
         .badge.spec { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .badge.registered { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         
         .btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; border: none; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: var(--accent-red); }
         .btn-primary:hover { opacity: 0.9; }
         .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
         .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { opacity: 0.9; }
         
         .form-card { background: var(--card-bg); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; color: var(--text-dim); }
         input[type="text"], select { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; }
         
-        .api-list { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px; max-height: 300px; overflow-y: auto; }
-        .api-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .api-item button { background: none; border: 1px solid #38bdf8; color: #38bdf8; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .api-list { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px; max-height: 400px; overflow-y: auto; }
+        .api-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .api-item:last-child { border-bottom: none; }
+        .api-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -191,40 +199,99 @@ try {
                 <h2>Grupos de Automação (Meetups)</h2>
                 <p style="color: var(--text-dim);">Gerencie os grupos que receberão as mensagens dos encontros</p>
             </div>
-            <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-sync"></i> Buscar IDs na API (Oracle)</a>
+            <div style="display: flex; gap: 10px;">
+                <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-qrcode"></i> Status do WhatsApp</a>
+                <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-sync"></i> Buscar Grupos na API</a>
+            </div>
         </header>
 
         <?php if (isset($msg) || isset($_GET['msg'])): ?>
-            <div class="alert"><?= htmlspecialchars($msg ?? $_GET['msg']) ?></div>
+            <div class="alert"><?= htmlspecialchars($msg ?? $_GET['msg'] ?? '') ?></div>
         <?php endif; ?>
-        <?php if (isset($api_error)): ?>
+        <?php if ($api_error): ?>
             <div class="alert error"><?= htmlspecialchars($api_error) ?></div>
         <?php endif; ?>
 
-        <?php if (isset($_GET['fetch_api']) && !isset($api_error)): ?>
+        <!-- Importação em Lote -->
+        <?php if (isset($_GET['fetch_api']) && !$api_error): ?>
             <div class="form-card">
-                <h3><i class="fab fa-whatsapp"></i> Grupos Encontrados na API</h3>
-                <p style="color: var(--text-dim); margin-top: 5px;">Estes são os grupos onde o número conectado atualmente faz parte. Copie o ID para cadastrar abaixo.</p>
-                <div class="api-list">
-                    <?php if (empty($api_groups)): ?>
-                        <p>Nenhum grupo encontrado.</p>
-                    <?php else: ?>
-                        <?php foreach ($api_groups as $ag): ?>
-                            <div class="api-item">
-                                <div>
-                                    <strong><?= htmlspecialchars($ag['subject'] ?? 'Sem Nome') ?></strong><br>
-                                    <small style="color: var(--text-dim);"><?= htmlspecialchars($ag['id']) ?></small>
+                <h3><i class="fab fa-whatsapp"></i> Importar Grupos da API (Lote)</h3>
+                <p style="color: var(--text-dim); margin-top: 5px; margin-bottom: 20px;">Selecione os grupos abaixo e defina a categoria/idioma padrão para eles.</p>
+                
+                <form method="POST">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label>Categoria para os Selecionados</label>
+                            <select name="batch_categoria" onchange="toggleBatchLang(this.value)" required>
+                                <option value="multi_idioma">Múltiplos Idiomas (Recebe tudo)</option>
+                                <option value="especifico">Idioma Específico</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="batch_lang_box" style="display: none;">
+                            <label>Idioma Vinculado</label>
+                            <select name="batch_language_id" id="batch_language_id">
+                                <option value="">Selecione...</option>
+                                <?php foreach ($languages as $l): ?>
+                                    <option value="<?= $l['id'] ?>"><?= htmlspecialchars($l['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <label style="margin-top: 15px;">
+                                <input type="checkbox" name="batch_ativo" checked> Importar como Ativo
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: bold; color: var(--text-dim);">Lista de Grupos Disponíveis:</span>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <input type="checkbox" id="select_all_api" onclick="toggleSelectAll(this)"> Selecionar Todos
+                        </label>
+                    </div>
+
+                    <div class="api-list">
+                        <?php if (empty($api_groups)): ?>
+                            <p style="padding: 15px; text-align: center; color: var(--text-dim);">Nenhum grupo encontrado na API.</p>
+                        <?php else: ?>
+                            <?php foreach ($api_groups as $ag): 
+                                $is_registered = in_array($ag['id'], $registered_ids);
+                            ?>
+                                <div class="api-item">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <?php if (!$is_registered): ?>
+                                            <input type="checkbox" name="selected_groups[]" class="api-checkbox" 
+                                                value="<?= htmlspecialchars(json_encode(['id' => $ag['id'], 'subject' => $ag['subject']])) ?>">
+                                        <?php else: ?>
+                                            <input type="checkbox" disabled checked style="opacity: 0.5;">
+                                        <?php endif; ?>
+                                        <div>
+                                            <strong><?= htmlspecialchars($ag['subject'] ?? 'Sem Nome') ?></strong><br>
+                                            <small style="color: var(--text-dim);"><?= htmlspecialchars($ag['id']) ?></small>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <?php if ($is_registered): ?>
+                                            <span class="badge registered"><i class="fas fa-check"></i> Cadastrado</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                                <button onclick="preencherId('<?= $ag['id'] ?>', '<?= addslashes($ag['subject'] ?? '') ?>')">Usar ID</button>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="submit" name="import_batch" class="btn btn-success"><i class="fas fa-download"></i> Importar Selecionados em Lote</button>
+                        <a href="meetup_groups.php" class="btn btn-secondary">Fechar Busca</a>
+                    </div>
+                </form>
             </div>
         <?php endif; ?>
 
+        <!-- Cadastro Individual -->
         <div class="form-card">
-            <h3 id="form-title">Adicionar Novo Grupo</h3>
+            <h3 id="form-title">Adicionar Novo Grupo (Manual)</h3>
             <form method="POST" style="margin-top: 20px;">
                 <input type="hidden" name="id" id="group_id_db">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -265,6 +332,7 @@ try {
             </form>
         </div>
 
+        <!-- Tabela de Grupos Cadastrados -->
         <table>
             <thead>
                 <tr>
@@ -284,7 +352,7 @@ try {
                         <?php if ($g['categoria'] == 'multi_idioma'): ?>
                             <span class="badge multi">Múltiplos Idiomas</span>
                         <?php else: ?>
-                            <span class="badge spec">Específico: <?= htmlspecialchars($g['language_name']) ?></span>
+                            <span class="badge spec">Específico: <?= htmlspecialchars($g['language_name'] ?? 'Idioma Removido') ?></span>
                         <?php endif; ?>
                     </td>
                     <td><?= $g['ativo'] ? '<span style="color:var(--success);">Ativo</span>' : '<span style="color:var(--text-dim);">Inativo</span>' ?></td>
@@ -293,7 +361,7 @@ try {
                             onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= $g['language_id'] ?>', <?= $g['ativo'] ?>)">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <a href="?delete=<?= $g['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem; color: var(--accent-red);" onclick="return confirm('Excluir?')">
+                        <a href="?delete=<?= $g['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem; color: var(--accent-red);" onclick="return confirm('Tem certeza que deseja excluir este grupo?')">
                             <i class="fas fa-trash"></i>
                         </a>
                     </td>
@@ -316,12 +384,23 @@ try {
             }
         }
 
-        function preencherId(id, nome) {
-            document.getElementById('group_id').value = id;
-            if (!document.getElementById('nome').value) {
-                document.getElementById('nome').value = nome;
+        function toggleBatchLang(val) {
+            const box = document.getElementById('batch_lang_box');
+            if (val === 'especifico') {
+                box.style.display = 'block';
+                document.getElementById('batch_language_id').required = true;
+            } else {
+                box.style.display = 'none';
+                document.getElementById('batch_language_id').required = false;
+                document.getElementById('batch_language_id').value = '';
             }
-            window.scrollTo(0, document.querySelector('.form-card').offsetTop - 20);
+        }
+
+        function toggleSelectAll(master) {
+            const checkboxes = document.querySelectorAll('.api-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = master.checked;
+            });
         }
 
         function editGroup(id, nome, group_id, categoria, language_id, ativo) {
@@ -334,11 +413,11 @@ try {
             if (language_id) document.getElementById('language_id').value = language_id;
             document.getElementById('ativo').checked = (ativo == 1);
             document.getElementById('btn_cancel').style.display = 'inline-block';
-            window.scrollTo(0, document.querySelector('.form-card').offsetTop - 20);
+            window.scrollTo(0, document.getElementById('form-title').offsetTop - 20);
         }
 
         function resetForm() {
-            document.getElementById('form-title').textContent = 'Adicionar Novo Grupo';
+            document.getElementById('form-title').textContent = 'Adicionar Novo Grupo (Manual)';
             document.getElementById('group_id_db').value = '';
             document.getElementById('nome').value = '';
             document.getElementById('group_id').value = '';

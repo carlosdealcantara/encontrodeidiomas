@@ -102,14 +102,9 @@ foreach ($meetings as $m) {
                     if ($stmtCheck->rowCount() === 0) {
                         // Envia para a API
                         $payload = json_encode([
-                            "number" => $g['group_id'], // O ID do grupo já vem da tabela
-                            "options" => [
-                                "delay" => 1200,
-                                "presence" => "composing"
-                            ],
-                            "textMessage" => [
-                                "text" => $textoFinal
-                            ]
+                            "number" => $g['group_id'],
+                            "text" => $textoFinal,
+                            "delay" => 1200
                         ]);
                         
                         $ch = curl_init($EVOLUTION_API_URL);

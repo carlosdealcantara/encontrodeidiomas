@@ -101,16 +101,11 @@ foreach ($alunos as $aluno) {
                 $telefoneLimpo = "55" . $telefoneLimpo;
             }
             
-            // Payload no formato exato da Evolution API v1
+            // Payload no formato exato da Evolution API v2
             $payload = json_encode([
                 "number" => $telefoneLimpo,
-                "options" => [
-                    "delay" => 1500,
-                    "presence" => "composing"
-                ],
-                "textMessage" => [
-                    "text" => $textoFinal
-                ]
+                "text" => $textoFinal,
+                "delay" => 1500
             ]);
             
             $ch = curl_init($EVOLUTION_API_URL);
