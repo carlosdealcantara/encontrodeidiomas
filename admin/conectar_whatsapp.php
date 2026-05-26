@@ -44,6 +44,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'reset') {
         curl_exec($ch);
         curl_close($ch);
         
+        // Aguarda 3 segundos para garantir que a API finalizou a exclusão no banco de dados (evita erro de conflito)
+        sleep(3);
+        
         // 2. Recria a instância zerada
         $body = json_encode([
             "instanceName" => $instance,
