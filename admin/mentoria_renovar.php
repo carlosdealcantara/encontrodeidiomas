@@ -38,6 +38,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $stmtUpdate = $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = :data, status_pagamento = 'Pendente', total_investido = :total, status_aluno = :status_aluno WHERE id = :id");
         $stmtUpdate->execute(['data' => $novaData, 'total' => $novoTotal, 'status_aluno' => $novoStatusAluno, 'id' => $id]);
         
+        // ==========================================
+        // DISPARO IMEDIATO DE MENSAGEM DE AGRADECIMENTO
+        // ==========================================
+        $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
+        $EVOLUTION_API_KEY = "SenhaMeetups2026";
+        
+        $primeiroNome = trim(explode(' ', $aluno['nome'])[0]);
+        $textoAgradecimento = "🤖 MENSAGEM AUTOMÁTICA:\n\nFala {$primeiroNome}! Passando para confirmar que o seu pagamento foi recebido e a sua renovação já está garantida no sistema! 🎉\n\nMuito obrigado por continuar com a gente. Seu próximo vencimento ficou para " . date('d/m/Y', strtotime($novaData)) . ".\n\nQualquer dúvida, é só me chamar!";
+        
+        $telefoneLimpo = preg_replace('/\D/', '', $aluno['telefone']);
+        if (strlen($telefoneLimpo) <= 11) {
+            $telefoneLimpo = "55" . $telefoneLimpo;
+        }
+        
+        $payload = json_encode([
+            "number" => $telefoneLimpo,
+            "options" => [
+                "delay" => 1500,
+                "presence" => "composing"
+            ],
+            "textMessage" => [
+                "text" => $textoAgradecimento
+            ]
+        ]);
+        
+        $ch = curl_init($EVOLUTION_API_URL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "apikey: " . $EVOLUTION_API_KEY
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_exec($ch);
+        curl_close($ch);
+        // ==========================================
+        
         header('Location: mentoria.php?msg=Pagamento Registrado! O aluno ' . urlencode($aluno['nome']) . ' foi renovado. Novo vencimento: ' . date('d/m/Y', strtotime($novaData)) . '.' . urlencode($mensagemExtra));
         exit;
     }
