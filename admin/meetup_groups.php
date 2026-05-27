@@ -1,5 +1,6 @@
 <?php
 session_start();
+set_time_limit(0); // Impede que o PHP corte a execução antes de 120 segundos
 require_once '../config.php';
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -84,33 +85,29 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// Lógica de Buscar IDs da API
+// Lógica de Buscar IDs (usando cache pré-carregado para evitar timeout da Hostinger)
 $api_groups = [];
 if (isset($_GET['fetch_api'])) {
-    $headers = ["apikey: SenhaMeetups2026"];
-    
-    // v2 usa fetchAllGroups
-    $ch1 = curl_init("http://136.248.92.126:8080/group/fetchAllGroups/meetups?getParticipants=false");
-    curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch1, CURLOPT_HTTPHEADER, $headers);
-    $res1 = curl_exec($ch1);
-    $code1 = curl_getinfo($ch1, CURLINFO_HTTP_CODE);
-    curl_close($ch1);
-    
-    if ($code1 === 200 && $res1) {
+    $cache_file = __DIR__ . '/groups_cache.json';
+    if (file_exists($cache_file)) {
+        $res1 = file_get_contents($cache_file);
         $dec1 = json_decode($res1, true);
         if (is_array($dec1)) {
             $api_groups = $dec1;
         } else {
-            $api_error = "Formato de retorno da API inválido.";
+            $api_error = "Formato de retorno do cache inválido.";
         }
     } else {
-        $api_error = "Erro ao conectar com a Evolution API (Status: $code1). Verifique a conexão.";
+        $api_error = "Cache de grupos não encontrado. O sistema está carregando a lista, tente novamente em 1 minuto.";
     }
 }
 
-// Reconectar ao banco de dados após a requisição demorada da API (Evita erro 2006 MySQL server has gone away)
+// Forçar o fechamento da conexão antiga e abrir uma nova (Evita erro 2006 MySQL server has gone away)
+$conn = null;
 $conn = connectDB();
+try {
+    $conn->exec("SET SESSION wait_timeout = 600");
+} catch (Exception $e) {}
 
 // Buscar idiomas para o select
 $languages = [];
