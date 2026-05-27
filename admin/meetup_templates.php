@@ -31,6 +31,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_GET['msg'] = $msg;
         }
     }
+    
+    if (isset($_POST['test_template'])) {
+        $telefone = preg_replace('/\D/', '', $_POST['test_number']);
+        if (strlen($telefone) < 10) {
+            $_GET['msg'] = "Por favor, insira um número válido com DDD.";
+        } else {
+            // Adiciona código do Brasil se não tiver
+            if (!str_starts_with($telefone, '55')) {
+                $telefone = '55' . $telefone;
+            }
+            
+            $textoBruto = $_POST['template_texto'];
+            
+            // Mock Data
+            $textoFinal = str_replace('{IDIOMA}', 'INGLÊS (TESTE)', $textoBruto);
+            $textoFinal = str_replace('{idioma}', 'Inglês', $textoFinal);
+            $textoFinal = str_replace('{EMOJI_FLAG}', '🇺🇸', $textoFinal);
+            $textoFinal = str_replace('{EMOJI_FLAGS}', '🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸', $textoFinal);
+            $textoFinal = str_replace('{SAUDACAO}', 'Hello!', $textoFinal);
+            $textoFinal = str_replace('{MEET_LINK}', 'https://meet.google.com/abc-defg-hij', $textoFinal);
+            $textoFinal = str_replace('{INSTAGRAM_LINK}', 'https://instagram.com/ingles.meetup', $textoFinal);
+            
+            $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
+            $EVOLUTION_API_KEY = "SenhaMeetups2026";
+            
+            $payload = json_encode([
+                "number" => $telefone,
+                "options" => [
+                    "delay" => 1200,
+                    "presence" => "composing"
+                ],
+                "textMessage" => [
+                    "text" => $textoFinal
+                ]
+            ]);
+            
+            $ch = curl_init($EVOLUTION_API_URL);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Content-Type: application/json",
+                "apikey: " . $EVOLUTION_API_KEY
+            ]);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            
+            $response = curl_exec($ch); 
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($httpcode >= 200 && $httpcode < 300) {
+                $_GET['msg'] = "🚀 Mensagem de teste enviada com sucesso para $telefone!";
+            } else {
+                $_GET['msg'] = "❌ Erro ao enviar teste ($httpcode). Resposta: " . htmlspecialchars($response);
+            }
+        }
+    }
 }
 
 if (isset($_GET['delete'])) {
@@ -149,8 +205,19 @@ try {
                         <label><input type="checkbox" name="ativo" id="ativo" checked> Template Ativo</label>
                     </div>
                     
-                    <button type="submit" name="save_template" class="btn btn-primary">Salvar Template</button>
-                    <button type="button" class="btn btn-secondary" id="btn_cancel" style="display:none;" onclick="resetForm()">Cancelar</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button type="submit" name="save_template" class="btn btn-primary">Salvar Template</button>
+                        <button type="button" class="btn btn-secondary" id="btn_cancel" style="display:none;" onclick="resetForm()">Cancelar</button>
+                    </div>
+
+                    <hr style="border-color: rgba(255,255,255,0.05); margin: 25px 0;">
+                    
+                    <h4 style="margin-bottom: 10px;">Testar Mensagem no Privado</h4>
+                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 15px;">Quer ver como a mensagem acima vai ficar no WhatsApp antes de salvar? Digite seu número abaixo e receba um teste com dados fictícios (ex: Inglês).</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" name="test_number" placeholder="Seu Zap (Ex: 31988887777)" style="flex: 1;">
+                        <button type="submit" name="test_template" class="btn btn-secondary"><i class="fas fa-paper-plane"></i> Disparar Teste</button>
+                    </div>
                 </form>
             </div>
             
