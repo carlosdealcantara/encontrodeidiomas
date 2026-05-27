@@ -91,6 +91,8 @@ if (isset($_GET['fetch_api'])) {
     $cache_file = __DIR__ . '/groups_cache.json';
     if (file_exists($cache_file)) {
         $res1 = file_get_contents($cache_file);
+        // Remove BOM if present
+        $res1 = preg_replace('/^[\xef\xbb\xbf]+/', '', $res1);
         $dec1 = json_decode($res1, true);
         if (is_array($dec1)) {
             $api_groups = $dec1;
