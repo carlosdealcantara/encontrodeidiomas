@@ -22,6 +22,12 @@ $EVOLUTION_API_KEY = "SenhaMeetups2026";
 
 $conn = connectDB();
 
+// Limpar logs para teste
+if (isset($_GET['clear_logs']) && $_GET['clear_logs'] == '1') {
+    $conn->exec("DELETE FROM mentoria_logs WHERE data_disparo = CURRENT_DATE");
+    echo "<div style='background: #ffeb3b; padding: 15px; margin-bottom: 20px;'>⚠️ Logs de hoje foram APAGADOS! O sistema tentará reenviar todas as mensagens pendentes de hoje.</div>";
+}
+
 // Cria a tabela de logs se não existir (para evitar disparos duplicados no mesmo dia)
 $conn->exec("
     CREATE TABLE IF NOT EXISTS mentoria_logs (
@@ -122,12 +128,15 @@ foreach ($alunos as $aluno) {
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             
-            // Loga no banco para não mandar duas vezes
-            $stmtLog = $conn->prepare("INSERT INTO mentoria_logs (aluno_id, mensagem_id, data_disparo) VALUES (?, ?, ?)");
-            $stmtLog->execute([$alunoId, $msgId, $dataDisparo]);
-            
-            echo "<p>✅ Mensagem ({$msgConfig['cenario']}) enviada para {$aluno['nome']} (Status API: {$httpcode})</p>";
-            $sucessos++;
+            // Loga no banco para não mandar duas vezes, APENAS SE DEU SUCESSO (Status 200 ou 201)
+            if ($httpcode >= 200 && $httpcode < 300) {
+                $stmtLog = $conn->prepare("INSERT INTO mentoria_logs (aluno_id, mensagem_id, data_disparo) VALUES (?, ?, ?)");
+                $stmtLog->execute([$alunoId, $msgId, $dataDisparo]);
+                echo "<p>✅ Mensagem ({$msgConfig['cenario']}) enviada para {$aluno['nome']} (Status API: {$httpcode})</p>";
+                $sucessos++;
+            } else {
+                echo "<p>❌ Erro ao enviar para {$aluno['nome']}. A API da Oracle retornou o Status: {$httpcode}. Resposta: " . htmlspecialchars($response) . "</p>";
+            }
         } else {
             echo "<p>⏭️ Pulando {$aluno['nome']}: Mensagem ({$msgConfig['cenario']}) já foi enviada hoje.</p>";
         }
