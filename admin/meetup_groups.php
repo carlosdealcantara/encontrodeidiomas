@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
         try {
             $imported = 0;
             $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
-            $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_groups WHERE group_id = ?");
+            $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_groups WHERE group_id = ? AND categoria = ? AND (language_id = ? OR (language_id IS NULL AND ? IS NULL))");
             
             foreach ($selected_groups as $group_json) {
                 $group_data = json_decode($group_json, true);
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
                     $g_subject = $group_data['subject'] ?? 'Sem Nome';
                     
                     // Verificar duplicidade
-                    $stmtCheck->execute([$g_id]);
+                    $stmtCheck->execute([$g_id, $categoria, $language_id, $language_id]);
                     if ($stmtCheck->rowCount() === 0) {
                         $stmt->execute([$g_subject, $g_id, $categoria, $language_id, $ativo]);
                         $imported++;
@@ -133,7 +133,17 @@ try {
     $api_error = "Erro no banco: " . $e->getMessage();
 }
 
-$registered_ids = array_column($groups, 'group_id');
+$registered_groups = [];
+foreach ($groups as $g) {
+    if (!isset($registered_groups[$g['group_id']])) {
+        $registered_groups[$g['group_id']] = ['is_multi' => false, 'languages' => []];
+    }
+    if ($g['categoria'] === 'multi_idioma') {
+        $registered_groups[$g['group_id']]['is_multi'] = true;
+    } else {
+        $registered_groups[$g['group_id']]['languages'][] = $g['language_name'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -262,11 +272,13 @@ $registered_ids = array_column($groups, 'group_id');
                             <p style="padding: 15px; text-align: center; color: var(--text-dim);">Nenhum grupo encontrado na API.</p>
                         <?php else: ?>
                             <?php foreach ($api_groups as $ag): 
-                                $is_registered = in_array($ag['id'], $registered_ids);
+                                $reg_data = $registered_groups[$ag['id']] ?? null;
+                                $is_registered = $reg_data !== null;
+                                $is_multi = $is_registered && $reg_data['is_multi'];
                             ?>
                                 <div class="api-item">
                                     <div style="display: flex; align-items: center; gap: 15px;">
-                                        <?php if (!$is_registered): ?>
+                                        <?php if (!$is_multi): ?>
                                             <input type="checkbox" name="selected_groups[]" class="api-checkbox" 
                                                 value="<?= htmlspecialchars(json_encode(['id' => $ag['id'], 'subject' => $ag['subject']])) ?>">
                                         <?php else: ?>
@@ -279,7 +291,11 @@ $registered_ids = array_column($groups, 'group_id');
                                     </div>
                                     <div>
                                         <?php if ($is_registered): ?>
-                                            <span class="badge registered"><i class="fas fa-check"></i> Cadastrado</span>
+                                            <?php if ($reg_data['is_multi']): ?>
+                                                <span class="badge registered" style="margin-left: 10px;"><i class="fas fa-globe"></i> Múltiplos</span>
+                                            <?php else: ?>
+                                                <span class="badge spec" style="margin-left: 10px;"><i class="fas fa-check"></i> <?= htmlspecialchars(implode(', ', $reg_data['languages'])) ?></span>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </div>
