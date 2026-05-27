@@ -1,0 +1,21 @@
+﻿<html><head><title>API Diag</title>
+<style>body{font-family:monospace;background:#111;color:#eee;padding:20px;}
+.ok{color:#0f0;}.err{color:#f55;}.warn{color:#fa0;}
+pre{background:#222;padding:10px;border-radius:5px;overflow-x:auto;max-height:300px;}
+h2{border-bottom:1px solid #444;padding-bottom:5px;}
+</style></head><body><h1>🔍 Diagnóstico API Evolution v1.8.2</h1><h2>1. Buscando grupos via findChats (GET)...</h2><p>Grupos encontrados: <strong>257</strong></p><p>JID de teste: <code>120363230596474380@g.us</code></p><h2>2. findGroupInfos (GET)</h2><p>HTTP 200</p><pre>(vazio)</pre><h2>3. fetchAllGroups (GET, getParticipants=false)</h2><p>HTTP 200</p><pre>(vazio)</pre><h2>4. fetchInviteCode (GET)</h2><p>HTTP 404</p><pre>{&quot;status&quot;:404,&quot;error&quot;:&quot;Not Found&quot;,&quot;response&quot;:{&quot;message&quot;:[&quot;Cannot GET /group/fetchInviteCode/meetups?groupJid=120363230596474380@g.us&quot;]}}</pre><h2>5. fetchInviteCode (POST)</h2><p>HTTP 404</p><pre>{&quot;status&quot;:404,&quot;error&quot;:&quot;Not Found&quot;,&quot;response&quot;:{&quot;message&quot;:[&quot;Cannot POST /group/fetchInviteCode/meetups&quot;]}}</pre><h2>6. inviteInfo (GET, code=test)</h2><p>HTTP 400</p><pre>{&quot;status&quot;:400,&quot;error&quot;:&quot;Bad Request&quot;,&quot;response&quot;:{&quot;message&quot;:[{&quot;property&quot;:&quot;inviteCode&quot;,&quot;message&quot;:&quot;inviteCode does not match pattern \&quot;^[a-zA-Z0-9]{22}$\&quot;&quot;}]}}</pre><h2>7. participants (GET) — CONTROLE</h2><p>HTTP 200</p><pre>{&quot;participants&quot;:[{&quot;id&quot;:&quot;207605951635698@lid&quot;,&quot;admin&quot;:null},{&quot;id&quot;:&quot;54232770187284@lid&quot;,&quot;admin&quot;:null},{&quot;id&quot;:&quot;217230939836567@lid&quot;,&quot;admin&quot;:&quot;superadmin&quot;},{&quot;id&quot;:&quot;172412939333842@lid&quot;,&quot;admin&quot;:null},{&quot;id&quot;:&quot;49379876540499@lid&quot;,&quot;admin&quot;:null}]}</pre><h2>8. findContacts (POST, filtro por JID grupo)</h2><p>HTTP 200</p><pre>[]</pre><h2>9. findContacts (POST, todos) — filtrando @g.us</h2><p>Total contatos: 742 | Grupos: <strong>0</strong></p><h2>10. findChats — dados completos dos primeiros 3 grupos</h2><pre>[
+    {
+        &quot;id&quot;: &quot;120363230596474380@g.us&quot;,
+        &quot;owner&quot;: &quot;meetups&quot;,
+        &quot;lastMsgTimestamp&quot;: 1778606500
+    },
+    {
+        &quot;id&quot;: &quot;120363399320699478@g.us&quot;,
+        &quot;owner&quot;: &quot;meetups&quot;,
+        &quot;lastMsgTimestamp&quot;: 1764957106
+    },
+    {
+        &quot;id&quot;: &quot;120363203950593216@g.us&quot;,
+        &quot;owner&quot;: &quot;meetups&quot;
+    }
+]</pre><hr><p>Concluído: 2026-05-26 15:52:35</p></body></html>

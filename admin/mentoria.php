@@ -172,6 +172,7 @@ $alunos = $stmt->fetchAll();
                     
                     <?php foreach ($alunos as $aluno): 
                         $hoje = new DateTime();
+                        $hoje->setTime(0,0,0);
                         
                         // Fallback para datas bizarras do legado (como 0001)
                         if(strpos($aluno['proximo_vencimento'], '-0001') !== false || substr($aluno['proximo_vencimento'], 0, 4) == '1900') {
@@ -179,6 +180,7 @@ $alunos = $stmt->fetchAll();
                             $dias = 0;
                         } else {
                             $vencimento = new DateTime($aluno['proximo_vencimento']);
+                            $vencimento->setTime(0,0,0);
                             $diff = $hoje->diff($vencimento);
                             $dias = (int)$diff->format('%R%a'); // Negativo se já passou
                             $vencimentoText = $vencimento->format('d/m/Y');
