@@ -22,6 +22,11 @@ $EVOLUTION_API_KEY = "SenhaMeetups2026";
 
 $conn = connectDB();
 
+if (isset($_GET['clear_logs']) && $_GET['clear_logs'] == '1') {
+    $conn->exec("DELETE FROM meetup_whatsapp_logs WHERE data_disparo = CURRENT_DATE()");
+    echo "<h3>Logs de hoje apagados com sucesso.</h3>";
+}
+
 echo "<h2>Iniciando Varredura do Motor de Meetups (Cron Job)</h2>";
 
 $hoje = new DateTime();
@@ -103,8 +108,13 @@ foreach ($meetings as $m) {
                         // Envia para a API
                         $payload = json_encode([
                             "number" => $g['group_id'],
-                            "text" => $textoFinal,
-                            "delay" => 1200
+                            "options" => [
+                                "delay" => 1200,
+                                "presence" => "composing"
+                            ],
+                            "textMessage" => [
+                                "text" => $textoFinal
+                            ]
                         ]);
                         
                         $ch = curl_init($EVOLUTION_API_URL);
@@ -120,12 +130,16 @@ foreach ($meetings as $m) {
                         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                         curl_close($ch);
                         
-                        // Loga no banco
-                        $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, ?, ?, ?)");
-                        $stmtLog->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
-                        
-                        echo "<p>✅ [{$t['cenario']}] enviada para o Grupo '{$g['nome']}' (Idioma: {$m['language_name']}). (Status API: {$httpcode})</p>";
-                        $sucessos++;
+                        // Só loga no banco se a API respondeu OK
+                        if ($httpcode >= 200 && $httpcode < 300) {
+                            $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, ?, ?, ?)");
+                            $stmtLog->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
+                            
+                            echo "<p>✅ [{$t['cenario']}] enviada para o Grupo '{$g['nome']}' (Idioma: {$m['language_name']}). (Status API: {$httpcode})</p>";
+                            $sucessos++;
+                        } else {
+                            echo "<p style='color:red;'>❌ Erro ao enviar [{$t['cenario']}] para '{$g['nome']}'. HTTP: {$httpcode} | Resposta: " . htmlspecialchars($response) . "</p>";
+                        }
                     } else {
                         echo "<p>⏭️ Pulando Grupo '{$g['nome']}': [{$t['cenario']}] já enviada hoje para o Meetup de {$m['language_name']}.</p>";
                     }
