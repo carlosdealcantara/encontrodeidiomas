@@ -187,10 +187,18 @@ $pix_footer_atual = getSetting('mentoria_pix_footer', "🔑 Chave PIX para renov
                         </label>
                     </div>
 
+                    <?php if($msg['dias_antes'] == -999): ?>
+                    <div class="form-group" style="width: 250px;">
+                        <label>Dias para o Vencimento</label>
+                        <input type="text" value="Disparo Imediato (Automático)" disabled style="background: rgba(255,255,255,0.05);">
+                        <input type="hidden" name="msgs[<?= $msg['id'] ?>][dias]" value="-999">
+                    </div>
+                    <?php else: ?>
                     <div class="form-group" style="width: 150px;">
                         <label>Dias para o Vencimento</label>
                         <input type="number" name="msgs[<?= $msg['id'] ?>][dias]" value="<?= $msg['dias_antes'] ?>" required>
                     </div>
+                    <?php endif; ?>
 
                     <div class="form-group">
                         <label>Texto da Mensagem (WhatsApp)</label>

@@ -11,8 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id = (int)$_POST['id'];
     $conn = connectDB();
     
-    // Pega os dados atuais do aluno
-    $stmt = $conn->prepare("SELECT nome, proximo_vencimento, valor_mensalidade, total_investido, status_aluno FROM mentoria_alunos WHERE id = :id");
+    // Pega os dados atuais do aluno (incluindo telefone!)
+    $stmt = $conn->prepare("SELECT * FROM mentoria_alunos WHERE id = :id");
     $stmt->execute(['id' => $id]);
     $aluno = $stmt->fetch();
     
@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             $mensagemExtra = " 🏆 PARABÉNS! O aluno atingiu R$ 3.000 e virou VITALÍCIO!";
         }
         
-        // Renova: Joga a data pra frente, soma o LTV, mantém pendente pro novo ciclo e checa vitalício
-        $stmtUpdate = $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = :data, status_pagamento = 'Pendente', total_investido = :total, status_aluno = :status_aluno WHERE id = :id");
+        // Renova: Joga a data pra frente, soma o LTV, deixa como PAGO e checa vitalício
+        $stmtUpdate = $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = :data, status_pagamento = 'Pago', total_investido = :total, status_aluno = :status_aluno WHERE id = :id");
         $stmtUpdate->execute(['data' => $novaData, 'total' => $novoTotal, 'status_aluno' => $novoStatusAluno, 'id' => $id]);
         
         // ==========================================
@@ -45,7 +45,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $EVOLUTION_API_KEY = "SenhaMeetups2026";
         
         $primeiroNome = trim(explode(' ', $aluno['nome'])[0]);
-        $textoAgradecimento = "🤖 MENSAGEM AUTOMÁTICA:\n\nFala {$primeiroNome}! Passando para confirmar que o seu pagamento foi recebido e a sua renovação já está garantida no sistema! 🎉\n\nMuito obrigado por continuar com a gente. Seu próximo vencimento ficou para " . date('d/m/Y', strtotime($novaData)) . ".\n\nQualquer dúvida, é só me chamar!";
+        $novaDataFormatada = date('d/m/Y', strtotime($novaData));
+        
+        // Busca a mensagem de Agradecimento no BD
+        $stmtMsg = $conn->query("SELECT texto FROM mentoria_mensagens WHERE cenario = 'Confirmação de Pagamento'");
+        $msgConfig = $stmtMsg->fetch();
+        
+        if ($msgConfig) {
+            $textoAgradecimento = str_replace(['{nome}', '{data}'], [$primeiroNome, $novaDataFormatada], $msgConfig['texto']);
+        } else {
+            // Se não existir, cria a mensagem no BD para que ele possa editar no painel depois
+            $textoPadrao = "🤖 MENSAGEM AUTOMÁTICA:\n\nFala {nome}! Passando para confirmar que o seu pagamento foi recebido e a sua renovação já está garantida no sistema! 🎉\n\nMuito obrigado por continuar com a gente. Seu próximo vencimento ficou para {data}.\n\nQualquer dúvida, é só me chamar!";
+            $stmtInsert = $conn->prepare("INSERT INTO mentoria_mensagens (cenario, dias_antes, texto, ativo) VALUES ('Confirmação de Pagamento', -999, ?, 1)");
+            $stmtInsert->execute([$textoPadrao]);
+            $textoAgradecimento = str_replace(['{nome}', '{data}'], [$primeiroNome, $novaDataFormatada], $textoPadrao);
+        }
         
         $telefoneLimpo = preg_replace('/\D/', '', $aluno['telefone']);
         if (strlen($telefoneLimpo) <= 11) {

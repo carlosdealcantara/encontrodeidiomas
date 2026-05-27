@@ -41,6 +41,16 @@ $conn->exec("
 
 echo "<h2>Iniciando Varredura do Motor (Cron Job)</h2>";
 
+// Inteligência Cíclica: Se um aluno está 'Pago', mas faltam 3 dias (ou menos) para o seu próximo ciclo, 
+// o sistema automaticamente 'reabre' a cobrança mudando o status para 'Pendente'.
+$conn->exec("
+    UPDATE mentoria_alunos 
+    SET status_pagamento = 'Pendente' 
+    WHERE status_aluno = 'Ativo' 
+    AND status_pagamento = 'Pago' 
+    AND DATEDIFF(proximo_vencimento, CURRENT_DATE) <= 3
+");
+
 // Pega o rodapé padrão PIX
 $pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
 
