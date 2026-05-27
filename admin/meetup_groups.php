@@ -246,14 +246,18 @@ $registered_ids = array_column($groups, 'group_id');
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <span style="font-weight: bold; color: var(--text-dim);">Lista de Grupos Disponíveis:</span>
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" id="select_all_api" onclick="toggleSelectAll(this)"> Selecionar Todos
+                            <input type="checkbox" id="select_all_api" onclick="toggleSelectAll(this)"> Selecionar Todos (Visíveis)
                         </label>
                     </div>
 
-                    <div class="api-list">
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="search_groups" placeholder="Pesquisar nome do grupo..." onkeyup="filterGroups()" style="width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+                    </div>
+
+                    <div class="api-list" id="api_list_container">
                         <?php if (empty($api_groups)): ?>
                             <p style="padding: 15px; text-align: center; color: var(--text-dim);">Nenhum grupo encontrado na API.</p>
                         <?php else: ?>
@@ -399,10 +403,33 @@ $registered_ids = array_column($groups, 'group_id');
         }
 
         function toggleSelectAll(master) {
-            const checkboxes = document.querySelectorAll('.api-checkbox');
-            checkboxes.forEach(cb => {
-                cb.checked = master.checked;
+            const items = document.querySelectorAll('.api-item');
+            items.forEach(item => {
+                if (item.style.display !== 'none') {
+                    const cb = item.querySelector('.api-checkbox');
+                    if (cb && !cb.disabled) {
+                        cb.checked = master.checked;
+                    }
+                }
             });
+        }
+
+        function filterGroups() {
+            const query = document.getElementById('search_groups').value.toLowerCase();
+            const items = document.querySelectorAll('.api-item');
+            
+            items.forEach(item => {
+                const nameText = item.querySelector('strong').innerText.toLowerCase();
+                const idText = item.querySelector('small').innerText.toLowerCase();
+                if (nameText.includes(query) || idText.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Desmarca o master para evitar confusão de seleção
+            document.getElementById('select_all_api').checked = false;
         }
 
         function editGroup(id, nome, group_id, categoria, language_id, ativo) {
