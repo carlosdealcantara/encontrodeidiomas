@@ -51,28 +51,35 @@ if(count($meetings) === 0) {
     die("Nenhum encontro ativo para hoje ($diaDaSemanaAtual). Abortando.");
 }
 
-// 3. Pega grupos ativos
+// 3. Monta a lista global de todos os encontros de hoje (todos os grupos recebem a mesma lista completa)
+$listaGlobalEncontros = [];
+$languageIdsHoje = [];
+foreach ($meetings as $m) {
+    $listaGlobalEncontros[] = "{$m['flag_emoji']} {$m['language_name']}";
+    $languageIdsHoje[] = $m['language_id'];
+}
+$listaFormatadaGlobal = implode("\n", $listaGlobalEncontros);
+
+// 4. Pega grupos ativos
 $stmtGroups = $conn->query("SELECT * FROM meetup_whatsapp_groups WHERE ativo = 1");
 $groups = $stmtGroups->fetchAll();
 
 $sucessos = 0;
 
 foreach ($groups as $g) {
-    // Monta a lista de encontros que este grupo específico tem direito de ver
-    $encontrosParaEsteGrupo = [];
+    $podeEnviar = false;
     
-    foreach ($meetings as $m) {
-        $linha = "{$m['flag_emoji']} {$m['language_name']}";
-        
-        if ($g['categoria'] === 'multi_idioma') {
-            $encontrosParaEsteGrupo[] = $linha;
-        } else if ($g['categoria'] === 'especifico' && $g['language_id'] == $m['language_id']) {
-            $encontrosParaEsteGrupo[] = $linha;
+    if ($g['categoria'] === 'multi_idioma') {
+        $podeEnviar = true;
+    } else if ($g['categoria'] === 'especifico') {
+        // Se o idioma específico deste grupo está na lista de encontros de hoje
+        if (in_array($g['language_id'], $languageIdsHoje)) {
+            $podeEnviar = true;
         }
     }
     
-    // Se o grupo tem pelo menos 1 encontro hoje, envia o Resumo
-    if (count($encontrosParaEsteGrupo) > 0) {
+    // Se o grupo tem direito de receber o resumo hoje
+    if ($podeEnviar) {
         
         // Verifica anti-duplicidade (já enviou o resumo hoje para este grupo?)
         // Como o Resumo não tem meeting_id específico, procuramos meeting_id IS NULL
@@ -81,10 +88,8 @@ foreach ($groups as $g) {
         
         if ($stmtCheck->rowCount() === 0) {
             
-            $listaFormatada = implode("\n", $encontrosParaEsteGrupo);
-            
             // Troca a variável mágica {LISTA_ENCONTROS}
-            $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatada, $templateDiario['template_texto']);
+            $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
             
             // Envia para a API
             $payload = json_encode([
