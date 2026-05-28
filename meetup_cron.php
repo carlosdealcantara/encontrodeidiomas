@@ -35,8 +35,8 @@ $horaAtualReal = (int)$hoje->format('H'); // 0 a 23
 
 $dataDisparo = $hoje->format('Y-m-d');
 
-// 1. Pega os templates ativos
-$stmtTemplates = $conn->query("SELECT * FROM meetup_whatsapp_templates WHERE ativo = 1");
+// 1. Pega os templates ativos (excluindo o Resumo do Dia, que roda em outro script)
+$stmtTemplates = $conn->query("SELECT * FROM meetup_whatsapp_templates WHERE ativo = 1 AND cenario != 'Resumo do Dia'");
 $templates = $stmtTemplates->fetchAll();
 
 if(count($templates) === 0) {
