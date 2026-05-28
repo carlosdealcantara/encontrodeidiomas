@@ -22,19 +22,26 @@ $EVOLUTION_API_KEY = "SenhaMeetups2026";
 
 $conn = connectDB();
 
-echo "<h2>Iniciando Varredura do Resumo do Dia (Cron Job Diário)</h2>";
+// Desliga o buffer do PHP para mostrar o texto na tela em tempo real
+while (ob_get_level()) { ob_end_flush(); }
+ob_implicit_flush(1);
+
+echo "<h2>[DEBUG ATIVADO] Iniciando Varredura do Resumo do Dia</h2>";
+echo "Conectado ao banco. Buscando data atual...<br>";
 
 $hoje = new DateTime();
 $diaDaSemanaAtual = (int)$hoje->format('N'); // 1 = Segunda, 7 = Domingo
 $dataDisparo = $hoje->format('Y-m-d');
 
 // 1. Pega o template do "Resumo do Dia" (Busca por nome mágico)
+echo "Buscando template 'Resumo do Dia'...<br>";
 $stmtTemplate = $conn->query("SELECT * FROM meetup_whatsapp_templates WHERE ativo = 1 AND cenario = 'Resumo do Dia' LIMIT 1");
 $templateDiario = $stmtTemplate->fetch();
 
 if (!$templateDiario) {
     die("Nenhum template chamado 'Resumo do Dia' encontrado ou ativo. Abortando.");
 }
+echo "Template encontrado (ID: {$templateDiario['id']}).<br>";
 
 // 2. Pega encontros ativos para HOJE
 $stmtMeetings = $conn->prepare("
@@ -50,6 +57,7 @@ $meetings = $stmtMeetings->fetchAll();
 if(count($meetings) === 0) {
     die("Nenhum encontro ativo para hoje ($diaDaSemanaAtual). Abortando.");
 }
+echo "Encontros de hoje encontrados: " . count($meetings) . ".<br>";
 
 // 3. Monta a lista global de todos os encontros de hoje (todos os grupos recebem a mesma lista completa)
 $listaGlobalEncontros = [];
@@ -61,8 +69,10 @@ foreach ($meetings as $m) {
 $listaFormatadaGlobal = implode("\n", $listaGlobalEncontros);
 
 // 4. Pega grupos ativos
+echo "Buscando grupos ativos...<br>";
 $stmtGroups = $conn->query("SELECT * FROM meetup_whatsapp_groups WHERE ativo = 1");
 $groups = $stmtGroups->fetchAll();
+echo "Total de grupos ativos: " . count($groups) . ". Iniciando loop de disparos...<hr>";
 
 $sucessos = 0;
 
@@ -80,6 +90,7 @@ foreach ($groups as $g) {
     
     // Se o grupo tem direito de receber o resumo hoje
     if ($podeEnviar) {
+        echo "Grupo '{$g['nome']}' QUALIFICADO. Checando anti-duplicidade...<br>";
         
         // Verifica anti-duplicidade (já enviou o resumo hoje para este grupo?)
         // Como o Resumo não tem meeting_id específico, usamos meeting_id = 0
@@ -87,6 +98,7 @@ foreach ($groups as $g) {
         $stmtCheck->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
         
         if ($stmtCheck->rowCount() === 0) {
+            echo "&nbsp;&nbsp;-> Tudo limpo! Tentando conectar na API Evolution para '{$g['nome']}'...<br>";
             
             // Troca a variável mágica {LISTA_ENCONTROS}
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
@@ -113,8 +125,14 @@ foreach ($groups as $g) {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
             
+            $inicioCurl = microtime(true);
             $response = curl_exec($ch); 
+            $tempoGasto = round(microtime(true) - $inicioCurl, 2);
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            
+            if (curl_errno($ch)) {
+                echo "&nbsp;&nbsp;-> <span style='color:red;'>Erro fatal de cURL: " . curl_error($ch) . " (Demorou {$tempoGasto}s)</span><br>";
+            }
             curl_close($ch);
             
             // Só loga no banco se a API respondeu OK
@@ -123,13 +141,13 @@ foreach ($groups as $g) {
                 $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, 0, ?, ?)");
                 $stmtLog->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
                 
-                echo "<p>✅ Resumo do Dia enviado para o Grupo '{$g['nome']}'. (Status API: {$httpcode})</p>";
+                echo "&nbsp;&nbsp;-> ✅ Sucesso! Enviado em {$tempoGasto}s (Status: {$httpcode}). Log registrado.<br>";
                 $sucessos++;
             } else {
-                echo "<p style='color:red;'>❌ Erro ao enviar Resumo do Dia para '{$g['nome']}'. HTTP: {$httpcode} | Resposta: " . htmlspecialchars($response) . "</p>";
+                echo "&nbsp;&nbsp;-> ❌ Erro na API HTTP {$httpcode}. (Demorou {$tempoGasto}s) Resposta: " . htmlspecialchars($response) . "<br>";
             }
         } else {
-            echo "<p>⏭️ Pulando Grupo '{$g['nome']}': Resumo do dia já enviado hoje.</p>";
+            echo "&nbsp;&nbsp;-> ⏭️ Pulando Grupo '{$g['nome']}': Resumo do dia já enviado hoje.<br>";
         }
     }
 }
