@@ -1,0 +1,1 @@
+﻿<?php require '../config.php'; \->exec('ALTER TABLE meetup_whatsapp_templates DROP FOREIGN KEY fk_template_lang;'); \->exec('ALTER TABLE meetup_whatsapp_templates DROP COLUMN language_id, DROP COLUMN tipo;'); \->exec('ALTER TABLE languages DROP COLUMN name_native;'); echo 'Revertido!'; ?>
