@@ -53,6 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $textoFinal = str_replace('{MEET_LINK}', 'https://meet.google.com/abc-defg-hij', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', 'https://instagram.com/ingles.meetup', $textoFinal);
             
+            // Mock Data para Resumo Diário
+            $mockLista = "🇺🇸 English\n🇩🇪 Deutsch";
+            $textoFinal = str_replace('{LISTA_ENCONTROS}', $mockLista, $textoFinal);
+            
             $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
             $EVOLUTION_API_KEY = "SenhaMeetups2026";
             
