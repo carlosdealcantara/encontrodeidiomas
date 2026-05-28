@@ -105,6 +105,12 @@ foreach ($meetings as $m) {
                     $stmtCheck->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
                     
                     if ($stmtCheck->rowCount() === 0) {
+                        // PROTEÇÃO ANTI-COLAPSO: Ignorar grupos com ID antigo (com hífen)
+                        if (strpos($g['group_id'], '-') !== false) {
+                            echo "<p>⚠️ Pulo de Segurança: O grupo '{$g['nome']}' usa um ID antigo (com hífen) que trava a Evolution API. Pulando.</p>";
+                            continue;
+                        }
+                        
                         // Envia para a API
                         $payload = json_encode([
                             "number" => $g['group_id'],
