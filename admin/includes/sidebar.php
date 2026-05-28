@@ -9,6 +9,7 @@ $admin_current_page = basename($_SERVER['PHP_SELF']);
 $nav_items = [
     'index.php'        => ['icon' => 'fas fa-chart-pie',      'label' => 'Dashboard'],
     'hosts.php'        => ['icon' => 'fas fa-users',           'label' => 'Equipe'],
+    '../hosts_app/index.php' => ['icon' => 'fas fa-chalkboard-teacher', 'label' => 'App Hosts'],
     'meetings.php'     => ['icon' => 'fas fa-calendar-alt',   'label' => 'Online'],
     'presencial.php'   => ['icon' => 'fas fa-map-marker-alt', 'label' => 'Presencial'],
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
