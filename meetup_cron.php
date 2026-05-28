@@ -109,7 +109,7 @@ foreach ($meetings as $m) {
                         $payload = json_encode([
                             "number" => $g['group_id'],
                             "options" => [
-                                "delay" => 1200,
+                                "delay" => 0,
                                 "presence" => "composing"
                             ],
                             "textMessage" => [

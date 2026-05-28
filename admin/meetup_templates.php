@@ -181,8 +181,12 @@ try {
                     <input type="hidden" name="id" id="template_id">
                     
                     <div class="form-group">
-                        <label>Cenário (Ex: Lembrete, Hora Exata)</label>
-                        <input type="text" name="cenario" id="cenario" required>
+                        <label>Cenário do Disparo</label>
+                        <select name="cenario" id="cenario" class="form-control" required>
+                            <option value="Hora Exata">Hora Exata</option>
+                            <option value="Resumo do Dia">Resumo do Dia</option>
+                            <option value="Lembrete">Lembrete (Ex: 15 min antes)</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
