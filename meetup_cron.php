@@ -108,6 +108,9 @@ foreach ($meetings as $m) {
                         // Envia para a API
                         $payload = json_encode([
                             "number" => $g['group_id'],
+                            "options" => [
+                                "delay" => 1200
+                            ],
                             "textMessage" => [
                                 "text" => $textoFinal
                             ]
@@ -135,6 +138,7 @@ foreach ($meetings as $m) {
                             $sucessos++;
                         } else {
                             echo "<p style='color:red;'>❌ Erro ao enviar [{$t['cenario']}] para '{$g['nome']}'. HTTP: {$httpcode} | Resposta: " . htmlspecialchars($response) . "</p>";
+                            sleep(5);
                         }
                     } else {
                         echo "<p>⏭️ Pulando Grupo '{$g['nome']}': [{$t['cenario']}] já enviada hoje para o Meetup de {$m['language_name']}.</p>";

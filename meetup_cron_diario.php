@@ -103,9 +103,12 @@ foreach ($groups as $g) {
             // Troca a variável mágica {LISTA_ENCONTROS}
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
             
-            // Envia para a API (Sem options, pois presence: composing trava a API em Grupos)
+            // Envia para a API (Restaurando options sem presence para evitar Bad Request)
             $payload = json_encode([
                 "number" => $g['group_id'],
+                "options" => [
+                    "delay" => 1200
+                ],
                 "textMessage" => [
                     "text" => $textoFinal
                 ]
@@ -141,6 +144,11 @@ foreach ($groups as $g) {
                 $sucessos++;
             } else {
                 echo "&nbsp;&nbsp;-> ❌ Erro na API HTTP {$httpcode}. (Demorou {$tempoGasto}s) Resposta: " . htmlspecialchars($response) . "<br>";
+                // Se deu erro fatal (ex: 400), pausamos por 5 segundos para dar tempo do Node.js da Evolution API se recuperar
+                if ($httpcode >= 400) {
+                    echo "&nbsp;&nbsp;-> ⚠️ Pausando 5 segundos para a API respirar após o erro...<br>";
+                    sleep(5);
+                }
             }
         } else {
             echo "&nbsp;&nbsp;-> ⏭️ Pulando Grupo '{$g['nome']}': Resumo do dia já enviado hoje.<br>";
