@@ -5,19 +5,12 @@ $conn = connectDB();
 
 echo "Iniciando migração de banco de dados para o Bot de Meetups...\n";
 
-// 1. Adicionar greeting e name_native em languages
+// 1. Adicionar greeting em languages
 try {
     $conn->exec("ALTER TABLE languages ADD COLUMN greeting VARCHAR(100) DEFAULT 'Welcome!' AFTER name_en");
     echo "Coluna 'greeting' adicionada em 'languages' (ou já existia).\n";
 } catch (PDOException $e) {
     echo "Coluna 'greeting' já existe.\n";
-}
-
-try {
-    $conn->exec("ALTER TABLE languages ADD COLUMN name_native VARCHAR(100) NULL AFTER name_en");
-    echo "Coluna 'name_native' adicionada em 'languages' (ou já existia).\n";
-} catch (PDOException $e) {
-    echo "Coluna 'name_native' já existe.\n";
 }
 
 // 2. Tabela de grupos
@@ -43,23 +36,11 @@ $conn->exec("
         cenario VARCHAR(100) NOT NULL,
         minutos_antes INT NOT NULL DEFAULT 0,
         template_texto TEXT NOT NULL,
-        language_id INT NULL,
-        tipo ENUM('alerta', 'resumo_diario') DEFAULT 'alerta',
         ativo TINYINT(1) DEFAULT 1,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE CASCADE
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
 ");
-
-try {
-    $conn->exec("ALTER TABLE meetup_whatsapp_templates ADD COLUMN language_id INT NULL AFTER template_texto");
-    $conn->exec("ALTER TABLE meetup_whatsapp_templates ADD COLUMN tipo ENUM('alerta', 'resumo_diario') DEFAULT 'alerta' AFTER language_id");
-    $conn->exec("ALTER TABLE meetup_whatsapp_templates ADD CONSTRAINT fk_template_lang FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE CASCADE");
-    echo "Colunas 'language_id' e 'tipo' adicionadas em 'meetup_whatsapp_templates'.\n";
-} catch (PDOException $e) {
-    echo "Colunas de idiomas/tipo já existem em 'meetup_whatsapp_templates'.\n";
-}
-echo "Tabela 'meetup_whatsapp_templates' atualizada.\n";
+echo "Tabela 'meetup_whatsapp_templates' criada.\n";
 
 // Inserir templates padrão se não existirem
 $stmt = $conn->query("SELECT COUNT(*) FROM meetup_whatsapp_templates");
