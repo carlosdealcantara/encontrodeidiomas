@@ -82,8 +82,8 @@ foreach ($groups as $g) {
     if ($podeEnviar) {
         
         // Verifica anti-duplicidade (já enviou o resumo hoje para este grupo?)
-        // Como o Resumo não tem meeting_id específico, procuramos meeting_id IS NULL
-        $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND template_id = ? AND data_disparo = ? AND meeting_id IS NULL");
+        // Como o Resumo não tem meeting_id específico, usamos meeting_id = 0
+        $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND template_id = ? AND data_disparo = ? AND meeting_id = 0");
         $stmtCheck->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
         
         if ($stmtCheck->rowCount() === 0) {
@@ -105,6 +105,7 @@ foreach ($groups as $g) {
             
             $ch = curl_init($EVOLUTION_API_URL);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10); // Timeout de 10s para não travar o PHP se a API cair
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 "Content-Type: application/json",
                 "apikey: " . $EVOLUTION_API_KEY
@@ -118,8 +119,8 @@ foreach ($groups as $g) {
             
             // Só loga no banco se a API respondeu OK
             if ($httpcode >= 200 && $httpcode < 300) {
-                // Log sem meeting_id específico, pois é um resumo de vários (meeting_id = NULL)
-                $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, template_id, data_disparo) VALUES (?, ?, ?)");
+                // Log usando meeting_id = 0 (valor fixo para o Resumo do Dia)
+                $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, 0, ?, ?)");
                 $stmtLog->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
                 
                 echo "<p>✅ Resumo do Dia enviado para o Grupo '{$g['nome']}'. (Status API: {$httpcode})</p>";
