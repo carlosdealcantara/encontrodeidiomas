@@ -62,8 +62,7 @@ foreach ($groups as $g) {
     $encontrosParaEsteGrupo = [];
     
     foreach ($meetings as $m) {
-        $horaFormatada = str_pad($m['time_hour'], 2, '0', STR_PAD_LEFT) . ':00';
-        $linha = "{$m['flag_emoji']} {$m['language_name']} • {$horaFormatada} (UTC-3)";
+        $linha = "{$m['flag_emoji']} {$m['language_name']}";
         
         if ($g['categoria'] === 'multi_idioma') {
             $encontrosParaEsteGrupo[] = $linha;

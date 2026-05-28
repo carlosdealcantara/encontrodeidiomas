@@ -1,5 +1,5 @@
 <?php
-require 'config.php';
+require '../config.php';
 $stmt = $conn->prepare("UPDATE settings SET setting_value = '@Novafase25ei' WHERE setting_key = 'hosts_app_password'");
 $stmt->execute();
 if ($stmt->rowCount() == 0) {
