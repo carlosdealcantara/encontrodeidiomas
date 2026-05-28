@@ -103,13 +103,9 @@ foreach ($groups as $g) {
             // Troca a variável mágica {LISTA_ENCONTROS}
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
             
-            // Envia para a API
+            // Envia para a API (Sem options, pois presence: composing trava a API em Grupos)
             $payload = json_encode([
                 "number" => $g['group_id'],
-                "options" => [
-                    "delay" => 0,
-                    "presence" => "composing"
-                ],
                 "textMessage" => [
                     "text" => $textoFinal
                 ]

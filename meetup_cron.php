@@ -108,10 +108,6 @@ foreach ($meetings as $m) {
                         // Envia para a API
                         $payload = json_encode([
                             "number" => $g['group_id'],
-                            "options" => [
-                                "delay" => 0,
-                                "presence" => "composing"
-                            ],
                             "textMessage" => [
                                 "text" => $textoFinal
                             ]
