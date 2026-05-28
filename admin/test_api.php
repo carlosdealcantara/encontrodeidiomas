@@ -10,7 +10,6 @@ if (!isset($_GET['group_id'])) {
 $groupId = trim($_GET['group_id']);
 $payload = json_encode([
     "number" => $groupId,
-    "options" => ["delay" => 1200],
     "textMessage" => ["text" => "🔧 Teste de Diagnóstico do Sistema."]
 ]);
 
