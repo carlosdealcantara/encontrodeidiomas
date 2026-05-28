@@ -31,7 +31,7 @@ flush();
 
 $ch = curl_init($EVOLUTION_API_URL);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     "Content-Type: application/json",
     "apikey: " . $EVOLUTION_API_KEY
