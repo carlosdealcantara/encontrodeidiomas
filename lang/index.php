@@ -80,7 +80,14 @@ function t($key, $params = []) {
         } else {
             // Fallback para PT se estivermos em EN e a chave faltar
             if (CURRENT_LANG === 'en') {
-                return t_fallback_pt($key, $params);
+                $fallback = t_fallback_pt($key, $params);
+                if ($fallback !== $key) {
+                    return $fallback;
+                }
+            }
+            // Fallback inteligente para nomes de idiomas (ex: 'languages.indonésio' -> 'Indonésio')
+            if (strpos($key, 'languages.') === 0) {
+                return mb_convert_case(str_replace('languages.', '', $key), MB_CASE_TITLE, "UTF-8");
             }
             return $key; // Retorna a própria chave se não encontrar
         }

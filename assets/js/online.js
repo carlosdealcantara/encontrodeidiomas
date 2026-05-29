@@ -268,8 +268,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Auto-scroll inteligente (Sincronizado)
-window.addEventListener('load', function() {
+// Auto-scroll inteligente (Sincronizado) - Mudado para executar independente do window.load que pode demorar
+document.addEventListener('DOMContentLoaded', function() {
     if (window.location.hash) return;
     
     setTimeout(() => {
@@ -296,7 +296,6 @@ window.addEventListener('load', function() {
             window.onlineSmoothScrollTo(targetY, 1500); 
         }
     }, 1000); 
-
 });
 
 // Função de rolagem movida para o escopo global para permitir acesso externo
