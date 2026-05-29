@@ -737,10 +737,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let filterSlug = '';
         if (currentTab === 'online' && currentFilters.online !== 'all') {
-            const activeItem = document.querySelector(`.dropdown-item[data-value="${currentFilters.online}"]`);
+            const activeItem = document.querySelector('.dropdown-item[data-value="' + currentFilters.online + '"]');
             filterSlug = activeItem && activeItem.dataset.slug ? activeItem.dataset.slug : currentFilters.online.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         } else if (currentTab === 'presencial' && currentFilters.presencial !== 'all') {
-            const activeItem = document.querySelector(`#region-dropdown .dropdown-item[data-value="${currentFilters.presencial}"]`);
+            const activeItem = document.querySelector('#region-dropdown .dropdown-item[data-value="' + currentFilters.presencial + '"]');
             filterSlug = activeItem && activeItem.dataset.slug ? activeItem.dataset.slug : currentFilters.presencial.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         } else if (currentTab === 'bastidores' && currentFilters.bastidores !== 'all') {
             filterSlug = currentFilters.bastidores.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
