@@ -413,8 +413,10 @@ include 'includes/header.php';
                             <i class="fas fa-search dropdown-search-icon"></i>
                         </div>
                         <div class="dropdown-item filterable-item" data-value="all"><?= t('team.filters.all_languages') ?></div>
-                        <?php foreach ($languages as $lang): ?>
-                            <div class="dropdown-item filterable-item" data-value="<?= strtolower($lang['name']) ?>">
+                        <?php foreach ($languages as $lang): 
+                            $langSlug = (CURRENT_LANG === 'en' && !empty($lang['slug_en'])) ? $lang['slug_en'] : (!empty($lang['slug_pt']) ? $lang['slug_pt'] : preg_replace('/[^a-z0-9-]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', mb_strtolower(trim($lang['name']), 'UTF-8'))));
+                        ?>
+                            <div class="dropdown-item filterable-item" data-value="<?= strtolower($lang['name']) ?>" data-slug="<?= $langSlug ?>">
                                 <?php if (!empty($lang['flag_code'])): ?>
                                     <img src="https://flagcdn.com/20x15/<?= strtolower($lang['flag_code']) ?>.png" alt="">
                                 <?php elseif (!empty($lang['flag_emoji'])): ?>
@@ -587,6 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         item.textContent = displayText;
         item.classList.add('filterable-item');
+        item.dataset.slug = cleanReg.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
         const otherLink = regionDropdown.querySelector('.other-link');
         if (otherLink) {
@@ -634,14 +637,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const btnContent = wrapper.querySelector('.dropdown-button > span');
             const textSpan = btnContent.querySelector('span[id^="selected-"]');
-            textSpan.textContent = item.textContent.trim();
+            
+            let clonedItem = item.cloneNode(true);
+            const imgEl = clonedItem.querySelector('img');
+            const emojiEl = clonedItem.querySelector('.flag-emoji');
+            if (imgEl) imgEl.remove();
+            if (emojiEl) emojiEl.remove();
+            textSpan.textContent = clonedItem.textContent.trim();
             
             if (type === 'online') {
                 const img = item.querySelector('img');
                 const emoji = item.querySelector('.flag-emoji');
                 
-                const oldIcon = btnContent.querySelector('i.fa-globe, .lang-icon-display');
-                if (oldIcon) oldIcon.remove();
+                const oldIcons = btnContent.querySelectorAll('i.fa-globe, .lang-icon-display');
+                oldIcons.forEach(icon => icon.remove());
                 
                 if (item.dataset.value === 'all' || (!img && !emoji)) {
                     const newIcon = document.createElement('i');
@@ -724,19 +733,107 @@ document.addEventListener('DOMContentLoaded', function() {
         const tabSlug  = slugMap[currentTab] || currentTab;
 
         const url = new URL(window.location);
-        url.pathname = prefix + '/' + tabSlug;
         url.search   = '';
 
-        const paramMap = { online: 'idioma', presencial: 'regiao', bastidores: 'papel', iniciativas: 'projeto' };
-        Object.keys(paramMap).forEach(key => {
-            if (key === currentTab && currentFilters[key] !== 'all') {
-                url.searchParams.set(paramMap[key], currentFilters[key]);
-            }
-        });
+        let filterSlug = '';
+        if (currentTab === 'online' && currentFilters.online !== 'all') {
+            const activeItem = document.querySelector(`.dropdown-item[data-value="${currentFilters.online}"]`);
+            filterSlug = activeItem && activeItem.dataset.slug ? activeItem.dataset.slug : currentFilters.online.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        } else if (currentTab === 'presencial' && currentFilters.presencial !== 'all') {
+            const activeItem = document.querySelector(`#region-dropdown .dropdown-item[data-value="${currentFilters.presencial}"]`);
+            filterSlug = activeItem && activeItem.dataset.slug ? activeItem.dataset.slug : currentFilters.presencial.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        } else if (currentTab === 'bastidores' && currentFilters.bastidores !== 'all') {
+            filterSlug = currentFilters.bastidores.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        } else if (currentTab === 'iniciativas' && currentFilters.iniciativas !== 'all') {
+            filterSlug = currentFilters.iniciativas.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        }
+
+        if (filterSlug) {
+            url.pathname = prefix + '/' + tabSlug + '/' + filterSlug;
+        } else {
+            url.pathname = prefix + '/' + tabSlug;
+        }
+
         window.history.pushState({}, '', url);
     }
 
+    // Leitura do filtro na URL (path ou query string antigo)
+    function parseInitialFilter() {
+        // Tenta ler do path segment final
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        const possibleFilter = pathParts[pathParts.length - 1];
+        
+        const isTab = Object.values(_tabSlugsPt).includes(possibleFilter) || Object.values(_tabSlugsEn).includes(possibleFilter);
+        
+        let urlFilterVal = null;
+        if (!isTab && possibleFilter !== 'equipe' && possibleFilter !== 'team') {
+            urlFilterVal = possibleFilter;
+        }
+
+        // Tenta ler do query parameter antigo (fallback / legacy)
+        const paramMap = { online: 'idioma', presencial: 'regiao', bastidores: 'papel', iniciativas: 'projeto' };
+        if (!urlFilterVal) {
+            urlFilterVal = new URLSearchParams(window.location.search).get(paramMap[currentTab]);
+        }
+
+        if (urlFilterVal && urlFilterVal !== 'all') {
+            const filterGroup = document.getElementById('filter-' + currentTab);
+            if (filterGroup) {
+                const dropdownItems = filterGroup.querySelectorAll('.dropdown-item.filterable-item');
+                let matchedItem = null;
+                for (let item of dropdownItems) {
+                    const itemSlug = item.dataset.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                    if (item.dataset.slug === urlFilterVal || itemSlug === urlFilterVal || item.dataset.value === urlFilterVal) {
+                        matchedItem = item;
+                        break;
+                    }
+                }
+                if (matchedItem) {
+                    currentFilters[currentTab] = matchedItem.dataset.value;
+                    
+                    // Simular clique para atualizar UI (ícone e texto no botão)
+                    const textSpan = filterGroup.querySelector('span[id^="selected-"]');
+                    let clonedItem = matchedItem.cloneNode(true);
+                    const imgEl = clonedItem.querySelector('img');
+                    const emojiEl = clonedItem.querySelector('.flag-emoji');
+                    if (imgEl) imgEl.remove();
+                    if (emojiEl) emojiEl.remove();
+                    if (textSpan) textSpan.textContent = clonedItem.textContent.trim();
+                    
+                    if (currentTab === 'online') {
+                        const btnContent = filterGroup.querySelector('.dropdown-button > span');
+                        const img = matchedItem.querySelector('img');
+                        const emoji = matchedItem.querySelector('.flag-emoji');
+                        
+                        const oldIcons = btnContent.querySelectorAll('i.fa-globe, .lang-icon-display');
+                        oldIcons.forEach(icon => icon.remove());
+                        
+                        if (img) {
+                            const newIcon = document.createElement('img');
+                            newIcon.src = img.src;
+                            newIcon.className = 'lang-icon-display';
+                            newIcon.style.width = '20px';
+                            newIcon.style.height = '15px';
+                            newIcon.style.borderRadius = '2px';
+                            newIcon.style.marginRight = '8px';
+                            newIcon.style.verticalAlign = 'middle';
+                            btnContent.insertBefore(newIcon, textSpan);
+                        } else if (emoji) {
+                            const newIcon = document.createElement('span');
+                            newIcon.className = 'lang-icon-display flag-emoji';
+                            newIcon.textContent = emoji.textContent;
+                            newIcon.style.marginRight = '8px';
+                            btnContent.insertBefore(newIcon, textSpan);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    parseInitialFilter();
     applyFilters();
+    updateURL();
 
     // Auto-scroll padronizado
     function smoothScrollTo(endY, duration) {
