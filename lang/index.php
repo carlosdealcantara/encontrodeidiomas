@@ -85,9 +85,11 @@ function t($key, $params = []) {
                     return $fallback;
                 }
             }
-            // Fallback inteligente para nomes de idiomas (ex: 'languages.indonésio' -> 'Indonésio')
+            // Fallback inteligente para nomes de idiomas: consulta o banco de dados
+            // para retornar o nome no idioma correto (name_en se EN, name se PT)
             if (strpos($key, 'languages.') === 0) {
-                return mb_convert_case(str_replace('languages.', '', $key), MB_CASE_TITLE, "UTF-8");
+                $langName = str_replace('languages.', '', $key);
+                return _langNameFromDB($langName);
             }
             return $key; // Retorna a própria chave se não encontrar
         }
@@ -128,6 +130,45 @@ function t_fallback_pt($key, $params = []) {
     }
 
     return $value;
+}
+
+/**
+ * Fallback: busca o nome traduzido de um idioma no banco de dados.
+ * Usa cache estático para evitar queries repetidas na mesma requisição.
+ * @param string $langNamePt Nome em português (ex: 'indonésio')
+ * @return string Nome no idioma do site (ex: 'Indonesian' se EN, 'Indonésio' se PT)
+ */
+function _langNameFromDB(string $langNamePt): string {
+    static $cache = null;
+
+    // Carrega o cache uma única vez por requisição
+    if ($cache === null) {
+        $cache = [];
+        try {
+            $conn = connectDB();
+            $stmt = $conn->query("SELECT name, name_en FROM languages WHERE active = 1");
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                $key = mb_strtolower(trim($row['name']), 'UTF-8');
+                $cache[$key] = $row;
+            }
+        } catch (Exception $e) {
+            error_log("_langNameFromDB: " . $e->getMessage());
+        }
+    }
+
+    $lookup = mb_strtolower(trim($langNamePt), 'UTF-8');
+
+    if (isset($cache[$lookup])) {
+        $row = $cache[$lookup];
+        if (CURRENT_LANG === 'en' && !empty($row['name_en'])) {
+            return $row['name_en'];
+        }
+        return $row['name']; // Retorna nome em PT do banco (formatado corretamente)
+    }
+
+    // Último fallback: capitaliza o nome da chave
+    return mb_convert_case($langNamePt, MB_CASE_TITLE, "UTF-8");
 }
 
 /**
