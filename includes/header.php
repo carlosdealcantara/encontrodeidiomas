@@ -633,7 +633,9 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             .tz-dropdown-menu {
                 right: 50%;
                 transform: translateX(50%);
-                width: 90%;
+                width: 280px;
+                max-width: 90vw;
+                max-height: 45vh;
             }
         }
 
