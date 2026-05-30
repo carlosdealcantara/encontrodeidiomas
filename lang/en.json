@@ -122,7 +122,17 @@
     "empty_day_title": "Want a meetup on this day?",
     "empty_day_text": "We don't have a meetup on this day yet, but we can help you start one! Our team supports every new host from day one.",
     "empty_day_cta": "I'd like help starting one",
-    "seo_index_title": "Practice Index by Language"
+    "seo_index_title": "Practice Index by Language",
+    "tz_selector_label": "Timezone",
+    "tz_auto_detect": "Auto-detect",
+    "tz_converted_label": "Times shown in {tz_name}",
+    "tz_original_note": "Base times: UTC-3 (Brasília Time)",
+    "tz_day_shift_next": "(next day)",
+    "tz_day_shift_prev": "(previous day)",
+    "tz_banner_text": "We detected you're in the {tz_name} timezone. Show adapted times?",
+    "tz_banner_cta": "Yes, adapt times",
+    "tz_banner_dismiss": "Keep original",
+    "tz_all_timezones": "All timezones"
   },
   "presencial": {
     "title_default": "Free In-Person Language Meetups — Brazil and Beyond",

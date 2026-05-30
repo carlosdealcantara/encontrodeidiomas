@@ -472,8 +472,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             border-radius: 2px;
         }
 
-        /* Suggestion Banner */
-        #lang-suggestion-banner {
+        #smart-suggestion-banner {
             background: var(--accent-blue);
             color: white;
             text-align: center;
@@ -481,12 +480,129 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             font-size: 0.95rem;
             position: relative;
             z-index: 1100;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
         }
-        #lang-suggestion-banner a {
+        .smart-banner-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #smart-suggestion-banner a, #smart-suggestion-banner button.action-link {
             color: var(--accent-yellow);
             font-weight: 700;
-            margin-left: 10px;
             text-decoration: underline;
+            background: none;
+            border: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+        }
+        #smart-suggestion-banner .close-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        #smart-suggestion-banner .close-btn:hover { opacity: 1; }
+
+        .global-prefs-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: 15px;
+        }
+        .tz-dropdown-container {
+            position: relative;
+        }
+        .tz-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+            border: 1px solid rgba(255,255,255,0.3);
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .tz-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .tz-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--white);
+            color: var(--text-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .tz-dropdown-menu.show {
+            display: block;
+        }
+        .tz-group-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #888;
+            padding: 10px 15px 5px;
+            text-transform: uppercase;
+        }
+        .tz-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .tz-option:hover {
+            background: var(--bg-light);
+        }
+        .tz-option.active {
+            font-weight: 700;
+            color: var(--accent-red);
+            background: rgba(227, 29, 28, 0.05);
+        }
+        .tz-detect-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: var(--bg-light);
+            border: none;
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            cursor: pointer;
+        }
+        .tz-detect-btn:hover {
+            background: #e9ecef;
         }
 
         /* Blindagem Global para Âncora: Qualquer elemento com ID respeita o menu fixo */
@@ -495,11 +611,22 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         }
 
         @media (max-width: 768px) {
-            .lang-switch {
+            .global-prefs-group {
+                flex-direction: column;
                 margin: 15px 0;
-                justify-content: center;
-                order: 2;
                 width: 100%;
+                gap: 15px;
+                order: 2;
+            }
+            .lang-switch {
+                margin: 0;
+                justify-content: center;
+                width: 100%;
+            }
+            .tz-dropdown-menu {
+                right: 50%;
+                transform: translateX(50%);
+                width: 90%;
             }
         }
 
@@ -518,26 +645,32 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         <?php endif; ?>
 
         <?php 
-        // Banner de sugestão de idioma (melhorado e internacionalizado)
+        // Banner Inteligente Unificado (Idioma + Fuso Horário)
         $alt_lang = (CURRENT_LANG === 'pt') ? 'en' : 'pt';
-        if (!isset($_COOKIE['lang_suggest_closed'])):
-            $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
-            if (strpos(strtolower($accept), $alt_lang) !== false): ?>
-                <div id="lang-suggestion-banner">
-                    🌎 <?= (CURRENT_LANG === 'pt') ? 'This site is also available in English.' : 'Este site também está disponível em Português.' ?> 
-                    <a href="<?= altLangUrl() ?>"><?= (CURRENT_LANG === 'pt') ? 'Switch to English' : 'Mudar para Português' ?></a>
-                    <button onclick="closeLangSuggest()" style="background:none; border:none; color:white; margin-left:15px; cursor:pointer; opacity:0.7;">&times;</button>
-                </div>
-                <script>
-                    function closeLangSuggest() {
-                        document.getElementById('lang-suggestion-banner').style.display = 'none';
-                        document.cookie = "lang_suggest_closed=1; path=/; max-age=" + (86400 * 30);
-                        // Recalcular altura do header após fechar
-                        if (typeof syncHeaderHeight === 'function') syncHeaderHeight();
-                    }
-                </script>
-            <?php endif; 
-        endif; ?>
+        $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+        $showLangSuggest = !isset($_COOKIE['lang_suggest_closed']) && (strpos(strtolower($accept), $alt_lang) !== false);
+        ?>
+        <div id="smart-suggestion-banner" style="<?= $showLangSuggest ? 'display:flex;' : 'display:none;' ?>">
+            <?php if ($showLangSuggest): ?>
+            <div class="smart-banner-row lang-banner-row">
+                🌎 <?= (CURRENT_LANG === 'pt') ? 'This site is also available in English.' : 'Este site também está disponível em Português.' ?> 
+                <a href="<?= altLangUrl() ?>"><?= (CURRENT_LANG === 'pt') ? 'Switch to English' : 'Mudar para Português' ?></a>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Linha de timezone injetada via JS se necessário -->
+            <div class="smart-banner-row tz-banner-row" style="display:none;"></div>
+            
+            <button onclick="closeSmartSuggest()" class="close-btn" aria-label="Fechar aviso">&times;</button>
+        </div>
+        <script>
+            function closeSmartSuggest() {
+                document.getElementById('smart-suggestion-banner').style.display = 'none';
+                document.cookie = "lang_suggest_closed=1; path=/; max-age=" + (86400 * 30);
+                document.cookie = "tz_suggest_closed=1; path=/; max-age=" + (86400 * 30);
+                if (typeof syncHeaderHeight === 'function') syncHeaderHeight();
+            }
+        </script>
         <div class="header-content">
             <div class="logo-container">
                 <img src="/assets/images/logo.png" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
@@ -559,13 +692,23 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 <a href="<?= langUrl('links.php') ?>"       <?= $current_page === 'links.php'       ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.links') ?></a>
                 <a href="<?= langUrl('contato.php') ?>"     <?= $current_page === 'contato.php'     ? 'class="active" aria-current="page"' : '' ?>><?= t('nav.contact') ?></a>
                 
-                <div class="lang-switch">
-                    <a href="<?= langSpecificUrl($current_page, 'pt') ?>" class="lang-btn <?= CURRENT_LANG === 'pt' ? 'active' : '' ?>" title="Português">
-                        <img src="https://flagcdn.com/w20/br.png" alt="PT"> PT
-                    </a>
-                    <a href="<?= langSpecificUrl($current_page, 'en') ?>" class="lang-btn <?= CURRENT_LANG === 'en' ? 'active' : '' ?>" title="English">
-                        <img src="https://flagcdn.com/w20/us.png" alt="EN"> EN
-                    </a>
+                <div class="global-prefs-group">
+                    <div class="lang-switch">
+                        <a href="<?= langSpecificUrl($current_page, 'pt') ?>" class="lang-btn <?= CURRENT_LANG === 'pt' ? 'active' : '' ?>" title="Português">
+                            <img src="https://flagcdn.com/w20/br.png" alt="PT"> PT
+                        </a>
+                        <a href="<?= langSpecificUrl($current_page, 'en') ?>" class="lang-btn <?= CURRENT_LANG === 'en' ? 'active' : '' ?>" title="English">
+                            <img src="https://flagcdn.com/w20/us.png" alt="EN"> EN
+                        </a>
+                    </div>
+                    <div class="tz-dropdown-container">
+                        <button class="tz-btn" id="tz-toggle-btn" aria-label="<?= t('online.tz_selector_label') ?>">
+                            <i class="fas fa-clock"></i> <span id="tz-current-label">UTC-3</span>
+                        </button>
+                        <div class="tz-dropdown-menu" id="tz-dropdown-menu">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
             </nav>
         </div>
@@ -719,3 +862,4 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             }
         });
     </script>
+    <script src="/assets/js/timezone.js?v=<?= ASSET_VERSION ?>"></script>

@@ -122,7 +122,17 @@
     "empty_day_title": "Quer ter um encontro nesse dia?",
     "empty_day_text": "Ainda não temos encontro neste dia, mas podemos te ajudar a criar um! Nossa equipe acompanha cada novo anfitrião do início ao fim.",
     "empty_day_cta": "Quero ajuda para criar um",
-    "seo_index_title": "Índice de Prática por Idioma"
+    "seo_index_title": "Índice de Prática por Idioma",
+    "tz_selector_label": "Fuso Horário",
+    "tz_auto_detect": "Detectar automaticamente",
+    "tz_converted_label": "Horários convertidos para {tz_name}",
+    "tz_original_note": "Horários base: UTC-3 (Brasília)",
+    "tz_day_shift_next": "(dia seguinte)",
+    "tz_day_shift_prev": "(dia anterior)",
+    "tz_banner_text": "Detectamos que você está no fuso {tz_name}. Deseja ver os horários adaptados?",
+    "tz_banner_cta": "Sim, adaptar horários",
+    "tz_banner_dismiss": "Manter original",
+    "tz_all_timezones": "Todos os fusos"
   },
   "presencial": {
     "title_default": "Encontros de Conversação Presenciais e Gratuitos — Brasil e Mundo",

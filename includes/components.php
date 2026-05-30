@@ -16,13 +16,13 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
     $current_lang = t('meta.lang_code');
     $langDisplayName = ($current_lang === 'en' && !empty($ev['language_name_en'])) ? $ev['language_name_en'] : ($ev['language_name'] ?? '');
     ?>
-    <div class="timeline-event <?= $isNow ? 'happening-now' : '' ?> <?= $isTarget ? 'scroll-target' : '' ?>">
+    <div class="timeline-event tz-event-card <?= $isNow ? 'happening-now' : '' ?> <?= $isTarget ? 'scroll-target' : '' ?>" data-brt-day="<?= $evDay ?>" data-brt-hour="<?= $evHour ?>">
         <div class="event-header-row">
             <div class="event-tags">
-                <span class="event-tag"><?= t('events.at_time', ['day' => getDayName($evDay), 'hour' => formatHour($evHour)]) ?></span>
+                <span class="event-tag tz-event-tag" data-brt-day="<?= $evDay ?>" data-brt-hour="<?= $evHour ?>"><?= t('events.at_time', ['day' => getDayName($evDay), 'hour' => formatHour($evHour)]) ?></span>
             </div>
             <?php if ($isNow): ?>
-            <span class="now-badge"><?= t('events.live_badge') ?></span>
+            <span class="now-badge tz-now-badge" data-brt-day="<?= $evDay ?>" data-brt-hour="<?= $evHour ?>"><?= t('events.live_badge') ?></span>
             <?php endif; ?>
         </div>
         <div class="event-title">
