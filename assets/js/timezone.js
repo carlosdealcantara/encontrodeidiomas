@@ -92,24 +92,41 @@ document.addEventListener("DOMContentLoaded", function() {
         return currentLang === 'en' ? enDays[dayNum] : ptDays[dayNum];
     }
 
+    const curatedTimezones = [
+        { tz: "Pacific/Midway", label: "(UTC-11) Midway Island, Samoa" },
+        { tz: "Pacific/Honolulu", label: "(UTC-10) Hawaii" },
+        { tz: "America/Anchorage", label: "(UTC-9) Alaska" },
+        { tz: "America/Los_Angeles", label: "(UTC-8) Pacific Time (US & Canada)" },
+        { tz: "America/Denver", label: "(UTC-7) Mountain Time (US & Canada)" },
+        { tz: "America/Chicago", label: "(UTC-6) Central Time (US & Canada), Mexico City" },
+        { tz: "America/New_York", label: "(UTC-5) Eastern Time (US & Canada), Bogota, Lima" },
+        { tz: "America/Caracas", label: "(UTC-4) Caracas, La Paz, Santiago" },
+        { tz: "America/Sao_Paulo", label: "(UTC-3) Brasilia, Buenos Aires, Montevideo" },
+        { tz: "America/Noronha", label: "(UTC-2) Mid-Atlantic" },
+        { tz: "Atlantic/Azores", label: "(UTC-1) Azores, Cape Verde Is." },
+        { tz: "Europe/London", label: "(UTC+0) London, Dublin, Lisbon" },
+        { tz: "Europe/Paris", label: "(UTC+1) Amsterdam, Berlin, Rome, Paris, Madrid" },
+        { tz: "Europe/Helsinki", label: "(UTC+2) Athens, Bucharest, Istanbul, Cairo" },
+        { tz: "Europe/Moscow", label: "(UTC+3) Moscow, Kuwait, Riyadh" },
+        { tz: "Asia/Dubai", label: "(UTC+4) Abu Dhabi, Muscat" },
+        { tz: "Asia/Karachi", label: "(UTC+5) Islamabad, Karachi, Tashkent" },
+        { tz: "Asia/Kolkata", label: "(UTC+5:30) Chennai, Kolkata, Mumbai, New Delhi" },
+        { tz: "Asia/Dhaka", label: "(UTC+6) Astana, Dhaka" },
+        { tz: "Asia/Bangkok", label: "(UTC+7) Bangkok, Hanoi, Jakarta" },
+        { tz: "Asia/Shanghai", label: "(UTC+8) Beijing, Perth, Singapore, Hong Kong" },
+        { tz: "Asia/Tokyo", label: "(UTC+9) Tokyo, Seoul, Osaka, Sapporo" },
+        { tz: "Australia/Sydney", label: "(UTC+10) Brisbane, Canberra, Melbourne, Sydney" },
+        { tz: "Pacific/Noumea", label: "(UTC+11) Solomon Is., New Caledonia" },
+        { tz: "Pacific/Auckland", label: "(UTC+12) Auckland, Wellington, Fiji" }
+    ];
+
     function buildDropdown() {
         if (!tzDropdownMenu) return;
-        
-        // Pega todos os fusos disponíveis via Intl API
-        let allZones = [];
-        try {
-            allZones = Intl.supportedValuesOf('timeZone');
-        } catch(e) {
-            allZones = [BRT_TZ, "UTC", "Europe/London", "America/New_York", "Asia/Tokyo"];
-        }
 
         let html = `<div class="tz-group-title">${t.all_timezones}</div>`;
-        html += `<button class="tz-option ${userSelectedTZ === BRT_TZ || !userSelectedTZ ? 'active' : ''}" data-tz="${BRT_TZ}">America/Sao_Paulo (UTC-3)</button>`;
-
-        // Renderiza o resto
-        const filterZones = allZones.filter(z => z !== BRT_TZ);
-        filterZones.forEach(z => {
-            html += `<button class="tz-option ${userSelectedTZ === z ? 'active' : ''}" data-tz="${z}">${z}</button>`;
+        
+        curatedTimezones.forEach(item => {
+            html += `<button class="tz-option ${userSelectedTZ === item.tz ? 'active' : (!userSelectedTZ && item.tz === BRT_TZ ? 'active' : '')}" data-tz="${item.tz}">${item.label}</button>`;
         });
 
         tzDropdownMenu.innerHTML = html;
@@ -136,17 +153,19 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         if (tzCurrentLabel) {
-            // Um label mais curtinho para o Header
-            let shortLabel = tz.split("/").pop().replace(/_/g, " ");
-            tzCurrentLabel.textContent = shortLabel.substring(0, 15);
+            // Find the curated label for header (shorten to match UTC-X)
+            let match = curatedTimezones.find(i => i.tz === tz);
+            if (match) {
+                let short = match.label.split(')')[0] + ')'; // gets "(UTC-3)"
+                tzCurrentLabel.textContent = short;
+            } else {
+                let shortLabel = tz.split("/").pop().replace(/_/g, " ");
+                tzCurrentLabel.textContent = shortLabel.substring(0, 10);
+            }
         }
 
         if (tzInfoLabel) {
-            if (tz === BRT_TZ) {
-                tzInfoLabel.textContent = t.original_note;
-            } else {
-                tzInfoLabel.textContent = `Timezone: ${tz} · ${t.original_note}`;
-            }
+            tzInfoLabel.style.display = 'none'; // Esconde para sempre, conforme feedback
         }
 
         const diff = getOffsetHourDiff(tz);

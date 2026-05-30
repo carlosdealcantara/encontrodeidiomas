@@ -111,7 +111,7 @@ include 'includes/header.php';
     <section id="calendar" class="calendar-section">
         <div class="container">
             <h2 class="section-title"><?= t('online.calendar_heading') ?></h2>
-            <p id="tz-info-label" style="text-align:center;margin-bottom:2rem;"><?= str_replace('GMT-3', 'UTC-3', t('online.calendar_timezone')) ?></p>
+            <!-- O timezone info label foi removido conforme solicitação para tornar transparente -->
 
             <div class="calendar-nav">
                 <div class="calendar-nav-title"><?= t('online.filter_label') ?></div>
