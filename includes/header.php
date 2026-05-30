@@ -605,6 +605,13 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             background: #e9ecef;
         }
 
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        .blink-colon {
+            animation: blink 1s step-start infinite;
+        }
+
         /* Blindagem Global para Âncora: Qualquer elemento com ID respeita o menu fixo */
         [id] {
             scroll-margin-top: var(--header-offset, 100px);

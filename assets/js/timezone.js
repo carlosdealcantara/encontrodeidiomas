@@ -153,15 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         if (tzCurrentLabel) {
-            // Find the curated label for header (shorten to match UTC-X)
-            let match = curatedTimezones.find(i => i.tz === tz);
-            if (match) {
-                let short = match.label.split(')')[0] + ')'; // gets "(UTC-3)"
-                tzCurrentLabel.textContent = short;
-            } else {
-                let shortLabel = tz.split("/").pop().replace(/_/g, " ");
-                tzCurrentLabel.textContent = shortLabel.substring(0, 10);
-            }
+            startLiveClock(tz);
         }
 
         if (tzInfoLabel) {
@@ -328,6 +320,38 @@ document.addEventListener("DOMContentLoaded", function() {
             if(smartBanner) smartBanner.style.display = 'none';
         }
         if (typeof syncHeaderHeight === 'function') syncHeaderHeight();
+    }
+
+    let clockInterval;
+    let lastTimeStr = "";
+
+    function startLiveClock(tz) {
+        if (clockInterval) clearInterval(clockInterval);
+        lastTimeStr = ""; // Força atualização no primeiro tick
+
+        function updateClock() {
+            if (!tzCurrentLabel) return;
+            const now = new Date();
+            const locale = currentLang === 'en' ? 'en-US' : 'pt-BR';
+            const opts = { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: currentLang === 'en' };
+            
+            let timeStr = now.toLocaleString(locale, opts);
+            
+            if (timeStr !== lastTimeStr) {
+                lastTimeStr = timeStr;
+                const parts = timeStr.split(':');
+                if (parts.length >= 2) {
+                    const first = parts[0];
+                    const rest = parts.slice(1).join(':');
+                    tzCurrentLabel.innerHTML = `${first}<span class="blink-colon">:</span>${rest}`;
+                } else {
+                    tzCurrentLabel.textContent = timeStr;
+                }
+            }
+        }
+        
+        updateClock();
+        clockInterval = setInterval(updateClock, 1000);
     }
 
     initTimezone();
