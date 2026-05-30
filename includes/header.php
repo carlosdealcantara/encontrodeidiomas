@@ -634,11 +634,22 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 width: 100%;
             }
             .tz-dropdown-menu {
-                right: 50%;
-                transform: translateX(50%);
-                width: 280px;
-                max-width: 90vw;
-                max-height: 45vh;
+                position: relative;
+                top: 0;
+                right: auto;
+                transform: none;
+                width: 100%;
+                max-width: 100%;
+                max-height: 35vh;
+                box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+                margin-top: 10px;
+                border-radius: 8px;
+                background: var(--bg-light);
+            }
+            .tz-option {
+                text-align: center;
+                padding: 12px 15px;
+                border-bottom: 1px solid #eee;
             }
         }
 
