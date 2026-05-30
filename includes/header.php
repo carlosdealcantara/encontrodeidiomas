@@ -379,6 +379,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 background: var(--primary-color);
                 box-shadow: 0 10px 20px rgba(0,0,0,0.2);
                 z-index: 1000;
+                max-height: calc(100vh - 60px);
+                overflow-y: auto;
             }
 
             .nav-links.show {

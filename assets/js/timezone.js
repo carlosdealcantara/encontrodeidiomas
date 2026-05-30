@@ -246,6 +246,34 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
+        // Troca a aba ativa para refletir o dia "Hoje" no fuso alvo
+        try {
+            const now = new Date();
+            const opts = { timeZone: tz, weekday: 'short', hour12: false, localeMatcher: 'best fit' };
+            const dayStr = now.toLocaleString("en-US", opts).substring(0,3);
+            const dayMap = { 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6, 'Sun': 7 };
+            const currentLocalDayNum = dayMap[dayStr];
+
+            if (currentLocalDayNum) {
+                document.querySelectorAll('.day-button').forEach(btn => {
+                    if (parseInt(btn.getAttribute('data-day')) === currentLocalDayNum) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                document.querySelectorAll('.day-events').forEach(container => {
+                    if (container.id === `day-${currentLocalDayNum}`) {
+                        container.classList.add('active');
+                    } else {
+                        container.classList.remove('active');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Erro ao atualizar aba do dia ativo:", e);
+        }
+
     }
 
     function initTimezone() {
