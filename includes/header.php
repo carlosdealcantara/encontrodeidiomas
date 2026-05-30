@@ -370,16 +370,16 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 display: none;
                 width: 100%;
                 flex-direction: column;
-                gap: 5px;
+                gap: 2px;
                 margin-top: 0;
-                padding: 15px 0;
+                padding: 10px 0;
                 position: absolute;
                 top: 100%;
                 left: 0;
                 background: var(--primary-color);
                 box-shadow: 0 10px 20px rgba(0,0,0,0.2);
                 z-index: 1000;
-                max-height: 60vh;
+                max-height: 55vh;
                 overflow-y: auto;
             }
 
@@ -390,7 +390,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             .nav-links a {
                 display: block;
                 text-align: center;
-                padding: 10px 12px;
+                padding: 6px 12px;
+                flex-shrink: 0;
             }
 
             .logo {
@@ -623,21 +624,24 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         @media (max-width: 768px) {
             .global-prefs-group {
                 flex-direction: column;
-                margin: 15px 0;
+                margin: 10px 0;
                 width: 100%;
-                gap: 15px;
+                gap: 10px;
                 order: 2;
+                flex-shrink: 0;
             }
             .lang-switch {
                 margin: 0;
                 justify-content: center;
                 width: 100%;
+                flex-shrink: 0;
             }
             .tz-dropdown-container {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 width: 100%;
+                flex-shrink: 0;
             }
             .tz-dropdown-menu {
                 position: relative;
@@ -646,11 +650,15 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 transform: none;
                 width: 100%;
                 max-width: 100%;
-                max-height: 35vh;
+                /* Ao invés de usar max-height rígido pro accordion, deixamos crescer para que o scroll
+                   principal aconteça no .nav-links que já tem overflow-y: auto e max-height: 55vh.
+                   Mas podemos manter um limite para não ficar infinito. */
+                height: 35vh;
                 box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
                 margin-top: 10px;
                 border-radius: 8px;
                 background: var(--bg-light);
+                flex-shrink: 0;
             }
             .tz-option {
                 text-align: center;
