@@ -633,6 +633,12 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 justify-content: center;
                 width: 100%;
             }
+            .tz-dropdown-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
             .tz-dropdown-menu {
                 position: relative;
                 top: 0;
