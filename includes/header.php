@@ -370,16 +370,16 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 display: none;
                 width: 100%;
                 flex-direction: column;
-                gap: 10px;
+                gap: 5px;
                 margin-top: 0;
-                padding: 20px 0;
+                padding: 15px 0;
                 position: absolute;
                 top: 100%;
                 left: 0;
                 background: var(--primary-color);
                 box-shadow: 0 10px 20px rgba(0,0,0,0.2);
                 z-index: 1000;
-                max-height: calc(100vh - 60px);
+                max-height: 60vh;
                 overflow-y: auto;
             }
 
@@ -390,6 +390,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             .nav-links a {
                 display: block;
                 text-align: center;
+                padding: 10px 12px;
             }
 
             .logo {
