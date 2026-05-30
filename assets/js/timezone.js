@@ -344,10 +344,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     const first = parts[0];
                     const rest = parts.slice(1).join(':');
                     
-                    let match = curatedTimezones.find(i => i.tz === tz);
-                    let shortTz = match ? match.label.split(')')[0] + ')' : ""; // Pega "(UTC-X)"
-                    
-                    tzCurrentLabel.innerHTML = `${shortTz} <span style="opacity:0.6; margin:0 3px;">|</span> ${first}<span class="blink-colon">:</span>${rest} <i class="fas fa-caret-down" style="margin-left:6px; opacity:0.8;"></i>`;
+                    tzCurrentLabel.innerHTML = `${first}<span class="blink-colon">:</span>${rest} <i class="fas fa-caret-down" style="margin-left:6px; opacity:0.8;"></i>`;
                 } else {
                     tzCurrentLabel.textContent = timeStr;
                 }
