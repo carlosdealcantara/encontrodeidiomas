@@ -54,6 +54,7 @@ html {
     margin-bottom: 20px;
     color: var(--primary-color);
     letter-spacing: -1px;
+    text-wrap: balance;
 }
 
 .hero-content h1 .highlight {
