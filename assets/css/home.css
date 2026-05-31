@@ -448,15 +448,15 @@ html {
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
-    .hero-premium { padding: 80px 0 40px; } /* Aumentado o topo para não cortar com o menu fixo */
-    .hero-premium-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+    .hero-premium { padding: 40px 0 30px; } /* Reduzido de 80px no topo */
+    .hero-premium-grid { grid-template-columns: 1fr; gap: 30px; text-align: center; } /* Gap reduzido de 40px */
     .hero-content { max-width: 100%; }
     .hero-cta { justify-content: center; }
     .hero-visual .photo-swiper { padding: 10px; }
 }
 @media (max-width: 680px) {
-    .hero-content h1 { font-size: 1.8rem; } /* Reduzido de 2.2rem */
-    .hero-content .welcome-text { font-size: 0.95rem; } /* Reduzido o texto descritivo */
+    .hero-content h1 { font-size: 1.8rem; margin-bottom: 12px; } /* Reduzido de 2.2rem e menor margem */
+    .hero-content .welcome-text { font-size: 0.95rem; margin-bottom: 24px; line-height: 1.5; } /* Reduzido o texto e a margem */
     .btn-hero-cta { padding: 12px 24px; font-size: 0.95rem; } /* Botão menor no mobile */
     .btn-hero-secondary { font-size: 0.95rem; }
     .modalidades-grid { grid-template-columns: 1fr; }
@@ -465,9 +465,12 @@ html {
     .cta-cards { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 480px) {
+    .hero-premium { padding: 20px 0 20px; } /* Topo bem curto no celular porque o header JS já dá offset */
     .hero-split { padding: 36px 0 16px; }
-    .hero-content h1 { font-size: 1.6rem; } /* Ainda menor em telas muito pequenas */
+    .hero-content h1 { font-size: 1.6rem; margin-bottom: 10px; } /* Ainda menor em telas muito pequenas */
+    .hero-content .welcome-text { margin-bottom: 20px; }
     .btn-hero-cta { padding: 10px 20px; font-size: 0.9rem; }
+    .hero-cta { gap: 15px; } /* Botões mais próximos */
     .cta-cards { grid-template-columns: 1fr; }
     .mod-card { padding: 30px 22px; }
     .photo-swiper .swiper-button-prev,

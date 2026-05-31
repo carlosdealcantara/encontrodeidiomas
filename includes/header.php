@@ -418,7 +418,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             }
             .header-content {
                 justify-content: space-between;
-                padding: 5px 25px; /* Aumentado de 15px para 25px para remover o efeito zarolha */
+                padding: 5px 50px; /* Aumentado para 50px conforme solicitado */
             }
 
             .logo-container {
