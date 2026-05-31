@@ -354,16 +354,17 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
            RESPONSIVE — Header mobile
            ============================================================ */
         @media (max-width: 768px) {
+            .header {
+                padding: 10px 0;
+            }
             .header-content {
                 justify-content: space-between;
+                flex-wrap: wrap;
+                position: relative;
             }
 
             .menu-toggle {
                 display: block;
-            }
-
-            .header-content {
-                flex-wrap: wrap;
             }
             
             .nav-links {
@@ -395,8 +396,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             }
 
             .logo {
-                width: 50px;
-                height: 50px;
+                width: 45px;
+                height: 45px;
             }
 
             .site-title {
@@ -409,21 +410,35 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         }
 
         @media (max-width: 480px) {
+            .header {
+                padding: 5px 0;
+            }
             .header-content {
                 justify-content: center;
-                padding: 10px;
+                padding: 5px 10px;
             }
 
             .logo-container {
-                margin-bottom: 10px;
+                margin-bottom: 0;
                 justify-content: center;
-                width: 100%;
+                width: auto;
+                max-width: 85%; /* Para não sobrepor o hambúrguer */
             }
 
             .menu-toggle {
                 position: absolute;
                 right: 15px;
-                top: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                padding: 5px;
+            }
+            
+            .logo {
+                width: 40px;
+                height: 40px;
+            }
+            .site-title {
+                font-size: 1.1rem;
             }
         }
 
