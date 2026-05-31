@@ -648,8 +648,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 top: 0;
                 right: auto;
                 transform: none;
-                width: 90%;
-                max-width: 320px;
+                width: 85%;
+                max-width: 260px;
                 /* Ao invés de usar max-height rígido pro accordion, deixamos crescer para que o scroll
                    principal aconteça no .nav-links que já tem overflow-y: auto e max-height: 55vh.
                    Mas podemos manter um limite para não ficar infinito. */
