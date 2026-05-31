@@ -211,14 +211,14 @@ include 'includes/header.php';
                                 }
                                 renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget); 
                             }
-                        } else { ?>
-                            <div class="empty-day-card">
-                                <div class="empty-day-icon">🚀</div>
-                                <h3><?= t('online.empty_day_title') ?></h3>
-                                <p><?= t('online.empty_day_text') ?></p>
-                                <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/seja-host' : '/en/be-a-host') ?>" class="empty-day-button"><?= t('online.empty_day_cta') ?></a>
-                            </div>
-                        <?php } ?>
+                        }
+                        ?>
+                        <div class="empty-day-card" style="<?= !empty($dayEvents) ? 'display:none;' : '' ?>">
+                            <div class="empty-day-icon">🚀</div>
+                            <h3><?= t('online.empty_day_title') ?></h3>
+                            <p><?= t('online.empty_day_text') ?></p>
+                            <a href="<?= SITE_URL . (CURRENT_LANG === 'pt' ? '/seja-host' : '/en/be-a-host') ?>" class="empty-day-button"><?= t('online.empty_day_cta') ?></a>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>

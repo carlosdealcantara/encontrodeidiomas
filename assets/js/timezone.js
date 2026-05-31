@@ -244,6 +244,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
                 children.forEach(c => timeline.appendChild(c));
             }
+            
+            // Controle dinâmico do estado vazio (Empty State)
+            const emptyMsg = timeline.querySelector('.empty-day-card');
+            if (emptyMsg) {
+                // Se não há nenhum event-card nesta timeline, mostra a mensagem vazia
+                if (timeline.querySelectorAll('.tz-event-card').length === 0) {
+                    emptyMsg.style.display = 'block';
+                } else {
+                    emptyMsg.style.display = 'none';
+                }
+            }
         });
 
         // Troca a aba ativa para refletir o dia "Hoje" no fuso alvo
