@@ -638,8 +638,13 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             .lang-switch {
                 margin: 0;
                 justify-content: center;
-                width: 100%;
+                width: max-content;
+                align-self: center;
                 flex-shrink: 0;
+                padding: 1px; /* Ainda mais compacto */
+            }
+            .lang-switch .lang-btn {
+                padding: 3px 8px; /* Reduzindo espaço interno no mobile */
             }
             .tz-dropdown-container {
                 display: flex;
