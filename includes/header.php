@@ -441,11 +441,15 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         /* O padding do notice também é gerido pelo script dinâmico */
         body.has-notice { padding-top: 0; }
 
-        /* Language Switcher */
+        /* Language Switcher - Unified Toggle Pill */
         .lang-switch {
             display: flex;
-            gap: 6px;
+            gap: 0;
             margin-left: 15px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 2px;
         }
         .lang-btn {
             display: flex;
@@ -454,11 +458,11 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             color: var(--white);
             text-decoration: none;
             font-size: 0.78rem;
-            opacity: 0.6;
+            opacity: 0.7;
             transition: var(--transition);
-            padding: 4px 8px;
-            border-radius: 12px;
-            border: 1px solid transparent;
+            padding: 4px 10px;
+            border-radius: 18px;
+            border: none;
         }
         .lang-btn:hover {
             opacity: 1;
@@ -466,12 +470,13 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         }
         .lang-btn.active {
             opacity: 1;
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.2);
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
         }
         .lang-btn img {
-            width: 20px;
-            height: 15px;
+            width: 18px;
+            height: 14px;
             object-fit: cover;
             border-radius: 2px;
         }
@@ -649,7 +654,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 right: auto;
                 transform: none;
                 width: 85%;
-                max-width: 260px;
+                max-width: 275px;
                 /* Ao invés de usar max-height rígido pro accordion, deixamos crescer para que o scroll
                    principal aconteça no .nav-links que já tem overflow-y: auto e max-height: 55vh.
                    Mas podemos manter um limite para não ficar infinito. */
