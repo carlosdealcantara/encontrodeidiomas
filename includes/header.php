@@ -414,22 +414,20 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
                 padding: 5px 0;
             }
             .header-content {
-                justify-content: center;
-                padding: 5px 10px;
+                justify-content: space-between;
+                padding: 5px 15px;
             }
 
             .logo-container {
                 margin-bottom: 0;
-                justify-content: center;
+                justify-content: flex-start;
                 width: auto;
-                max-width: 85%; /* Para não sobrepor o hambúrguer */
+                max-width: calc(100% - 50px); /* Garante que não empurre o menu */
             }
 
             .menu-toggle {
-                position: absolute;
-                right: 15px;
-                top: 50%;
-                transform: translateY(-50%);
+                position: static;
+                transform: none;
                 padding: 5px;
             }
             
