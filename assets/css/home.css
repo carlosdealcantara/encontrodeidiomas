@@ -455,7 +455,10 @@ html {
     .hero-visual .photo-swiper { padding: 10px; }
 }
 @media (max-width: 680px) {
-    .hero-content h1 { font-size: 2.2rem; }
+    .hero-content h1 { font-size: 1.8rem; } /* Reduzido de 2.2rem */
+    .hero-content .welcome-text { font-size: 0.95rem; } /* Reduzido o texto descritivo */
+    .btn-hero-cta { padding: 12px 24px; font-size: 0.95rem; } /* Botão menor no mobile */
+    .btn-hero-secondary { font-size: 0.95rem; }
     .modalidades-grid { grid-template-columns: 1fr; }
     .how-flow { flex-direction: column; gap: 40px; align-items: center; } /* Centralizado no mobile */
     .how-step:not(:last-child)::after { display: none; }
@@ -463,6 +466,8 @@ html {
 }
 @media (max-width: 480px) {
     .hero-split { padding: 36px 0 16px; }
+    .hero-content h1 { font-size: 1.6rem; } /* Ainda menor em telas muito pequenas */
+    .btn-hero-cta { padding: 10px 20px; font-size: 0.9rem; }
     .cta-cards { grid-template-columns: 1fr; }
     .mod-card { padding: 30px 22px; }
     .photo-swiper .swiper-button-prev,

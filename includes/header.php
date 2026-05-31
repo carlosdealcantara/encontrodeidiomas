@@ -410,19 +410,22 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         }
 
         @media (max-width: 480px) {
+            html {
+                font-size: 14px; /* Diminui a escala global do site no mobile */
+            }
             .header {
                 padding: 5px 0;
             }
             .header-content {
                 justify-content: space-between;
-                padding: 5px 15px;
+                padding: 5px 25px; /* Aumentado de 15px para 25px para remover o efeito zarolha */
             }
 
             .logo-container {
                 margin-bottom: 0;
                 justify-content: flex-start;
                 width: auto;
-                max-width: calc(100% - 50px); /* Garante que não empurre o menu */
+                max-width: calc(100% - 50px);
             }
 
             .menu-toggle {
