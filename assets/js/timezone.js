@@ -201,27 +201,25 @@ document.addEventListener("DOMContentLoaded", function() {
             card.setAttribute('data-local-day', brtDay + dayShift);
 
             // REALOCAÇÃO DO DOM (OPÇÃO C)
-            if (dayShift !== 0) {
-                // Descobre onde o card está e move-o
-                const parentTimeline = card.closest('.timeline');
-                if (parentTimeline) {
-                    const dayContainer = parentTimeline.closest('.day-events'); // No day-view
-                    if (dayContainer) {
-                        let newDayNum = brtDay + dayShift;
-                        if (newDayNum > 7) newDayNum = 1;
-                        if (newDayNum < 1) newDayNum = 7;
-                        
-                        const targetContainer = document.getElementById(`day-${newDayNum}`);
-                        if (targetContainer) {
-                            const targetTimeline = targetContainer.querySelector('.timeline');
-                            if (targetTimeline) {
-                                // Adiciona a class pra animar ou apenas appendChild (que remove do original)
-                                targetTimeline.appendChild(card);
-                                
-                                // Limpa "Empty states" do alvo, caso existisse
-                                const emptyMsg = targetTimeline.querySelector('.empty-day-card');
-                                if(emptyMsg) emptyMsg.style.display = 'none';
-                            }
+            // Sempre verifica onde o card está e move-o para o lugar correto
+            const parentTimeline = card.closest('.timeline');
+            if (parentTimeline) {
+                const dayContainer = parentTimeline.closest('.day-events'); // No day-view
+                if (dayContainer) {
+                    let newDayNum = brtDay + dayShift;
+                    if (newDayNum > 7) newDayNum -= 7;
+                    if (newDayNum < 1) newDayNum += 7;
+                    
+                    const targetContainer = document.getElementById(`day-${newDayNum}`);
+                    if (targetContainer) {
+                        const targetTimeline = targetContainer.querySelector('.timeline');
+                        if (targetTimeline && targetTimeline !== parentTimeline) {
+                            // Move para o novo dia
+                            targetTimeline.appendChild(card);
+                            
+                            // Limpa "Empty states" do alvo, caso existisse
+                            const emptyMsg = targetTimeline.querySelector('.empty-day-card');
+                            if(emptyMsg) emptyMsg.style.display = 'none';
                         }
                     }
                 }

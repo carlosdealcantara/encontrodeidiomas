@@ -297,8 +297,28 @@
 }
 @media (max-width:480px) {
     .hero h1 { font-size:2rem; }
-    .calendar-days { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 10px 20px; }
-    .day-button { width:100%; font-size:.85rem; }
+    .calendar-days { 
+        display:grid; 
+        grid-template-columns:repeat(6, 1fr); 
+        gap:8px; 
+        margin:0 10px 20px; 
+    }
+    .day-button { 
+        width:100%; 
+        font-size:.85rem; 
+        grid-column: span 2; /* Cada botão ocupa 2 de 6 espaços (ou seja, cabem 3 por linha) */
+    }
+    /* Força os botões da 1ª e 3ª linha a ficarem centralizados (2 itens) */
+    .day-button:nth-child(1) { grid-column: 2 / span 2; }
+    .day-button:nth-child(2) { grid-column: 4 / span 2; }
+    
+    .day-button:nth-child(3) { grid-column: 1 / span 2; }
+    .day-button:nth-child(4) { grid-column: 3 / span 2; }
+    .day-button:nth-child(5) { grid-column: 5 / span 2; }
+    
+    .day-button:nth-child(6) { grid-column: 2 / span 2; }
+    .day-button:nth-child(7) { grid-column: 4 / span 2; }
+
     .event-actions { flex-direction:column; }
     .event-button { width:100%; }
 }
