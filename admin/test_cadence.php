@@ -12,7 +12,7 @@ if (php_sapi_name() !== 'cli' && ($_GET['key'] ?? '') !== 'teste2026x') {
     die('Acesso negado. Use ?key=teste2026x na URL.');
 }
 
-$BAILEYS_API_URL = "https://smart-clocks-cheat.loca.lt";
+$BAILEYS_API_URL = "https://heaven-prices-lab-transcription.trycloudflare.com";
 $BAILEYS_API_KEY = "SenhaMeetups2026";
 $mensagemTeste = "🔧 [Diagnóstico Automático da Administração] Teste de cadência do sistema.";
 
