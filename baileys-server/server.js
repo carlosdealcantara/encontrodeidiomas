@@ -13,15 +13,6 @@ const API_KEY = 'SenhaMeetups2026';
 const app = express();
 app.use(express.json());
 
-// Auth middleware
-app.use((req, res, next) => {
-    const key = req.headers['apikey'] || req.headers['authorization'];
-    if (key !== API_KEY && key !== `Bearer ${API_KEY}`) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    next();
-});
-
 // Setup Data Dir
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) {
