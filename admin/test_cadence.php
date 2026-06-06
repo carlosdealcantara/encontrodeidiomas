@@ -12,7 +12,7 @@ if (php_sapi_name() !== 'cli' && ($_GET['key'] ?? '') !== 'teste2026x') {
     die('Acesso negado. Use ?key=teste2026x na URL.');
 }
 
-$BAILEYS_API_URL = "http://136.248.92.126:3000";
+$BAILEYS_API_URL = "https://smart-clocks-cheat.loca.lt";
 $BAILEYS_API_KEY = "SenhaMeetups2026";
 $mensagemTeste = "🔧 [Diagnóstico Automático da Administração] Teste de cadência do sistema.";
 
@@ -24,6 +24,7 @@ if (($_GET['action'] ?? '') === 'status') {
     $ch = curl_init("$BAILEYS_API_URL/status" . ($jobId ? "?jobId=$jobId" : ""));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Bypass-Tunnel-Reminder: true"]);
     $response = curl_exec($ch);
     
     if (curl_errno($ch)) {
@@ -40,11 +41,12 @@ if (($_GET['action'] ?? '') === 'qr') {
     $ch = curl_init("$BAILEYS_API_URL/qr");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Bypass-Tunnel-Reminder: true"]);
     $response = curl_exec($ch);
     
     if (curl_errno($ch)) {
         header('Content-Type: text/html; charset=UTF-8');
-        echo "<h3>Erro ao conectar ao servidor Node.js (Baileys) na porta 3000. Certifique-se de que o servidor está rodando.</h3>";
+        echo "<h3>Erro ao conectar ao servidor Node.js (Baileys).</h3>";
         echo "<p>Detalhe do Erro: " . htmlspecialchars(curl_error($ch)) . "</p>";
     } else {
         echo $response;
@@ -75,7 +77,7 @@ if (($_GET['action'] ?? '') === 'run') {
         $ch = curl_init("$BAILEYS_API_URL/send-bulk");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15); 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json", "apikey: $BAILEYS_API_KEY"]);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json", "apikey: $BAILEYS_API_KEY", "Bypass-Tunnel-Reminder: true"]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 
