@@ -35,6 +35,24 @@ if (($_GET['action'] ?? '') === 'status') {
     exit;
 }
 
+// --- Ação: QR Code Proxy ---
+if (($_GET['action'] ?? '') === 'qr') {
+    $ch = curl_init("$BAILEYS_API_URL/qr");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    
+    if (curl_errno($ch)) {
+        header('Content-Type: text/html; charset=UTF-8');
+        echo "<h3>Erro ao conectar ao servidor Node.js (Baileys) na porta 3000. Certifique-se de que o servidor está rodando.</h3>";
+        echo "<p>Detalhe do Erro: " . htmlspecialchars(curl_error($ch)) . "</p>";
+    } else {
+        echo $response;
+    }
+    curl_close($ch);
+    exit;
+}
+
 // --- Ação: Run (Envia a fila em bulk para o Node.js) ---
 if (($_GET['action'] ?? '') === 'run') {
     header('Content-Type: application/json');
@@ -347,17 +365,22 @@ if (($_GET['action'] ?? '') === 'run') {
     // Verificar status do Servidor Baileys
     async function checkInstance() {
         const instStatus = document.getElementById('instance-status');
+        const startBtn = document.getElementById('start-btn');
         try {
             const res = await fetch(`test_cadence.php?key=${key}&action=status`);
             const data = await res.json();
             if (data.status === 'error') throw new Error(data.logs[0].message);
             if (data.status === 'disconnected') {
-                instStatus.innerHTML = `<span class="status-badge status-error">Node Ativo, mas WhatsApp Desconectado</span>`;
+                instStatus.innerHTML = `<span class="status-badge status-error">Node Ativo, mas WhatsApp Desconectado</span> 
+                <a href="test_cadence.php?key=${key}&action=qr" target="_blank" class="btn" style="background: var(--warning); margin-left: 10px; padding: 4px 10px; font-size: 0.8rem; box-shadow: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">📷 Escanear QR Code</a>`;
+                startBtn.disabled = true;
             } else {
                 instStatus.innerHTML = `<span class="status-badge status-completed">Online (Node.js / Baileys)</span>`;
+                startBtn.disabled = false;
             }
         } catch(e) {
             instStatus.innerHTML = `<span class="status-badge status-error">Servidor Node.js Offline (Porta 3000)</span>`;
+            startBtn.disabled = true;
         }
     }
 

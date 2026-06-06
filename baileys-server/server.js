@@ -36,6 +36,187 @@ let jobs = {};
 let sock;
 let isConnected = false;
 let isProcessingQueue = false;
+let latestQR = null;
+
+// Expose QR code page without auth middleware (local access only via PHP proxy)
+app.get('/qr', (req, res) => {
+    if (isConnected) {
+        return res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>WhatsApp Conectado</title>
+                <style>
+                    body {
+                        background: #0b0f19;
+                        color: #10b981;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                        margin: 0;
+                    }
+                    .card {
+                        background: #161c2d;
+                        border: 1px solid #242c3d;
+                        padding: 40px;
+                        border-radius: 16px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                        text-align: center;
+                    }
+                    h1 { margin-bottom: 10px; }
+                    p { color: #9ca3af; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <h1>✅ WhatsApp Conectado!</h1>
+                    <p>O servidor Baileys está ativo e pronto para disparos.</p>
+                </div>
+            </body>
+            </html>
+        `);
+    }
+
+    if (!latestQR) {
+        return res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Aguardando QR Code</title>
+                <style>
+                    body {
+                        background: #0b0f19;
+                        color: #f3f4f6;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                        margin: 0;
+                    }
+                    .card {
+                        background: #161c2d;
+                        border: 1px solid #242c3d;
+                        padding: 40px;
+                        border-radius: 16px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                        text-align: center;
+                    }
+                    .loader {
+                        border: 4px solid #1f2937;
+                        border-top: 4px solid #4f46e5;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        animation: spin 1s linear infinite;
+                        margin: 20px auto;
+                    }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+                <meta http-equiv="refresh" content="3">
+            </head>
+            <body>
+                <div class="card">
+                    <h1>Aguardando QR Code...</h1>
+                    <div class="loader"></div>
+                    <p>Esta página irá atualizar automaticamente a cada 3 segundos.</p>
+                </div>
+            </body>
+            </html>
+        `);
+    }
+
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Conectar WhatsApp</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+            <style>
+                body {
+                    background: #0b0f19;
+                    color: #f3f4f6;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    margin: 0;
+                }
+                .card {
+                    background: #161c2d;
+                    border: 1px solid #242c3d;
+                    padding: 30px;
+                    border-radius: 16px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                    text-align: center;
+                }
+                #qrcode {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    display: inline-block;
+                    margin: 20px 0;
+                }
+                p { color: #9ca3af; margin: 5px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h1>Escaneie o QR Code</h1>
+                <p>Abra o WhatsApp > Aparelhos conectados > Conectar um aparelho</p>
+                <div id="qrcode"></div>
+                <p style="font-size: 0.85rem; color: #6b7280;">A página atualizará automaticamente após conectar.</p>
+            </div>
+            <script>
+                new QRCode(document.getElementById("qrcode"), {
+                    text: ${JSON.stringify(latestQR)},
+                    width: 256,
+                    height: 256,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                
+                // Auto-refresh when connected
+                setInterval(async () => {
+                    try {
+                        const res = await fetch('/connection-status');
+                        const data = await res.json();
+                        if (data.connected) {
+                            window.location.reload();
+                        }
+                    } catch(e) {}
+                }, 3000);
+            </script>
+        </body>
+        </html>
+    `);
+});
+
+app.get('/connection-status', (req, res) => {
+    res.json({ connected: isConnected });
+});
+
+// Auth middleware
+app.use((req, res, next) => {
+    const key = req.headers['apikey'] || req.headers['authorization'];
+    if (key !== API_KEY && key !== `Bearer ${API_KEY}`) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+});
 
 // Helpers for logging
 function saveJobsToFile() {
@@ -99,6 +280,7 @@ async function connectToWhatsApp() {
         const { connection, lastDisconnect, qr } = update;
         
         if (qr) {
+            latestQR = qr;
             console.log('\n======================================');
             console.log('SCAN THIS QR CODE TO CONNECT WHATSAPP:');
             qrcode.generate(qr, { small: true });
@@ -107,6 +289,7 @@ async function connectToWhatsApp() {
 
         if (connection === 'close') {
             isConnected = false;
+            latestQR = null;
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log('Connection closed:', lastDisconnect?.error, 'Reconnecting:', shouldReconnect);
             if (shouldReconnect) {
@@ -114,6 +297,7 @@ async function connectToWhatsApp() {
             }
         } else if (connection === 'open') {
             isConnected = true;
+            latestQR = null;
             console.log('WhatsApp connection opened successfully!');
             if (!isProcessingQueue) {
                 processQueue();
