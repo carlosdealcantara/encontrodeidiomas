@@ -1,54 +1,43 @@
 <?php
 /**
- * EXPERIMENTO CONTROLADO: Fila Assíncrona com Cadência (15 Segundos)
- * Painel Interativo com Polling de Status JSON para evitar buffering
+ * EXPERIMENTO CONTROLADO: Fila Assíncrona com Cadência (5 Segundos)
+ * Painel Interativo - Integrado com o Servidor Baileys (Node.js)
  */
 
 require_once '../config.php';
 
-// Proteção para rodar via navegador ou terminal
+// Proteção para rodar via navegador
 if (php_sapi_name() !== 'cli' && ($_GET['key'] ?? '') !== 'teste2026x') {
     http_response_code(403);
     die('Acesso negado. Use ?key=teste2026x na URL.');
 }
 
-$statusFile = __DIR__ . '/test_cadence_status.json';
+$BAILEYS_API_URL = "http://127.0.0.1:3000";
+$BAILEYS_API_KEY = "SenhaMeetups2026";
+$mensagemTeste = "🔧 [Diagnóstico Automático da Administração] Teste de cadência do sistema.";
 
-// --- Ação: Status (Retorna o JSON de progresso) ---
+// --- Ação: Status (Proxy para ler o status do Node.js) ---
 if (($_GET['action'] ?? '') === 'status') {
     header('Content-Type: application/json');
-    if (file_exists($statusFile)) {
-        echo file_get_contents($statusFile);
+    $jobId = $_GET['jobId'] ?? '';
+    
+    $ch = curl_init("$BAILEYS_API_URL/status" . ($jobId ? "?jobId=$jobId" : ""));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    $response = curl_exec($ch);
+    
+    if (curl_errno($ch)) {
+        echo json_encode(['status' => 'error', 'progress' => ['current' => 0, 'total' => 0], 'logs' => [['type' => 'error', 'message' => 'Node.js server offline: ' . curl_error($ch)]]]);
     } else {
-        echo json_encode(['status' => 'idle', 'progress' => ['current' => 0, 'total' => 0], 'logs' => []]);
+        echo $response;
     }
+    curl_close($ch);
     exit;
 }
 
-// --- Ação: Run (Executa o teste e salva o progresso no JSON) ---
+// --- Ação: Run (Envia a fila em bulk para o Node.js) ---
 if (($_GET['action'] ?? '') === 'run') {
     header('Content-Type: application/json');
-    // Forçar a execução sem timeout do PHP
-    set_time_limit(180);
-    
-    $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-    $EVOLUTION_API_KEY = "SenhaMeetups2026";
-    $mensagemTeste = "🔧 [Diagnóstico Automático da Administração] Teste de cadência do sistema.";
-
-    // Função auxiliar para atualizar o status
-    $updateStatus = function($status, $current, $total, $logs) use ($statusFile) {
-        file_put_contents($statusFile, json_encode([
-            'status' => $status,
-            'progress' => ['current' => $current, 'total' => $total],
-            'logs' => $logs,
-            'updated_at' => date('H:i:s')
-        ], JSON_PRETTY_PRINT));
-    };
-
-    $logs = [];
-    $logs[] = ['type' => 'info', 'message' => 'Iniciando teste de cadência no servidor...'];
-    $updateStatus('running', 0, 3, $logs);
-
     $conn = connectDB();
 
     try {
@@ -60,82 +49,31 @@ if (($_GET['action'] ?? '') === 'run') {
             throw new Exception("Nenhum grupo com ID válido encontrado no banco de dados.");
         }
 
-        $total = count($grupos);
-        $atual = 0;
-        $updateStatus('running', 0, $total, $logs);
+        $payload = json_encode([
+            "groups" => $grupos,
+            "textMessage" => ["text" => $mensagemTeste]
+        ]);
 
-        foreach ($grupos as $grupo) {
-            $atual++;
-            $nomeGrupo = $grupo['nome'];
-            $groupId = $grupo['group_id'];
+        $ch = curl_init("$BAILEYS_API_URL/send-bulk");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15); 
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json", "apikey: $BAILEYS_API_KEY"]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 
-            $logs[] = ['type' => 'process', 'message' => "[$atual/$total] Enviando para: $nomeGrupo ($groupId)"];
-            $updateStatus('running', $atual - 1, $total, $logs);
+        $response = curl_exec($ch);
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
 
-            $payload = json_encode([
-                "number" => $groupId,
-                "textMessage" => ["text" => $mensagemTeste]
-            ]);
-
-            $ch = curl_init($EVOLUTION_API_URL);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 30); 
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json", "apikey: $EVOLUTION_API_KEY"]);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-
-            $startTime = microtime(true);
-            $response = curl_exec($ch);
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $curlError = curl_error($ch);
-            $endTime = microtime(true);
-            $duration = round($endTime - $startTime, 2);
-            
-            curl_close($ch);
-
-            if ($response === false || $httpcode === 0 || $curlError) {
-                $logs[] = [
-                    'type' => 'timeout',
-                    'message' => "[FALHA - TIMEOUT] O servidor não aguentou gerar a criptografia. Tempo: {$duration}s. (Erro: $curlError)"
-                ];
-            } elseif ($httpcode === 400 || $httpcode === 500) {
-                $respObj = json_decode($response, true);
-                $motivo = $respObj['response']['message'][0] ?? $respObj['message'] ?? 'Erro interno na API (Provável protocolo @lid)';
-                if (is_array($motivo)) {
-                    $motivo = implode(', ', $motivo);
-                }
-                $logs[] = [
-                    'type' => 'protocol',
-                    'message' => "[FALHA - PROTOCOLO {$httpcode}] A API recusou o pacote. Tempo: {$duration}s. Motivo: {$motivo}"
-                ];
-            } elseif ($httpcode === 200 || $httpcode === 201) {
-                $logs[] = [
-                    'type' => 'success',
-                    'message' => "[SUCESSO] Mensagem entregue no grupo: $nomeGrupo. Tempo: {$duration}s."
-                ];
-            } else {
-                $logs[] = [
-                    'type' => 'unknown',
-                    'message' => "[DESCONHECIDO] HTTP $httpcode. Tempo: {$duration}s. Resposta: $response"
-                ];
-            }
-
-            $updateStatus('running', $atual, $total, $logs);
-
-            if ($atual < $total) {
-                $logs[] = ['type' => 'info', 'message' => "Aguardando 15 segundos para limpar a memória (Garbage Collector)..."];
-                $updateStatus('running', $atual, $total, $logs);
-                sleep(15);
-            }
+        if ($curlError) {
+            throw new Exception("Erro ao comunicar com Node.js: " . $curlError);
         }
 
-        $logs[] = ['type' => 'info', 'message' => "Teste de Fila Concluído!"];
-        $updateStatus('completed', $total, $total, $logs);
-        echo json_encode(['success' => true, 'message' => 'Completed']);
+        // Retorna o jobId gerado pelo Node.js
+        echo $response;
 
     } catch (Exception $e) {
-        $logs[] = ['type' => 'error', 'message' => "[ERRO CRÍTICO] " . $e->getMessage()];
-        $updateStatus('error', $atual ?? 0, $total ?? 3, $logs);
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
     exit;
@@ -146,7 +84,7 @@ if (($_GET['action'] ?? '') === 'run') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evolution API - Diagnóstico de Cadência</title>
+    <title>Baileys API - Diagnóstico de Cadência</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -359,14 +297,14 @@ if (($_GET['action'] ?? '') === 'run') {
 
 <div class="container">
     <div class="header">
-        <h1>Evolution API</h1>
-        <p>Diagnóstico Científico de Cadência de Disparos</p>
+        <h1>Baileys API (Node.js)</h1>
+        <p>Diagnóstico Científico de Cadência de Disparos em Background</p>
     </div>
 
     <div class="config-card">
         <div class="config-row">
             <span class="config-label">Status da Instância:</span>
-            <span class="config-val" id="instance-status">Verificando...</span>
+            <span class="config-val" id="instance-status">Verificando Servidor Node.js...</span>
         </div>
         <div class="config-row">
             <span class="config-label">Amostra do Teste:</span>
@@ -374,7 +312,7 @@ if (($_GET['action'] ?? '') === 'run') {
         </div>
         <div class="config-row">
             <span class="config-label">Cadência:</span>
-            <span class="config-val">15 segundos de intervalo entre envios</span>
+            <span class="config-val">5 segundos de intervalo entre envios</span>
         </div>
         <div class="config-row">
             <span class="config-label">Mensagem:</span>
@@ -388,7 +326,7 @@ if (($_GET['action'] ?? '') === 'run') {
 
     <div class="progress-wrapper" id="progress-wrapper">
         <div class="progress-info">
-            <span id="progress-label">Processando fila...</span>
+            <span id="progress-label">Processando fila no servidor...</span>
             <span id="progress-percent">0%</span>
         </div>
         <div class="progress-bar-container">
@@ -397,23 +335,29 @@ if (($_GET['action'] ?? '') === 'run') {
     </div>
 
     <div class="console" id="console">
-        <div class="log-line info">> Pronto para iniciar o diagnóstico. Clique no botão acima.</div>
+        <div class="log-line info">> Pronto para iniciar o diagnóstico via Node.js. Clique no botão acima.</div>
     </div>
 </div>
 
 <script>
     const key = 'teste2026x';
     let pollingInterval = null;
+    let currentJobId = null;
 
-    // Verificar status do Evolution API
+    // Verificar status do Servidor Baileys
     async function checkInstance() {
         const instStatus = document.getElementById('instance-status');
         try {
             const res = await fetch(`test_cadence.php?key=${key}&action=status`);
             const data = await res.json();
-            instStatus.innerHTML = `<span class="status-badge status-completed">Online (meetups)</span>`;
+            if (data.status === 'error') throw new Error(data.logs[0].message);
+            if (data.status === 'disconnected') {
+                instStatus.innerHTML = `<span class="status-badge status-error">Node Ativo, mas WhatsApp Desconectado</span>`;
+            } else {
+                instStatus.innerHTML = `<span class="status-badge status-completed">Online (Node.js / Baileys)</span>`;
+            }
         } catch(e) {
-            instStatus.innerHTML = `<span class="status-badge status-error">Erro ao Comunicar</span>`;
+            instStatus.innerHTML = `<span class="status-badge status-error">Servidor Node.js Offline (Porta 3000)</span>`;
         }
     }
 
@@ -439,25 +383,39 @@ if (($_GET['action'] ?? '') === 'run') {
         
         const consoleEl = document.getElementById('console');
         consoleEl.innerHTML = '';
-        appendLog('info', 'Iniciando teste de cadência. Aguardando processamento dos grupos...');
+        appendLog('info', 'Enviando fila de grupos para o servidor Node.js...');
 
-        // Inicia a execução no backend
-        fetch(`test_cadence.php?key=${key}&action=run`)
-            .catch(err => {
-                console.error("Execução iniciada, monitorando status...", err);
-            });
+        try {
+            // Envia a requisição em bulk
+            const res = await fetch(`test_cadence.php?key=${key}&action=run`);
+            const data = await res.json();
+            
+            if (!data.success) {
+                appendLog('error', `Falha ao enfileirar: ${data.error}`);
+                btn.disabled = false;
+                return;
+            }
+            
+            currentJobId = data.jobId;
+            appendLog('success', `Fila recebida pelo Node.js (Job: ${currentJobId}). Monitorando...`);
+            
+            // Começa a monitorar via polling
+            if (pollingInterval) clearInterval(pollingInterval);
+            lastLogCount = 0;
+            pollingInterval = setInterval(pollStatus, 1500);
 
-        // Começa a monitorar via polling
-        if (pollingInterval) clearInterval(pollingInterval);
-        lastLogCount = 0;
-        pollingInterval = setInterval(pollStatus, 1500);
+        } catch (err) {
+            appendLog('error', `Erro de comunicação: ${err.message}`);
+            btn.disabled = false;
+        }
     }
 
     let lastLogCount = 0;
 
     async function pollStatus() {
+        if (!currentJobId) return;
         try {
-            const res = await fetch(`test_cadence.php?key=${key}&action=status`);
+            const res = await fetch(`test_cadence.php?key=${key}&action=status&jobId=${currentJobId}`);
             const data = await res.json();
 
             // Atualizar barra de progresso
@@ -482,9 +440,9 @@ if (($_GET['action'] ?? '') === 'run') {
                 clearInterval(pollingInterval);
                 document.getElementById('start-btn').disabled = false;
                 if (data.status === 'completed') {
-                    appendLog('success', 'DIAGNÓSTICO CONCLUÍDO COM SUCESSO!');
+                    appendLog('success', 'DIAGNÓSTICO NODE.JS CONCLUÍDO!');
                 } else {
-                    appendLog('error', 'DIAGNÓSTICO INTERROMPIDO POR ERRO CRÍTICO!');
+                    appendLog('error', 'DIAGNÓSTICO INTERROMPIDO COM ERRO!');
                 }
             }
         } catch (e) {
