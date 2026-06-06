@@ -179,18 +179,8 @@ app.get('/qr', (req, res) => {
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.H
                 });
-                
-                // Auto-refresh when connected
-                setInterval(async () => {
-                    try {
-                        const res = await fetch('/connection-status');
-                        const data = await res.json();
-                        if (data.connected) {
-                            window.location.reload();
-                        }
-                    } catch(e) {}
-                }, 3000);
             </script>
+            <meta http-equiv="refresh" content="5">
         </body>
         </html>
     `);
