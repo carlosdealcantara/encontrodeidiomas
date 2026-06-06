@@ -202,7 +202,7 @@ app.get('/connection-status', (req, res) => {
 
 // Auth middleware
 app.use((req, res, next) => {
-    if (req.path === '/qr' || req.path === '/connection-status') {
+    if (req.path === '/qr' || req.path === '/connection-status' || req.path === '/status') {
         return next();
     }
     const key = req.headers['apikey'] || req.headers['authorization'];
