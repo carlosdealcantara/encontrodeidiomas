@@ -211,6 +211,9 @@ app.get('/connection-status', (req, res) => {
 
 // Auth middleware
 app.use((req, res, next) => {
+    if (req.path === '/qr' || req.path === '/connection-status') {
+        return next();
+    }
     const key = req.headers['apikey'] || req.headers['authorization'];
     if (key !== API_KEY && key !== `Bearer ${API_KEY}`) {
         return res.status(401).json({ error: 'Unauthorized' });
