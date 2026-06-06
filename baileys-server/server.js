@@ -89,7 +89,7 @@ async function connectToWhatsApp() {
         auth: state,
         printQRInTerminal: false,
         logger: pino({ level: 'silent' }), // silence noisy logs
-        browser: ['Encontro de Idiomas', 'Server', '1.0.0']
+        browser: ['Ubuntu', 'Chrome', '20.0.04']
     });
 
     sock.ev.on('connection.update', (update) => {
@@ -105,7 +105,7 @@ async function connectToWhatsApp() {
         if (connection === 'close') {
             isConnected = false;
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('Connection closed. Reconnecting:', shouldReconnect);
+            console.log('Connection closed:', lastDisconnect?.error, 'Reconnecting:', shouldReconnect);
             if (shouldReconnect) {
                 setTimeout(connectToWhatsApp, 3000);
             }
