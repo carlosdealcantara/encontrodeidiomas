@@ -12,7 +12,7 @@ if (php_sapi_name() !== 'cli' && ($_GET['key'] ?? '') !== 'teste2026x') {
     die('Acesso negado. Use ?key=teste2026x na URL.');
 }
 
-$BAILEYS_API_URL = "http://127.0.0.1:3000";
+$BAILEYS_API_URL = "http://136.248.92.126:3000";
 $BAILEYS_API_KEY = "SenhaMeetups2026";
 $mensagemTeste = "🔧 [Diagnóstico Automático da Administração] Teste de cadência do sistema.";
 
