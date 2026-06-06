@@ -357,6 +357,10 @@ async function processQueue() {
 // Bulk Queue Route (Used by test_cadence and crons)
 app.post('/send-bulk', (req, res) => {
     try {
+        if (!isConnected) {
+            return res.status(503).json({ success: false, error: 'WhatsApp não está conectado. Escaneie o QR Code primeiro.' });
+        }
+
         const { groups, textMessage } = req.body;
         if (!Array.isArray(groups) || !textMessage?.text) {
             return res.status(400).json({ success: false, error: 'Invalid payload' });
