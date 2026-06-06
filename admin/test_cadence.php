@@ -32,6 +32,8 @@ echo "<strong>Mensagem a ser enviada:</strong> <em>{$mensagemTeste}</em><br><br>
 flush();
 ob_flush();
 
+$conn = connectDB();
+
 try {
     // Busca apenas 3 grupos como amostra de segurança para não incomodar todos
     $stmt = $conn->query("SELECT nome, group_id FROM meetup_whatsapp_groups WHERE group_id IS NOT NULL AND group_id != '' LIMIT 3");
