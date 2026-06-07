@@ -149,7 +149,7 @@ $pairingCode = null;  // Não suportado atualmente no Baileys configurado
                 <p>Abra o WhatsApp no seu celular, vá em <strong>Aparelhos conectados > Conectar um aparelho</strong> e aponte a câmera para o QR Code abaixo.</p>
                 
                 <?php if ($state !== 'connected'): ?>
-                    <div class="qr-container" style="padding: 0; overflow: hidden; height: 350px;">
+                    <div class="qr-container" style="padding: 0; overflow: hidden; height: 500px;">
                         <iframe src="?action=qr" width="100%" height="100%" style="border: none;"></iframe>
                     </div>
                 <?php endif; ?>

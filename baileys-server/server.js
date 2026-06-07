@@ -151,7 +151,7 @@ app.get('/qr', (req, res) => {
                 .card {
                     background: #161c2d;
                     border: 1px solid #242c3d;
-                    padding: 30px;
+                    padding: 20px;
                     border-radius: 16px;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
                     text-align: center;
