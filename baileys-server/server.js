@@ -47,7 +47,8 @@ app.get('/qr', (req, res) => {
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
-                        min-height: 100vh;
+                        height: 100%;
+                        overflow: hidden;
                         margin: 0;
                     }
                     .card {
@@ -88,7 +89,8 @@ app.get('/qr', (req, res) => {
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
-                        min-height: 100vh;
+                        height: 100%;
+                        overflow: hidden;
                         margin: 0;
                     }
                     .card {
@@ -142,7 +144,8 @@ app.get('/qr', (req, res) => {
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    min-height: 100vh;
+                    height: 100%;
+                    overflow: hidden;
                     margin: 0;
                 }
                 .card {
@@ -418,11 +421,13 @@ app.post('/send', (req, res) => {
 });
 
 // Logout Route
+// Logout Route
 app.delete('/logout', async (req, res) => {
     try {
         if (sock) await sock.logout();
         isConnected = false;
         res.json({ success: true });
+        setTimeout(() => process.exit(0), 1000); // Força reinício limpo do container
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
@@ -435,8 +440,8 @@ app.post('/reset', async (req, res) => {
         isConnected = false;
         latestQR = null;
         fs.rmSync(path.join(dataDir, 'auth'), { recursive: true, force: true });
-        setTimeout(connectToWhatsApp, 2000);
         res.json({ success: true });
+        setTimeout(() => process.exit(0), 1000); // Força reinício limpo do container
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
