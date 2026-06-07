@@ -8,9 +8,13 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
-// Ação: QR Code Proxy
+// Lógica de Renderizar QR Code via Proxy
 if (isset($_GET['action']) && $_GET['action'] === 'qr') {
     $url = getBestBaileysUrl() . '/qr';
+    if (isset($_GET['json']) && $_GET['json'] == 'true') {
+        $url .= '?json=true';
+    }
+    
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);

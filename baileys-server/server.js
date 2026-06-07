@@ -44,7 +44,7 @@ app.get('/qr', (req, res) => {
             <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
             <style>
                 body {
-                    background: transparent;
+                    background: #0b0f19;
                     color: #f3f4f6;
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                     display: flex;
@@ -99,7 +99,10 @@ app.get('/qr', (req, res) => {
 
                 async function checkStatus() {
                     try {
-                        const res = await fetch('/qr?json=true');
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const fetchUrl = urlParams.has('action') ? '?action=qr&json=true' : '/qr?json=true';
+                        
+                        const res = await fetch(fetchUrl);
                         const data = await res.json();
                         
                         const contentDiv = document.getElementById('content');
