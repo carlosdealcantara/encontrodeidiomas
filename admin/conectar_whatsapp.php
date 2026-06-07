@@ -15,10 +15,18 @@ if (isset($_GET['action']) && $_GET['action'] === 'qr') {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     $response = curl_exec($ch);
-    if (curl_errno($ch)) {
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if (curl_errno($ch) || $httpCode >= 400) {
         header('Content-Type: text/html; charset=UTF-8');
-        echo "<h3>Erro ao conectar ao servidor Node.js (Baileys).</h3>";
-        echo "<p>Detalhe do Erro: " . htmlspecialchars(curl_error($ch)) . "</p>";
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reiniciando...</title>';
+        echo '<style>body { background: #0b0f19; color: #f3f4f6; font-family: "Segoe UI", sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; overflow: hidden; margin: 0; } .loader { border: 4px solid #1f2937; border-top: 4px solid #4f46e5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>';
+        echo '<meta http-equiv="refresh" content="3"></head><body>';
+        echo '<div style="text-align: center;">';
+        echo '<h3>Iniciando servidor WhatsApp...</h3>';
+        echo '<div class="loader"></div>';
+        echo '<p style="color:#9ca3af;">Aguarde, o sistema está carregando a nova sessão.</p>';
+        echo '</div></body></html>';
     } else {
         echo $response;
     }
@@ -32,7 +40,11 @@ $error = null;
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     $res = sendBaileysRequest('/logout', null, 'DELETE');
     if (!$res['success']) {
-        $error = "Erro ao desconectar: " . $res['error'];
+        if ($res['httpCode'] >= 500) {
+            $error = "O servidor está reiniciando. Aguarde alguns segundos.";
+        } else {
+            $error = "Erro ao desconectar: " . $res['error'];
+        }
     } else {
         header("Location: conectar_whatsapp.php?msg=Sessão finalizada!");
         exit;
@@ -43,7 +55,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 if (isset($_GET['action']) && $_GET['action'] === 'reset') {
     $res = sendBaileysRequest('/reset', null, 'POST');
     if (!$res['success']) {
-        $error = "Erro ao resetar: " . $res['error'];
+        if ($res['httpCode'] >= 500) {
+            $error = "O servidor está reiniciando. Aguarde alguns segundos e tente novamente.";
+        } else {
+            $error = "Erro ao resetar: " . $res['error'];
+        }
     } else {
         header("Location: conectar_whatsapp.php?msg=Sessão recriada com sucesso! Aguarde e escaneie o novo QR Code.");
         exit;
