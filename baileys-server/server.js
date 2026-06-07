@@ -31,101 +31,8 @@ let latestQR = null;
 
 // Expose QR code page without auth middleware (local access only via PHP proxy)
 app.get('/qr', (req, res) => {
-    if (isConnected) {
-        return res.send(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>WhatsApp Conectado</title>
-                <style>
-                    body {
-                        background: #0b0f19;
-                        color: #10b981;
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                        overflow: hidden;
-                        margin: 0;
-                    }
-                    .card {
-                        background: #161c2d;
-                        border: 1px solid #242c3d;
-                        padding: 40px;
-                        border-radius: 16px;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                        text-align: center;
-                    }
-                    h1 { margin-bottom: 10px; }
-                    p { color: #9ca3af; }
-                </style>
-            </head>
-            <body>
-                <div class="card">
-                    <h1>✅ WhatsApp Conectado!</h1>
-                    <p>O servidor Baileys está ativo e pronto para disparos.</p>
-                </div>
-            </body>
-            </html>
-        `);
-    }
-
-    if (!latestQR) {
-        return res.send(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Aguardando QR Code</title>
-                <style>
-                    body {
-                        background: #0b0f19;
-                        color: #f3f4f6;
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                        overflow: hidden;
-                        margin: 0;
-                    }
-                    .card {
-                        background: #161c2d;
-                        border: 1px solid #242c3d;
-                        padding: 40px;
-                        border-radius: 16px;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                        text-align: center;
-                    }
-                    .loader {
-                        border: 4px solid #1f2937;
-                        border-top: 4px solid #4f46e5;
-                        border-radius: 50%;
-                        width: 40px;
-                        height: 40px;
-                        animation: spin 1s linear infinite;
-                        margin: 20px auto;
-                    }
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                </style>
-                <meta http-equiv="refresh" content="3">
-            </head>
-            <body>
-                <div class="card">
-                    <h1>Aguardando QR Code...</h1>
-                    <div class="loader"></div>
-                    <p>Esta página irá atualizar automaticamente a cada 3 segundos.</p>
-                </div>
-            </body>
-            </html>
-        `);
+    if (req.query.json) {
+        return res.json({ connected: isConnected, qr: latestQR });
     }
 
     res.send(`
@@ -137,14 +44,14 @@ app.get('/qr', (req, res) => {
             <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
             <style>
                 body {
-                    background: #0b0f19;
+                    background: transparent;
                     color: #f3f4f6;
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    height: 100%;
+                    height: 100vh;
                     overflow: hidden;
                     margin: 0;
                 }
@@ -155,6 +62,7 @@ app.get('/qr', (req, res) => {
                     border-radius: 16px;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
                     text-align: center;
+                    transition: all 0.3s ease;
                 }
                 #qrcode {
                     background: white;
@@ -163,27 +71,69 @@ app.get('/qr', (req, res) => {
                     display: inline-block;
                     margin: 20px 0;
                 }
-                p { color: #9ca3af; margin: 5px 0; }
+                .loader {
+                    border: 4px solid #242c3d;
+                    border-top: 4px solid #4f46e5;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 1s linear infinite;
+                    margin: 20px auto;
+                }
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                p { color: #9ca3af; margin: 5px 0; font-size: 0.95rem; }
+                h1 { margin-top: 0; font-size: 1.5rem; }
             </style>
         </head>
         <body>
-            <div class="card">
-                <h1>Escaneie o QR Code</h1>
-                <p>Abra o WhatsApp > Aparelhos conectados > Conectar um aparelho</p>
-                <div id="qrcode"></div>
-                <p style="font-size: 0.85rem; color: #6b7280;">A página atualizará automaticamente após conectar.</p>
+            <div class="card" id="mainCard">
+                <div id="content">
+                    <div class="loader"></div>
+                    <p>Carregando sistema...</p>
+                </div>
             </div>
+            
             <script>
-                new QRCode(document.getElementById("qrcode"), {
-                    text: ${JSON.stringify(latestQR)},
-                    width: 256,
-                    height: 256,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
-                });
+                let currentQR = null;
+                let qrCodeObj = null;
+
+                async function checkStatus() {
+                    try {
+                        const res = await fetch('/qr?json=true');
+                        const data = await res.json();
+                        
+                        const contentDiv = document.getElementById('content');
+                        
+                        if (data.connected) {
+                            contentDiv.innerHTML = '<h1 style="color: #10b981;">✅ WhatsApp Conectado!</h1><p>O servidor Baileys está ativo e pronto.</p>';
+                            return; // Stop polling
+                        }
+                        
+                        if (data.qr) {
+                            if (currentQR !== data.qr) {
+                                currentQR = data.qr;
+                                contentDiv.innerHTML = '<h1>Escaneie o QR Code</h1><p>Abra o WhatsApp > Aparelhos conectados</p><div id="qrcode"></div><p style="font-size: 0.85rem; color: #6b7280;">Atualizando em tempo real...</p>';
+                                qrCodeObj = new QRCode(document.getElementById("qrcode"), {
+                                    text: data.qr,
+                                    width: 256,
+                                    height: 256,
+                                    colorDark : "#000000",
+                                    colorLight : "#ffffff",
+                                    correctLevel : QRCode.CorrectLevel.H
+                                });
+                            }
+                        } else {
+                            currentQR = null;
+                            contentDiv.innerHTML = '<div class="loader"></div><p>Aguardando QR Code do WhatsApp...</p>';
+                        }
+                    } catch (e) {
+                        console.error("Erro ao checar status", e);
+                    }
+                    setTimeout(checkStatus, 3000);
+                }
+                
+                checkStatus();
             </script>
-            <meta http-equiv="refresh" content="5">
         </body>
         </html>
     `);
