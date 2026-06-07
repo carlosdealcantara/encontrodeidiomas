@@ -5,6 +5,7 @@
  */
 
 require_once '../config.php';
+require_once '../includes/whatsapp_helper.php';
 
 // Proteção para rodar via navegador
 if (php_sapi_name() !== 'cli' && ($_GET['key'] ?? '') !== 'teste2026x') {
@@ -12,9 +13,9 @@ if (php_sapi_name() !== 'cli' && ($_GET['key'] ?? '') !== 'teste2026x') {
     die('Acesso negado. Use ?key=teste2026x na URL.');
 }
 
-$BAILEYS_API_URL = "https://heaven-prices-lab-transcription.trycloudflare.com";
+$BAILEYS_API_URL = getBestBaileysUrl();
 $BAILEYS_API_KEY = "SenhaMeetups2026";
-$mensagemTeste = "🔧 [Diagnóstico Automático da Administração] Teste de cadência do sistema.";
+$mensagemTeste = "Em breve posto os replays dos encontros de idiomas da semana";
 
 // --- Ação: Status (Proxy para ler o status do Node.js) ---
 if (($_GET['action'] ?? '') === 'status') {
@@ -48,6 +49,7 @@ if (($_GET['action'] ?? '') === 'qr') {
         header('Content-Type: text/html; charset=UTF-8');
         echo "<h3>Erro ao conectar ao servidor Node.js (Baileys).</h3>";
         echo "<p>Detalhe do Erro: " . htmlspecialchars(curl_error($ch)) . "</p>";
+        echo "<p>Buscando em: $BAILEYS_API_URL</p>";
     } else {
         echo $response;
     }
@@ -61,8 +63,9 @@ if (($_GET['action'] ?? '') === 'run') {
     $conn = connectDB();
 
     try {
-        // Busca apenas 3 grupos como amostra de segurança
-        $stmt = $conn->query("SELECT nome, group_id FROM meetup_whatsapp_groups WHERE group_id IS NOT NULL AND group_id != '' LIMIT 3");
+        // Busca 3 grupos excluindo os testados anteriormente
+        $excludeStr = "'13477461732-1553354997@g.us', '120363225749665362@g.us', '120363148227096134@g.us'";
+        $stmt = $conn->query("SELECT nome, group_id FROM meetup_whatsapp_groups WHERE group_id IS NOT NULL AND group_id != '' AND group_id NOT IN ($excludeStr) LIMIT 3");
         $grupos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         if (count($grupos) === 0) {
