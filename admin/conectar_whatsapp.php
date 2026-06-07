@@ -1,140 +1,59 @@
 <?php
 session_start();
 require_once '../config.php';
+require_once '../includes/whatsapp_helper.php';
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
     exit;
 }
 
-$instance = "meetups";
-$apiKey = "SenhaMeetups2026";
-$apiUrl = "http://136.248.92.126:8080";
+// Ação: QR Code Proxy
+if (isset($_GET['action']) && $_GET['action'] === 'qr') {
+    $url = getBestBaileysUrl() . '/qr';
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    if (curl_errno($ch)) {
+        header('Content-Type: text/html; charset=UTF-8');
+        echo "<h3>Erro ao conectar ao servidor Node.js (Baileys).</h3>";
+        echo "<p>Detalhe do Erro: " . htmlspecialchars(curl_error($ch)) . "</p>";
+    } else {
+        echo $response;
+    }
+    curl_close($ch);
+    exit;
+}
 
-$state = "unknown";
-$qrCodeBase64 = null;
-$pairingCode = null;
 $error = null;
 
 // Lógica de Desconectar (Logout)
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    try {
-        $ch = curl_init("$apiUrl/instance/logout/$instance");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-        curl_exec($ch);
-        curl_close($ch);
-        
+    $res = sendBaileysRequest('/logout', null, 'DELETE');
+    if (!$res['success']) {
+        $error = "Erro ao desconectar: " . $res['error'];
+    } else {
         header("Location: conectar_whatsapp.php?msg=Sessão finalizada!");
         exit;
-    } catch (Exception $e) {
-        $error = "Erro ao desconectar: " . $e->getMessage();
     }
 }
 
-// Lógica de Reset Completo (Deletar e Recriar Instância)
+// Lógica de Reset Completo
 if (isset($_GET['action']) && $_GET['action'] === 'reset') {
-    try {
-        // 1. Deleta a instância atual
-        $ch = curl_init("$apiUrl/instance/delete/$instance");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-        curl_exec($ch);
-        curl_close($ch);
-        
-        // Aguarda 3 segundos para garantir que a API finalizou a exclusão no banco de dados (evita erro de conflito)
-        sleep(3);
-        
-        // 2. Recria a instância zerada
-        $body = json_encode([
-            "instanceName" => $instance,
-            "qrcode" => true,
-            "integration" => "WHATSAPP-BAILEYS"
-        ]);
-        $ch = curl_init("$apiUrl/instance/create");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "apikey: $apiKey",
-            "Content-Type: application/json"
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-        curl_exec($ch);
-        curl_close($ch);
-
-        // 3. Atualiza as configurações para NÃO ignorar grupos (necessário para buscar IDs)
-        $settingsBody = json_encode([
-            "reject_call" => false,
-            "msg_call" => "",
-            "groups_ignore" => false,
-            "always_online" => false,
-            "read_messages" => false,
-            "read_status" => false,
-            "sync_full_history" => false
-        ]);
-        $chSet = curl_init("$apiUrl/settings/set/$instance");
-        curl_setopt($chSet, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($chSet, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($chSet, CURLOPT_HTTPHEADER, [
-            "apikey: $apiKey",
-            "Content-Type: application/json"
-        ]);
-        curl_setopt($chSet, CURLOPT_POSTFIELDS, $settingsBody);
-        curl_exec($chSet);
-        curl_close($chSet);
-
-
-        header("Location: conectar_whatsapp.php?msg=Sessão recriada com sucesso! Escaneie o novo QR Code rapidamente.");
-        exit;
-    } catch (Exception $e) {
-        $error = "Erro ao resetar a conexão: " . $e->getMessage();
-    }
-}
-
-// 1. Verificar Estado da Conexão
-try {
-    $ch = curl_init("$apiUrl/instance/connectionState/$instance");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($httpCode === 200 && $response) {
-        $data = json_decode($response, true);
-        // Na v2 do Evolution, o state vem no root ou dentro de instance
-        $state = $data['instance']['state'] ?? ($data['state'] ?? 'disconnected');
+    $res = sendBaileysRequest('/reset', null, 'POST');
+    if (!$res['success']) {
+        $error = "Erro ao resetar: " . $res['error'];
     } else {
-        $state = 'disconnected';
-    }
-} catch (Exception $e) {
-    $state = 'disconnected';
-    $error = "Erro ao checar conexão: " . $e->getMessage();
-}
-
-// 2. Se não estiver conectado, buscar QR Code
-if ($state !== 'open' && $state !== 'connected') {
-    try {
-        $ch = curl_init("$apiUrl/instance/connect/$instance");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode === 200 && $response) {
-            $data = json_decode($response, true);
-            $qrCodeBase64 = $data['base64'] ?? ($data['qrcode'] ?? ($data['code'] ?? null));
-            $pairingCode = $data['pairingCode'] ?? null;
-        } else {
-            $error = "Não foi possível gerar o QR Code da API. Status: $httpCode";
-        }
-    } catch (Exception $e) {
-        $error = "Erro ao buscar QR Code: " . $e->getMessage();
+        header("Location: conectar_whatsapp.php?msg=Sessão recriada com sucesso! Aguarde e escaneie o novo QR Code.");
+        exit;
     }
 }
+
+$status = statusWhatsApp();
+$state = $status['connected'] ? 'connected' : 'disconnected';
+$qrCodeBase64 = null; // Não usado no Baileys, o QR é servido via HTML
+$pairingCode = null;  // Não suportado atualmente no Baileys configurado
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -213,14 +132,9 @@ if ($state !== 'open' && $state !== 'connected') {
                 <h2>Conectar WhatsApp</h2>
                 <p>Abra o WhatsApp no seu celular, vá em <strong>Aparelhos conectados > Conectar um aparelho</strong> e aponte a câmera para o QR Code abaixo.</p>
                 
-                <?php if ($qrCodeBase64): ?>
-                    <div class="qr-container">
-                        <img src="<?= htmlspecialchars($qrCodeBase64) ?>" alt="QR Code WhatsApp">
-                    </div>
-                <?php else: ?>
-                    <div style="margin: 30px 0; color: var(--text-dim);">
-                        <i class="fas fa-spinner fa-spin fa-2x"></i>
-                        <p style="margin-top: 10px;">Aguardando geração do QR Code pela API...</p>
+                <?php if ($state !== 'connected'): ?>
+                    <div class="qr-container" style="padding: 0; overflow: hidden; height: 350px;">
+                        <iframe src="?action=qr" width="100%" height="100%" style="border: none;"></iframe>
                     </div>
                 <?php endif; ?>
 

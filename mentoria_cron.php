@@ -16,9 +16,8 @@ $is_cli = (php_sapi_name() === 'cli');
 if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     http_response_code(403);
     die("Acesso Negado.");
-}// Configurações da Evolution API (Máquina da Oracle)
-$EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-$EVOLUTION_API_KEY = "SenhaMeetups2026";
+// Configurações do WhatsApp Helper
+require_once __DIR__ . '/includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
@@ -117,31 +116,10 @@ foreach ($alunos as $aluno) {
                 $telefoneLimpo = "55" . $telefoneLimpo;
             }
             
-            // Payload no formato exato que a Evolution API exige
-            $payload = json_encode([
-                "number" => $telefoneLimpo,
-                "options" => [
-                    "delay" => 1500,
-                    "presence" => "composing"
-                ],
-                "textMessage" => [
-                    "text" => $textoFinal
-                ]
-            ]);
-            
-            $ch = curl_init($EVOLUTION_API_URL);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                "Content-Type: application/json",
-                "apikey: " . $EVOLUTION_API_KEY
-            ]);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            
-            // Executa a requisição DE VERDADE
-            $response = curl_exec($ch); 
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+            // Envia para o motor unificado do Baileys
+            $result = enviarWhatsApp($telefoneLimpo, $textoFinal, 'mentoria_cron');
+            $httpcode = $result['httpCode'];
+            $response = json_encode($result);
             
             // Loga no banco para não mandar duas vezes, APENAS SE DEU SUCESSO (Status 200 ou 201)
             if ($httpcode >= 200 && $httpcode < 300) {

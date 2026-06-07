@@ -57,32 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mockLista = "🇺🇸 English\n🇩🇪 Deutsch";
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $mockLista, $textoFinal);
             
-            $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-            $EVOLUTION_API_KEY = "SenhaMeetups2026";
+            require_once '../includes/whatsapp_helper.php';
             
-            $payload = json_encode([
-                "number" => $telefone,
-                "options" => [
-                    "delay" => 1200,
-                    "presence" => "composing"
-                ],
-                "textMessage" => [
-                    "text" => $textoFinal
-                ]
-            ]);
-            
-            $ch = curl_init($EVOLUTION_API_URL);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                "Content-Type: application/json",
-                "apikey: " . $EVOLUTION_API_KEY
-            ]);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            
-            $response = curl_exec($ch); 
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+            $result = enviarWhatsApp($telefone, $textoFinal, 'template_teste');
+            $httpcode = $result['httpCode'];
+            $response = json_encode($result);
             
             if ($httpcode >= 200 && $httpcode < 300) {
                 $_GET['msg'] = "🚀 Mensagem de teste enviada com sucesso para $telefone!";

@@ -10,31 +10,13 @@ if (!isset($_GET['group_id'])) {
 }
 
 $groupId = trim($_GET['group_id']);
-$EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-$EVOLUTION_API_KEY = "SenhaMeetups2026";
+require_once '../includes/whatsapp_helper.php';
 
-$payload = json_encode([
-    "number" => $groupId,
-    "textMessage" => ["text" => "🔧 Teste de Diagnóstico do Sistema (Pode ignorar)"]
-]);
+$result = enviarWhatsApp($groupId, '🔧 Teste de Diagnóstico do Sistema (Pode ignorar)', 'diagnostico');
 
-$ch = curl_init($EVOLUTION_API_URL);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_TIMEOUT, 60); // 60s para ver se trava
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "Content-Type: application/json",
-    "apikey: " . $EVOLUTION_API_KEY
-]);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-
-$response = curl_exec($ch);
-$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-if (curl_errno($ch)) {
-    echo json_encode(["status" => 0, "error" => curl_error($ch)]);
+if (!$result['success']) {
+    echo json_encode(["status" => 0, "error" => $result['error']]);
 } else {
-    echo json_encode(["status" => $httpcode, "response" => $response]);
+    echo json_encode(["status" => $result['httpCode'], "response" => json_encode($result['data'])]);
 }
-curl_close($ch);
 ?>

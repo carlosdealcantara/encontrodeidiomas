@@ -17,8 +17,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
-$EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-$EVOLUTION_API_KEY = "SenhaMeetups2026";
+require_once __DIR__ . '/includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
@@ -110,36 +109,12 @@ foreach ($groups as $g) {
             // Troca a variável mágica {LISTA_ENCONTROS}
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
             
-            // Envia para a API (Restaurando options sem presence para evitar Bad Request)
-            $payload = json_encode([
-                "number" => $g['group_id'],
-                "options" => [
-                    "delay" => 1200
-                ],
-                "textMessage" => [
-                    "text" => $textoFinal
-                ]
-            ]);
-            
-            $ch = curl_init($EVOLUTION_API_URL);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10); // Timeout de 10s para não travar o PHP se a API cair
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                "Content-Type: application/json",
-                "apikey: " . $EVOLUTION_API_KEY
-            ]);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            
+            // Envia para o motor unificado do Baileys
             $inicioCurl = microtime(true);
-            $response = curl_exec($ch); 
+            $result = enviarWhatsApp($g['group_id'], $textoFinal, 'meetup_cron_diario');
+            $httpcode = $result['httpCode'];
             $tempoGasto = round(microtime(true) - $inicioCurl, 2);
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            
-            if (curl_errno($ch)) {
-                echo "&nbsp;&nbsp;-> <span style='color:red;'>Erro fatal de cURL: " . curl_error($ch) . " (Demorou {$tempoGasto}s)</span><br>";
-            }
-            curl_close($ch);
+            $response = json_encode($result);
             
             // Só loga no banco se a API respondeu OK
             if ($httpcode >= 200 && $httpcode < 300) {

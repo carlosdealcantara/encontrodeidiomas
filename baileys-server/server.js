@@ -388,19 +388,57 @@ app.post('/send-bulk', (req, res) => {
     }
 });
 
-// Single send route (for compatibility if needed)
-app.post('/send-text', async (req, res) => {
-    if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp not connected' });
+// Universal Single Send Route
+app.post('/send', (req, res) => {
+    if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado. Escaneie o QR Code primeiro.' });
     try {
-        const { number, textMessage } = req.body;
-        if (!number || !textMessage?.text) return res.status(400).json({ success: false, error: 'Invalid payload' });
+        const { to, message, source } = req.body;
+        if (!to || !message) return res.status(400).json({ success: false, error: 'Parâmetros "to" e "message" são obrigatórios' });
         
-        const jid = number.includes('@') ? number : `${number}@s.whatsapp.net`;
-        const result = await sock.sendMessage(jid, { text: textMessage.text });
+        const jobId = 'unit_' + Math.random().toString(36).substring(2, 10);
+        jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
         
-        res.json({ success: true, messageId: result?.key?.id });
+        console.log(`[Universal Endpoint] Enfileirando mensagem para ${to} (Source: ${source || 'desconhecida'})`);
+        
+        queue.push({
+            jobId,
+            number: to,
+            text: message,
+            index: 1
+        });
+        
+        if (isConnected && !isProcessingQueue) {
+            processQueue();
+        }
+        
+        res.json({ success: true, jobId, queued: 1 });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Logout Route
+app.delete('/logout', async (req, res) => {
+    try {
+        if (sock) await sock.logout();
+        isConnected = false;
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// Reset Route
+app.post('/reset', async (req, res) => {
+    try {
+        if (sock) await sock.logout();
+        isConnected = false;
+        latestQR = null;
+        fs.rmSync(path.join(dataDir, 'auth'), { recursive: true, force: true });
+        setTimeout(connectToWhatsApp, 2000);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
     }
 });
 

@@ -17,8 +17,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
-$EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-$EVOLUTION_API_KEY = "SenhaMeetups2026";
+require_once __DIR__ . '/includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
@@ -111,29 +110,10 @@ foreach ($meetings as $m) {
                             continue;
                         }
                         
-                        // Envia para a API
-                        $payload = json_encode([
-                            "number" => $g['group_id'],
-                            "options" => [
-                                "delay" => 1200
-                            ],
-                            "textMessage" => [
-                                "text" => $textoFinal
-                            ]
-                        ]);
-                        
-                        $ch = curl_init($EVOLUTION_API_URL);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                            "Content-Type: application/json",
-                            "apikey: " . $EVOLUTION_API_KEY
-                        ]);
-                        curl_setopt($ch, CURLOPT_POST, true);
-                        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-                        
-                        $response = curl_exec($ch); 
-                        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                        curl_close($ch);
+                        // Envia para o motor unificado do Baileys
+                        $result = enviarWhatsApp($g['group_id'], $textoFinal, 'meetup_cron');
+                        $httpcode = $result['httpCode'];
+                        $response = json_encode($result);
                         
                         // Só loga no banco se a API respondeu OK
                         if ($httpcode >= 200 && $httpcode < 300) {
