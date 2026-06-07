@@ -21,7 +21,7 @@ while ($row = $result->fetch_assoc()) {
     echo "Selecionado: " . $row['nome'] . " (" . $row['group_id'] . ")\n";
 }
 
-$mensagem = "Em breve posto os replays dos encontros de idiomas da semana";
+$mensagem = "Em breve aqui os replays dos encontros de idiomas da semana!";
 
 if (count($groups) > 0) {
     echo "Enviando mensagem para " . count($groups) . " grupos...\n";
