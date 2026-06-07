@@ -308,7 +308,23 @@ async function processQueue() {
             addLog(jobId, 'process', `[${index}/${jobs[jobId].progress.total}] Enviando para: ${number}`);
             
             try {
-                const jid = number.includes('@') ? number : `${number}@s.whatsapp.net`;
+                let jid = number.includes('@') ? number : `${number}@s.whatsapp.net`;
+                
+                // Formatação BR: Resolver JID oficial (Questão do 9º dígito)
+                if (!number.includes('@')) {
+                    const [res] = await sock.onWhatsApp(number);
+                    if (res?.exists) {
+                        jid = res.jid;
+                    } else if (number.startsWith('55') && number.length === 13) {
+                        // Tenta sem o 9 (comum para DDD > 28)
+                        const numSemNove = number.substring(0, 4) + number.substring(5);
+                        const [res2] = await sock.onWhatsApp(numSemNove);
+                        if (res2?.exists) {
+                            jid = res2.jid;
+                        }
+                    }
+                }
+
                 const startTime = Date.now();
                 
                 await sock.sendMessage(jid, { text });
