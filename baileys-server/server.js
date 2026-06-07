@@ -212,7 +212,7 @@ async function connectToWhatsApp() {
         version,
         auth: state,
         printQRInTerminal: false,
-        logger: pino({ level: 'silent' }), // silence noisy logs
+        logger: pino({ level: 'silent' }),
         browser: ['Ubuntu', 'Chrome', '20.0.04']
     });
 
@@ -230,10 +230,21 @@ async function connectToWhatsApp() {
         if (connection === 'close') {
             isConnected = false;
             latestQR = null;
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('Connection closed:', lastDisconnect?.error, 'Reconnecting:', shouldReconnect);
+            const statusCode = lastDisconnect?.error?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            console.log('Connection closed:', lastDisconnect?.error, 'StatusCode:', statusCode, 'Reconnecting:', shouldReconnect);
+            
             if (shouldReconnect) {
                 setTimeout(connectToWhatsApp, 3000);
+            } else {
+                // Desconectado pelo celular (401/loggedOut): limpar auth e gerar novo QR
+                console.log('[AUTO-RECOVERY] Sessão expirada/deslogada. Limpando credenciais e gerando novo QR...');
+                try {
+                    fs.rmSync(path.join(dataDir, 'auth'), { recursive: true, force: true });
+                } catch (e) {
+                    console.error('Erro ao limpar auth:', e);
+                }
+                setTimeout(connectToWhatsApp, 2000);
             }
         } else if (connection === 'open') {
             isConnected = true;
@@ -263,18 +274,40 @@ async function processQueue() {
             try {
                 let jid = number.includes('@') ? number : `${number}@s.whatsapp.net`;
                 
-                // Formatação BR: Resolver JID oficial (Questão do 9º dígito)
+                // Resolução inteligente de JID para números brasileiros
+                // sock.onWhatsApp() consulta o servidor oficial do WhatsApp
+                // e retorna o JID correto independentemente do formato do número
                 if (!number.includes('@')) {
-                    const [res] = await sock.onWhatsApp(number);
-                    if (res?.exists) {
-                        jid = res.jid;
-                    } else if (number.startsWith('55') && number.length === 13) {
-                        // Tenta sem o 9 (comum para DDD > 28)
-                        const numSemNove = number.substring(0, 4) + number.substring(5);
-                        const [res2] = await sock.onWhatsApp(numSemNove);
-                        if (res2?.exists) {
-                            jid = res2.jid;
+                    try {
+                        const results = await sock.onWhatsApp(number);
+                        if (results && results.length > 0 && results[0].exists) {
+                            jid = results[0].jid;
+                            console.log(`[JID Resolver] ${number} -> ${jid}`);
+                        } else {
+                            // Número não encontrado como está. Tentar variações BR:
+                            let altNumber = null;
+                            if (number.startsWith('55') && number.length === 13) {
+                                // Tem 13 dígitos (com 9): tentar sem o 9 (remover 5º dígito)
+                                altNumber = number.substring(0, 4) + number.substring(5);
+                            } else if (number.startsWith('55') && number.length === 12) {
+                                // Tem 12 dígitos (sem 9): tentar com o 9 (inserir após DDD)
+                                altNumber = number.substring(0, 4) + '9' + number.substring(4);
+                            }
+                            
+                            if (altNumber) {
+                                const altResults = await sock.onWhatsApp(altNumber);
+                                if (altResults && altResults.length > 0 && altResults[0].exists) {
+                                    jid = altResults[0].jid;
+                                    console.log(`[JID Resolver] ${number} (alt: ${altNumber}) -> ${jid}`);
+                                } else {
+                                    console.log(`[JID Resolver] AVISO: Número ${number} não encontrado no WhatsApp.`);
+                                }
+                            } else {
+                                console.log(`[JID Resolver] AVISO: Número ${number} não encontrado no WhatsApp.`);
+                            }
                         }
+                    } catch (resolveErr) {
+                        console.log(`[JID Resolver] Erro ao resolver ${number}: ${resolveErr.message}. Usando formato padrão.`);
                     }
                 }
 
