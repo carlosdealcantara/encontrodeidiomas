@@ -5,6 +5,7 @@
  * Active state detected automatically via PHP_SELF.
  */
 $admin_current_page = basename($_SERVER['PHP_SELF']);
+$is_whatsapp_page = in_array($admin_current_page, ['meetup_groups.php', 'conectar_whatsapp.php', 'meetup_templates.php']);
 
 $nav_items = [
     'index.php'        => ['icon' => 'fas fa-chart-pie',      'label' => 'Dashboard'],
@@ -14,9 +15,7 @@ $nav_items = [
     'presencial.php'   => ['icon' => 'fas fa-map-marker-alt', 'label' => 'Presencial'],
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
     'mentoria.php'         => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
-    'meetup_groups.php'    => ['icon' => 'fab fa-whatsapp',       'label' => 'Wpp Grupos'],
-    'conectar_whatsapp.php' => ['icon' => 'fas fa-qrcode',         'label' => 'Conectar Wpp'],
-    'meetup_templates.php' => ['icon' => 'fas fa-comment-dots',   'label' => 'Wpp Templates'],
+    'whatsapp'             => ['icon' => 'fab fa-whatsapp',       'label' => 'WhatsApp', 'link' => 'meetup_groups.php', 'active' => $is_whatsapp_page],
     'useful_links.php'     => ['icon' => 'fas fa-link',           'label' => 'Links'],
     'settings.php'     => ['icon' => 'fas fa-cog',            'label' => 'Configurações'],
 ];
@@ -130,7 +129,11 @@ $nav_items = [
 
     <nav class="nav-menu">
         <?php foreach ($nav_items as $file => $item): ?>
-        <a href="<?= $file ?>" class="nav-item <?= $admin_current_page === $file ? 'active' : '' ?>">
+        <?php 
+            $href = $item['link'] ?? $file; 
+            $isActive = isset($item['active']) ? $item['active'] : ($admin_current_page === $file);
+        ?>
+        <a href="<?= $href ?>" class="nav-item <?= $isActive ? 'active' : '' ?>">
             <i class="<?= $item['icon'] ?>"></i> <?= $item['label'] ?>
         </a>
         <?php endforeach; ?>

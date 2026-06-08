@@ -212,10 +212,16 @@ foreach ($groups as $g) {
                 <p style="color: var(--text-dim);">Gerencie os grupos que receberão as mensagens dos encontros</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-qrcode"></i> Status do WhatsApp</a>
                 <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-sync"></i> Buscar Grupos na API</a>
             </div>
         </header>
+
+        <!-- WhatsApp Sub-Nav -->
+        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
+            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
+            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
+        </div>
 
         <?php if (isset($msg) || isset($_GET['msg'])): ?>
             <div class="alert"><?= htmlspecialchars($msg ?? $_GET['msg'] ?? '') ?></div>
