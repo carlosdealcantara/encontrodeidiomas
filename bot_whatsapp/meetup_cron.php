@@ -76,7 +76,7 @@ foreach ($meetings as $m) {
         
         // Se a hora alvo bate com a hora atual (com uma tolerância se o cron rodar +- minutos)
         // Como é cron de hora em hora (ou 15m), verificamos se a hora bate
-        if ($horaAtualReal === $horaAlvo) {
+        if ($horaAtualReal === (int)$horaAlvo) {
             
             // Prepara a mensagem
             $textoFinal = $t['template_texto'];
