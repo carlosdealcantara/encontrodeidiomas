@@ -7,7 +7,7 @@
  * apenas 1 VEZ AO DIA (ex: 09:00 AM).
  */
 
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../config.php';
 
 $token_secreto = '83x9aZ2pLQw1'; 
 $is_cli = (php_sapi_name() === 'cli');
@@ -17,7 +17,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
-require_once __DIR__ . '/includes/whatsapp_helper.php';
+require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 $conn = connectDB();
 

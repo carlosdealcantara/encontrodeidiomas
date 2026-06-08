@@ -7,7 +7,7 @@
  * Exemplo de URL de chamada: https://seusite.com.br/mentoria_cron.php?token=SEU_TOKEN_SECRETO
  */
 
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../config.php';
 
 // Segurança: Proteja este arquivo para que curiosos não disparem as mensagens
 $token_secreto = '83x9aZ2pLQw1'; // Altere se desejar
@@ -18,7 +18,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 // Configurações do WhatsApp Helper
-require_once __DIR__ . '/includes/whatsapp_helper.php';
+require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
