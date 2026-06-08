@@ -95,3 +95,37 @@ function statusWhatsApp(): array {
     }
     return ['connected' => false];
 }
+
+// === FUNÇÕES DA MENTORIA ===
+
+function getMentoriaConfig(): array {
+    $res = sendBaileysRequest('/mentoria-config', null, 'GET');
+    return $res['success'] ? ($res['data'] ?? []) : [];
+}
+
+function fetchBaileysActivity(string $date): array {
+    $res = sendBaileysRequest('/activity?date=' . urlencode($date), null, 'GET');
+    return $res['success'] ? ($res['data'] ?? []) : [];
+}
+
+function fetchGroupMembers(string $groupId): array {
+    $res = sendBaileysRequest('/group-members?groupId=' . urlencode($groupId), null, 'GET');
+    return $res['success'] ? ($res['data'] ?? []) : [];
+}
+
+function enviarWhatsAppMention(string $to, string $message, array $mentions): array {
+    $payload = [
+        'to' => $to,
+        'message' => $message,
+        'mentions' => $mentions
+    ];
+    return sendBaileysRequest('/send-mention', $payload, 'POST');
+}
+
+function removerDoGrupo(string $groupId, array $participants): array {
+    $payload = [
+        'groupId' => $groupId,
+        'participants' => $participants
+    ];
+    return sendBaileysRequest('/group-remove', $payload, 'POST');
+}

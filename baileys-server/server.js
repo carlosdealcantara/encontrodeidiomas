@@ -158,6 +158,9 @@ app.use((req, res, next) => {
     next();
 });
 
+const mentoriaPlugin = require('./mentoria');
+mentoriaPlugin.initRoutes(app, dataDir);
+
 // Helpers for logging
 function saveJobsToFile() {
     fs.writeFileSync(path.join(dataDir, 'jobs.json'), JSON.stringify(jobs, null, 2));
@@ -246,10 +249,11 @@ async function connectToWhatsApp() {
                 }
                 setTimeout(connectToWhatsApp, 2000);
             }
-        } else if (connection === 'open') {
+        if (connection === 'open') {
             isConnected = true;
             latestQR = null;
             console.log('WhatsApp connection opened successfully!');
+            mentoriaPlugin.setSock(sock);
             if (!isProcessingQueue) {
                 processQueue();
             }
@@ -257,6 +261,8 @@ async function connectToWhatsApp() {
     });
 
     sock.ev.on('creds.update', saveCreds);
+    sock.ev.on('messages.upsert', mentoriaPlugin.handleMessages);
+    sock.ev.on('group-participants.update', mentoriaPlugin.handleParticipants);
 }
 
 // Queue Processor
