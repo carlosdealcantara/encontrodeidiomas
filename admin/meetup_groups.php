@@ -206,6 +206,13 @@ foreach ($groups as $g) {
     <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
+        <!-- WhatsApp Sub-Nav -->
+        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
+            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
+            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
+        </div>
+
         <header class="header">
             <div>
                 <h2>Grupos de Automação (Meetups)</h2>
@@ -215,13 +222,6 @@ foreach ($groups as $g) {
                 <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-sync"></i> Buscar Grupos na API</a>
             </div>
         </header>
-
-        <!-- WhatsApp Sub-Nav -->
-        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
-            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
-            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
-        </div>
 
         <?php if (isset($msg) || isset($_GET['msg'])): ?>
             <div class="alert"><?= htmlspecialchars($msg ?? $_GET['msg'] ?? '') ?></div>
