@@ -16,6 +16,7 @@ $is_cli = (php_sapi_name() === 'cli');
 if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     http_response_code(403);
     die("Acesso Negado.");
+}
 // Configurações do WhatsApp Helper
 require_once __DIR__ . '/includes/whatsapp_helper.php';
 
