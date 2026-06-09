@@ -377,9 +377,6 @@ foreach ($groups as $g) {
                     <td><strong><?= htmlspecialchars($g['nome']) ?></strong></td>
                     <td style="color: var(--text-dim); font-size: 0.9rem;">
                         <?= htmlspecialchars($g['group_id']) ?>
-                        <?php if (strpos($g['group_id'], '-') !== false): ?>
-                            <br><span style="color: var(--accent-red); font-size: 0.75rem; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> ID Antigo (Incompatível)</span>
-                        <?php endif; ?>
                     </td>
                     <td>
                         <?php if ($g['categoria'] == 'multi_idioma'): ?>

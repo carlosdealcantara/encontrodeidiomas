@@ -62,7 +62,7 @@ echo "Encontros de hoje encontrados: " . count($meetings) . ".<br>";
 $listaGlobalEncontros = [];
 $languageIdsHoje = [];
 foreach ($meetings as $m) {
-    $listaGlobalEncontros[] = "{$m['flag_emoji']} {$m['language_name']}";
+    $listaGlobalEncontros[] = "{$m['flag_emoji']} {$m['language_name']} / {$m['name_en']}";
     $languageIdsHoje[] = $m['language_id'];
 }
 $listaFormatadaGlobal = implode("\n", $listaGlobalEncontros);
@@ -99,12 +99,6 @@ foreach ($groups as $g) {
         if ($stmtCheck->rowCount() === 0) {
             echo "&nbsp;&nbsp;-> Tudo limpo! Tentando conectar na API Evolution para '{$g['nome']}'...<br>";
             flush();
-            
-            // PROTEÇÃO ANTI-COLAPSO: Ignorar grupos com ID antigo (com hífen)
-            if (strpos($g['group_id'], '-') !== false) {
-                echo "&nbsp;&nbsp;-> ⚠️ Pulo de Segurança: Este grupo usa um ID antigo (com hífen) que trava a Evolution API. Pulando.<br>";
-                continue;
-            }
             
             // Troca a variável mágica {LISTA_ENCONTROS}
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
