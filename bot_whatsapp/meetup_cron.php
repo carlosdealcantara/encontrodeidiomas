@@ -85,7 +85,8 @@ foreach ($meetings as $m) {
             $textoFinal = str_replace('{EMOJI_FLAG}', $m['flag_emoji'], $textoFinal);
             $textoFinal = str_replace('{EMOJI_FLAGS}', str_repeat($m['flag_emoji'], 5), $textoFinal);
             $textoFinal = str_replace('{SAUDACAO}', $m['greeting'] ?? 'Welcome!', $textoFinal);
-            $textoFinal = str_replace('{MEET_LINK}', $m['meet_link'] ?: 'Link não definido', $textoFinal);
+            $linkLimpo = str_replace(['https://', 'http://'], '', $m['meet_link'] ?? '');
+            $textoFinal = str_replace('{MEET_LINK}', $linkLimpo ?: 'Link não definido', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', $m['instagram_link'] ?: 'Sem link', $textoFinal);
             
             // Filtra os grupos que devem receber ESTA mensagem DESTE idioma
