@@ -126,7 +126,7 @@ try {
         SELECT g.*, l.name as language_name 
         FROM meetup_whatsapp_groups g 
         LEFT JOIN languages l ON g.language_id = l.id 
-        ORDER BY g.categoria, g.nome ASC
+        ORDER BY g.ativo DESC, g.categoria, g.nome ASC
     ");
     $groups = $stmt->fetchAll();
 } catch (PDOException $e) {
