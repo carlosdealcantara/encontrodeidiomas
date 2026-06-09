@@ -62,7 +62,7 @@ echo "Encontros de hoje encontrados: " . count($meetings) . ".<br>";
 $listaGlobalEncontros = [];
 $languageIdsHoje = [];
 foreach ($meetings as $m) {
-    $listaGlobalEncontros[] = "{$m['flag_emoji']} {$m['language_name']} / {$m['name_en']}";
+    $listaGlobalEncontros[] = "{$m['flag_emoji']} {$m['name_en']} / {$m['language_name']}";
     $languageIdsHoje[] = $m['language_id'];
 }
 $listaFormatadaGlobal = implode("\n", $listaGlobalEncontros);
