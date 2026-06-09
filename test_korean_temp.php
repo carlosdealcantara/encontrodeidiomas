@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../includes/whatsapp_helper.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
