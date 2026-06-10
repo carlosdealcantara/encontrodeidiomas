@@ -249,7 +249,7 @@ async function connectToWhatsApp() {
                 }
                 setTimeout(connectToWhatsApp, 2000);
             }
-        if (connection === 'open') {
+        } else if (connection === 'open') {
             isConnected = true;
             latestQR = null;
             console.log('WhatsApp connection opened successfully!');

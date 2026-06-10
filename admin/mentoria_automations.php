@@ -66,6 +66,26 @@ if (file_exists($cache_file)) {
         });
     }
 }
+
+// Helper function to render <select>
+function renderGroupSelect($name, $currentValue, $groups) {
+    $html = '<select name="' . $name . '" class="select2-groups" style="width: 100%;">';
+    $html .= '<option value="">Selecione um grupo...</option>';
+    $found = false;
+    foreach ($groups as $g) {
+        $id = htmlspecialchars($g['id']);
+        $subj = htmlspecialchars($g['subject'] ?? 'Sem Nome');
+        $sel = ($id === $currentValue) ? 'selected' : '';
+        if ($sel) $found = true;
+        $html .= "<option value=\"$id\" $sel>$subj  |  $id</option>";
+    }
+    if ($currentValue && !$found) {
+        $val = htmlspecialchars($currentValue);
+        $html .= "<option value=\"$val\" selected>$val (Personalizado)</option>";
+    }
+    $html .= '</select>';
+    return $html;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -74,8 +94,7 @@ if (file_exists($cache_file)) {
     <title>Automações Mentoria | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-bg: #0f172a;
@@ -91,87 +110,90 @@ if (file_exists($cache_file)) {
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        
         .alert { padding: 15px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16, 185, 129, 0.2); }
         .alert.error { background: rgba(227, 29, 28, 0.1); color: var(--accent-red); border-color: rgba(227, 29, 28, 0.2); }
-        
         .form-card { background: var(--card-bg); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; color: var(--text-dim); font-weight: 600; }
         input[type="text"], textarea { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; }
         textarea { resize: vertical; min-height: 100px; }
         .help-text { font-size: 0.85rem; color: var(--text-dim); margin-top: 5px; }
-        
         .btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; color: white; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: var(--accent-red); }
         .btn-primary:hover { opacity: 0.9; }
-        
         .section-title { font-size: 1.2rem; color: #38bdf8; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        <style>
-            /* Select2 Dark Theme Overrides */
-            .select2-container--default .select2-selection--single {
-                background-color: var(--input-bg);
-                border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 8px;
-                height: 48px;
-                color: white;
-            }
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-                color: white;
-                line-height: 48px;
-                padding-left: 12px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-            .select2-container--default .select2-selection--single .select2-selection__arrow {
-                height: 46px;
-            }
-            .select2-dropdown {
-                background-color: var(--card-bg);
-                border: 1px solid rgba(255,255,255,0.2);
-                color: white;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-                border-radius: 8px;
-                overflow: hidden;
-            }
-            .select2-search--dropdown {
-                padding: 12px;
-                background-color: var(--sidebar-bg);
-                position: relative;
-            }
-            .select2-search--dropdown::before {
-                content: "\f002";
-                font-family: "Font Awesome 6 Free";
-                font-weight: 900;
-                position: absolute;
-                left: 22px;
-                top: 23px;
-                color: var(--text-dim);
-            }
-            .select2-container--default .select2-search--dropdown .select2-search__field {
-                background-color: var(--input-bg);
-                border: 1px solid rgba(255,255,255,0.2);
-                color: white;
-                border-radius: 6px;
-                padding: 8px 12px 8px 32px; /* Espaço para o ícone */
-                height: 40px;
-                font-size: 0.95rem;
-            }
-            .select2-container--default .select2-results__option[aria-selected=true] {
-                background-color: rgba(255,255,255,0.1);
-            }
-            .select2-container--default .select2-results__option--highlighted[aria-selected] {
-                background-color: var(--accent-red);
-                color: white;
-            }
-            .select2-results__option {
-                padding: 12px 15px;
-                border-bottom: 1px solid rgba(255,255,255,0.02);
-            }
-        </style>
-    </head>
-    <body>
+
+        /* ── Select2 Dark Theme ───────────────────────────────── */
+        .select2-container { width: 100% !important; }
+        .select2-container--default .select2-selection--single {
+            background-color: var(--input-bg);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            height: 46px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text-main);
+            line-height: 46px;
+            padding-left: 14px;
+            padding-right: 30px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 44px;
+            right: 8px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: var(--text-dim);
+        }
+        /* Dropdown panel — attached to body so no overflow:hidden can clip it */
+        .select2-dropdown {
+            background-color: #1e293b;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+            color: var(--text-main);
+            z-index: 99999;
+        }
+        .select2-search--dropdown {
+            padding: 10px 12px;
+            background-color: #16213a;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .select2-search--dropdown::before {
+            content: "\f002";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            margin-left: 10px;
+            margin-top: 10px;
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            background-color: var(--input-bg);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main);
+            border-radius: 6px;
+            padding: 8px 12px 8px 34px;
+            height: 38px;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field::placeholder {
+            color: var(--text-dim);
+        }
+        .select2-results__options { max-height: 250px; overflow-y: auto; }
+        .select2-results__option { padding: 10px 14px; color: var(--text-main); font-size: 0.88rem; }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--accent-red);
+            color: white;
+        }
+        .select2-container--default .select2-results__option[aria-selected="true"] {
+            background-color: rgba(255,255,255,0.07);
+        }
+    </style>
+</head>
+<body>
     <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
@@ -184,29 +206,6 @@ if (file_exists($cache_file)) {
 
         <?php if ($msg): ?><div class="alert"><i class="fas fa-check"></i> <?= htmlspecialchars($msg) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="alert error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div><?php endif; ?>
-
-        <?php
-        // Helper function to render <select>
-        function renderGroupSelect($name, $currentValue, $groups) {
-            $html = '<select name="' . $name . '" class="select2-groups" style="width: 100%;">';
-            $html .= '<option value="">Selecione um grupo (ou digite para buscar)</option>';
-            $found = false;
-            foreach ($groups as $g) {
-                $id = htmlspecialchars($g['id']);
-                $subj = htmlspecialchars($g['subject'] ?? 'Sem Nome');
-                $sel = ($id === $currentValue) ? 'selected' : '';
-                if ($sel) $found = true;
-                $html .= "<option value=\"$id\" $sel>$subj ($id)</option>";
-            }
-            // If the current value is not in the list (e.g. custom/old JID), add it
-            if ($currentValue && !$found) {
-                $val = htmlspecialchars($currentValue);
-                $html .= "<option value=\"$val\" selected>$val (Personalizado)</option>";
-            }
-            $html .= '</select>';
-            return $html;
-        }
-        ?>
 
         <form method="POST">
             
@@ -273,7 +272,6 @@ if (file_exists($cache_file)) {
         </form>
     </main>
 
-    <!-- jQuery and Select2 JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
@@ -281,21 +279,20 @@ if (file_exists($cache_file)) {
             $('.select2-groups').select2({
                 placeholder: "Busque pelo nome do grupo...",
                 allowClear: true,
+                // Crítico: renderiza o dropdown no body, fora de qualquer overflow:hidden
+                dropdownParent: $(document.body),
                 language: {
-                    noResults: function() {
-                        return "Nenhum grupo encontrado";
-                    }
+                    noResults: function() { return "Nenhum grupo encontrado"; }
                 }
             });
 
-            // Foco automático e placeholders mais claros
-            $('.select2-groups').on('select2:open', function() {
-                // Aguarda um pequeno instante para renderizar
+            // Foco automático ao abrir
+            $(document).on('select2:open', function() {
                 setTimeout(function() {
-                    const searchField = document.querySelector('.select2-search__field');
-                    if (searchField) {
-                        searchField.focus();
-                        searchField.setAttribute('placeholder', 'Digite o nome do grupo aqui...');
+                    const field = document.querySelector('.select2-container--open .select2-search__field');
+                    if (field) {
+                        field.focus();
+                        field.placeholder = 'Digite para filtrar...';
                     }
                 }, 50);
             });
