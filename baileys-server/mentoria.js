@@ -166,6 +166,24 @@ function initRoutes(app, dir) {
         }
     });
 
+    // GET /groups
+    app.get('/groups', async (req, res) => {
+        if (!sock) return res.status(503).json({ error: 'WhatsApp disconnected' });
+        try {
+            const groups = await sock.groupFetchAllParticipating();
+            const groupList = [];
+            for (const id in groups) {
+                groupList.push({
+                    id: groups[id].id,
+                    subject: groups[id].subject
+                });
+            }
+            res.json(groupList);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
     // POST /send-mention
     app.post('/send-mention', async (req, res) => {
         if (!sock) return res.status(503).json({ error: 'WhatsApp disconnected' });

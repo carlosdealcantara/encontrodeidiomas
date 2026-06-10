@@ -11,6 +11,18 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 $msg = null;
 $error = null;
 
+// Sincronizar Grupos
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
+    $res = sendBaileysRequest('/groups', null, 'GET');
+    if ($res['success'] && is_array($res['data'])) {
+        $cache_file = __DIR__ . '/groups_cache.json';
+        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
+        $msg = "Lista de grupos sincronizada com sucesso do WhatsApp! (" . count($res['data']) . " grupos encontrados)";
+    } else {
+        $error = "Erro ao buscar grupos do Node.js: " . ($res['error'] ?? 'Desconhecido');
+    }
+}
+
 // Salvar Configurações
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     $newConfig = [
@@ -201,6 +213,13 @@ function renderGroupSelect($name, $currentValue, $groups) {
             <div>
                 <h2>Automações da Mentoria</h2>
                 <p style="color: var(--text-dim);">Configure as mensagens e mapeamento de grupos do Hub Bidirecional</p>
+            </div>
+            <div>
+                <form method="POST" style="display: inline-block;">
+                    <button type="submit" name="sync_groups" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                        <i class="fas fa-sync-alt"></i> Sincronizar Grupos do WhatsApp
+                    </button>
+                </form>
             </div>
         </header>
 
