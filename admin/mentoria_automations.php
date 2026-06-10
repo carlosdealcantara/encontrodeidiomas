@@ -130,8 +130,8 @@ if (file_exists($cache_file)) {
                 color: white;
             }
             .select2-container--default .select2-search--dropdown .select2-search__field {
-                background-color: var(--input-bg);
-                border: 1px solid rgba(255,255,255,0.1);
+                background-color: var(--card-bg);
+                border: 1px solid rgba(255,255,255,0.2);
                 color: white;
                 border-radius: 4px;
             }
@@ -171,7 +171,7 @@ if (file_exists($cache_file)) {
                 $subj = htmlspecialchars($g['subject'] ?? 'Sem Nome');
                 $sel = ($id === $currentValue) ? 'selected' : '';
                 if ($sel) $found = true;
-                $html .= "<option value=\"$id\" $sel>$subj</option>";
+                $html .= "<option value=\"$id\" $sel>$subj ($id)</option>";
             }
             // If the current value is not in the list (e.g. custom/old JID), add it
             if ($currentValue && !$found) {
