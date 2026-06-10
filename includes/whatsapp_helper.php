@@ -6,7 +6,7 @@
  */
 
 define('BAILEYS_API_URL_DIRECT', 'http://136.248.92.126:3000');
-define('BAILEYS_API_URL_TUNNEL', 'https://choose-brings-paid-noticed.trycloudflare.com');
+define('BAILEYS_API_URL_TUNNEL', 'https://attacked-complications-opposition-enabled.trycloudflare.com');
 define('BAILEYS_API_KEY', 'SenhaMeetups2026');
 
 function checkWhatsAppConnection($url) {

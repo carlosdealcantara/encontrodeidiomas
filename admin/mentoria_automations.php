@@ -113,36 +113,61 @@ if (file_exists($cache_file)) {
                 background-color: var(--input-bg);
                 border: 1px solid rgba(255,255,255,0.1);
                 border-radius: 8px;
-                height: 45px;
+                height: 48px;
                 color: white;
             }
             .select2-container--default .select2-selection--single .select2-selection__rendered {
                 color: white;
-                line-height: 45px;
+                line-height: 48px;
                 padding-left: 12px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .select2-container--default .select2-selection--single .select2-selection__arrow {
-                height: 43px;
+                height: 46px;
             }
             .select2-dropdown {
                 background-color: var(--card-bg);
-                border: 1px solid rgba(255,255,255,0.1);
-                color: white;
-            }
-            .select2-container--default .select2-search--dropdown .select2-search__field {
-                background-color: var(--card-bg);
                 border: 1px solid rgba(255,255,255,0.2);
                 color: white;
-                border-radius: 4px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .select2-search--dropdown {
+                padding: 12px;
+                background-color: var(--sidebar-bg);
+                position: relative;
+            }
+            .select2-search--dropdown::before {
+                content: "\f002";
+                font-family: "Font Awesome 6 Free";
+                font-weight: 900;
+                position: absolute;
+                left: 22px;
+                top: 23px;
+                color: var(--text-dim);
+            }
+            .select2-container--default .select2-search--dropdown .select2-search__field {
+                background-color: var(--input-bg);
+                border: 1px solid rgba(255,255,255,0.2);
+                color: white;
+                border-radius: 6px;
+                padding: 8px 12px 8px 32px; /* Espaço para o ícone */
+                height: 40px;
+                font-size: 0.95rem;
             }
             .select2-container--default .select2-results__option[aria-selected=true] {
                 background-color: rgba(255,255,255,0.1);
             }
             .select2-container--default .select2-results__option--highlighted[aria-selected] {
                 background-color: var(--accent-red);
+                color: white;
             }
             .select2-results__option {
-                padding: 10px 12px;
+                padding: 12px 15px;
+                border-bottom: 1px solid rgba(255,255,255,0.02);
             }
         </style>
     </head>
@@ -261,6 +286,18 @@ if (file_exists($cache_file)) {
                         return "Nenhum grupo encontrado";
                     }
                 }
+            });
+
+            // Foco automático e placeholders mais claros
+            $('.select2-groups').on('select2:open', function() {
+                // Aguarda um pequeno instante para renderizar
+                setTimeout(function() {
+                    const searchField = document.querySelector('.select2-search__field');
+                    if (searchField) {
+                        searchField.focus();
+                        searchField.setAttribute('placeholder', 'Digite o nome do grupo aqui...');
+                    }
+                }, 50);
             });
         });
     </script>
