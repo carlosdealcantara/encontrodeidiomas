@@ -74,6 +74,8 @@ if (file_exists($cache_file)) {
     <title>Automações Mentoria | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         :root {
             --primary-bg: #0f172a;
@@ -105,9 +107,46 @@ if (file_exists($cache_file)) {
         .btn-primary:hover { opacity: 0.9; }
         
         .section-title { font-size: 1.2rem; color: #38bdf8; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    </style>
-</head>
-<body>
+        <style>
+            /* Select2 Dark Theme Overrides */
+            .select2-container--default .select2-selection--single {
+                background-color: var(--input-bg);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                height: 45px;
+                color: white;
+            }
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                color: white;
+                line-height: 45px;
+                padding-left: 12px;
+            }
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 43px;
+            }
+            .select2-dropdown {
+                background-color: var(--card-bg);
+                border: 1px solid rgba(255,255,255,0.1);
+                color: white;
+            }
+            .select2-container--default .select2-search--dropdown .select2-search__field {
+                background-color: var(--input-bg);
+                border: 1px solid rgba(255,255,255,0.1);
+                color: white;
+                border-radius: 4px;
+            }
+            .select2-container--default .select2-results__option[aria-selected=true] {
+                background-color: rgba(255,255,255,0.1);
+            }
+            .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                background-color: var(--accent-red);
+            }
+            .select2-results__option {
+                padding: 10px 12px;
+            }
+        </style>
+    </head>
+    <body>
     <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
@@ -121,11 +160,28 @@ if (file_exists($cache_file)) {
         <?php if ($msg): ?><div class="alert"><i class="fas fa-check"></i> <?= htmlspecialchars($msg) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="alert error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div><?php endif; ?>
 
-        <datalist id="groups_list">
-            <?php foreach($available_groups as $g): ?>
-                <option value="<?= htmlspecialchars($g['id']) ?>"><?= htmlspecialchars($g['subject'] ?? 'Sem Nome') ?></option>
-            <?php endforeach; ?>
-        </datalist>
+        <?php
+        // Helper function to render <select>
+        function renderGroupSelect($name, $currentValue, $groups) {
+            $html = '<select name="' . $name . '" class="select2-groups" style="width: 100%;">';
+            $html .= '<option value="">Selecione um grupo (ou digite para buscar)</option>';
+            $found = false;
+            foreach ($groups as $g) {
+                $id = htmlspecialchars($g['id']);
+                $subj = htmlspecialchars($g['subject'] ?? 'Sem Nome');
+                $sel = ($id === $currentValue) ? 'selected' : '';
+                if ($sel) $found = true;
+                $html .= "<option value=\"$id\" $sel>$subj</option>";
+            }
+            // If the current value is not in the list (e.g. custom/old JID), add it
+            if ($currentValue && !$found) {
+                $val = htmlspecialchars($currentValue);
+                $html .= "<option value=\"$val\" selected>$val (Personalizado)</option>";
+            }
+            $html .= '</select>';
+            return $html;
+        }
+        ?>
 
         <form method="POST">
             
@@ -141,15 +197,15 @@ if (file_exists($cache_file)) {
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                     <div class="form-group">
                         <label>Our Meetups (JID)</label>
-                        <input type="text" name="jid_our_meetups" list="groups_list" value="<?= htmlspecialchars($jid_our_meetups) ?>" placeholder="ex: 120363xxx@g.us">
+                        <?= renderGroupSelect('jid_our_meetups', $jid_our_meetups, $available_groups) ?>
                     </div>
                     <div class="form-group">
                         <label>The Lounge (JID)</label>
-                        <input type="text" name="jid_the_lounge" list="groups_list" value="<?= htmlspecialchars($jid_the_lounge) ?>">
+                        <?= renderGroupSelect('jid_the_lounge', $jid_the_lounge, $available_groups) ?>
                     </div>
                     <div class="form-group">
                         <label>Desafio Diário (JID)</label>
-                        <input type="text" name="jid_desafio" list="groups_list" value="<?= htmlspecialchars($jid_desafio) ?>">
+                        <?= renderGroupSelect('jid_desafio', $jid_desafio, $available_groups) ?>
                     </div>
                 </div>
             </div>
@@ -191,5 +247,22 @@ if (file_exists($cache_file)) {
             </button>
         </form>
     </main>
+
+    <!-- jQuery and Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2-groups').select2({
+                placeholder: "Busque pelo nome do grupo...",
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "Nenhum grupo encontrado";
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
