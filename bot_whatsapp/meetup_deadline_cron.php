@@ -40,8 +40,9 @@ foreach ($schedules as $s) {
         $attendees = $stmtCount->fetchColumn();
         
         if ($attendees == 0) {
-            $msg = "❌ *Meetup Cancelled*\n\n";
-            $msg .= "Unfortunately, we didn't get any confirmations for the " . $classTime->format('H:i') . " session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+            $config = getMentoriaConfig();
+            $tpl = $config['templates']['meetup_cancel'] ?? "❌ *Meetup Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+            $msg = str_replace('{horario}', $classTime->format('H:i'), $tpl);
             
             enviarWhatsApp($s['group_jid'], $msg, 'meetup_cancel');
             echo "Aula " . $s['start_time'] . " cancelada por falta de quórum.\n";

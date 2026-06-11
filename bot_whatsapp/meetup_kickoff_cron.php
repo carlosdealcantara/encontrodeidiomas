@@ -41,9 +41,9 @@ foreach ($schedules as $s) {
             // Remove o https:// caso exista no banco
             $cleanLink = str_replace(['https://', 'http://'], '', $s['meet_link']);
             
-            $msg = "🎉 *The Meetup is starting NOW!*\n\n";
-            $msg .= "Join the room here: " . $cleanLink . "\n\n";
-            $msg .= "Have a great session! 🗣️";
+            $config = getMentoriaConfig();
+            $tpl = $config['templates']['meetup_kickoff'] ?? "🎉 *The Meetup is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+            $msg = str_replace('{link}', $cleanLink, $tpl);
             
             enviarWhatsApp($s['group_jid'], $msg, 'meetup_kickoff');
             echo "Aula " . $s['start_time'] . " iniciada!\n";

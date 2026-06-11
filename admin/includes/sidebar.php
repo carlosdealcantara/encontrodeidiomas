@@ -16,6 +16,7 @@ $nav_items = [
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
     'mentoria.php'         => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
     'mentoria_automations.php' => ['icon' => 'fas fa-robot', 'label' => 'Automações Mentoria'],
+    'meetup_schedule.php'  => ['icon' => 'fas fa-calendar-alt', 'label' => 'Agenda Our Meetups'],
     'whatsapp'             => ['icon' => 'fab fa-whatsapp',       'label' => 'WhatsApp', 'link' => 'meetup_groups.php', 'active' => $is_whatsapp_page],
     'useful_links.php'     => ['icon' => 'fas fa-link',           'label' => 'Links'],
     'settings.php'     => ['icon' => 'fas fa-cog',            'label' => 'Configurações'],

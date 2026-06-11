@@ -37,7 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'lembrete_aula' => trim($_POST['tpl_lembrete']),
             'aviso_desafio' => trim($_POST['tpl_aviso_desafio']),
             'kick_desafio' => trim($_POST['tpl_kick_desafio']),
-            'ranking_diario' => trim($_POST['tpl_ranking'])
+            'ranking_diario' => trim($_POST['tpl_ranking']),
+            'meetup_aviso' => trim($_POST['tpl_meetup_aviso'] ?? ''),
+            'meetup_cancel' => trim($_POST['tpl_meetup_cancel'] ?? ''),
+            'meetup_kickoff' => trim($_POST['tpl_meetup_kickoff'] ?? '')
         ]
     ];
     
@@ -63,6 +66,9 @@ $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Remi
 $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
 $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
 $tpl_ranking = $config['templates']['ranking_diario'] ?? "🏆 *Ranking do Dia* ({date})\n\n{ranking_list}";
+$tpl_meetup_aviso = $config['templates']['meetup_aviso'] ?? "📅 *English Meetup Today!*\n\nWe have a session scheduled for *{horario} BRT*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline} BRT*.";
+$tpl_meetup_cancel = $config['templates']['meetup_cancel'] ?? "❌ *Meetup Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+$tpl_meetup_kickoff = $config['templates']['meetup_kickoff'] ?? "🎉 *The Meetup is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
 
 // Ler cache de grupos do Baileys para o datalist
 $cache_file = __DIR__ . '/groups_cache.json';
@@ -283,6 +289,22 @@ function renderGroupSelect($name, $currentValue, $groups) {
                     <label>Ranking Diário (The Lounge - Todos os dias à meia-noite)</label>
                     <textarea name="tpl_ranking"><?= htmlspecialchars($tpl_ranking) ?></textarea>
                     <p class="help-text">Use <code>{date}</code> para a data e <code>{ranking_list}</code> para injetar a lista top 5.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Aviso Matinal Our Meetups (10:00)</label>
+                    <textarea name="tpl_meetup_aviso"><?= htmlspecialchars($tpl_meetup_aviso) ?></textarea>
+                    <p class="help-text">Variáveis úteis: não há variáveis pré-definidas no cron atual, a não ser que customize no meetup_aviso_cron.php.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Cancelamento Our Meetups (1h antes, se 0 presenças)</label>
+                    <textarea name="tpl_meetup_cancel"><?= htmlspecialchars($tpl_meetup_cancel) ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Início da Aula Our Meetups (Kick-off na hora exata)</label>
+                    <textarea name="tpl_meetup_kickoff"><?= htmlspecialchars($tpl_meetup_kickoff) ?></textarea>
                 </div>
             </div>
 

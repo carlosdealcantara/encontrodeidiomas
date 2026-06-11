@@ -34,10 +34,14 @@ $startTimeObj = new DateTime($hoje . ' ' . $startTime);
 $deadlineObj = clone $startTimeObj;
 $deadlineObj->modify('-1 hour');
 
-$msg = "📅 *English Meetup Today!*\n\n";
-$msg .= "We have a session scheduled for *" . $startTimeObj->format('H:i') . " BRT*.\n";
-$msg .= "If you want to participate, please reply with `!attend`.\n\n";
-$msg .= "⏳ You must confirm your attendance before *" . $deadlineObj->format('H:i') . " BRT*.";
+$config = getMentoriaConfig();
+$tpl = $config['templates']['meetup_aviso'] ?? "📅 *English Meetup Today!*\n\nWe have a session scheduled for *{horario} BRT*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline} BRT*.";
+
+$msg = str_replace(
+    ['{horario}', '{deadline}'], 
+    [$startTimeObj->format('H:i'), $deadlineObj->format('H:i')], 
+    $tpl
+);
 
 $res = enviarWhatsApp($groupJid, $msg, 'meetup_aviso');
 if ($res['success']) {
