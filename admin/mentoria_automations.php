@@ -196,12 +196,13 @@ function renderGroupSelect($name, $currentValue, $groups) {
         }
         .select2-results__options { max-height: 250px; overflow-y: auto; }
         .select2-results__option { padding: 10px 14px; color: var(--text-main); font-size: 0.88rem; }
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: var(--accent-red);
-            color: white;
+        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+            background-color: var(--accent-red) !important;
+            color: white !important;
         }
         .select2-container--default .select2-results__option[aria-selected="true"] {
-            background-color: rgba(255,255,255,0.07);
+            background-color: rgba(255,255,255,0.1) !important;
+            color: var(--text-main) !important;
         }
     </style>
 </head>
