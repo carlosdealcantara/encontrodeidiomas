@@ -52,7 +52,7 @@
                 <tr>
                     <td><strong><?php echo $days[$s['day_of_week']]; ?></strong></td>
                     <td><?php echo date('H:i', strtotime($s['start_time'])); ?></td>
-                    <td><a href="https://<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: #60a5fa;"><?php echo htmlspecialchars($s['meet_link']); ?></a></td>
+                    <td><a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: #60a5fa;"><?php echo htmlspecialchars($s['meet_link']); ?></a></td>
                     <td>
                         <?php if ($s['is_active']): ?>
                             <span class="status-active"><i class="fas fa-check-circle"></i> Ativo</span>
