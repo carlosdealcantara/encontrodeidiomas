@@ -2,6 +2,7 @@
 session_start();
 set_time_limit(0); // Impede que o PHP corte a execução antes de 120 segundos
 require_once '../config.php';
+require_once '../includes/whatsapp_helper.php';
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
@@ -11,6 +12,18 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 $conn = connectDB();
 $msg = null;
 $api_error = null;
+
+// Sincronizar Grupos
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
+    $res = sendBaileysRequest('/groups', null, 'GET');
+    if ($res['success'] && is_array($res['data'])) {
+        $cache_file = __DIR__ . '/groups_cache.json';
+        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
+        $msg = "Lista de grupos sincronizada com sucesso do WhatsApp! (" . count($res['data']) . " grupos encontrados)";
+    } else {
+        $api_error = "Erro ao buscar grupos da API: " . ($res['error'] ?? 'Desconhecido');
+    }
+}
 
 // Lógica de Importação em Lote (Batch Import)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
@@ -219,7 +232,12 @@ foreach ($groups as $g) {
                 <p style="color: var(--text-dim);">Gerencie os grupos que receberão as mensagens dos encontros</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-sync"></i> Buscar Grupos na API</a>
+                <form method="POST" style="margin: 0;">
+                    <button type="submit" name="sync_groups" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Sincronizar Grupos (API)
+                    </button>
+                </form>
+                <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-list"></i> Carregar Grupos (Cache)</a>
             </div>
         </header>
 
