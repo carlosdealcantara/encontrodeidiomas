@@ -53,16 +53,17 @@ $kickedCount = 0;
 foreach ($members as $memberData) {
     $memberJid = $memberData['id'];
     
-    // Ignora admin e o próprio bot
-    if ($memberJid === $adminJid || isset($memberData['isAdmin'])) continue;
+    // Ignora admin e o próprio bot (Baileys usa a propriedade 'admin' valendo 'admin' ou 'superadmin')
+    $isAdmin = !empty($memberData['admin']);
+    if ($memberJid === $adminJid || $isAdmin) continue;
     
     // Verifica se mandou mensagem no grupo ontem
     $interagiu = isset($desafioActivity[$memberJid]) && $desafioActivity[$memberJid]['messages'] > 0;
     
     if (!$interagiu) {
-        // Envia mensagem NO GRUPO antes de remover
-        $name = $memberJid; // Fallback, Baileys não dá o nome de todos facilmente no groupMetadata
-        $msg = str_replace(['{name}', '@{name}'], ["@".explode('@', $memberJid)[0], "@".explode('@', $memberJid)[0]], $template);
+        // Arruma o nome (se o template tem @{name}, trocamos por @numero. Se tem só {name}, trocamos pelo numero)
+        $numero = explode('@', $memberJid)[0];
+        $msg = str_replace(['@{name}', '{name}'], ["@".$numero, $numero], $template);
         
         enviarWhatsAppMention($desafioJid, $msg, [$memberJid]);
         
