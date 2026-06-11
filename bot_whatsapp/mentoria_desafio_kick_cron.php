@@ -17,11 +17,24 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 $conn = connectDB();
 $ontem = (new DateTime())->modify('-1 day')->format('Y-m-d'); // Analisamos a atividade de ontem
 
+try {
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS mentoria_auto_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        tipo VARCHAR(50) NOT NULL,
+        data_execucao DATE NOT NULL,
+        membro_jid VARCHAR(50) NULL,
+        detalhes TEXT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (tipo, data_execucao)
+    )");
+} catch (Exception $e) {}
+
 // Anti-duplicidade
 $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'desafio_kick_run' AND data_execucao = ?");
 $check->execute([$ontem]);
-if ($check->rowCount() > 0) {
-    die("Verificação de kick do desafio já rodou para a data $ontem.");
+if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+    die("Verificação de kick do desafio já rodou para a data $ontem. Use &force=1 na URL para forçar.");
 }
 
 $config = getMentoriaConfig();

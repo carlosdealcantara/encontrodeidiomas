@@ -17,6 +17,19 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 $conn = connectDB();
 $hoje = date('Y-m-d');
 
+try {
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS mentoria_auto_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        tipo VARCHAR(50) NOT NULL,
+        data_execucao DATE NOT NULL,
+        membro_jid VARCHAR(50) NULL,
+        detalhes TEXT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (tipo, data_execucao)
+    )");
+} catch (Exception $e) {}
+
 // Anti-duplicidade
 $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'desafio_aviso' AND data_execucao = ?");
 $check->execute([$hoje]);
