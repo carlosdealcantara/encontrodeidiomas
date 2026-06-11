@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: text/plain');
 require '../config.php';
 try {
     // Check German hosts and meetings
