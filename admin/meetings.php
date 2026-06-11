@@ -31,12 +31,13 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
     exit;
 }
 
-// Busca todos os encontros com info de idioma e host
+// Busca todos os encontros com info de idioma e host (apenas hosts ATIVOS)
 $stmt = $conn->query("
-    SELECT m.*, l.name as language_name, l.flag_code, l.flag_emoji, h.full_name as host_name 
+    SELECT m.*, l.name as language_name, l.flag_code, l.flag_emoji,
+           h.full_name as host_name
     FROM meetings m
     JOIN languages l ON m.language_id = l.id
-    LEFT JOIN hosts h ON m.host_id = h.id
+    LEFT JOIN hosts h ON m.host_id = h.id AND h.status = 'ativo'
     ORDER BY m.day_of_week ASC, m.time_hour ASC
 ");
 $meetings = $stmt->fetchAll();
@@ -181,8 +182,13 @@ function getDayLabel($day) {
                         </td>
                         <td>
                             <span style="color: var(--text-dim); font-size: 0.9rem;">
-                                <i class="fas fa-user-circle" style="margin-right: 5px;"></i>
-                                <?= htmlspecialchars($m['host_name'] ?? 'Não definido') ?>
+                                <?php if ($m['host_name']): ?>
+                                    <i class="fas fa-user-circle" style="margin-right: 5px;"></i>
+                                    <?= htmlspecialchars($m['host_name']) ?>
+                                <?php else: ?>
+                                    <i class="fas fa-comments" style="margin-right: 5px; color: var(--accent-blue);"></i>
+                                    <span style="color: var(--accent-blue); font-weight: 600;">Free Conversation</span>
+                                <?php endif; ?>
                             </span>
                         </td>
                         <td>
