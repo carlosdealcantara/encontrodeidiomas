@@ -20,8 +20,8 @@ $hoje = date('Y-m-d');
 // Anti-duplicidade
 $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'desafio_aviso' AND data_execucao = ?");
 $check->execute([$hoje]);
-if ($check->rowCount() > 0) {
-    die("Aviso do desafio já enviado hoje.");
+if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+    die("Aviso do desafio já enviado hoje. Use &force=1 na URL para forçar o reenvio.");
 }
 
 $config = getMentoriaConfig();
