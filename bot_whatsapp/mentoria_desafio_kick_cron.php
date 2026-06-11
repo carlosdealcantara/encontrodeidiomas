@@ -53,9 +53,13 @@ $kickedCount = 0;
 foreach ($members as $memberData) {
     $memberJid = $memberData['id'];
     
+    // Remove o sufixo multi-device caso exista (ex: 55119999:12@s.whatsapp.net -> 55119999@s.whatsapp.net)
+    $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
+    $cleanAdminJid = preg_replace('/:\d+@/', '@', $adminJid);
+    
     // Ignora admin e o próprio bot (Baileys usa a propriedade 'admin' valendo 'admin' ou 'superadmin')
     $isAdmin = !empty($memberData['admin']);
-    if ($memberJid === $adminJid || $isAdmin) continue;
+    if ($cleanMemberJid === $cleanAdminJid || $isAdmin) continue;
     
     // Verifica se mandou mensagem no grupo ontem
     $interagiu = isset($desafioActivity[$memberJid]) && $desafioActivity[$memberJid]['messages'] > 0;
