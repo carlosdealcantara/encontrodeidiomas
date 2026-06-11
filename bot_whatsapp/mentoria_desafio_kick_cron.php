@@ -61,8 +61,8 @@ foreach ($members as $memberData) {
     $isAdmin = !empty($memberData['admin']);
     if ($cleanMemberJid === $cleanAdminJid || $isAdmin) continue;
     
-    // Verifica se mandou mensagem no grupo ontem
-    $interagiu = isset($desafioActivity[$memberJid]) && $desafioActivity[$memberJid]['messages'] > 0;
+    // Verifica se mandou IMAGEM no grupo ontem
+    $interagiu = isset($desafioActivity[$memberJid]) && ($desafioActivity[$memberJid]['images_sent'] ?? 0) > 0;
     
     if (!$interagiu) {
         // Arruma o nome (se o template tem @{name}, trocamos por @numero. Se tem só {name}, trocamos pelo numero)

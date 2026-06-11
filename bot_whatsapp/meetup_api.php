@@ -1,0 +1,69 @@
+<?php
+require_once __DIR__ . '/../config.php';
+
+// Permite apenas POST com JSON
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    die(json_encode(['success' => false, 'message' => 'Method not allowed']));
+}
+
+$input = json_decode(file_get_contents('php://input'), true);
+if (!$input || !isset($input['action'], $input['group_jid'], $input['member_jid'])) {
+    http_response_code(400);
+    die(json_encode(['success' => false, 'message' => 'Bad request']));
+}
+
+$action = $input['action'];
+$groupJid = $input['group_jid'];
+$memberJid = $input['member_jid'];
+$memberName = $input['member_name'] ?? 'Desconhecido';
+
+// Determina a data de "hoje" BRT
+$hoje = date('Y-m-d');
+$nowStr = date('H:i:s');
+
+try {
+    $conn = connectDB();
+    
+    // Procura o encontro agendado para HOJE
+    $diaSemana = date('N'); // 1 = Segunda, 7 = Domingo
+    $stmt = $conn->prepare("SELECT id, start_time FROM meetup_schedule WHERE group_jid = ? AND day_of_week = ? AND is_active = 1 LIMIT 1");
+    $stmt->execute([$groupJid, $diaSemana]);
+    $schedule = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$schedule) {
+        die(json_encode(['success' => false, 'message' => "There is no class scheduled for today!"]));
+    }
+    
+    $scheduleId = $schedule['id'];
+    $startTime = $schedule['start_time'];
+    
+    // Verifica prazo (1 hora antes)
+    $startTimeObj = new DateTime($hoje . ' ' . $startTime);
+    $deadlineObj = clone $startTimeObj;
+    $deadlineObj->modify('-1 hour');
+    $nowObj = new DateTime();
+    
+    if ($nowObj > $deadlineObj) {
+        die(json_encode(['success' => false, 'message' => "The deadline to confirm attendance has passed!"]));
+    }
+
+    if ($action === 'attend') {
+        // Salva a presença
+        $insert = $conn->prepare("INSERT IGNORE INTO meetup_attendances (schedule_id, member_jid, member_name, aula_date) VALUES (?, ?, ?, ?)");
+        $insert->execute([$scheduleId, $memberJid, $memberName, $hoje]);
+        echo json_encode(['success' => true]);
+        
+    } elseif ($action === 'unattend') {
+        // Remove a presença
+        $del = $conn->prepare("DELETE FROM meetup_attendances WHERE schedule_id = ? AND member_jid = ? AND aula_date = ?");
+        $del->execute([$scheduleId, $memberJid, $hoje]);
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid action']);
+    }
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database error']);
+}

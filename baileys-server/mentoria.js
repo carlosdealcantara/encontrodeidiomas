@@ -67,6 +67,7 @@ function logActivity(groupJid, senderJid, senderName, type) {
             name: senderName,
             messages: 0,
             reactions_given: 0,
+            images_sent: 0,
             first_message_at: new Date().toISOString(),
             last_message_at: new Date().toISOString(),
             streaks: 0 // Simplification for now, full streak calc needs historical check
@@ -77,6 +78,9 @@ function logActivity(groupJid, senderJid, senderName, type) {
         data[date][groupJid][senderJid].messages += 1;
     } else if (type === 'reaction') {
         data[date][groupJid][senderJid].reactions_given += 1;
+    } else if (type === 'image') {
+        data[date][groupJid][senderJid].messages += 1;
+        data[date][groupJid][senderJid].images_sent = (data[date][groupJid][senderJid].images_sent || 0) + 1;
     }
     
     data[date][groupJid][senderJid].last_message_at = new Date().toISOString();
@@ -102,20 +106,56 @@ async function handleMessages({ messages, type }) {
         // Check if reaction
         if (msg.message?.reactionMessage) {
             logActivity(groupJid, senderJid, senderName, 'reaction');
+        } else if (msg.message?.imageMessage) {
+            logActivity(groupJid, senderJid, senderName, 'image');
         } else {
             logActivity(groupJid, senderJid, senderName, 'message');
+        }
             
-            // Check for commands (e.g. !confirm in Our Meetups)
-            const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
-            if (text.startsWith('!book') || text.startsWith('!confirm')) {
-                // If it's the Our Meetups group, log the booking
-                const ourMeetupsGroup = config.groups?.our_meetups?.jid;
-                if (groupJid === ourMeetupsGroup) {
-                    await sock.sendMessage(groupJid, { 
-                        text: `✅ Booking confirmed for @${senderJid.split('@')[0]}!`,
-                        mentions: [senderJid]
+        // Check for commands (e.g. !confirm in Our Meetups)
+        const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '';
+        if (text.startsWith('!book') || text.startsWith('!confirm') || text.startsWith('!attend')) {
+            // If it's the Our Meetups group, log the booking
+            const ourMeetupsGroup = config.groups?.our_meetups?.jid;
+            if (groupJid === ourMeetupsGroup) {
+                // Call PHP endpoint to save attendance
+                try {
+                    const axios = require('axios');
+                    const res = await axios.post('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
+                        action: 'attend',
+                        group_jid: groupJid,
+                        member_jid: senderJid,
+                        member_name: senderName
                     });
+                    if (res.data.success) {
+                        await sock.sendMessage(groupJid, { 
+                            text: `✅ Registration confirmed for @${senderJid.split('@')[0]}!`,
+                            mentions: [senderJid]
+                        });
+                    } else {
+                        await sock.sendMessage(groupJid, { text: `❌ ${res.data.message || 'Error confirming registration.'}` });
+                    }
+                } catch (err) {
+                    await sock.sendMessage(groupJid, { text: `⚠️ Error reaching the server to confirm.` });
                 }
+            }
+        } else if (text.startsWith('!unattend') || text.startsWith('!cancel')) {
+            const ourMeetupsGroup = config.groups?.our_meetups?.jid;
+            if (groupJid === ourMeetupsGroup) {
+                try {
+                    const axios = require('axios');
+                    const res = await axios.post('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
+                        action: 'unattend',
+                        group_jid: groupJid,
+                        member_jid: senderJid
+                    });
+                    if (res.data.success) {
+                        await sock.sendMessage(groupJid, { 
+                            text: `🗑️ Registration cancelled for @${senderJid.split('@')[0]}.`,
+                            mentions: [senderJid]
+                        });
+                    }
+                } catch (err) {}
             }
         }
     }
@@ -130,7 +170,7 @@ async function handleParticipants({ id, participants, action }) {
         if (id === theLoungeJid && config.templates?.welcome) {
             for (const participantJid of participants) {
                 const name = participantJid.split('@')[0];
-                const text = config.templates.welcome.replace('{name}', name).replace('@{name}', `@${name}`);
+                const text = config.templates.welcome.replace('@{name}', `@${name}`).replace('{name}', name);
                 
                 await sock.sendMessage(id, {
                     text,

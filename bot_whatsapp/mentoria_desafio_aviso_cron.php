@@ -43,13 +43,51 @@ $template = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\
 
 if (!$desafioJid) die("Grupo do desafio não configurado.");
 
-// Aqui, poderíamos ser genéricos e mandar para o grupo todo, ou marcar quem não fez.
-// Para simplificar e evitar expor quem está devendo antes da meia-noite, vamos enviar um aviso genérico no grupo.
+$members = fetchGroupMembers($desafioJid);
+$activity = fetchBaileysActivity($hoje);
+$desafioActivity = $activity[$desafioJid] ?? [];
 
-$result = enviarWhatsApp($desafioJid, $template, 'mentoria_aviso_desafio');
+$adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
+$cleanAdminJid = preg_replace('/:\d+@/', '@', $adminJid);
+
+$pendentes = [];
+$mentions = [];
+
+foreach ($members as $memberData) {
+    $memberJid = $memberData['id'];
+    $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
+    
+    // Ignora admin e o próprio bot
+    $isAdmin = !empty($memberData['admin']);
+    if ($cleanMemberJid === $cleanAdminJid || $isAdmin) continue;
+    
+    // Verifica se enviou IMAGEM hoje
+    $enviouImagem = isset($desafioActivity[$memberJid]) && ($desafioActivity[$memberJid]['images_sent'] ?? 0) > 0;
+    
+    if (!$enviouImagem) {
+        $numero = explode('@', $memberJid)[0];
+        $pendentes[] = "@" . $numero;
+        $mentions[] = $memberJid;
+    }
+}
+
+if (empty($pendentes)) {
+    echo "Nenhum pendente hoje. Nenhuma mensagem enviada.\n";
+    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('desafio_aviso', ?, 'Nenhum pendente')")->execute([$hoje]);
+    exit;
+}
+
+$listaPendentes = implode(", ", $pendentes);
+$template = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\n{pendentes}\nThis is a friendly reminder that you haven't posted your daily activity yet. You have until midnight! ⏳";
+
+$msg = str_replace('{pendentes}', $listaPendentes, $template);
+
+// Envia mensagem com menção real
+$result = enviarWhatsAppMention($desafioJid, $msg, $mentions);
+
 if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
-    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao) VALUES ('desafio_aviso', ?)")->execute([$hoje]);
-    echo "✅ Aviso de 21h enviado no grupo Desafio!";
+    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('desafio_aviso', ?, ?)")->execute([$hoje, count($pendentes) . ' pendentes avisados']);
+    echo "✅ Aviso de 21h enviado no grupo Desafio marcando " . count($pendentes) . " pessoas!";
 } else {
     echo "❌ Erro ao enviar aviso: HTTP " . $result['httpCode'];
 }
