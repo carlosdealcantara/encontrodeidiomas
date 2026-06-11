@@ -191,7 +191,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
         .alert.error { background: rgba(227, 29, 28, 0.1); color: var(--accent-red); border-color: rgba(227, 29, 28, 0.2); }
 
         /* Main Tabs */
-        .main-tabs-nav { display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.05); overflow-x: auto; }
+        .main-tabs-nav { display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.05); flex-wrap: wrap; }
         .main-tab-btn { padding: 15px 30px; border: none; background: transparent; color: var(--text-dim); font-size: 1.1rem; font-weight: 600; cursor: pointer; position: relative; transition: 0.3s; white-space: nowrap; }
         .main-tab-btn:hover { color: var(--white); }
         .main-tab-btn.active { color: var(--accent-red); }

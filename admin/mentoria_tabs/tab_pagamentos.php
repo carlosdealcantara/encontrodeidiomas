@@ -4,7 +4,7 @@
         <p>Gestão financeira e de acessos automáticos.</p>
     </div>
     <div class="header-actions" style="display: flex; gap: 15px;">
-        <a href="mentoria_form.php" class="btn btn-success" style="display: flex; align-items: center; gap: 8px;">
+        <a href="mentoria_form.php" class="btn-action btn-add">
             <i class="fas fa-plus"></i> Novo Aluno
         </a>
     </div>
@@ -24,6 +24,9 @@
 </div>
 
 <style>
+    .btn-action { color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
+    .btn-add { background: var(--success); }
+    .btn-add:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
     .filter-btn.active { background: var(--accent-red) !important; color: white !important; box-shadow: 0 4px 10px rgba(227, 29, 28, 0.2); }
     .table-container { background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
     table { width: 100%; border-collapse: collapse; }
