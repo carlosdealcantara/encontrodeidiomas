@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config.php';
+require_once '../includes/whatsapp_helper.php';
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
@@ -8,37 +9,167 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 $conn = connectDB();
+$msg = null;
+$error = null;
 
+// The active tab for redirecting back correctly
+$active_tab = $_POST['tab'] ?? $_GET['tab'] ?? 'pagamentos';
+
+// --- LOGIC: PAGAMENTOS ---
 if (isset($_GET['toggle_pagamento']) && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $newStatus = $_GET['toggle_pagamento'] === 'Pago' ? 'Pendente' : 'Pago';
-    
     $stmt = $conn->prepare("UPDATE mentoria_alunos SET status_pagamento = :status WHERE id = :id");
     $stmt->execute(['status' => $newStatus, 'id' => $id]);
-    
-    header('Location: mentoria.php?msg=Status de pagamento atualizado com sucesso');
+    header('Location: mentoria.php?tab=pagamentos&msg=' . urlencode('Status de pagamento atualizado com sucesso'));
     exit;
 }
 
-// Busca todos os alunos, ordenando os Ativos primeiro, e depois por data de vencimento
-$stmt = $conn->query("
-    SELECT * FROM mentoria_alunos 
-    ORDER BY 
-        CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, 
-        proximo_vencimento ASC
-");
+$stmt = $conn->query("SELECT * FROM mentoria_alunos ORDER BY CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, proximo_vencimento ASC");
 $alunos = $stmt->fetchAll();
 
+// --- LOGIC: MENSAGENS (Automações) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
+    $res = sendBaileysRequest('/groups', null, 'GET');
+    if ($res['success'] && is_array($res['data'])) {
+        $cache_file = __DIR__ . '/groups_cache.json';
+        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
+        $msg = "Lista de grupos sincronizada com sucesso do WhatsApp! (" . count($res['data']) . " grupos encontrados)";
+    } else {
+        $error = "Erro ao buscar grupos do Node.js: " . ($res['error'] ?? 'Desconhecido');
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
+    $newConfig = [
+        'admin_jid' => trim($_POST['admin_jid']),
+        'groups' => [
+            'our_meetups' => ['jid' => trim($_POST['jid_our_meetups']), 'automations' => ['lembrete_aula']],
+            'desafio' => ['jid' => trim($_POST['jid_desafio']), 'automations' => ['auto_kick', 'aviso']],
+            'the_lounge' => ['jid' => trim($_POST['jid_the_lounge']), 'automations' => ['welcome', 'ranking_geral']]
+        ],
+        'templates' => [
+            'welcome' => trim($_POST['tpl_welcome']),
+            'lembrete_aula' => trim($_POST['tpl_lembrete']),
+            'aviso_desafio' => trim($_POST['tpl_aviso_desafio']),
+            'kick_desafio' => trim($_POST['tpl_kick_desafio']),
+            'ranking_diario' => trim($_POST['tpl_ranking']),
+            'meetup_aviso' => trim($_POST['tpl_meetup_aviso'] ?? ''),
+            'meetup_cancel' => trim($_POST['tpl_meetup_cancel'] ?? ''),
+            'meetup_kickoff' => trim($_POST['tpl_meetup_kickoff'] ?? '')
+        ]
+    ];
+    
+    $res = sendBaileysRequest('/mentoria-config', $newConfig, 'POST');
+    if ($res['success']) {
+        $msg = "Configurações e mensagens salvas com sucesso no servidor Baileys!";
+    } else {
+        $error = "Erro ao salvar no Node.js: " . ($res['error'] ?? 'Desconhecido');
+    }
+}
+
+$config = getMentoriaConfig();
+$admin_jid = $config['admin_jid'] ?? '556192666148@s.whatsapp.net';
+$jid_our_meetups = $config['groups']['our_meetups']['jid'] ?? '';
+$jid_desafio = $config['groups']['desafio']['jid'] ?? '';
+$jid_the_lounge = $config['groups']['the_lounge']['jid'] ?? '';
+
+$tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
+$tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
+$tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
+$tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
+$tpl_ranking = $config['templates']['ranking_diario'] ?? "🏆 *Ranking do Dia* ({date})\n\n{ranking_list}";
+$tpl_meetup_aviso = $config['templates']['meetup_aviso'] ?? "📅 *English Meetup Today!*\n\nWe have a session scheduled for *{horario} BRT*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline} BRT*.";
+$tpl_meetup_cancel = $config['templates']['meetup_cancel'] ?? "❌ *Meetup Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+$tpl_meetup_kickoff = $config['templates']['meetup_kickoff'] ?? "🎉 *The Meetup is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+
+$cache_file = __DIR__ . '/groups_cache.json';
+$available_groups = [];
+if (file_exists($cache_file)) {
+    $res1 = file_get_contents($cache_file);
+    $res1 = preg_replace('/^[\xef\xbb\xbf]+/', '', $res1);
+    $dec1 = json_decode($res1, true);
+    if (is_array($dec1)) {
+        $available_groups = $dec1;
+        usort($available_groups, function($a, $b) {
+            return strcasecmp($a['subject'] ?? '', $b['subject'] ?? '');
+        });
+    }
+}
+function renderGroupSelect($name, $currentValue, $groups) {
+    $html = '<select name="' . $name . '" class="select2-groups" style="width: 100%;">';
+    $html .= '<option value="">Selecione um grupo...</option>';
+    $found = false;
+    foreach ($groups as $g) {
+        $id = htmlspecialchars($g['id']);
+        $subj = htmlspecialchars($g['subject'] ?? 'Sem Nome');
+        $sel = ($id === $currentValue) ? 'selected' : '';
+        if ($sel) $found = true;
+        $html .= "<option value=\"$id\" $sel>$subj  |  $id</option>";
+    }
+    if ($currentValue && !$found) {
+        $val = htmlspecialchars($currentValue);
+        $html .= "<option value=\"$val\" selected>$val (Personalizado)</option>";
+    }
+    $html .= '</select>';
+    return $html;
+}
+
+// --- LOGIC: AGENDA ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_schedule'])) {
+    $action = $_POST['action_schedule'];
+    if ($action === 'add' || $action === 'edit') {
+        $day_of_week = (int)$_POST['day_of_week'];
+        $start_time = $_POST['start_time'];
+        $meet_link = trim($_POST['meet_link']);
+        $group_jid = $config['groups']['our_meetups']['jid'] ?? '';
+        
+        if (empty($group_jid)) {
+            $error = "Por favor, configure primeiro o grupo Our Meetups na aba de Mensagens.";
+        } else {
+            if ($action === 'add') {
+                $stmt = $conn->prepare("INSERT INTO meetup_schedule (group_jid, day_of_week, start_time, meet_link) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$group_jid, $day_of_week, $start_time, $meet_link]);
+                $msg = "Horário adicionado com sucesso!";
+            } else {
+                $id = (int)$_POST['id'];
+                $stmt = $conn->prepare("UPDATE meetup_schedule SET day_of_week=?, start_time=?, meet_link=? WHERE id=?");
+                $stmt->execute([$day_of_week, $start_time, $meet_link, $id]);
+                $msg = "Horário atualizado com sucesso!";
+            }
+        }
+    } elseif ($action === 'toggle') {
+        $id = (int)$_POST['id'];
+        $status = (int)$_POST['status'];
+        $stmt = $conn->prepare("UPDATE meetup_schedule SET is_active=? WHERE id=?");
+        $stmt->execute([$status, $id]);
+        $msg = "Status do horário atualizado.";
+    } elseif ($action === 'delete') {
+        $id = (int)$_POST['id'];
+        $stmt = $conn->prepare("DELETE FROM meetup_schedule WHERE id=?");
+        $stmt->execute([$id]);
+        $msg = "Horário removido com sucesso.";
+    }
+}
+$schedules = [];
+try {
+    $schedules = $conn->query("SELECT * FROM meetup_schedule ORDER BY day_of_week ASC, start_time ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {} // Fail gracefully se a tabela não existir
+$days = [1 => 'Segunda-feira', 2 => 'Terça-feira', 3 => 'Quarta-feira', 4 => 'Quinta-feira', 5 => 'Sexta-feira', 6 => 'Sábado', 7 => 'Domingo'];
+
+if (isset($_GET['msg'])) $msg = $_GET['msg'];
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciar Mentoria | Admin</title>
+    <title>Hub da Mentoria | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <style>
+        /* Base styles */
         :root {
             --primary-bg: #0f172a;
             --sidebar-bg: #1e293b;
@@ -48,244 +179,99 @@ $alunos = $stmt->fetchAll();
             --text-dim: #94a3b8;
             --white: #ffffff;
             --card-bg: #1e293b;
+            --input-bg: #0f172a;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
-
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header-title h2 { font-size: 1.8rem; font-weight: 700; }
+        .alert { padding: 15px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .alert.error { background: rgba(227, 29, 28, 0.1); color: var(--accent-red); border-color: rgba(227, 29, 28, 0.2); }
 
-        .header-actions { display: flex; gap: 15px; }
-        .btn-action { color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
-        .btn-add { background: var(--success); }
-        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
-        .btn-settings { background: var(--sidebar-bg); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-settings:hover { background: rgba(255,255,255,0.1); }
-
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; flex-wrap: wrap; }
-        .filter-group { display: flex; gap: 5px; background: var(--sidebar-bg); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .filter-btn { padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; }
-        .filter-btn:hover { color: var(--white); }
-        .filter-btn.active { background: var(--accent-red); color: white; box-shadow: 0 4px 10px rgba(227, 29, 28, 0.2); }
+        /* Main Tabs */
+        .main-tabs-nav { display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.05); overflow-x: auto; }
+        .main-tab-btn { padding: 15px 30px; border: none; background: transparent; color: var(--text-dim); font-size: 1.1rem; font-weight: 600; cursor: pointer; position: relative; transition: 0.3s; white-space: nowrap; }
+        .main-tab-btn:hover { color: var(--white); }
+        .main-tab-btn.active { color: var(--accent-red); }
+        .main-tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--accent-red); }
         
-        .search-group { position: relative; flex: 1; max-width: 400px; }
-        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
-        .search-group input { width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 15px 12px 45px; color: var(--text-main); outline: none; transition: all 0.3s ease; }
-        .search-group input:focus { border-color: var(--accent-red); box-shadow: 0 0 0 4px rgba(227, 29, 28, 0.1); }
+        .main-tab-content { display: none; }
+        .main-tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-
-        .table-container { background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 20px; background: rgba(0,0,0,0.1); color: var(--text-dim); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-
-        .aluno-name { font-weight: 600; color: var(--white); font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        .aluno-phone { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; }
-
-        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
-        
-        .badge-pago { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .badge-pendente { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .badge-suspenso { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-        .badge-isento { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
-
-        .badge-ativo { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); }
-        .badge-inativo { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
-        .badge-vitalicio { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-
-        .actions { display: flex; gap: 10px; }
-        .action-btn { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; background: transparent; }
-        .btn-edit { color: var(--accent-blue); }
-        .btn-edit:hover { background: var(--accent-blue); color: white; }
-        .btn-toggle { color: var(--text-dim); }
-        .btn-toggle:hover { background: var(--text-main); color: var(--primary-bg); }
-        .btn-renew { color: var(--success); }
-        .btn-renew:hover { background: var(--success); color: white; }
-
-        .alert { padding: 15px 25px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: var(--success); border-radius: 12px; margin-bottom: 25px; }
-        
-        .vencimento-hoje { color: var(--warning); font-weight: bold; }
-        .vencimento-atrasado { color: var(--danger); font-weight: bold; }
-        .vencimento-normal { color: var(--text-main); }
-        .vencimento-inativo { color: var(--text-dim); font-style: italic; }
+        /* Select2 override */
+        .select2-container--default .select2-selection--single { background-color: var(--input-bg); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; height: 46px; }
+        .select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--text-main); line-height: 46px; padding-left: 14px; }
+        .select2-dropdown { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: var(--text-main); z-index: 99999; }
+        .select2-search--dropdown .select2-search__field { background-color: var(--input-bg); color: var(--text-main); border: 1px solid rgba(255,255,255,0.2); }
+        .select2-results__option { padding: 10px 14px; color: var(--text-main); font-size: 0.88rem; }
+        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable { background-color: var(--accent-red) !important; color: white !important; }
+        .select2-container--default .select2-results__option[aria-selected="true"] { background-color: rgba(255,255,255,0.1) !important; color: var(--text-main) !important; }
     </style>
 </head>
 <body>
-<?php include __DIR__ . '/includes/sidebar.php'; ?>
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
-        <header class="header">
-            <div class="header-title">
-                <h2>Alunos da Mentoria</h2>
-                <p>Gestão financeira e de acessos automáticos.</p>
-            </div>
-            <div class="header-actions">
-                <a href="mentoria_settings.php" class="btn-action btn-settings">
-                    <i class="fas fa-cog"></i> Configurar Mensagens
-                </a>
-                <a href="mentoria_form.php" class="btn-action btn-add">
-                    <i class="fas fa-plus"></i> Novo Aluno
-                </a>
-            </div>
-        </header>
-
-        <?php if (isset($_GET['msg'])): ?>
-            <div class="alert">
-                <i class="fas fa-check-circle" style="margin-right: 8px;"></i> <?= htmlspecialchars($_GET['msg']) ?>
-            </div>
-        <?php endif; ?>
-
-        <div class="controls">
-            <div class="filter-group">
-                <button class="filter-btn active" data-status="Ativo">Ativos</button>
-                <button class="filter-btn" data-status="Inativo">Inativos</button>
-                <button class="filter-btn" data-status="Vitalício">Vitalícios</button>
-                <button class="filter-btn" data-status="all">Todos</button>
-            </div>
-            <div class="search-group">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="alunoSearch" placeholder="Pesquisar por nome...">
-            </div>
+        <div style="margin-bottom: 30px;">
+            <h1 style="font-size: 2.2rem; font-weight: 700; color: var(--white);">Hub da Mentoria</h1>
+            <p style="color: var(--text-dim); font-size: 1.05rem;">Gestão centralizada de alunos, pagamentos, automações e agenda de aulas.</p>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Aluno</th>
-                        <th>Plano</th>
-                        <th>Vencimento</th>
-                        <th>Status Pgto</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if(count($alunos) === 0): ?>
-                        <tr><td colspan="5" style="text-align: center; color: var(--text-dim);">Nenhum aluno cadastrado.</td></tr>
-                    <?php endif; ?>
-                    
-                    <?php foreach ($alunos as $aluno): 
-                        $hoje = new DateTime();
-                        $hoje->setTime(0,0,0);
-                        
-                        // Fallback para datas bizarras do legado (como 0001)
-                        if(strpos($aluno['proximo_vencimento'], '-0001') !== false || substr($aluno['proximo_vencimento'], 0, 4) == '1900') {
-                            $vencimentoText = "1900";
-                            $dias = 0;
-                        } else {
-                            $vencimento = new DateTime($aluno['proximo_vencimento']);
-                            $vencimento->setTime(0,0,0);
-                            $diff = $hoje->diff($vencimento);
-                            $dias = (int)$diff->format('%R%a'); // Negativo se já passou
-                            $vencimentoText = $vencimento->format('d/m/Y');
-                        }
-                        
-                        $vencimentoClass = 'vencimento-normal';
-                        
-                        // Só calcula atraso se for um aluno Ativo
-                        if ($aluno['status_aluno'] === 'Ativo' && $aluno['status_pagamento'] !== 'Isento') {
-                            if ($dias === 0) { 
-                                $vencimentoClass = 'vencimento-hoje'; 
-                                $vencimentoText .= ' (Hoje)'; 
-                            } elseif ($dias < 0) { 
-                                $vencimentoClass = 'vencimento-atrasado'; 
-                                $vencimentoText .= " (Atrasado " . abs($dias) . " dias)"; 
-                            }
-                        } else {
-                            $vencimentoClass = 'vencimento-inativo';
-                        }
-                    ?>
-                    <tr class="aluno-row" data-status-aluno="<?= htmlspecialchars($aluno['status_aluno']) ?>">
-                        <td>
-                            <div class="aluno-name">
-                                <?= htmlspecialchars($aluno['nome']) ?> 
-                                <?php 
-                                    $badgeStClass = 'badge-inativo';
-                                    if($aluno['status_aluno'] === 'Ativo') $badgeStClass = 'badge-ativo';
-                                    if($aluno['status_aluno'] === 'Vitalício') $badgeStClass = 'badge-vitalicio';
-                                ?>
-                                <span class="badge <?= $badgeStClass ?>"><?= htmlspecialchars($aluno['status_aluno']) ?></span>
-                            </div>
-                            <div class="aluno-phone"><i class="fab fa-whatsapp"></i> <?= htmlspecialchars($aluno['telefone']) ?></div>
-                        </td>
-                        <td>
-                            <div style="font-weight:600;">R$ <?= number_format($aluno['valor_mensalidade'], 2, ',', '.') ?></div>
-                            <div style="font-size:0.8rem; color:var(--text-dim);">LTV: R$ <?= number_format($aluno['total_investido'] ?? 0, 2, ',', '.') ?></div>
-                        </td>
-                        <td>
-                            <div class="<?= $vencimentoClass ?>"><?= $vencimentoText ?></div>
-                        </td>
-                        <td>
-                            <?php 
-                                $badgeClass = 'badge-isento';
-                                if($aluno['status_pagamento'] === 'Pago') $badgeClass = 'badge-pago';
-                                if($aluno['status_pagamento'] === 'Pendente') $badgeClass = 'badge-pendente';
-                                if($aluno['status_pagamento'] === 'Suspenso') $badgeClass = 'badge-suspenso';
-                            ?>
-                            <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($aluno['status_pagamento']) ?></span>
-                        </td>
-                        <td>
-                            <div class="actions">
-                                <!-- Botão de Renovação (Registrar Pagamento) -->
-                                <form action="mentoria_renovar.php" method="POST" style="display:inline;">
-                                    <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
-                                    <button type="submit" class="action-btn btn-renew" title="Registrar Pagamento: Renova +1 Mês e Adiciona R$ <?= number_format($aluno['valor_mensalidade'], 2, ',', '.') ?> no LTV" onclick="return confirm('Registrar pagamento de <?= htmlspecialchars($aluno['nome']) ?>? Isso avançará o vencimento para o próximo mês.');">
-                                        <i class="fas fa-check-circle"></i>
-                                    </button>
-                                </form>
+        <?php if ($msg): ?><div class="alert"><i class="fas fa-check-circle"></i> <?= htmlspecialchars($msg) ?></div><?php endif; ?>
+        <?php if ($error): ?><div class="alert error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div><?php endif; ?>
 
-                                <a href="mentoria_form.php?id=<?= $aluno['id'] ?>" class="action-btn btn-edit" title="Editar Dados / LTV / Data de Início"><i class="fas fa-edit"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="main-tabs-nav">
+            <button class="main-tab-btn <?= $active_tab == 'pagamentos' ? 'active' : '' ?>" onclick="switchMainTab('pagamentos')"><i class="fas fa-money-bill-wave"></i> Pagamentos</button>
+            <button class="main-tab-btn <?= $active_tab == 'mensagens' ? 'active' : '' ?>" onclick="switchMainTab('mensagens')"><i class="fas fa-robot"></i> Mensagens e Grupos</button>
+            <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Meetups</button>
         </div>
+
+        <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_pagamentos.php'; ?>
+        </div>
+
+        <div id="tab_mensagens" class="main-tab-content <?= $active_tab == 'mensagens' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_mensagens.php'; ?>
+        </div>
+
+        <div id="tab_agenda" class="main-tab-content <?= $active_tab == 'agenda' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_agenda.php'; ?>
+        </div>
+
     </main>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        const searchInput = document.getElementById('alunoSearch');
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const tableRows = document.querySelectorAll('.aluno-row');
+        function switchMainTab(tabId) {
+            document.querySelectorAll('.main-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.main-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab_' + tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
 
-        function filterTable() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const activeFilter = document.querySelector('.filter-btn.active').dataset.status;
-
-            tableRows.forEach(row => {
-                const name = row.querySelector('.aluno-name').textContent.toLowerCase();
-                const statusAluno = row.dataset.statusAluno;
-                
-                const matchesSearch = name.includes(searchTerm);
-                const matchesStatus = activeFilter === 'all' || statusAluno === activeFilter;
-
-                if (matchesSearch && matchesStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            // Update URL query without reloading so refresh keeps state
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabId);
+            window.history.replaceState({}, '', url);
         }
 
-        searchInput.addEventListener('input', filterTable);
-
-        filterButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                filterTable();
+        $(document).ready(function() {
+            $('.select2-groups').select2({
+                placeholder: "Busque pelo nome do grupo...",
+                allowClear: true,
+                dropdownParent: $(document.body),
+                language: { noResults: function() { return "Nenhum grupo encontrado"; } }
+            });
+            $(document).on('select2:open', function() {
+                setTimeout(function() {
+                    const field = document.querySelector('.select2-container--open .select2-search__field');
+                    if (field) field.focus();
+                }, 50);
             });
         });
-
-        // Inicializa o filtro (Ativos por padrão)
-        filterTable();
     </script>
 </body>
 </html>
