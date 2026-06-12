@@ -58,8 +58,16 @@ echo "📋 JID usado: $groupJid\n";
 echo "🕐 Horário do encontro: " . $startTimeObj->format('H:i') . "\n";
 echo "⏳ Deadline: " . $deadlineObj->format('H:i') . "\n\n";
 
+// Trava anti-duplicidade
+$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'meetup_aviso' AND data_execucao = ? AND membro_jid = ?");
+$check->execute([$hoje, $schedule['id']]);
+if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+    die("✅ Aviso para a aula {$schedule['id']} já foi enviado hoje! Use &force=1 na URL para forçar um reenvio.");
+}
+
 $res = enviarWhatsApp($groupJid, $msg, 'meetup_aviso');
 if ($res['success']) {
+    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('meetup_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
     echo "✅ Aviso enfileirado! (jobId: " . ($res['data']['jobId'] ?? 'n/a') . ")";
 } else {
     echo "❌ Erro ao enviar: " . json_encode($res);

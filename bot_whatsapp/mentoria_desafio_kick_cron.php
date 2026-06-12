@@ -15,7 +15,12 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 }
 
 $conn = connectDB();
-$ontem = (new DateTime())->modify('-1 day')->format('Y-m-d'); // Analisamos a atividade de ontem
+// Analisamos a atividade de ontem, a menos que estejamos testando hoje
+if (isset($_GET['test_hoje']) && $_GET['test_hoje'] == '1') {
+    $ontem = date('Y-m-d');
+} else {
+    $ontem = (new DateTime())->modify('-1 day')->format('Y-m-d');
+}
 
 try {
     $conn->exec("
