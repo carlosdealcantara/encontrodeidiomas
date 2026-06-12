@@ -26,9 +26,14 @@ $conn = connectDB();
 $hoje = date('Y-m-d');
 $diaSemana = date('N'); // 1 = Segunda, 7 = Domingo
 
-// Busca horário do dia na agenda (para montar a mensagem com o horário certo)
-$stmt = $conn->prepare("SELECT * FROM meetup_schedule WHERE day_of_week = ? AND is_active = 1 LIMIT 1");
-$stmt->execute([$diaSemana]);
+// Calcula o horário limite (agora + 1 hora) para garantir que não pega uma aula que já expirou
+$limiteObj = new DateTime();
+$limiteObj->modify('+1 hour');
+$limiteStr = $limiteObj->format('H:i:s');
+
+// Busca o PRÓXIMO horário válido do dia na agenda
+$stmt = $conn->prepare("SELECT * FROM meetup_schedule WHERE day_of_week = ? AND is_active = 1 AND start_time >= ? ORDER BY start_time ASC LIMIT 1");
+$stmt->execute([$diaSemana, $limiteStr]);
 $schedule = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$schedule) {
@@ -46,7 +51,7 @@ $startTimeObj = new DateTime($hoje . ' ' . $startTime);
 $deadlineObj = clone $startTimeObj;
 $deadlineObj->modify('-1 hour');
 
-$tpl = $config['templates']['meetup_aviso'] ?? "📅 *Meetup Today!*\n\nToday is the day! Our English session is scheduled for *{horario} BRT*.\nReply with \`!attend\` to save your spot.\n\n⏳ You have until *{deadline} BRT* to confirm.";
+$tpl = $config['templates']['meetup_aviso'] ?? "📅 *Meetup Today!*\n\nToday is the day! Our English session is scheduled for *{horario} BRT*.\nReply with `!attend` to save your spot.\n\n⏳ You have until *{deadline} BRT* to confirm.";
 
 $msg = str_replace(
     ['{horario}', '{deadline}'], 

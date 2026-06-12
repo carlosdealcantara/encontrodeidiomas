@@ -25,10 +25,15 @@ $nowStr = date('H:i:s');
 try {
     $conn = connectDB();
     
-    // Procura o encontro agendado para HOJE
+    // Calcula o horário limite (agora + 1 hora). O start_time precisa ser maior que isso.
+    $limiteObj = new DateTime();
+    $limiteObj->modify('+1 hour');
+    $limiteStr = $limiteObj->format('H:i:s');
+
+    // Procura o PRÓXIMO encontro agendado para HOJE cuja janela de inscrição ainda esteja aberta
     $diaSemana = date('N'); // 1 = Segunda, 7 = Domingo
-    $stmt = $conn->prepare("SELECT id, start_time FROM meetup_schedule WHERE group_jid = ? AND day_of_week = ? AND is_active = 1 LIMIT 1");
-    $stmt->execute([$groupJid, $diaSemana]);
+    $stmt = $conn->prepare("SELECT id, start_time FROM meetup_schedule WHERE group_jid = ? AND day_of_week = ? AND is_active = 1 AND start_time >= ? ORDER BY start_time ASC LIMIT 1");
+    $stmt->execute([$groupJid, $diaSemana, $limiteStr]);
     $schedule = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$schedule) {
