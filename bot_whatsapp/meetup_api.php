@@ -52,13 +52,25 @@ try {
         // Salva a presença
         $insert = $conn->prepare("INSERT IGNORE INTO meetup_attendances (schedule_id, member_jid, member_name, aula_date) VALUES (?, ?, ?, ?)");
         $insert->execute([$scheduleId, $memberJid, $memberName, $hoje]);
-        echo json_encode(['success' => true]);
+        
+        // Pega a lista atualizada
+        $stmtList = $conn->prepare("SELECT member_name FROM meetup_attendances WHERE schedule_id = ? AND aula_date = ?");
+        $stmtList->execute([$scheduleId, $hoje]);
+        $attendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
+        
+        echo json_encode(['success' => true, 'attendees' => $attendees]);
         
     } elseif ($action === 'unattend') {
         // Remove a presença
         $del = $conn->prepare("DELETE FROM meetup_attendances WHERE schedule_id = ? AND member_jid = ? AND aula_date = ?");
         $del->execute([$scheduleId, $memberJid, $hoje]);
-        echo json_encode(['success' => true]);
+        
+        // Pega a lista atualizada
+        $stmtList = $conn->prepare("SELECT member_name FROM meetup_attendances WHERE schedule_id = ? AND aula_date = ?");
+        $stmtList->execute([$scheduleId, $hoje]);
+        $attendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
+        
+        echo json_encode(['success' => true, 'attendees' => $attendees]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
     }

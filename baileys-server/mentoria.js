@@ -131,8 +131,15 @@ async function handleMessages({ messages, type }) {
                     });
                     const data = await res.json();
                     if (data.success) {
+                        let listText = "\n\n*Confirmed Attendees:*\n";
+                        if (data.attendees && data.attendees.length > 0) {
+                            data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
+                        } else {
+                            listText += "No one yet.";
+                        }
+
                         await sock.sendMessage(groupJid, { 
-                            text: `✅ Registration confirmed for @${senderJid.split('@')[0]}!`,
+                            text: `✅ Registration confirmed for @${senderJid.split('@')[0]}!${listText}`,
                             mentions: [senderJid]
                         });
                     } else {
@@ -157,8 +164,15 @@ async function handleMessages({ messages, type }) {
                     });
                     const data = await res.json();
                     if (data.success) {
+                        let listText = "\n\n*Confirmed Attendees:*\n";
+                        if (data.attendees && data.attendees.length > 0) {
+                            data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
+                        } else {
+                            listText += "No one yet.";
+                        }
+
                         await sock.sendMessage(groupJid, { 
-                            text: `🗑️ Registration cancelled for @${senderJid.split('@')[0]}.`,
+                            text: `🗑️ Registration cancelled for @${senderJid.split('@')[0]}.${listText}`,
                             mentions: [senderJid]
                         });
                     } else {
