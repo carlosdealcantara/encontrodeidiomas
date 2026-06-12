@@ -32,8 +32,16 @@ foreach ($schedules as $s) {
     
     // Verifica se estamos no exato momento do deadline (intervalo de 10 min para cobrir o cron)
     $diff = $now->getTimestamp() - $deadlineTime->getTimestamp();
-    if (abs($diff) <= 300) { // dentro de 5 minutos do deadline
+    $isTest = isset($_GET['test_now']);
+    if (abs($diff) <= 300 || $isTest) { // dentro de 5 minutos do deadline
         
+        // Verifica anti-duplicidade para evitar enviar vários cancelamentos
+        $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'meetup_cancel' AND data_execucao = ? AND membro_jid = ?");
+        $check->execute([$hoje, $s['id']]);
+        if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+            continue; // Já processou o deadline hoje para esta aula
+        }
+
         // Conta confirmações
         $stmtCount = $conn->prepare("SELECT COUNT(*) FROM meetup_attendances WHERE schedule_id = ? AND aula_date = ?");
         $stmtCount->execute([$s['id'], $hoje]);
@@ -45,6 +53,7 @@ foreach ($schedules as $s) {
             $msg = str_replace('{horario}', $classTime->format('H:i'), $tpl);
             
             enviarWhatsApp($s['group_jid'], $msg, 'meetup_cancel');
+            $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('meetup_cancel', ?, ?)")->execute([$hoje, $s['id']]);
             echo "Aula " . $s['start_time'] . " cancelada por falta de quórum.\n";
         } else {
             echo "Aula " . $s['start_time'] . " confirmada com $attendees presentes.\n";
