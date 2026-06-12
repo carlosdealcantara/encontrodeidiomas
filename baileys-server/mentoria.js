@@ -118,42 +118,51 @@ async function handleMessages({ messages, type }) {
             // If it's the Our Meetups group, log the booking
             const ourMeetupsGroup = config.groups?.our_meetups?.jid;
             if (groupJid === ourMeetupsGroup) {
-                // Call PHP endpoint to save attendance
                 try {
-                    const axios = require('axios');
-                    const res = await axios.post('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
-                        action: 'attend',
-                        group_jid: groupJid,
-                        member_jid: senderJid,
-                        member_name: senderName
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'attend',
+                            group_jid: groupJid,
+                            member_jid: senderJid,
+                            member_name: senderName
+                        })
                     });
-                    if (res.data.success) {
+                    const data = await res.json();
+                    if (data.success) {
                         await sock.sendMessage(groupJid, { 
                             text: `✅ Registration confirmed for @${senderJid.split('@')[0]}!`,
                             mentions: [senderJid]
                         });
                     } else {
-                        await sock.sendMessage(groupJid, { text: `❌ ${res.data.message || 'Error confirming registration.'}` });
+                        await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error confirming registration.'}` });
                     }
                 } catch (err) {
-                    await sock.sendMessage(groupJid, { text: `⚠️ Error reaching the server to confirm.` });
+                    await sock.sendMessage(groupJid, { text: `⚠️ Error reaching the server to confirm: ${err.message}` });
                 }
             }
         } else if (text.startsWith('!unattend') || text.startsWith('!cancel')) {
             const ourMeetupsGroup = config.groups?.our_meetups?.jid;
             if (groupJid === ourMeetupsGroup) {
                 try {
-                    const axios = require('axios');
-                    const res = await axios.post('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
-                        action: 'unattend',
-                        group_jid: groupJid,
-                        member_jid: senderJid
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'unattend',
+                            group_jid: groupJid,
+                            member_jid: senderJid
+                        })
                     });
-                    if (res.data.success) {
+                    const data = await res.json();
+                    if (data.success) {
                         await sock.sendMessage(groupJid, { 
                             text: `🗑️ Registration cancelled for @${senderJid.split('@')[0]}.`,
                             mentions: [senderJid]
                         });
+                    } else {
+                        await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error cancelling registration.'}` });
                     }
                 } catch (err) {}
             }
