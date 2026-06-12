@@ -35,7 +35,7 @@
     <button class="sub-tab-btn active" onclick="openSubTab('sub_global')"><i class="fas fa-globe"></i> Configuração Global</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_thelounge')"><i class="fas fa-coffee"></i> The Lounge</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_desafio')"><i class="fas fa-fire"></i> Desafio Diário</button>
-    <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><i class="fas fa-video"></i> Our Meetups</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><i class="fas fa-video"></i> Our Classes</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_testes')"><i class="fas fa-vial"></i> Testes Manuais</button>
 </div>
 
@@ -96,33 +96,33 @@
         </div>
     </div>
 
-    <!-- SUB TAB OUR MEETUPS -->
+    <!-- SUB TAB OUR CLASSES -->
     <div id="sub_meetups" class="sub-tab-pane">
         <div class="form-card">
-            <h3 class="section-title"><i class="fas fa-video"></i> Our Meetups</h3>
+            <h3 class="section-title"><i class="fas fa-video"></i> Our Classes</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Configurações e mensagens do grupo oficial das aulas de mentoria.</p>
+            
             <div class="form-group">
                 <label>Mapeamento de Grupo (JID)</label>
-                <?= renderGroupSelect('jid_our_meetups', $jid_our_meetups, $available_groups) ?>
-            </div>
-            
-            <!-- Removed the unused lembrete diário since it's now meetup specific -->
-            <div class="form-group" style="display:none;">
-                <textarea name="tpl_lembrete"><?= htmlspecialchars($tpl_lembrete) ?></textarea>
+                <?= renderGroupSelect('jid_our_classes', $jid_our_classes, $available_groups) ?>
             </div>
 
             <div class="form-group" style="margin-top: 20px;">
-                <label>Aviso Matinal Our Meetups (À meia-noite no dia da aula)</label>
-                <textarea name="tpl_meetup_aviso"><?= htmlspecialchars($tpl_meetup_aviso) ?></textarea>
+                <label>Aviso Matinal Our Classes (À meia-noite no dia da aula)</label>
+                <textarea name="tpl_class_aviso"><?= htmlspecialchars($tpl_class_aviso) ?></textarea>
                 <p class="help-text">Use <code>{horario}</code> e <code>{deadline}</code> para mostrar as horas da aula e do prazo final de inscrição.</p>
             </div>
-            <div class="form-group">
-                <label>Cancelamento (1h antes, se 0 confirmados)</label>
-                <textarea name="tpl_meetup_cancel"><?= htmlspecialchars($tpl_meetup_cancel) ?></textarea>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Aviso de Aula Cancelada</label>
+                <textarea name="tpl_class_cancel"><?= htmlspecialchars($tpl_class_cancel) ?></textarea>
+                <p class="help-text">Enviada 1 hora antes caso ninguém confirme presença. Use <code>{horario}</code>.</p>
             </div>
-            <div class="form-group">
-                <label>Início da Aula (Kick-off na hora exata, se > 0 confirmados)</label>
-                <textarea name="tpl_meetup_kickoff"><?= htmlspecialchars($tpl_meetup_kickoff) ?></textarea>
-                <p class="help-text">Use <code>{link}</code> para o link do Google Meet.</p>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Kick-off da Aula (Link do Google Meet)</label>
+                <textarea name="tpl_class_kickoff"><?= htmlspecialchars($tpl_class_kickoff) ?></textarea>
+                <p class="help-text">Disparada no momento exato da aula. Use <code>{link}</code> para o URL da sala. A tolerância é de 15 minutos.</p>
             </div>
         </div>
     </div>

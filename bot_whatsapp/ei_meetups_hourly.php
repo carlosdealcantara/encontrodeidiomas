@@ -104,7 +104,7 @@ foreach ($meetings as $m) {
                     $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND meeting_id = ? AND template_id = ? AND data_disparo = ?");
                     $stmtCheck->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
                     
-                    if ($stmtCheck->rowCount() === 0) {
+                    if ($stmtCheck->rowCount() === 0 || isset($_GET['force'])) {
                         // Envia para o motor unificado do Baileys
                         $result = enviarWhatsApp($g['group_id'], $textoFinal, 'meetup_cron');
                         $httpcode = $result['httpCode'];

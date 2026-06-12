@@ -16,7 +16,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 
 // Fonte única de verdade para o JID: config do Baileys
 $config = getMentoriaConfig();
-$groupJid = $config['groups']['our_meetups']['jid'] ?? null;
+$groupJid = $config['groups']['our_classes']['jid'] ?? null;
 
 if (!$groupJid) {
     die("❌ Erro: JID do grupo Our Meetups não configurado no painel de Mensagens e Grupos.");
@@ -32,7 +32,7 @@ $limiteObj->modify('+1 hour');
 $limiteStr = $limiteObj->format('H:i:s');
 
 // Busca o PRÓXIMO horário válido do dia na agenda
-$stmt = $conn->prepare("SELECT * FROM meetup_schedule WHERE day_of_week = ? AND is_active = 1 AND start_time >= ? ORDER BY start_time ASC LIMIT 1");
+$stmt = $conn->prepare("SELECT * FROM class_schedule WHERE day_of_week = ? AND is_active = 1 AND start_time >= ? ORDER BY start_time ASC LIMIT 1");
 $stmt->execute([$diaSemana, $limiteStr]);
 $schedule = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -43,7 +43,7 @@ if (!$schedule) {
 $startTime = $schedule['start_time'];
 
 // Atualiza o JID na tabela para manter consistência
-$conn->prepare("UPDATE meetup_schedule SET group_jid = ? WHERE day_of_week = ? AND is_active = 1")
+$conn->prepare("UPDATE class_schedule SET group_jid = ? WHERE day_of_week = ? AND is_active = 1")
      ->execute([$groupJid, $diaSemana]);
 
 // Calcula deadline (1 hora antes)
@@ -51,7 +51,7 @@ $startTimeObj = new DateTime($hoje . ' ' . $startTime);
 $deadlineObj = clone $startTimeObj;
 $deadlineObj->modify('-1 hour');
 
-$tpl = $config['templates']['meetup_aviso'] ?? "📅 *Meetup Today!*\n\nToday is the day! Our English session is scheduled for *{horario} BRT*.\nReply with `!attend` to save your spot.\n\n⏳ You have until *{deadline} BRT* to confirm.";
+$tpl = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nToday is the day! Our English session is scheduled for *{horario} BRT*.\nReply with `!attend` to save your spot.\n\n⏳ You have until *{deadline} BRT* to confirm.";
 
 $msg = str_replace(
     ['{horario}', '{deadline}'], 
@@ -72,7 +72,7 @@ if ($check->rowCount() > 0 && !isset($_GET['force'])) {
 
 $res = enviarWhatsApp($groupJid, $msg, 'meetup_aviso');
 if ($res['success']) {
-    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('meetup_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
+    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
     echo "✅ Aviso enfileirado! (jobId: " . ($res['data']['jobId'] ?? 'n/a') . ")";
 } else {
     echo "❌ Erro ao enviar: " . json_encode($res);

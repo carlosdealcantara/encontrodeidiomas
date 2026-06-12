@@ -1,6 +1,6 @@
 <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <div class="header-title">
-        <h2>📅 Agenda Our Meetups</h2>
+        <h2><i class="fas fa-calendar-alt"></i> Agenda de Classes</h2>
         <p>Defina os horários dos encontros semanais no Google Meet.</p>
     </div>
     <button class="btn btn-success" style="display: flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; font-weight: 600;" onclick="openModal()">
@@ -39,7 +39,7 @@
             <tr>
                 <th>Dia da Semana</th>
                 <th>Horário (BRT)</th>
-                <th>Link do Google Meet</th>
+                <th>Link da Class</th>
                 <th>Status</th>
                 <th>Ações</th>
             </tr>
@@ -52,7 +52,7 @@
                 <tr>
                     <td><strong><?php echo $days[$s['day_of_week']]; ?></strong></td>
                     <td><?php echo date('H:i', strtotime($s['start_time'])); ?></td>
-                    <td><a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: #60a5fa;"><?php echo htmlspecialchars($s['meet_link']); ?></a></td>
+                    <td><a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: var(--accent-blue);">🔗 Link da Class</a></td>
                     <td>
                         <?php if ($s['is_active']): ?>
                             <span class="status-active"><i class="fas fa-check-circle"></i> Ativo</span>

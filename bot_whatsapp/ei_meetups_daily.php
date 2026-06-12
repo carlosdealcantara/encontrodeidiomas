@@ -96,7 +96,7 @@ foreach ($groups as $g) {
         $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND template_id = ? AND data_disparo = ? AND meeting_id = 0");
         $stmtCheck->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
         
-        if ($stmtCheck->rowCount() === 0) {
+        if ($stmtCheck->rowCount() === 0 || isset($_GET['force'])) {
             echo "&nbsp;&nbsp;-> Tudo limpo! Tentando conectar na API Evolution para '{$g['nome']}'...<br>";
             flush();
             

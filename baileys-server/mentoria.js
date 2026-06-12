@@ -120,13 +120,13 @@ async function handleMessages({ messages, type }) {
             logActivity(groupJid, senderJid, senderName, 'message');
         }
             
-        // Check for commands (e.g. !confirm in Our Meetups)
+        // Check for commands (e.g. !confirm in Our Classes)
         if (text.startsWith('!book') || text.startsWith('!confirm') || text.startsWith('!attend')) {
-            // If it's the Our Meetups group, log the booking
-            const ourMeetupsGroup = config.groups?.our_meetups?.jid;
-            if (groupJid === ourMeetupsGroup) {
+            // If it's the Our Classes group, log the booking
+            const ourClassesGroup = config.groups?.our_classes?.jid;
+            if (groupJid === ourClassesGroup) {
                 try {
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -137,16 +137,27 @@ async function handleMessages({ messages, type }) {
                         })
                     });
                     const data = await res.json();
-                    if (data.success) {
-                        let listText = "\n\n*Confirmed Attendees:*\n";
-                        if (data.attendees && data.attendees.length > 0) {
-                            data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
-                        } else {
-                            listText += "No one yet.";
-                        }
+                    
+                    let listText = "\n\n*Confirmed Attendees:*\n";
+                    if (data.attendees && data.attendees.length > 0) {
+                        data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
+                    } else {
+                        listText += "No one yet.";
+                    }
 
+                    if (data.success) {
                         await sock.sendMessage(groupJid, { 
                             text: `✅ Registration confirmed for @${senderJid.split('@')[0]}!${listText}`,
+                            mentions: [senderJid]
+                        });
+                    } else if (data.reason === 'deadline_passed') {
+                        // Prazo já passou, não confirmou. Mas dá o status da aula.
+                        let statusText = data.class_confirmed 
+                            ? "✅ *Good news:* The class is confirmed and will happen anyway!" 
+                            : "❌ *Bad news:* The class was already cancelled due to lack of attendees.";
+                            
+                        await sock.sendMessage(groupJid, { 
+                            text: `⏰ The deadline to confirm attendance has passed, @${senderJid.split('@')[0]}.\n\n${statusText}${data.class_confirmed ? listText : ''}`,
                             mentions: [senderJid]
                         });
                     } else {
@@ -157,10 +168,10 @@ async function handleMessages({ messages, type }) {
                 }
             }
         } else if (text.startsWith('!unattend') || text.startsWith('!cancel')) {
-            const ourMeetupsGroup = config.groups?.our_meetups?.jid;
-            if (groupJid === ourMeetupsGroup) {
+            const ourClassesGroup = config.groups?.our_classes?.jid;
+            if (groupJid === ourClassesGroup) {
                 try {
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/meetup_api.php', {
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -182,6 +193,13 @@ async function handleMessages({ messages, type }) {
                             text: `🗑️ Registration cancelled for @${senderJid.split('@')[0]}.${listText}`,
                             mentions: [senderJid]
                         });
+                        
+                        // O Cancelamento Extremo (caiu para 0 depois do prazo)
+                        if (data.cancelled_now) {
+                            await sock.sendMessage(groupJid, { 
+                                text: `🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.`
+                            });
+                        }
                     } else {
                         await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error cancelling registration.'}` });
                     }

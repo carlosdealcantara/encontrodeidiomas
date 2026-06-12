@@ -19,7 +19,7 @@ $hoje = date('Y-m-d');
 $diaSemana = date('N');
 
 // Encontra aulas que começam daqui a 1 hora exata (tolerância de +- 5 min)
-$stmt = $conn->prepare("SELECT * FROM meetup_schedule WHERE day_of_week = ? AND is_active = 1");
+$stmt = $conn->prepare("SELECT * FROM class_schedule WHERE day_of_week = ? AND is_active = 1");
 $stmt->execute([$diaSemana]);
 $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -36,24 +36,24 @@ foreach ($schedules as $s) {
     if (abs($diff) <= 300 || $isTest) { // dentro de 5 minutos do deadline
         
         // Verifica anti-duplicidade para evitar enviar vários cancelamentos
-        $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'meetup_cancel' AND data_execucao = ? AND membro_jid = ?");
+        $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_cancel' AND data_execucao = ? AND membro_jid = ?");
         $check->execute([$hoje, $s['id']]);
         if ($check->rowCount() > 0 && !isset($_GET['force'])) {
             continue; // Já processou o deadline hoje para esta aula
         }
 
         // Conta confirmações
-        $stmtCount = $conn->prepare("SELECT COUNT(*) FROM meetup_attendances WHERE schedule_id = ? AND aula_date = ?");
+        $stmtCount = $conn->prepare("SELECT COUNT(*) FROM class_attendances WHERE schedule_id = ? AND aula_date = ?");
         $stmtCount->execute([$s['id'], $hoje]);
         $attendees = $stmtCount->fetchColumn();
         
         if ($attendees == 0) {
             $config = getMentoriaConfig();
-            $tpl = $config['templates']['meetup_cancel'] ?? "❌ *Meetup Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+            $tpl = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
             $msg = str_replace('{horario}', $classTime->format('H:i'), $tpl);
             
-            enviarWhatsApp($s['group_jid'], $msg, 'meetup_cancel');
-            $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('meetup_cancel', ?, ?)")->execute([$hoje, $s['id']]);
+            enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
+            $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_cancel', ?, ?)")->execute([$hoje, $s['id']]);
             echo "Aula " . $s['start_time'] . " cancelada por falta de quórum.\n";
         } else {
             echo "Aula " . $s['start_time'] . " confirmada com $attendees presentes.\n";

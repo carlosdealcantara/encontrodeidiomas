@@ -36,8 +36,8 @@ $hoje_real = date('Y-m-d');
 // Anti-duplicidade (garante que só roda uma vez por dia de execução real, mas checa a data de ontem para não repetir)
 $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'ranking_diario' AND data_execucao = ?");
 $check->execute([$ontem]);
-if ($check->rowCount() > 0) {
-    die("Ranking já postado para esta data ($ontem). Abortando.");
+if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+    die("Ranking já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
 }
 
 $config = getMentoriaConfig();

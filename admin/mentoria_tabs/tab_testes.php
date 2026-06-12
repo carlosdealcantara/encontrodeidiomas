@@ -12,12 +12,12 @@
         <!-- Aviso Matinal -->
         <div style="background: var(--bg-body); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
-                <h4 style="margin: 0; color: #38bdf8; font-size: 1.1rem;">Aviso Matinal Our Meetups (Meia-noite)</h4>
+                <h4 style="margin: 0; color: #38bdf8; font-size: 1.1rem;">Aviso Matinal Our Classes (Meia-noite)</h4>
                 <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-dim);">Abre as inscrições da próxima aula válida do dia.</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_aula_aviso_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
-                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_aula_aviso_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
+                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_class_aviso_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
+                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_class_aviso_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
             </div>
         </div>
 
@@ -28,8 +28,8 @@
                 <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-dim);">Cancela a aula se houver 0 presenças confirmadas.</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_aula_quorum_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
-                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_aula_quorum_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
+                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_class_quorum_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
+                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_class_quorum_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
             </div>
         </div>
 
@@ -40,8 +40,8 @@
                 <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-dim);">Dispara o link do Google Meet para a turma.</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_aula_kickoff_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
-                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_aula_kickoff_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
+                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_class_kickoff_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
+                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_class_kickoff_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
             </div>
         </div>
 

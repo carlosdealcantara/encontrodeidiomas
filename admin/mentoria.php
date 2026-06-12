@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     $newConfig = [
         'admin_jid' => trim($_POST['admin_jid']),
         'groups' => [
-            'our_meetups' => ['jid' => trim($_POST['jid_our_meetups']), 'automations' => ['lembrete_aula']],
+            'our_classes' => ['jid' => trim($_POST['jid_our_classes']), 'automations' => ['lembrete_aula']],
             'desafio' => ['jid' => trim($_POST['jid_desafio']), 'automations' => ['auto_kick', 'aviso']],
             'the_lounge' => ['jid' => trim($_POST['jid_the_lounge']), 'automations' => ['welcome', 'ranking_geral']]
         ],
@@ -54,9 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'aviso_desafio' => trim($_POST['tpl_aviso_desafio']),
             'kick_desafio' => trim($_POST['tpl_kick_desafio']),
             'ranking_diario' => trim($_POST['tpl_ranking']),
-            'meetup_aviso' => trim($_POST['tpl_meetup_aviso'] ?? ''),
-            'meetup_cancel' => trim($_POST['tpl_meetup_cancel'] ?? ''),
-            'meetup_kickoff' => trim($_POST['tpl_meetup_kickoff'] ?? '')
+            'class_aviso' => trim($_POST['tpl_class_aviso'] ?? ''),
+            'class_cancel' => trim($_POST['tpl_class_cancel'] ?? ''),
+            'class_kickoff' => trim($_POST['tpl_class_kickoff'] ?? '')
         ]
     ];
     
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
 
 $config = getMentoriaConfig();
 $admin_jid = $config['admin_jid'] ?? '556192666148@s.whatsapp.net';
-$jid_our_meetups = $config['groups']['our_meetups']['jid'] ?? '';
+$jid_our_classes = $config['groups']['our_classes']['jid'] ?? '';
 $jid_desafio = $config['groups']['desafio']['jid'] ?? '';
 $jid_the_lounge = $config['groups']['the_lounge']['jid'] ?? '';
 
@@ -79,9 +79,9 @@ $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Remi
 $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
 $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
 $tpl_ranking = $config['templates']['ranking_diario'] ?? "🏆 *Ranking do Dia* ({date})\n\n{ranking_list}";
-$tpl_meetup_aviso = $config['templates']['meetup_aviso'] ?? "📅 *English Meetup Today!*\n\nWe have a session scheduled for *{horario} BRT*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline} BRT*.";
-$tpl_meetup_cancel = $config['templates']['meetup_cancel'] ?? "❌ *Meetup Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
-$tpl_meetup_kickoff = $config['templates']['meetup_kickoff'] ?? "🎉 *The Meetup is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+$tpl_class_aviso = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nWe have a session scheduled for *{horario} BRT*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline} BRT*.";
+$tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+$tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
 
 $cache_file = __DIR__ . '/groups_cache.json';
 $available_groups = [];
@@ -122,18 +122,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_schedule'])) {
         $day_of_week = (int)$_POST['day_of_week'];
         $start_time = $_POST['start_time'];
         $meet_link = trim($_POST['meet_link']);
-        $group_jid = $config['groups']['our_meetups']['jid'] ?? '';
+        $group_jid = $config['groups']['our_classes']['jid'] ?? '';
         
         if (empty($group_jid)) {
-            $error = "Por favor, configure primeiro o grupo Our Meetups na aba de Mensagens.";
+            $error = "Por favor, configure primeiro o grupo Our Classes na aba de Mensagens.";
         } else {
             if ($action === 'add') {
-                $stmt = $conn->prepare("INSERT INTO meetup_schedule (group_jid, day_of_week, start_time, meet_link) VALUES (?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO class_schedule (group_jid, day_of_week, start_time, meet_link) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$group_jid, $day_of_week, $start_time, $meet_link]);
                 $msg = "Horário adicionado com sucesso!";
             } else {
                 $id = (int)$_POST['id'];
-                $stmt = $conn->prepare("UPDATE meetup_schedule SET day_of_week=?, start_time=?, meet_link=? WHERE id=?");
+                $stmt = $conn->prepare("UPDATE class_schedule SET day_of_week=?, start_time=?, meet_link=? WHERE id=?");
                 $stmt->execute([$day_of_week, $start_time, $meet_link, $id]);
                 $msg = "Horário atualizado com sucesso!";
             }
@@ -141,19 +141,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_schedule'])) {
     } elseif ($action === 'toggle') {
         $id = (int)$_POST['id'];
         $status = (int)$_POST['status'];
-        $stmt = $conn->prepare("UPDATE meetup_schedule SET is_active=? WHERE id=?");
+        $stmt = $conn->prepare("UPDATE class_schedule SET is_active=? WHERE id=?");
         $stmt->execute([$status, $id]);
         $msg = "Status do horário atualizado.";
     } elseif ($action === 'delete') {
         $id = (int)$_POST['id'];
-        $stmt = $conn->prepare("DELETE FROM meetup_schedule WHERE id=?");
+        $stmt = $conn->prepare("DELETE FROM class_schedule WHERE id=?");
         $stmt->execute([$id]);
         $msg = "Horário removido com sucesso.";
     }
 }
 $schedules = [];
 try {
-    $schedules = $conn->query("SELECT * FROM meetup_schedule ORDER BY day_of_week ASC, start_time ASC")->fetchAll(PDO::FETCH_ASSOC);
+    $schedules = $conn->query("SELECT * FROM class_schedule ORDER BY day_of_week ASC, start_time ASC")->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {} // Fail gracefully se a tabela não existir
 $days = [1 => 'Segunda-feira', 2 => 'Terça-feira', 3 => 'Quarta-feira', 4 => 'Quinta-feira', 5 => 'Sexta-feira', 6 => 'Sábado', 7 => 'Domingo'];
 
@@ -226,7 +226,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
         <div class="main-tabs-nav">
             <button class="main-tab-btn <?= $active_tab == 'pagamentos' ? 'active' : '' ?>" onclick="switchMainTab('pagamentos')"><i class="fas fa-money-bill-wave"></i> Pagamentos</button>
             <button class="main-tab-btn <?= $active_tab == 'mensagens' ? 'active' : '' ?>" onclick="switchMainTab('mensagens')"><i class="fas fa-robot"></i> Mensagens e Grupos</button>
-            <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Meetups</button>
+            <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Classes</button>
         </div>
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">

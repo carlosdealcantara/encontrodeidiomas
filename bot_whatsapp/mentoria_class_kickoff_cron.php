@@ -19,7 +19,7 @@ $hoje = date('Y-m-d');
 $diaSemana = date('N');
 
 // Encontra aulas que começam AGORA
-$stmt = $conn->prepare("SELECT * FROM meetup_schedule WHERE day_of_week = ? AND is_active = 1");
+$stmt = $conn->prepare("SELECT * FROM class_schedule WHERE day_of_week = ? AND is_active = 1");
 $stmt->execute([$diaSemana]);
 $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -35,14 +35,14 @@ foreach ($schedules as $s) {
     if (abs($diff) <= 300 || $isTest) { 
         
         // Verifica anti-duplicidade para evitar spam se rodar a cada 5 minutos
-        $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'meetup_kickoff' AND data_execucao = ? AND membro_jid = ?");
+        $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_kickoff' AND data_execucao = ? AND membro_jid = ?");
         $check->execute([$hoje, $s['id']]);
         if ($check->rowCount() > 0 && !isset($_GET['force'])) {
             continue; // Já enviou o kickoff hoje para esta aula
         }
         
         // Conta confirmações
-        $stmtCount = $conn->prepare("SELECT COUNT(*) FROM meetup_attendances WHERE schedule_id = ? AND aula_date = ?");
+        $stmtCount = $conn->prepare("SELECT COUNT(*) FROM class_attendances WHERE schedule_id = ? AND aula_date = ?");
         $stmtCount->execute([$s['id'], $hoje]);
         $attendees = $stmtCount->fetchColumn();
         
@@ -51,11 +51,11 @@ foreach ($schedules as $s) {
             $cleanLink = str_replace(['https://', 'http://'], '', $s['meet_link']);
             
             $config = getMentoriaConfig();
-            $tpl = $config['templates']['meetup_kickoff'] ?? "🎉 *The Meetup is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+            $tpl = $config['templates']['class_kickoff'] ?? "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
             $msg = str_replace('{link}', $cleanLink, $tpl);
             
-            enviarWhatsApp($s['group_jid'], $msg, 'meetup_kickoff');
-            $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('meetup_kickoff', ?, ?)")->execute([$hoje, $s['id']]);
+            enviarWhatsApp($s['group_jid'], $msg, 'class_kickoff');
+            $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_kickoff', ?, ?)")->execute([$hoje, $s['id']]);
             echo "Aula " . $s['start_time'] . " iniciada!\n";
         }
     }
