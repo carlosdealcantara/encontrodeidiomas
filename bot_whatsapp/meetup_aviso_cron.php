@@ -1,7 +1,7 @@
 <?php
 /**
- * CRON: Aviso Matinal Meetups
- * Frequência: 1x/dia, às 10:00 BRT
+ * CRON: Aviso de Meetups (Meia-noite)
+ * Frequência: 1x/dia, às 00:00 BRT
  */
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
@@ -46,7 +46,7 @@ $startTimeObj = new DateTime($hoje . ' ' . $startTime);
 $deadlineObj = clone $startTimeObj;
 $deadlineObj->modify('-1 hour');
 
-$tpl = $config['templates']['meetup_aviso'] ?? "📅 *English Meetup Today!*\n\nWe have a session scheduled for *{horario} BRT*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline} BRT*.";
+$tpl = $config['templates']['meetup_aviso'] ?? "📅 *Meetup Today!*\n\nToday is the day! Our English session is scheduled for *{horario} BRT*.\nReply with \`!attend\` to save your spot.\n\n⏳ You have until *{deadline} BRT* to confirm.";
 
 $msg = str_replace(
     ['{horario}', '{deadline}'], 
