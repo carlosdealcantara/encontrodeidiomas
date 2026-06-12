@@ -86,7 +86,12 @@ try {
         $stmtList->execute([$scheduleId, $hoje]);
         $attendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
         
-        echo json_encode(['success' => true, 'attendees' => $attendees]);
+        echo json_encode([
+            'success' => true, 
+            'attendees' => $attendees,
+            'class_date' => $hoje,
+            'class_time' => $schedule['start_time']
+        ]);
         
     } elseif ($action === 'unattend') {
         
@@ -108,7 +113,9 @@ try {
         echo json_encode([
             'success' => true, 
             'attendees' => $attendees,
-            'cancelled_now' => $cancelledNow
+            'cancelled_now' => $cancelledNow,
+            'class_date' => $hoje,
+            'class_time' => $schedule['start_time']
         ]);
         
     } else {

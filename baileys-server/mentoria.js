@@ -138,7 +138,7 @@ async function handleMessages({ messages, type }) {
                     });
                     const data = await res.json();
                     
-                    let listText = "\n\n*Confirmed Attendees:*\n";
+                    let listText = `\n\n📅 *Class: ${data.class_date} at ${data.class_time?.substring(0,5)} BRT*\n\n*Confirmed Attendees:*\n`;
                     if (data.attendees && data.attendees.length > 0) {
                         data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
                     } else {
@@ -182,7 +182,7 @@ async function handleMessages({ messages, type }) {
                     });
                     const data = await res.json();
                     if (data.success) {
-                        let listText = "\n\n*Confirmed Attendees:*\n";
+                        let listText = `\n\n📅 *Class: ${data.class_date} at ${data.class_time?.substring(0,5)} BRT*\n\n*Confirmed Attendees:*\n`;
                         if (data.attendees && data.attendees.length > 0) {
                             data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
                         } else {
