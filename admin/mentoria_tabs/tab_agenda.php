@@ -48,11 +48,14 @@
             <?php if (empty($schedules)): ?>
             <tr><td colspan="5" style="text-align: center;">Nenhum horário cadastrado.</td></tr>
             <?php else: ?>
-                <?php foreach ($schedules as $s): ?>
+                <?php foreach ($schedules as $s): 
+                    $meet_code = str_replace(['https://meet.google.com/', 'http://meet.google.com/'], '', $s['meet_link']);
+                    $meet_code = trim($meet_code, '/');
+                ?>
                 <tr>
                     <td><strong><?php echo $days[$s['day_of_week']]; ?></strong></td>
                     <td><?php echo date('H:i', strtotime($s['start_time'])); ?></td>
-                    <td><a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: var(--accent-blue);">🔗 Link da Class</a></td>
+                    <td><a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: var(--accent-blue); font-family: monospace;">🔗 <?php echo htmlspecialchars($meet_code); ?></a></td>
                     <td>
                         <?php if ($s['is_active']): ?>
                             <span class="status-active"><i class="fas fa-check-circle"></i> Ativo</span>
