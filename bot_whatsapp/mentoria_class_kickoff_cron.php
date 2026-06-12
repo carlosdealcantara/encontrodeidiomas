@@ -32,7 +32,9 @@ foreach ($schedules as $s) {
     $diff = $now->getTimestamp() - $classTime->getTimestamp();
     $isTest = isset($_GET['test_now']);
     
-    if (abs($diff) <= 300 || $isTest) { 
+    // Dispara o kickoff apenas se for O EXATO MOMENTO da aula ou até 5 minutos DEPOIS (0 a 300 segundos).
+    // Isso impede que dispare 5 minutos antes dizendo "starting NOW".
+    if (($diff >= 0 && $diff <= 300) || $isTest) { 
         
         // Verifica anti-duplicidade para evitar spam se rodar a cada 5 minutos
         $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_kickoff' AND data_execucao = ? AND membro_jid = ?");
