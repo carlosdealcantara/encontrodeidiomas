@@ -36,6 +36,7 @@
     <button class="sub-tab-btn" onclick="openSubTab('sub_thelounge')"><i class="fas fa-coffee"></i> The Lounge</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_desafio')"><i class="fas fa-fire"></i> Desafio Diário</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><i class="fas fa-video"></i> Our Meetups</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_testes')"><i class="fas fa-vial"></i> Testes Manuais</button>
 </div>
 
 <form method="POST">
@@ -130,6 +131,11 @@
         <i class="fas fa-save"></i> Salvar Configurações no Robô
     </button>
 </form>
+
+<!-- SUB TAB TESTES MANUAIS (Fora do Form para evitar conflito de botões) -->
+<div id="sub_testes" class="sub-tab-pane">
+    <?php include 'tab_testes.php'; ?>
+</div>
 
 <script>
     function openSubTab(tabId) {

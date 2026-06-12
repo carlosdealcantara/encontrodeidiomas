@@ -103,7 +103,7 @@ function renderGroupSelect($name, $currentValue, $groups) {
     foreach ($groups as $g) {
         $id = htmlspecialchars($g['id']);
         $subj = htmlspecialchars($g['subject'] ?? 'Sem Nome');
-        $sel = ($id === $currentValue) ? 'selected' : '';
+        $sel = (trim(strtolower($id)) === trim(strtolower($currentValue))) ? 'selected' : '';
         if ($sel) $found = true;
         $html .= "<option value=\"$id\" $sel>$subj  |  $id</option>";
     }
@@ -227,7 +227,6 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             <button class="main-tab-btn <?= $active_tab == 'pagamentos' ? 'active' : '' ?>" onclick="switchMainTab('pagamentos')"><i class="fas fa-money-bill-wave"></i> Pagamentos</button>
             <button class="main-tab-btn <?= $active_tab == 'mensagens' ? 'active' : '' ?>" onclick="switchMainTab('mensagens')"><i class="fas fa-robot"></i> Mensagens e Grupos</button>
             <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Meetups</button>
-            <button class="main-tab-btn <?= $active_tab == 'testes' ? 'active' : '' ?>" onclick="switchMainTab('testes')"><i class="fas fa-vial"></i> Testes Manuais</button>
         </div>
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
@@ -240,10 +239,6 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_agenda" class="main-tab-content <?= $active_tab == 'agenda' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_agenda.php'; ?>
-        </div>
-
-        <div id="tab_testes" class="main-tab-content <?= $active_tab == 'testes' ? 'active' : '' ?>">
-            <?php include 'mentoria_tabs/tab_testes.php'; ?>
         </div>
 
     </main>
