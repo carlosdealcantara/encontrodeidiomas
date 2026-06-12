@@ -110,7 +110,7 @@
             </div>
 
             <div class="form-group" style="margin-top: 20px;">
-                <label>Aviso Matinal Our Meetups (Às 10:00 no dia da aula)</label>
+                <label>Aviso Matinal Our Meetups (À meia-noite no dia da aula)</label>
                 <textarea name="tpl_meetup_aviso"><?= htmlspecialchars($tpl_meetup_aviso) ?></textarea>
                 <p class="help-text">Use <code>{horario}</code> e <code>{deadline}</code> para mostrar as horas da aula e do prazo final de inscrição.</p>
             </div>
