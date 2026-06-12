@@ -55,7 +55,7 @@
                 <tr>
                     <td><strong><?php echo $days[$s['day_of_week']]; ?></strong></td>
                     <td><?php echo date('H:i', strtotime($s['start_time'])); ?></td>
-                    <td><a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: var(--accent-blue); font-family: monospace; font-size: 1.2rem; letter-spacing: 1px;">🔗 <?php echo htmlspecialchars($meet_code); ?></a></td>
+                    <td><span style="color: var(--text-dim);">🔗</span> <a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: var(--accent-blue); font-family: monospace; font-size: 1.15rem; letter-spacing: 1px;"><?php echo htmlspecialchars($meet_code); ?></a></td>
                     <td>
                         <?php if ($s['is_active']): ?>
                             <span class="status-active"><i class="fas fa-check-circle"></i> Ativo</span>
