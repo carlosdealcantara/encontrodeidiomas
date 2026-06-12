@@ -98,22 +98,29 @@ async function handleMessages({ messages, type }) {
     for (const msg of messages) {
         const groupJid = msg.key.remoteJid;
         if (!groupJid?.endsWith('@g.us')) continue; // Only groups
-        if (msg.key.fromMe) continue; // Ignore bot's own messages
 
-        const senderJid = msg.key.participant;
-        const senderName = msg.pushName || 'Desconhecido';
+        // Se a mensagem foi enviada pelo próprio aparelho do bot (fromMe)
+        // e o participant estiver vazio, usamos o JID do próprio bot
+        const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        const senderJid = msg.key.participant || (msg.key.fromMe ? botJid : msg.key.remoteJid);
+        const senderName = msg.pushName || (msg.key.fromMe ? 'Eu (Admin)' : 'Desconhecido');
 
-        // Check if reaction
-        if (msg.message?.reactionMessage) {
+        // Ignora apenas as mensagens automáticas do próprio bot para evitar loop e pontuação falsa.
+        // Vamos processar se for um comando manual começando com !
+        const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '';
+        
+        if (msg.key.fromMe && !text.startsWith('!')) continue;
+
+        // Check if reaction (ignora reações automáticas do bot)
+        if (msg.message?.reactionMessage && !msg.key.fromMe) {
             logActivity(groupJid, senderJid, senderName, 'reaction');
-        } else if (msg.message?.imageMessage) {
+        } else if (msg.message?.imageMessage && !msg.key.fromMe) {
             logActivity(groupJid, senderJid, senderName, 'image');
-        } else {
+        } else if (!msg.key.fromMe) {
             logActivity(groupJid, senderJid, senderName, 'message');
         }
             
         // Check for commands (e.g. !confirm in Our Meetups)
-        const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '';
         if (text.startsWith('!book') || text.startsWith('!confirm') || text.startsWith('!attend')) {
             // If it's the Our Meetups group, log the booking
             const ourMeetupsGroup = config.groups?.our_meetups?.jid;
