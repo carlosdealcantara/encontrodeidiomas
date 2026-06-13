@@ -30,10 +30,10 @@ foreach ($schedules as $s) {
     $deadlineTime = clone $classTime;
     $deadlineTime->modify('-1 hour');
     
-    // Verifica se estamos no exato momento do deadline (intervalo de 10 min para cobrir o cron)
+    // Dispara somente no exato momento do deadline ou até 5 minutos DEPOIS (nunca antes).
     $diff = $now->getTimestamp() - $deadlineTime->getTimestamp();
     $isTest = isset($_GET['test_now']);
-    if (abs($diff) <= 300 || $isTest) { // dentro de 5 minutos do deadline
+    if (($diff >= 0 && $diff <= 300) || $isTest) { // 0 a 5 min após o deadline
         
         // Verifica anti-duplicidade para evitar enviar vários cancelamentos
         $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_cancel' AND data_execucao = ? AND membro_jid = ?");
