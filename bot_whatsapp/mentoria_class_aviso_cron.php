@@ -1,6 +1,6 @@
 <?php
 /**
- * CRON: Aviso de Meetups (Meia-noite)
+ * CRON: Aviso de Classes (Meia-noite)
  * Frequência: 1x/dia, às 00:00 BRT
  */
 require_once __DIR__ . '/../config.php';
@@ -19,7 +19,7 @@ $config = getMentoriaConfig();
 $groupJid = $config['groups']['our_classes']['jid'] ?? null;
 
 if (!$groupJid) {
-    die("❌ Erro: JID do grupo Our Meetups não configurado no painel de Mensagens e Grupos.");
+    die("❌ Erro: JID do grupo Our Classes não configurado no painel de Mensagens e Grupos.");
 }
 
 $conn = connectDB();
@@ -51,26 +51,31 @@ $startTimeObj = new DateTime($hoje . ' ' . $startTime);
 $deadlineObj = clone $startTimeObj;
 $deadlineObj->modify('-1 hour');
 
-$tpl = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nToday is the day! Our English session is scheduled for *{horario} BRT*.\nReply with `!attend` to save your spot.\n\n⏳ You have until *{deadline} BRT* to confirm.";
+$dateEn = date('l, F jS'); // Ex: Friday, June 13th
+
+// Ajusta o template caso ele ainda use BRT (força a usar UTC-3)
+$tpl = str_replace(' BRT', '', $tpl); // Remove BRT se existir no template
+// Adiciona a data no cabeçalho. Se já tiver asterisco mantemos, senão ignoramos
+$tpl = preg_replace('/Class Today!(\*)?/', 'Class Today!$1 (' . $dateEn . ')', $tpl);
 
 $msg = str_replace(
     ['{horario}', '{deadline}'], 
-    [$startTimeObj->format('H:i'), $deadlineObj->format('H:i')], 
+    [$startTimeObj->format('h:i A') . ' UTC-3', $deadlineObj->format('h:i A') . ' UTC-3'], 
     $tpl
 );
 
 echo "📋 JID usado: $groupJid\n";
-echo "🕐 Horário do encontro: " . $startTimeObj->format('H:i') . "\n";
-echo "⏳ Deadline: " . $deadlineObj->format('H:i') . "\n\n";
+echo "🕐 Horário do encontro: " . $startTimeObj->format('h:i A') . "\n";
+echo "⏳ Deadline: " . $deadlineObj->format('h:i A') . "\n\n";
 
 // Trava anti-duplicidade
-$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'meetup_aviso' AND data_execucao = ? AND membro_jid = ?");
+$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_aviso' AND data_execucao = ? AND membro_jid = ?");
 $check->execute([$hoje, $schedule['id']]);
 if ($check->rowCount() > 0 && !isset($_GET['force'])) {
     die("✅ Aviso para a aula {$schedule['id']} já foi enviado hoje! Use &force=1 na URL para forçar um reenvio.");
 }
 
-$res = enviarWhatsApp($groupJid, $msg, 'meetup_aviso');
+$res = enviarWhatsApp($groupJid, $msg, 'class_aviso');
 if ($res['success']) {
     $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
     echo "✅ Aviso enfileirado! (jobId: " . ($res['data']['jobId'] ?? 'n/a') . ")";

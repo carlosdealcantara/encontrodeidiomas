@@ -1,6 +1,6 @@
 <?php
 /**
- * CRON: Kickoff Meetups
+ * CRON: Kickoff Classes
  * Frequência: 1x/hora (ex: 20:00 para abrir a aula de 20:00)
  */
 require_once __DIR__ . '/../config.php';

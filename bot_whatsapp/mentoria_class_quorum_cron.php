@@ -1,6 +1,6 @@
 <?php
 /**
- * CRON: Cancelamento Meetups (Deadline)
+ * CRON: Cancelamento Classes (Deadline)
  * Frequência: 1x/hora (ex: 19:00 para cancelar aula de 20:00)
  */
 require_once __DIR__ . '/../config.php';

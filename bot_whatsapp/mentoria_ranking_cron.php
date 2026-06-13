@@ -40,44 +40,61 @@ if ($check->rowCount() > 0 && !isset($_GET['force'])) {
     die("Ranking já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
 }
 
-$config = getMentoriaConfig();
+$targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
+if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
+
 $activity = fetchBaileysActivity($ontem); // Pega atividade de ontem!
+$members = $activity[$targetGroup] ?? [];
+
+if (empty($members)) {
+    die("Nenhuma atividade registrada ontem ($ontem) no grupo The Lounge.");
+}
 
 $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
-$ranking = [];
+$rankingMsgs = [];
+$rankingReacts = [];
 
-foreach ($activity as $groupJid => $members) {
-    foreach ($members as $memberJid => $data) {
-        if ($memberJid === $adminJid) continue;
-        if (!isset($ranking[$memberJid])) {
-            $ranking[$memberJid] = ['name' => $data['name'], 'msgs' => 0, 'reactions' => 0, 'total' => 0];
-        }
-        $ranking[$memberJid]['msgs'] += $data['messages'];
-        $ranking[$memberJid]['reactions'] += $data['reactions_given'];
-        
-        // Peso (Msgs = 2, Reações = 1)
-        $pts = ($data['messages'] * 2) + ($data['reactions_given'] * 1);
-        $ranking[$memberJid]['total'] += $pts;
+foreach ($members as $memberJid => $data) {
+    if ($memberJid === $adminJid) continue;
+    
+    if ($data['messages'] > 0) {
+        $rankingMsgs[$memberJid] = ['name' => $data['name'], 'score' => $data['messages']];
+    }
+    if ($data['reactions_given'] > 0) {
+        $rankingReacts[$memberJid] = ['name' => $data['name'], 'score' => $data['reactions_given']];
     }
 }
 
-// Ordena e pega top 5
-uasort($ranking, fn($a, $b) => $b['total'] <=> $a['total'] ? -($b['total'] <=> $a['total']) : 0);
-$top5 = array_slice($ranking, 0, 5, true);
+// Ordena e pega top 5 de mensagens
+uasort($rankingMsgs, fn($a, $b) => $b['score'] <=> $a['score']);
+$top5Msgs = array_slice($rankingMsgs, 0, 5, true);
 
-if (empty($top5)) {
-    die("Nenhuma atividade registrada ontem ($ontem).");
-}
+// Ordena e pega top 5 de reações
+uasort($rankingReacts, fn($a, $b) => $b['score'] <=> $a['score']);
+$top5Reacts = array_slice($rankingReacts, 0, 5, true);
 
 $medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-$rankingList = '';
+
+$msgList = '';
 $i = 0;
-foreach ($top5 as $jid => $data) {
-    $rankingList .= $medals[$i] . " *{$data['name']}* — {$data['total']} pts ({$data['msgs']} msgs, {$data['reactions']} react)\n";
+foreach ($top5Msgs as $jid => $data) {
+    $msgList .= $medals[$i] . " *{$data['name']}* — {$data['score']} msgs\n";
     $i++;
 }
 
-$template = $config['templates']['ranking_diario'] ?? "🏆 *Ranking do Dia* ({date})\n\n{ranking_list}";
+$reactList = '';
+$i = 0;
+foreach ($top5Reacts as $jid => $data) {
+    $reactList .= $medals[$i] . " *{$data['name']}* — {$data['score']} reacts\n";
+    $i++;
+}
+
+$rankingList = "🗣️ *Word Slingers*\n";
+$rankingList .= $msgList ?: "No messages yesterday.\n";
+$rankingList .= "\n🔥 *Emoji Gang*\n";
+$rankingList .= $reactList ?: "No reactions yesterday.\n";
+
+$template = $config['templates']['ranking_diario'] ?? "🏆 *Daily Ranking* ({date})\n\n{ranking_list}";
 $message = str_replace(
     ['{date}', '{ranking_list}'],
     [date('d/m/Y', strtotime($ontem)), $rankingList],

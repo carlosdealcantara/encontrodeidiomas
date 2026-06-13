@@ -69,7 +69,6 @@ function rodarSubCron($arquivo, $baseUrl, $token_secreto) {
 // =========================================================================
 echo "<h2>>>> Crons Horários <<<</h2><ul>";
 rodarSubCron('ei_meetups_hourly.php', $baseUrl, $token_secreto);
-rodarSubCron('mentoria_class_aviso_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
 echo "</ul>";
@@ -82,6 +81,7 @@ echo "<h2>>>> Crons Diários <<<</h2>";
 // 00:00 - Processamento de Rankings e Kicks (Baseado no dia anterior)
 if ($horaAtual === 0) {
     echo "<h3>Rotina da Meia-Noite (00:00)</h3><ul>";
+    rodarSubCron('mentoria_class_aviso_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_ranking_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_desafio_kick_cron.php', $baseUrl, $token_secreto);
     echo "</ul>";
