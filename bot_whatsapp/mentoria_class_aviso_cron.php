@@ -60,7 +60,7 @@ $tpl = preg_replace('/Class Today!(\*)?/', 'Class Today!$1 (' . $dateEn . ')', $
 
 $msg = str_replace(
     ['{horario}', '{deadline}'], 
-    [$startTimeObj->format('h:i A') . ' UTC-3', $deadlineObj->format('h:i A') . ' UTC-3'], 
+    [$startTimeObj->format('h:i A') . ' (UTC-3)', $deadlineObj->format('h:i A') . ' (UTC-3)'], 
     $tpl
 );
 

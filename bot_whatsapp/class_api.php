@@ -87,7 +87,7 @@ try {
         $attendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
         
         $dateEn = date('l, F jS', strtotime($hoje));
-        $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' UTC-3';
+        $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' (UTC-3)';
 
         echo json_encode([
             'success' => true, 
@@ -115,12 +115,17 @@ try {
             $cancelledNow = true;
         }
 
+        $dateEn = date('l, F jS', strtotime($hoje));
+        $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' (UTC-3)';
+
         echo json_encode([
             'success' => true, 
             'attendees' => $attendees,
             'cancelled_now' => $cancelledNow,
             'class_date' => $hoje,
-            'class_time' => $schedule['start_time']
+            'class_time' => $schedule['start_time'],
+            'class_date_en' => $dateEn,
+            'class_time_en' => $timeEn
         ]);
         
     } else {
