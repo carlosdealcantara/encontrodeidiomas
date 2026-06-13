@@ -56,7 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'ranking_diario' => trim($_POST['tpl_ranking']),
             'class_aviso' => trim($_POST['tpl_class_aviso'] ?? ''),
             'class_cancel' => trim($_POST['tpl_class_cancel'] ?? ''),
-            'class_kickoff' => trim($_POST['tpl_class_kickoff'] ?? '')
+            'class_kickoff' => trim($_POST['tpl_class_kickoff'] ?? ''),
+            'attend_confirm' => trim($_POST['tpl_attend_confirm'] ?? ''),
+            'attend_late_good' => trim($_POST['tpl_attend_late_good'] ?? ''),
+            'attend_late_bad' => trim($_POST['tpl_attend_late_bad'] ?? ''),
+            'unattend_confirm' => trim($_POST['tpl_unattend_confirm'] ?? ''),
+            'unattend_cancelled_now' => trim($_POST['tpl_unattend_cancelled_now'] ?? ''),
+            'class_status' => trim($_POST['tpl_class_status'] ?? '')
         ]
     ];
     
@@ -82,6 +88,13 @@ $tpl_ranking = $config['templates']['ranking_diario'] ?? "🏆 *Ranking do Dia* 
 $tpl_class_aviso = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nWe have a session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
 $tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
 $tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+
+$tpl_attend_confirm = $config['templates']['attend_confirm'] ?? "✅ Registration confirmed for @{name}!{listText}";
+$tpl_attend_late_good = $config['templates']['attend_late_good'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}";
+$tpl_attend_late_bad = $config['templates']['attend_late_bad'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n❌ *Bad news:* The class was already cancelled due to lack of attendees.";
+$tpl_unattend_confirm = $config['templates']['unattend_confirm'] ?? "🗑️ Registration cancelled for @{name}.{listText}";
+$tpl_unattend_cancelled_now = $config['templates']['unattend_cancelled_now'] ?? "🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.";
+$tpl_class_status = $config['templates']['class_status'] ?? "📋 *Class Status — {class_info}*\n\n*Confirmed Attendees:*\n{attendees}\n\nDeadline to confirm: {deadline_info}";
 
 $cache_file = __DIR__ . '/groups_cache.json';
 $available_groups = [];

@@ -148,18 +148,22 @@ async function handleMessages({ messages, type }) {
                     }
 
                     if (data.success) {
+                        let msg = config.templates?.attend_confirm || `✅ Registration confirmed for @{name}!{listText}`;
+                        msg = msg.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
+                        
                         await sock.sendMessage(groupJid, { 
-                            text: `✅ Registration confirmed for @${senderJid.split('@')[0]}!${listText}`,
+                            text: msg,
                             mentions: [senderJid]
                         });
                     } else if (data.reason === 'deadline_passed') {
-                        // Prazo já passou, não confirmou. Mas dá o status da aula.
-                        let statusText = data.class_confirmed 
-                            ? "✅ *Good news:* The class is confirmed and will happen anyway!" 
-                            : "❌ *Bad news:* The class was already cancelled due to lack of attendees.";
-                            
+                        let msg = data.class_confirmed 
+                            ? (config.templates?.attend_late_good || `⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}`)
+                            : (config.templates?.attend_late_bad || `⏰ The deadline to confirm attendance has passed, @{name}.\n\n❌ *Bad news:* The class was already cancelled due to lack of attendees.`);
+                        
+                        msg = msg.replace('{name}', senderJid.split('@')[0]).replace('{listText}', data.class_confirmed ? listText : '');
+                        
                         await sock.sendMessage(groupJid, { 
-                            text: `⏰ The deadline to confirm attendance has passed, @${senderJid.split('@')[0]}.\n\n${statusText}${data.class_confirmed ? listText : ''}`,
+                            text: msg,
                             mentions: [senderJid]
                         });
                     } else {
@@ -193,19 +197,70 @@ async function handleMessages({ messages, type }) {
                             listText += "No one yet.";
                         }
 
+                        let msg = config.templates?.unattend_confirm || `🗑️ Registration cancelled for @{name}.{listText}`;
+                        msg = msg.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
+
                         await sock.sendMessage(groupJid, { 
-                            text: `🗑️ Registration cancelled for @${senderJid.split('@')[0]}.${listText}`,
+                            text: msg,
                             mentions: [senderJid]
                         });
                         
                         // O Cancelamento Extremo (caiu para 0 depois do prazo)
                         if (data.cancelled_now) {
+                            let msgCancel = config.templates?.unattend_cancelled_now || `🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.`;
                             await sock.sendMessage(groupJid, { 
-                                text: `🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.`
+                                text: msgCancel
                             });
                         }
                     } else {
                         await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error cancelling registration.'}` });
+                    }
+                } catch (err) {}
+            }
+        } else if (text.startsWith('!list')) {
+            const ourClassesGroup = config.groups?.our_classes?.jid;
+            if (groupJid === ourClassesGroup) {
+                try {
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'list',
+                            group_jid: groupJid,
+                            member_jid: senderJid
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        let dStr = data.class_date_en || data.class_date;
+                        let tStr = data.class_time_en || (data.class_time?.substring(0,5) + ' BRT');
+                        
+                        let attendeesList = "";
+                        if (data.attendees && data.attendees.length > 0) {
+                            data.attendees.forEach((name, i) => attendeesList += `${i+1}. ${name}\n`);
+                        } else {
+                            attendeesList += "No one yet.";
+                        }
+                        
+                        // Calcula deadline (1 hora antes)
+                        let dparts = (data.class_time || "00:00").split(':');
+                        let h = parseInt(dparts[0]);
+                        let ampm = "AM";
+                        h = h - 1; // 1 hora antes
+                        if (h < 0) h = 23;
+                        if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
+                        if (h === 0) h = 12;
+                        let hStr = h.toString().padStart(2, '0');
+                        let deadlineInfo = `${hStr}:${dparts[1]} ${ampm} (UTC-3)`;
+                        
+                        let msg = config.templates?.class_status || `📋 *Class Status — {class_info}*\n\n*Confirmed Attendees:*\n{attendees}\n\nDeadline to confirm: {deadline_info}`;
+                        msg = msg.replace('{class_info}', `${dStr} at ${tStr}`)
+                                 .replace('{attendees}', attendeesList.trim())
+                                 .replace('{deadline_info}', deadlineInfo);
+
+                        await sock.sendMessage(groupJid, { text: msg });
+                    } else {
+                        await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error fetching status.'}` });
                     }
                 } catch (err) {}
             }

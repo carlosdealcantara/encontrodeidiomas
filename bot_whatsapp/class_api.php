@@ -66,6 +66,9 @@ try {
     $currentAttendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
     $currentCount = count($currentAttendees);
 
+    $dateEn = date('l, F jS', strtotime($hoje));
+    $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' (UTC-3)';
+
     if ($action === 'attend') {
         
         if ($isPastDeadline) {
@@ -74,7 +77,11 @@ try {
                 'success' => false, 
                 'reason' => 'deadline_passed',
                 'class_confirmed' => ($currentCount > 0),
-                'attendees' => $currentAttendees
+                'attendees' => $currentAttendees,
+                'class_date' => $hoje,
+                'class_time' => $schedule['start_time'],
+                'class_date_en' => $dateEn,
+                'class_time_en' => $timeEn
             ]));
         }
 
@@ -85,9 +92,6 @@ try {
         // Pega a lista atualizada
         $stmtList->execute([$scheduleId, $hoje]);
         $attendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
-        
-        $dateEn = date('l, F jS', strtotime($hoje));
-        $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' (UTC-3)';
 
         echo json_encode([
             'success' => true, 
@@ -104,7 +108,6 @@ try {
         $del = $conn->prepare("DELETE FROM class_attendances WHERE schedule_id = ? AND member_jid = ? AND aula_date = ?");
         $del->execute([$scheduleId, $memberJid, $hoje]);
         
-        // Pega a lista atualizada
         $stmtList->execute([$scheduleId, $hoje]);
         $attendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
         $newCount = count($attendees);
@@ -115,9 +118,6 @@ try {
             $cancelledNow = true;
         }
 
-        $dateEn = date('l, F jS', strtotime($hoje));
-        $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' (UTC-3)';
-
         echo json_encode([
             'success' => true, 
             'attendees' => $attendees,
@@ -126,6 +126,18 @@ try {
             'class_time' => $schedule['start_time'],
             'class_date_en' => $dateEn,
             'class_time_en' => $timeEn
+        ]);
+        
+    } elseif ($action === 'list' || $action === 'status') {
+        
+        echo json_encode([
+            'success' => true, 
+            'attendees' => $currentAttendees,
+            'class_date' => $hoje,
+            'class_time' => $schedule['start_time'],
+            'class_date_en' => $dateEn,
+            'class_time_en' => $timeEn,
+            'deadline_passed' => $isPastDeadline
         ]);
         
     } else {
