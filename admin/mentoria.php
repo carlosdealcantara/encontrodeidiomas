@@ -89,11 +89,23 @@ if (file_exists($cache_file)) {
     $res1 = file_get_contents($cache_file);
     $res1 = preg_replace('/^[\xef\xbb\xbf]+/', '', $res1);
     $dec1 = json_decode($res1, true);
-    if (is_array($dec1)) {
+    if (is_array($dec1) && !empty($dec1)) {
         $available_groups = $dec1;
         usort($available_groups, function($a, $b) {
             return strcasecmp($a['subject'] ?? '', $b['subject'] ?? '');
         });
+    }
+}
+
+// Fallback: se o cache estiver vazio ou não existir, busca diretamente da API
+if (empty($available_groups)) {
+    $res = sendBaileysRequest('/groups', null, 'GET');
+    if ($res['success'] && is_array($res['data']) && !empty($res['data'])) {
+        $available_groups = $res['data'];
+        usort($available_groups, function($a, $b) {
+            return strcasecmp($a['subject'] ?? '', $b['subject'] ?? '');
+        });
+        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
     }
 }
 function renderGroupSelect($name, $currentValue, $groups) {
