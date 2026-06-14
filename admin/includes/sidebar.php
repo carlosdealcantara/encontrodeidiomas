@@ -5,7 +5,7 @@
  * Active state detected automatically via PHP_SELF.
  */
 $admin_current_page = basename($_SERVER['PHP_SELF']);
-$is_whatsapp_page = in_array($admin_current_page, ['meetup_groups.php', 'conectar_whatsapp.php', 'meetup_templates.php']);
+$is_whatsapp_page = in_array($admin_current_page, ['meetup_groups.php', 'conectar_whatsapp.php', 'meetup_templates.php', 'wpp_broadcast.php']);
 
 $nav_items = [
     'index.php'        => ['icon' => 'fas fa-chart-pie',      'label' => 'Dashboard'],
