@@ -57,10 +57,12 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
             $tit = !empty($row['titulo']) ? $row['titulo'] : "Título";
             $full_text .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
         }
-        $full_text .= "\nMPS: Máximo de participantes simultâneos / Max simultaneous participants.\n🚀 Stay tuned for the next one! Fique de olho para participar do próximo!";
+        $footer = getSetting('weekly_summary_footer', "*Nº: Máximo de participantes simultâneos | Max simultaneous participants.\n🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*");
+        $full_text .= "\n" . $footer;
 
+        $lang_emoji = $lang_data['emoji'] ?? '';
         enviarWhatsApp('120363164732845564@g.us',
-            "🔄 *Replay Atualizado!*\nO idioma *{$lang_data['nome']}* enviou os dados desta semana.\n\nPrévia da mensagem final:\n\n" . $full_text,
+            "🔄 *Mensagem Semanal Atualizada!*\nO idioma {$lang_emoji} *{$lang_data['nome']}* enviou os dados desta semana.\n\nPrévia da mensagem final:\n\n" . $full_text,
             'hosts_app'
         );
 
@@ -220,7 +222,7 @@ function sanitizeOdyseeUrl(string $url): string {
                             <?php foreach ($idiomas_disponiveis as $l):
                                 $saved = $dados_semana[$l['id']] ?? null;
                             ?>
-                                <option value='<?= json_encode(["id" => $l['id'], "nome" => $l['name']]) ?>'
+                                <option value='<?= json_encode(["id" => $l['id'], "nome" => $l['name'], "emoji" => $l['flag_emoji']]) ?>'
                                         data-saved='<?= json_encode($saved) ?>'
                                         <?= ($prefill && $prefill['lang_id'] === $l['id']) ? 'selected' : '' ?>>
                                     <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
@@ -231,7 +233,7 @@ function sanitizeOdyseeUrl(string $url): string {
                     </div>
 
                     <div class="form-group">
-                        <label>MPS (Máx. Participantes Simultâneos)</label>
+                        <label>Nº (Máx. Participantes Simultâneos)</label>
                         <input type="text" name="replay_numero" id="replay_numero"
                                value="<?= htmlspecialchars($prefill['numero'] ?? '') ?>"
                                placeholder="Ex: 12">

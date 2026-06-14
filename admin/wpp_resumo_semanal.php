@@ -52,8 +52,8 @@ foreach ($replays as $r) {
     $lnk = !empty($r['link']) ? $r['link'] : "Link";
     $tit = !empty($r['titulo']) ? $r['titulo'] : "Título";
     $full_text .= "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
-}
-$full_text .= "\nNo.: Máximo de participantes simultâneos / Max simultaneous participants.\n🚀 Stay tuned for the next one! Fique de olho para participar do próximo!";
+$footer = getSetting('weekly_summary_footer', "*Nº: Máximo de participantes simultâneos | Max simultaneous participants.\n🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*");
+$full_text .= "\n" . $footer;
 
 ?>
 <!DOCTYPE html>
