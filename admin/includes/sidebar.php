@@ -99,6 +99,11 @@ $nav_items = [
     .nav-item i { width: 20px; font-size: 0.95rem; text-align: center; flex-shrink: 0; }
     .nav-item:hover { background: rgba(255,255,255,0.06); color: var(--white); }
     .nav-item.active { background: var(--accent-red); color: white; }
+    
+    .submenu { list-style: none; padding-left: 45px; margin-top: 5px; margin-bottom: 5px; }
+    .submenu a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; padding: 6px 0; transition: color 0.2s; }
+    .submenu a:hover { color: var(--white); }
+    
     .nav-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 10px 0; }
     .nav-logout {
         display: flex;
@@ -136,6 +141,12 @@ $nav_items = [
         <a href="<?= $href ?>" class="nav-item <?= $isActive ? 'active' : '' ?>">
             <i class="<?= $item['icon'] ?>"></i> <?= $item['label'] ?>
         </a>
+        <?php if ($file === 'whatsapp'): ?>
+            <ul class="submenu">
+                <li><a href="wpp_broadcast.php"><i class="fas fa-bullhorn"></i> Canhão de Disparo</a></li>
+                <li><a href="wpp_resumo_semanal.php"><i class="fas fa-list-alt"></i> Resumo Semanal</a></li>
+            </ul>
+        <?php endif; ?>
         <?php endforeach; ?>
     </nav>
 

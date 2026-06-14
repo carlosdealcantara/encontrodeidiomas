@@ -216,13 +216,13 @@ try {
                 <h3>Compor Mensagem</h3>
                 <form method="POST" style="margin-top: 20px;">
                     <div class="form-group">
-                        <label>Título Interno (Para seu controle, não é enviado)</label>
-                        <input type="text" name="titulo" required placeholder="Ex: Resumo Semanal de Domingo">
+                        <label>Título do Disparo (Uso interno)</label>
+                        <input type="text" name="titulo" value="<?= htmlspecialchars($_POST['prefill_title'] ?? '') ?>" required placeholder="Ex: Encontros da Semana 1">
                     </div>
                     
                     <div class="form-group">
-                        <label>Mensagem</label>
-                        <textarea name="mensagem" required placeholder="Cole sua mensagem aqui. Emojis, links e formatação do WhatsApp (*negrito*, _itálico_) serão preservados." oninput="countChars(this)"></textarea>
+                        <label>Mensagem a disparar</label>
+                        <textarea name="mensagem" id="mensagem" required placeholder="Cole sua mensagem aqui. Emojis, links e formatação do WhatsApp (*negrito*, _itálico_) serão preservados." oninput="countChars(this)"><?= htmlspecialchars($_POST['prefill_message'] ?? '') ?></textarea>
                         <small style="color: var(--text-dim); display: block; text-align: right; margin-top: 5px;"><span id="charCount">0</span> caracteres</small>
                     </div>
 
