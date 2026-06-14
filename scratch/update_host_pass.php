@@ -1,5 +1,5 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
 $conn = connectDB();
-updateSetting('hosts_app_password', '#eivoceai25');
+$conn->exec("UPDATE settings SET setting_value = '#eivoceai25' WHERE setting_key = 'hosts_app_password'");
 echo "Senha atualizada!\n";
