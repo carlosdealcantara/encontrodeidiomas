@@ -64,7 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'unattend_cancelled_now' => trim($_POST['tpl_unattend_cancelled_now'] ?? ''),
             'class_status' => trim($_POST['tpl_class_status'] ?? ''),
             'streak_confirm' => trim($_POST['tpl_streak_confirm'] ?? ''),
-            'streak_milestone' => trim($_POST['tpl_streak_milestone'] ?? '')
+            'streak_milestone' => trim($_POST['tpl_streak_milestone'] ?? ''),
+            'streak_leaderboard' => trim($_POST['tpl_streak_leaderboard'] ?? '')
         ]
     ];
     
@@ -99,6 +100,7 @@ $tpl_unattend_cancelled_now = $config['templates']['unattend_cancelled_now'] ?? 
 $tpl_class_status = $config['templates']['class_status'] ?? "📋 *Class Status — {class_info}*\n\n*Confirmed Attendees:*\n{attendees}\n\nDeadline to confirm: {deadline_info}";
 $tpl_streak_confirm = $config['templates']['streak_confirm'] ?? "✅ Image computed, @{name}! You are on a {streak}-day streak! 🔥";
 $tpl_streak_milestone = $config['templates']['streak_milestone'] ?? "🎉 CONGRATULATIONS! @{name} just hit a {streak}-day streak! Legend! 🏆";
+$tpl_streak_leaderboard = $config['templates']['streak_leaderboard'] ?? "🏆 *All-Time Streak Records*\n\n{allTimeList}\n🔥 *Active Streaks Today*\n\n{activeList}";
 
 $cache_file = __DIR__ . '/groups_cache.json';
 $available_groups = [];

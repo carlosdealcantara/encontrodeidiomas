@@ -103,6 +103,11 @@
                 <textarea name="tpl_streak_milestone"><?= htmlspecialchars($tpl_streak_milestone) ?></textarea>
                 <p class="help-text">Enviada quando a pessoa atinge 3, 7, 10, 15, 30, 60, 90... dias. Use <code>@{name}</code> e <code>{streak}</code>.</p>
             </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Leaderboard de Streaks (Comando !streaks)</label>
+                <textarea name="tpl_streak_leaderboard"><?= htmlspecialchars($tpl_streak_leaderboard) ?></textarea>
+                <p class="help-text">Enviado apenas quando alguém digita <code>!streaks</code> no grupo. Use <code>{allTimeList}</code> e <code>{activeList}</code>.</p>
+            </div>
         </div>
     </div>
 

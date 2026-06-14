@@ -312,6 +312,53 @@ async function handleMessages({ messages, type }) {
                     }
                 } catch (err) {}
             }
+        } else if (text.startsWith('!streaks')) {
+            const desafioGroup = config.groups?.desafio?.jid;
+            if (groupJid === desafioGroup) {
+                try {
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/mentoria_desafio_streak_list_api.php');
+                    const data = await res.json();
+                    if (data.success) {
+                        let allTimeList = '';
+                        let activeList = '';
+                        const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+                        if (data.allTime && data.allTime.length > 0) {
+                            data.allTime.forEach((item, i) => {
+                                const name = item.member_name || item.member_jid.split('@')[0];
+                                allTimeList += `${medals[i] || '🏅'} @${name} — ${item.longest_streak} days\n`;
+                            });
+                        } else {
+                            allTimeList = 'No records yet.\n';
+                        }
+
+                        if (data.active && data.active.length > 0) {
+                            data.active.forEach((item, i) => {
+                                const name = item.member_name || item.member_jid.split('@')[0];
+                                activeList += `${i+1}. @${name} — ${item.current_streak} days\n`;
+                            });
+                        } else {
+                            activeList = 'No active streaks right now.\n';
+                        }
+
+                        let msgTemplate = config.templates?.streak_leaderboard || `🏆 *All-Time Streak Records*\n\n{allTimeList}\n🔥 *Active Streaks Today*\n\n{activeList}`;
+                        let replyMsg = msgTemplate.replace('{allTimeList}', allTimeList).replace('{activeList}', activeList);
+
+                        // Coletar as menções necessárias
+                        let mentions = [];
+                        if (data.allTime) data.allTime.forEach(m => mentions.push(m.member_jid));
+                        if (data.active) data.active.forEach(m => mentions.push(m.member_jid));
+                        mentions = [...new Set(mentions)]; // Remover duplicatas
+
+                        await sock.sendMessage(groupJid, { 
+                            text: replyMsg,
+                            mentions: mentions
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error fetching streaks list:', err);
+                }
+            }
         }
     }
 }
