@@ -62,7 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'attend_late_bad' => trim($_POST['tpl_attend_late_bad'] ?? ''),
             'unattend_confirm' => trim($_POST['tpl_unattend_confirm'] ?? ''),
             'unattend_cancelled_now' => trim($_POST['tpl_unattend_cancelled_now'] ?? ''),
-            'class_status' => trim($_POST['tpl_class_status'] ?? '')
+            'class_status' => trim($_POST['tpl_class_status'] ?? ''),
+            'streak_confirm' => trim($_POST['tpl_streak_confirm'] ?? ''),
+            'streak_milestone' => trim($_POST['tpl_streak_milestone'] ?? '')
         ]
     ];
     
@@ -95,6 +97,8 @@ $tpl_attend_late_bad = $config['templates']['attend_late_bad'] ?? "⏰ The deadl
 $tpl_unattend_confirm = $config['templates']['unattend_confirm'] ?? "🗑️ Registration cancelled for @{name}.{listText}";
 $tpl_unattend_cancelled_now = $config['templates']['unattend_cancelled_now'] ?? "🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.";
 $tpl_class_status = $config['templates']['class_status'] ?? "📋 *Class Status — {class_info}*\n\n*Confirmed Attendees:*\n{attendees}\n\nDeadline to confirm: {deadline_info}";
+$tpl_streak_confirm = $config['templates']['streak_confirm'] ?? "✅ Image computed, @{name}! You are on a {streak}-day streak! 🔥";
+$tpl_streak_milestone = $config['templates']['streak_milestone'] ?? "🎉 CONGRATULATIONS! @{name} just hit a {streak}-day streak! Legend! 🏆";
 
 $cache_file = __DIR__ . '/groups_cache.json';
 $available_groups = [];
@@ -252,6 +256,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             <button class="main-tab-btn <?= $active_tab == 'pagamentos' ? 'active' : '' ?>" onclick="switchMainTab('pagamentos')"><i class="fas fa-money-bill-wave"></i> Pagamentos</button>
             <button class="main-tab-btn <?= $active_tab == 'mensagens' ? 'active' : '' ?>" onclick="switchMainTab('mensagens')"><i class="fas fa-robot"></i> Mensagens e Grupos</button>
             <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Classes</button>
+            <button class="main-tab-btn <?= $active_tab == 'streaks' ? 'active' : '' ?>" onclick="switchMainTab('streaks')"><i class="fas fa-fire"></i> Streaks Desafio</button>
         </div>
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
@@ -264,6 +269,10 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_agenda" class="main-tab-content <?= $active_tab == 'agenda' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_agenda.php'; ?>
+        </div>
+
+        <div id="tab_streaks" class="main-tab-content <?= $active_tab == 'streaks' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_streaks.php'; ?>
         </div>
 
     </main>

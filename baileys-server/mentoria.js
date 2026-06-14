@@ -116,6 +116,54 @@ async function handleMessages({ messages, type }) {
             logActivity(groupJid, senderJid, senderName, 'reaction');
         } else if (msg.message?.imageMessage && !msg.key.fromMe) {
             logActivity(groupJid, senderJid, senderName, 'image');
+            
+            // === Streak System (Desafio Group) ===
+            const desafioGroup = config.groups?.desafio?.jid;
+            if (groupJid === desafioGroup) {
+                try {
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/mentoria_desafio_streak_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            member_jid: senderJid,
+                            member_name: senderName
+                        })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success && !data.already_computed) {
+                        // Confirmação de imagem
+                        const nameOnly = senderJid.split('@')[0];
+                        let msgTemplate = config.templates?.streak_confirm || `✅ Image computed, @{name}! You are on a {streak}-day streak! 🔥`;
+                        let confirmMsg = msgTemplate.replace('@{name}', `@${nameOnly}`)
+                                                    .replace('{name}', nameOnly)
+                                                    .replace('{streak}', data.streak);
+                        
+                        await sock.sendMessage(groupJid, { 
+                            text: confirmMsg,
+                            mentions: [senderJid]
+                        });
+                        
+                        // Milestone celebration
+                        if (data.is_milestone) {
+                            let msTemplate = config.templates?.streak_milestone || `🎉 CONGRATULATIONS! @{name} just hit a {streak}-day streak! Legend! 🏆`;
+                            let milestoneMsg = msTemplate.replace('@{name}', `@${nameOnly}`)
+                                                         .replace('{name}', nameOnly)
+                                                         .replace('{streak}', data.streak);
+                            
+                            // Atraso de 2 segundos para dar tempo da primeira mensagem chegar
+                            setTimeout(async () => {
+                                await sock.sendMessage(groupJid, { 
+                                    text: milestoneMsg,
+                                    mentions: [senderJid]
+                                });
+                            }, 2000);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error calling streak API:', err);
+                }
+            }
         } else if (!msg.key.fromMe) {
             logActivity(groupJid, senderJid, senderName, 'message');
         }

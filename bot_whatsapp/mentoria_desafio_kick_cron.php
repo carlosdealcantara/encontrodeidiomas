@@ -85,6 +85,13 @@ foreach ($members as $memberData) {
         if (($resRemove['success'] ?? false) || ($resRemove['httpCode'] ?? 0) === 200) {
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('desafio_kick', ?, ?)")
                  ->execute([$ontem, $memberJid]);
+            
+            // Reset streak
+            try {
+                $conn->prepare("UPDATE mentoria_desafio_streaks SET current_streak = 0 WHERE member_jid = ?")
+                     ->execute([$memberJid]);
+            } catch (Exception $e) {}
+                 
             $kickedCount++;
         }
     }

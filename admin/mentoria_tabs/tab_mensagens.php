@@ -93,6 +93,16 @@
                 <textarea name="tpl_kick_desafio"><?= htmlspecialchars($tpl_kick_desafio) ?></textarea>
                 <p class="help-text">Use <code>@{name}</code> para mencionar quem está sendo removido.</p>
             </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Confirmação de Streak (Tempo Real)</label>
+                <textarea name="tpl_streak_confirm"><?= htmlspecialchars($tpl_streak_confirm) ?></textarea>
+                <p class="help-text">Enviada assim que a pessoa manda a imagem no grupo. Use <code>@{name}</code> e <code>{streak}</code> para o número de dias seguidos.</p>
+            </div>
+            <div class="form-group">
+                <label>Celebração de Milestone (Tempo Real)</label>
+                <textarea name="tpl_streak_milestone"><?= htmlspecialchars($tpl_streak_milestone) ?></textarea>
+                <p class="help-text">Enviada quando a pessoa atinge 3, 7, 10, 15, 30, 60, 90... dias. Use <code>@{name}</code> e <code>{streak}</code>.</p>
+            </div>
         </div>
     </div>
 
