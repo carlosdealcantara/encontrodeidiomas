@@ -51,12 +51,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
 // Cancelar broadcast (apenas se pendente)
 if (isset($_GET['cancel'])) {
     try {
-        $stmt = $conn->prepare("UPDATE wpp_broadcast_queue SET status = 'erro', concluido_em = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pendente'");
+        $stmt = $conn->prepare("DELETE FROM wpp_broadcast_queue WHERE id = ? AND status = 'pendente'");
         $stmt->execute([(int)$_GET['cancel']]);
-        header('Location: wpp_broadcast.php?msg=Broadcast cancelado');
+        header('Location: wpp_broadcast.php?msg=Broadcast cancelado e removido');
         exit;
     } catch (PDOException $e) {
         $error = "Erro ao cancelar: " . $e->getMessage();
+    }
+}
+
+// Excluir broadcast do histórico (erro ou concluído)
+if (isset($_GET['delete'])) {
+    try {
+        $stmt = $conn->prepare("DELETE FROM wpp_broadcast_queue WHERE id = ? AND status IN ('erro', 'concluido')");
+        $stmt->execute([(int)$_GET['delete']]);
+        header('Location: wpp_broadcast.php?msg=Broadcast excluído do histórico');
+        exit;
+    } catch (PDOException $e) {
+        $error = "Erro ao excluir: " . $e->getMessage();
     }
 }
 
@@ -233,11 +245,20 @@ try {
                                 if ($h['status'] === 'enviando') { $badgeClass = 'bg-sending'; $statusLabel = 'Enviando...'; }
                                 if ($h['status'] === 'concluido') { $badgeClass = 'bg-done'; $statusLabel = 'Concluído'; }
                                 if ($h['status'] === 'erro') { $badgeClass = 'bg-error'; $statusLabel = 'Erro/Cancelado'; }
+                                
+                                // Ajuste de fuso horário UTC para UTC-3 (America/Sao_Paulo)
+                                try {
+                                    $dt = new DateTime($h['criado_em'], new DateTimeZone('UTC'));
+                                    $dt->setTimezone(new DateTimeZone('America/Sao_Paulo'));
+                                    $data_formatada = $dt->format('d/m/Y H:i');
+                                } catch (Exception $e) {
+                                    $data_formatada = date('d/m/Y H:i', strtotime($h['criado_em']));
+                                }
                             ?>
                             <tr>
                                 <td>
                                     <strong><?= htmlspecialchars($h['titulo']) ?></strong><br>
-                                    <small style="color: var(--text-dim);"><?= date('d/m/Y H:i', strtotime($h['criado_em'])) ?></small><br>
+                                    <small style="color: var(--text-dim);"><?= $data_formatada ?></small><br>
                                     <small style="color: var(--text-dim);">Filtro: <?= $h['filtro_categoria'] == 'especifico' ? 'Especifico ('.$h['language_name'].')' : $h['filtro_categoria'] ?></small>
                                 </td>
                                 <td><span class="badge <?= $badgeClass ?>"><?= $statusLabel ?></span></td>
@@ -249,7 +270,9 @@ try {
                                 </td>
                                 <td>
                                     <?php if ($h['status'] === 'pendente'): ?>
-                                        <a href="?cancel=<?= $h['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--accent-red);" title="Cancelar" onclick="return confirm('Cancelar este disparo?')"><i class="fas fa-times"></i></a>
+                                        <a href="?cancel=<?= $h['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--warning);" title="Cancelar" onclick="return confirm('Cancelar e excluir este disparo?')"><i class="fas fa-times"></i></a>
+                                    <?php else: ?>
+                                        <a href="?delete=<?= $h['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--accent-red);" title="Excluir do Histórico" onclick="return confirm('Excluir este item do histórico?')"><i class="fas fa-trash"></i></a>
                                     <?php endif; ?>
                                 </td>
                             </tr>
