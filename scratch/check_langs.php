@@ -1,11 +1,7 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once dirname(__DIR__) . '/config.php';
 $conn = connectDB();
-
-$stmt = $conn->query("SELECT id, name, flag_emoji, greeting FROM languages");
-$langs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-foreach($langs as $l) {
-    echo "ID: {$l['id']} | Name: {$l['name']} | Emoji: '{$l['flag_emoji']}' | Greeting: '{$l['greeting']}'\n";
+$rows = $conn->query("SELECT id, name, flag_emoji FROM languages WHERE active=1 ORDER BY name")->fetchAll();
+foreach ($rows as $r) {
+    echo $r['id'] . ' | ' . $r['flag_emoji'] . ' ' . $r['name'] . "\n";
 }
-?>
