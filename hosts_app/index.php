@@ -86,41 +86,136 @@ if ($logged_in) {
         .message-box { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-top: 20px; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5; display: none; }
     </style>
 </head>
-<body>
+    <?php if ($logged_in && isset($_POST['action']) && $_POST['action'] === 'save_replay'):
+        require_once dirname(__DIR__) . '/includes/whatsapp_helper.php';
+        
+        $lang_data = json_decode($_POST['idioma_replay'], true);
+        if ($lang_data) {
+            $lang_id = (int)$lang_data['id'];
+            $numero = trim($_POST['replay_numero']);
+            $link = trim($_POST['replay_link']);
+            $titulo = trim($_POST['replay_titulo']);
+            
+            $stmt = $conn->prepare("
+                INSERT INTO meetup_replays (language_id, numero, link, titulo)
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE numero = VALUES(numero), link = VALUES(link), titulo = VALUES(titulo)
+            ");
+            $stmt->execute([$lang_id, $numero, $link, $titulo]);
+            $msg_success = "Replay salvo com sucesso!";
+
+            // Gerar a mensagem completa e enviar para o grupo dos hosts
+            $stmtAll = $conn->query("
+                SELECT l.flag_emoji, r.numero, r.link, r.titulo 
+                FROM languages l 
+                LEFT JOIN meetup_replays r ON l.id = r.language_id 
+                WHERE l.active = 1 
+                ORDER BY l.name ASC
+            ");
+            
+            $full_text = "Replays! https://encontrodeidiomas.com.br\n\n";
+            while ($row = $stmtAll->fetch()) {
+                $num = !empty($row['numero']) ? $row['numero'] : "Nº";
+                $lnk = !empty($row['link']) ? $row['link'] : "Link";
+                $tit = !empty($row['titulo']) ? $row['titulo'] : "Título";
+                $full_text .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
+            }
+            $full_text .= "\nNo.: Máximo de participantes simultâneos / Max simultaneous participants.\n🚀 Stay tuned for the next one! Fique de olho para participar do próximo!";
+
+            // Notifica grupo dos hosts
+            enviarWhatsApp('120363164732845564@g.us', "🔄 *Nova Atualização de Replays!*\nO idioma {$lang_data['nome']} enviou seus dados.\n\nPrévia da mensagem final:\n\n" . $full_text, 'hosts_app');
+        }
+    endif; ?>
+    
+    <style>
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: var(--primary-bg); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; text-align: center; font-weight: 600; }
+        .tab-btn.active { background: var(--accent-red); color: white; border-color: var(--accent-red); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-dim); font-size: 0.9rem; }
+        .form-group input { width: 100%; padding: 12px; background: var(--primary-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-family: inherit; }
+    </style>
+    
     <div class="container">
         <div class="card">
             <div class="logo">Ei</div>
             <h1>Painel dos Hosts</h1>
             
             <?php if (!$logged_in): ?>
-                <p>Digite a senha fornecida pelo administrador para acessar o gerador de mensagens.</p>
+                <p>Digite a senha fornecida pelo administrador para acessar o painel.</p>
                 <?php if (isset($error)): ?><div class="error"><?= $error ?></div><?php endif; ?>
                 <form method="POST">
                     <input type="password" name="password" placeholder="Senha de Acesso" required>
                     <button type="submit" class="btn">Entrar</button>
                 </form>
             <?php else: ?>
-                <p>Selecione seu idioma para gerar a mensagem de início do encontro.</p>
                 
-                <select id="idiomaSelect" onchange="gerarMensagem()">
-                    <option value="">-- Escolha o Idioma --</option>
-                    <?php foreach ($idiomas_disponiveis as $l): ?>
-                        <option value='<?= json_encode([
-                            "nome" => $l['name'],
-                            "emoji" => $l['flag_emoji'],
-                            "emojis" => str_repeat($l['flag_emoji'], 5),
-                            "saudacao" => $l['greeting'],
-                            "meet_link" => $l['meet_link'],
-                            "instagram" => $l['instagram_link']
-                        ]) ?>'><?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                
-                <div id="messageBox" class="message-box"></div>
-                
-                <button id="btnCopy" class="btn btn-copy" style="display:none;" onclick="copiarMensagem()">
-                    <i class="far fa-copy"></i> Copiar Mensagem
-                </button>
+                <?php if (!empty($msg_success)): ?><div style="color:var(--success); text-align:center; margin-bottom:15px; font-weight:bold;"><?= $msg_success ?></div><?php endif; ?>
+
+                <div class="tabs">
+                    <div class="tab-btn active" onclick="switchTab('inicio')">Mensagem de Início</div>
+                    <div class="tab-btn" onclick="switchTab('replay')">Enviar Replay Semanal</div>
+                </div>
+
+                <div id="tab-inicio" class="tab-content active">
+                    <p>Selecione seu idioma para gerar a mensagem de início do encontro.</p>
+                    
+                    <select id="idiomaSelect" onchange="gerarMensagem()">
+                        <option value="">-- Escolha o Idioma --</option>
+                        <?php foreach ($idiomas_disponiveis as $l): ?>
+                            <option value='<?= json_encode([
+                                "nome" => $l['name'],
+                                "emoji" => $l['flag_emoji'],
+                                "emojis" => str_repeat($l['flag_emoji'], 5),
+                                "saudacao" => $l['greeting'],
+                                "meet_link" => $l['meet_link'],
+                                "instagram" => $l['instagram_link']
+                            ]) ?>'><?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    
+                    <div id="messageBox" class="message-box"></div>
+                    
+                    <button id="btnCopy" class="btn btn-copy" style="display:none;" onclick="copiarMensagem()">
+                        <i class="far fa-copy"></i> Copiar Mensagem
+                    </button>
+                </div>
+
+                <div id="tab-replay" class="tab-content">
+                    <p>Preencha os dados do encontro desta semana para gerar o resumo de Replays.</p>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="save_replay">
+                        
+                        <div class="form-group">
+                            <label>Seu Idioma</label>
+                            <select name="idioma_replay" required>
+                                <option value="">-- Selecione --</option>
+                                <?php foreach ($idiomas_disponiveis as $l): ?>
+                                    <option value='<?= json_encode(["id" => $l['id'], "nome" => $l['name']]) ?>'><?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Nº de Participantes</label>
+                            <input type="text" name="replay_numero" placeholder="Ex: 05">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Link da Gravação (Odysee/YouTube)</label>
+                            <input type="text" name="replay_link" placeholder="Ex: https://odysee.com/...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Título / Tema do Encontro</label>
+                            <input type="text" name="replay_titulo" placeholder="Ex: O que fizemos nas férias">
+                        </div>
+                        
+                        <button type="submit" class="btn"><i class="fas fa-save"></i> Enviar Dados</button>
+                    </form>
+                </div>
                 
                 <div style="text-align: center; margin-top: 30px;">
                     <a href="?logout=1" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem;">Sair do Painel</a>
@@ -131,6 +226,19 @@ if ($logged_in) {
     
     <?php if ($logged_in): ?>
     <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'inicio') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-inicio').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-replay').classList.add('active');
+            }
+        }
+
         const templateOriginal = `<?= $template_db ?>`;
         
         function gerarMensagem() {
