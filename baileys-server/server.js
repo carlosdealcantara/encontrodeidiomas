@@ -355,6 +355,24 @@ async function processQueue() {
 
 // === ROUTES ===
 
+// === EMERGENCY: Clear Queue Route ===
+app.post('/clear-queue', (req, res) => {
+    const cleared = queue.length;
+    queue.length = 0; // Esvazia o array in-memory imediatamente
+    
+    // Marca todos os jobs 'running' como abortados
+    for (const id in jobs) {
+        if (jobs[id].status === 'running') {
+            jobs[id].status = 'error';
+            jobs[id].logs.push({ type: 'error', message: '[ABORTADO] Fila esvaziada manualmente via /clear-queue.' });
+        }
+    }
+    saveJobsToFile();
+    
+    console.log(`[EMERGÊNCIA] Fila esvaziada! ${cleared} itens removidos.`);
+    res.json({ success: true, cleared });
+});
+
 // Bulk Queue Route (Used by test_cadence and crons)
 app.post('/send-bulk', (req, res) => {
     try {
