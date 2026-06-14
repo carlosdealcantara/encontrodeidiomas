@@ -11,7 +11,9 @@ $conn = connectDB();
 $msg = null;
 $error = null;
 
-// Enfileirar broadcast
+require_once '../includes/whatsapp_helper.php';
+
+// Disparar broadcast via Baileys Server Queue
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
     $titulo = trim($_POST['titulo']);
     $mensagem = trim($_POST['mensagem']);
@@ -22,25 +24,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
         $error = "Título e mensagem são obrigatórios.";
     } else {
         try {
-            // Contar quantos grupos serão afetados para salvar na fila
-            if ($categoria === 'todos') {
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1");
-                $stmt->execute();
-            } elseif ($categoria === 'multi_idioma') {
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND categoria = 'multi_idioma'");
-                $stmt->execute();
+            // Obter grupos a serem afetados
+            $sql_grupos = "SELECT group_id FROM meetup_whatsapp_groups WHERE ativo = 1";
+            $params = [];
+            
+            if ($categoria === 'multi_idioma') {
+                $sql_grupos .= " AND categoria = 'multi_idioma'";
             } elseif ($categoria === 'especifico') {
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND categoria = 'especifico' AND language_id = ?");
-                $stmt->execute([$language_id]);
+                $sql_grupos .= " AND categoria = 'especifico' AND language_id = ?";
+                $params[] = $language_id;
             }
-            $total_grupos = $stmt->fetchColumn() ?: 0;
+            
+            $stmt = $conn->prepare($sql_grupos);
+            $stmt->execute($params);
+            $grupos = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $total_grupos = count($grupos);
 
             if ($total_grupos > 0) {
-                $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos]);
-                $msg = "Broadcast enfileirado com sucesso! O envio ocorrerá gradualmente no plano de fundo.";
+                // Enviar os grupos diretamente para a fila nativa do Baileys
+                $result = enviarWhatsApp($grupos, $mensagem, 'admin_broadcast');
+                
+                if ($result['success'] && !empty($result['data']['jobId'])) {
+                    $jobId = $result['data']['jobId'];
+                    
+                    $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, job_id, status, iniciado_em) VALUES (?, ?, ?, ?, ?, ?, 'enviando', CURRENT_TIMESTAMP)");
+                    $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos, $jobId]);
+                    
+                    $msg = "Disparo iniciado com sucesso! Acompanhe o progresso abaixo.";
+                } else {
+                    $erroMsg = $result['error'] ?? 'Erro desconhecido na API do Baileys.';
+                    $error = "Falha ao enviar para o motor de disparo: " . $erroMsg;
+                    
+                    // Registra como erro se falhar na largada
+                    $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, status, concluido_em) VALUES (?, ?, ?, ?, ?, 'erro', CURRENT_TIMESTAMP)");
+                    $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos]);
+                }
             } else {
-                $error = "Nenhum grupo ativo encontrado para esta categoria. O broadcast não foi criado.";
+                $error = "Nenhum grupo ativo encontrado para esta categoria. O disparo não foi realizado.";
             }
         } catch (PDOException $e) {
             $error = "Erro no banco de dados: " . $e->getMessage();
@@ -48,22 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
     }
 }
 
-// Cancelar broadcast (apenas se pendente)
-if (isset($_GET['cancel'])) {
-    try {
-        $stmt = $conn->prepare("DELETE FROM wpp_broadcast_queue WHERE id = ? AND status = 'pendente'");
-        $stmt->execute([(int)$_GET['cancel']]);
-        header('Location: wpp_broadcast.php?msg=Broadcast cancelado e removido');
-        exit;
-    } catch (PDOException $e) {
-        $error = "Erro ao cancelar: " . $e->getMessage();
-    }
-}
-
 // Excluir broadcast do histórico (erro ou concluído)
 if (isset($_GET['delete'])) {
     try {
-        $stmt = $conn->prepare("DELETE FROM wpp_broadcast_queue WHERE id = ? AND status IN ('erro', 'concluido')");
+        $stmt = $conn->prepare("DELETE FROM wpp_broadcast_queue WHERE id = ?");
         $stmt->execute([(int)$_GET['delete']]);
         header('Location: wpp_broadcast.php?msg=Broadcast excluído do histórico');
         exit;
@@ -87,6 +95,31 @@ try {
         LEFT JOIN languages l ON q.filtro_language_id = l.id 
         ORDER BY q.criado_em DESC LIMIT 20
     ")->fetchAll();
+
+    // Atualiza status em tempo real via Baileys Server
+    $updated = false;
+    foreach ($historico as &$h) {
+        if ($h['status'] === 'enviando' && !empty($h['job_id'])) {
+            $res = sendBaileysRequest('/status?jobId=' . urlencode($h['job_id']), null, 'GET');
+            if ($res['success']) {
+                $statusData = $res['data'];
+                $nodeStatus = $statusData['status'] ?? 'unknown';
+                $current = $statusData['progress']['current'] ?? 0;
+                
+                if ($nodeStatus === 'completed' || $nodeStatus === 'idle') {
+                    $h['status'] = 'concluido';
+                    $h['enviados'] = $h['total_grupos'];
+                    $conn->exec("UPDATE wpp_broadcast_queue SET status = 'concluido', enviados = total_grupos, concluido_em = CURRENT_TIMESTAMP WHERE id = " . $h['id']);
+                } else if ($nodeStatus === 'error') {
+                    $h['status'] = 'erro';
+                    $conn->exec("UPDATE wpp_broadcast_queue SET status = 'erro', concluido_em = CURRENT_TIMESTAMP WHERE id = " . $h['id']);
+                } else {
+                    $h['enviados'] = $current;
+                    $conn->exec("UPDATE wpp_broadcast_queue SET enviados = " . (int)$current . " WHERE id = " . $h['id']);
+                }
+            }
+        }
+    }
 } catch (PDOException $e) {
     // Se a tabela não existir, ignora (ou exibe aviso)
     $error = "Erro ao carregar histórico: " . $e->getMessage() . " (Execute a migração primeiro se não tiver feito).";
@@ -218,8 +251,8 @@ try {
                         </div>
                     </div>
 
-                    <button type="submit" name="enfileirar" class="btn btn-primary" style="width: 100%;"><i class="fas fa-paper-plane"></i> Enfileirar Disparo</button>
-                    <p style="text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-top: 10px;">O sistema enviará para 5 grupos a cada 10-18 segundos para evitar bloqueios.</p>
+                    <button type="submit" name="enfileirar" class="btn btn-primary" style="width: 100%;"><i class="fas fa-paper-plane"></i> Disparar Mensagem</button>
+                    <p style="text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-top: 10px;">O sistema cuidará do envio no plano de fundo automaticamente (delay de 5s entre cada mensagem).</p>
                 </form>
             </div>
 
