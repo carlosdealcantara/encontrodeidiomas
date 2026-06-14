@@ -64,7 +64,7 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
 
         $lang_emoji = $lang_data['emoji'] ?? '';
         enviarWhatsApp('120363164732845564@g.us',
-            "🔄 *Mensagem Semanal Atualizada!*\nO idioma {$lang_emoji} *{$lang_data['nome']}* enviou os dados desta semana.\n\nPrévia da mensagem final:\n\n" . $full_text,
+            "🔄 *Mensagem Semanal Atualizada!*\nO idioma {$lang_emoji} *{$lang_data['nome']}* atualizou dados desta semana.\n\nPrévia da mensagem final:\n\n" . $full_text,
             'hosts_app'
         );
 
