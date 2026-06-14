@@ -243,7 +243,6 @@ function sanitizeOdyseeUrl(string $url): string {
                                value="<?= htmlspecialchars($prefill['link'] ?? '') ?>"
                                placeholder="https://odysee.com/@EncontroDeIdiomas..."
                                onblur="limparLinkOdysee(this)">
-                        <div class="field-hint">Cole o link direto do Odysee. Se tiver ":número" no final, ele será removido automaticamente.</div>
                         <div class="field-cleaned" id="link-cleaned">✓ Link simplificado automaticamente</div>
                     </div>
 
@@ -251,8 +250,7 @@ function sanitizeOdyseeUrl(string $url): string {
                         <label>Título (Clickbait Honesto)</label>
                         <input type="text" name="replay_titulo" id="replay_titulo"
                                value="<?= htmlspecialchars($prefill['titulo'] ?? '') ?>"
-                               placeholder='Ex: "Ele falou que aprendeu 3 palavras e falou por 40 minutos. Funcionou?"'>
-                        <div class="field-hint">Use uma frase real da conversa que desperte curiosidade genuína.</div>
+                               placeholder='Ex: "Ela disse que aprendeu isso em 40 minutos!"'>
                     </div>
 
                     <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Salvar e Notificar Grupo</button>

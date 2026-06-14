@@ -119,9 +119,14 @@ if (isset($_GET['toggle_status']) && isset($_GET['id'])) {
                 <h2>Gerenciar Anfitriões</h2>
                 <p>Lista completa de todos os membros cadastrados.</p>
             </div>
-            <a href="host_form.php" class="btn-add">
-                <i class="fas fa-plus"></i> Novo Anfitrião
-            </a>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <a href="../hosts_app/index.php" target="_blank" class="btn-add" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);">
+                    <i class="fas fa-external-link-alt"></i> Portal dos Hosts
+                </a>
+                <a href="host_form.php" class="btn-add">
+                    <i class="fas fa-plus"></i> Novo Anfitrião
+                </a>
+            </div>
         </header>
 
         <?php if (isset($_GET['msg'])): ?>

@@ -142,10 +142,8 @@ $nav_items = [
         </a>
         <?php if ($file === 'whatsapp'): ?>
             <ul class="submenu">
-                <li><a href="meetup_groups.php"><i class="fas fa-users-cog"></i> Grupos</a></li>
                 <li><a href="wpp_broadcast.php"><i class="fas fa-bullhorn"></i> Canhão de Disparo</a></li>
                 <li><a href="wpp_resumo_semanal.php"><i class="fas fa-list-alt"></i> Resumo Semanal</a></li>
-                <li><a href="../hosts_app/index.php" target="_blank"><i class="fas fa-external-link-alt"></i> Portal dos Hosts</a></li>
             </ul>
         <?php endif; ?>
         <?php endforeach; ?>
