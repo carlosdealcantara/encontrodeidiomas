@@ -5,12 +5,11 @@
  * Active state detected automatically via PHP_SELF.
  */
 $admin_current_page = basename($_SERVER['PHP_SELF']);
-$is_whatsapp_page = in_array($admin_current_page, ['meetup_groups.php', 'conectar_whatsapp.php', 'meetup_templates.php', 'wpp_broadcast.php']);
+$is_whatsapp_page = in_array($admin_current_page, ['meetup_groups.php', 'conectar_whatsapp.php', 'meetup_templates.php', 'wpp_broadcast.php', 'wpp_resumo_semanal.php']);
 
 $nav_items = [
     'index.php'        => ['icon' => 'fas fa-chart-pie',      'label' => 'Dashboard'],
     'hosts.php'        => ['icon' => 'fas fa-users',           'label' => 'Equipe'],
-    '../hosts_app/index.php' => ['icon' => 'fas fa-chalkboard-teacher', 'label' => 'App Hosts'],
     'meetings.php'     => ['icon' => 'fas fa-calendar-alt',   'label' => 'Online'],
     'presencial.php'   => ['icon' => 'fas fa-map-marker-alt', 'label' => 'Presencial'],
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
@@ -143,8 +142,10 @@ $nav_items = [
         </a>
         <?php if ($file === 'whatsapp'): ?>
             <ul class="submenu">
+                <li><a href="meetup_groups.php"><i class="fas fa-users-cog"></i> Grupos</a></li>
                 <li><a href="wpp_broadcast.php"><i class="fas fa-bullhorn"></i> Canhão de Disparo</a></li>
                 <li><a href="wpp_resumo_semanal.php"><i class="fas fa-list-alt"></i> Resumo Semanal</a></li>
+                <li><a href="../hosts_app/index.php" target="_blank"><i class="fas fa-external-link-alt"></i> Portal dos Hosts</a></li>
             </ul>
         <?php endif; ?>
         <?php endforeach; ?>

@@ -9,6 +9,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $conn = connectDB();
 $msg_success = null;
+$semana_atual = date('o-\WW');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_all') {
     if (!empty($_POST['replays'])) {
@@ -19,25 +20,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $titulo = trim($data['titulo']);
             
             $stmt = $conn->prepare("
-                INSERT INTO meetup_replays (language_id, numero, link, titulo)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO meetup_replays (language_id, semana, numero, link, titulo)
+                VALUES (?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE numero = VALUES(numero), link = VALUES(link), titulo = VALUES(titulo)
             ");
-            $stmt->execute([$lang_id, $numero, $link, $titulo]);
+            $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
         }
         $msg_success = "Dados atualizados com sucesso!";
+        header('Location: wpp_resumo_semanal.php?msg=Dados+salvos!');
+        exit;
     }
 }
 
-// Fetch all languages with their current replays
-$stmt = $conn->query("
+// Fetch all languages with their replays for the CURRENT WEEK only
+$stmt = $conn->prepare("
     SELECT l.id as language_id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
     FROM languages l 
-    LEFT JOIN meetup_replays r ON l.id = r.language_id 
+    LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
     WHERE l.active = 1 
     ORDER BY l.name ASC
 ");
+$stmt->execute([$semana_atual]);
 $replays = $stmt->fetchAll();
+
+// Success message from redirect
+if (isset($_GET['msg'])) $msg_success = htmlspecialchars($_GET['msg']);
 
 $full_text = "Replays! https://encontrodeidiomas.com.br\n\n";
 foreach ($replays as $r) {
