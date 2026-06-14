@@ -50,15 +50,17 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
             WHERE l.active = 1 
             ORDER BY l.name ASC
         ");
-        $full_text = "*Replays!* https://encontrodeidiomas.com.br\n\n";
+        $replays_list = "";
         while ($row = $stmtAll->fetch()) {
             $num = !empty($row['numero']) ? $row['numero'] : "Nº";
             $lnk = !empty($row['link'])   ? $row['link']   : "Link";
             $tit = !empty($row['titulo']) ? $row['titulo'] : "Título";
-            $full_text .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
+            $replays_list .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
         }
-        $footer = getSetting('weekly_summary_footer', "*Nº: Máximo de participantes simultâneos | Max simultaneous participants.\n🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*");
-        $full_text .= "\n" . $footer;
+        
+        $default_template = "*Replays!* https://encontrodeidiomas.com.br\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
+        $template = getSetting('weekly_summary_template', $default_template);
+        $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
 
         $lang_emoji = $lang_data['emoji'] ?? '';
         enviarWhatsApp('120363164732845564@g.us',

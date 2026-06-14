@@ -32,6 +32,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_template') {
+    $new_template = trim($_POST['template_text']);
+    $stmt = $conn->prepare("
+        INSERT INTO settings (setting_key, category, label, type, setting_value)
+        VALUES ('weekly_summary_template', 'WhatsApp', 'Template do Resumo Semanal', 'textarea', ?)
+        ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    ");
+    $stmt->execute([$new_template]);
+    header('Location: wpp_resumo_semanal.php?msg=Template+salvo!');
+    exit;
+}
+
 // Fetch all languages with their replays for the CURRENT WEEK only
 $stmt = $conn->prepare("
     SELECT l.id as language_id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
@@ -46,14 +58,19 @@ $replays = $stmt->fetchAll();
 // Success message from redirect
 if (isset($_GET['msg'])) $msg_success = htmlspecialchars($_GET['msg']);
 
-$full_text = "Replays! https://encontrodeidiomas.com.br\n\n";
+// Generate Replays List String
+$replays_list = "";
 foreach ($replays as $r) {
     $num = !empty($r['numero']) ? $r['numero'] : "Nº";
     $lnk = !empty($r['link']) ? $r['link'] : "Link";
     $tit = !empty($r['titulo']) ? $r['titulo'] : "Título";
-    $full_text .= "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
-$footer = getSetting('weekly_summary_footer', "*Nº: Máximo de participantes simultâneos | Max simultaneous participants.\n🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*");
-$full_text .= "\n" . $footer;
+    $replays_list .= "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
+}
+
+$default_template = "*Replays!* https://encontrodeidiomas.com.br\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
+$template = getSetting('weekly_summary_template', $default_template);
+
+$full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
 
 ?>
 <!DOCTYPE html>
@@ -162,6 +179,7 @@ $full_text .= "\n" . $footer;
             
             <div class="actions-bar">
                 <button class="btn btn-outline" onclick="copiarTexto()"><i class="far fa-copy"></i> Copiar Texto</button>
+                <button class="btn btn-outline" onclick="document.getElementById('templateModal').style.display='block'"><i class="fas fa-edit"></i> Editar Template</button>
                 
                 <form method="POST" action="wpp_broadcast.php">
                     <input type="hidden" name="prefill_message" id="prefillMessage" value="<?= htmlspecialchars($full_text) ?>">
@@ -172,7 +190,35 @@ $full_text .= "\n" . $footer;
         </div>
     </div>
     
+    <!-- Modal for Template Editing -->
+    <div id="templateModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+        <div class="card" style="width: 100%; max-width: 600px; margin: 40px auto; position: relative;">
+            <button onclick="document.getElementById('templateModal').style.display='none'" style="position:absolute; top:20px; right:20px; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+            <h2>Editar Layout da Mensagem</h2>
+            <p style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.9rem;">
+                Use a tag <strong>{REPLAYS_LIST}</strong> no local exato onde deseja que a lista de idiomas apareça.
+            </p>
+            <form method="POST">
+                <input type="hidden" name="action" value="save_template">
+                <textarea name="template_text" required><?= htmlspecialchars($template) ?></textarea>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Salvar Layout</button>
+            </form>
+        </div>
+    </div>
+    
     <script>
+        // Check if modal should be shown initially (e.g. if we add a hash in future)
+        if(window.location.hash === '#edit_template') document.getElementById('templateModal').style.display = 'flex';
+        else document.getElementById('templateModal').style.display = 'none';
+
+        // Override standard display:block for modal to use flex for centering
+        const originalShow = document.getElementById('templateModal').style.display;
+        Object.defineProperty(document.getElementById('templateModal').style, 'display', {
+            set: function(val) {
+                if (val === 'block') this.cssText += 'display: flex !important;';
+                else this.cssText += 'display: none !important;';
+            }
+        });
         function copiarTexto() {
             const textarea = document.getElementById('finalMessage');
             textarea.select();
