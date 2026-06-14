@@ -193,11 +193,11 @@ try {
     <main class="main-content">
         <!-- WhatsApp Sub-Nav -->
         <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <a href="meetup_groups.php" class="btn btn-secondary"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
-            <a href="meetup_templates.php" class="btn btn-secondary"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
-            <a href="wpp_broadcast.php" class="btn btn-primary"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
-            <a href="wpp_resumo_semanal.php" class="btn btn-secondary"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
-            <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-qrcode"></i> Conexão e Status</a>
+            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
+            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
+            <a href="wpp_broadcast.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_broadcast.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
+            <a href="wpp_resumo_semanal.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_resumo_semanal.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
+            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
         </div>
 
         <header class="header">
