@@ -50,7 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
                     $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, job_id, status, iniciado_em) VALUES (?, ?, ?, ?, ?, ?, 'enviando', CURRENT_TIMESTAMP)");
                     $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos, $jobId]);
                     
-                    $msg = "Disparo iniciado com sucesso! Acompanhe o progresso abaixo.";
+                    // PRG: redireciona para GET para evitar re-envio do formulário no reload
+                    header('Location: wpp_broadcast.php?msg=Disparo+iniciado+com+sucesso%21');
+                    exit;
                 } else {
                     $erroMsg = $result['error'] ?? 'Erro desconhecido na API do Baileys.';
                     $error = "Falha ao enviar para o motor de disparo: " . $erroMsg;
@@ -365,12 +367,20 @@ try {
         // Call preview on load
         updatePreview();
         
-        // Auto refresh page every 10 seconds if there are sending items
+        // AJAX polling seguro: atualiza o progresso sem re-submeter o formulário
+        // Usa fetch para buscar uma versão leve dos dados de status
+        function pollStatus() {
+            const sendingRows = document.querySelectorAll('.bg-sending');
+            if (sendingRows.length === 0) return; // Nada enviando, para o poll
+            
+            // Recarrega APENAS a seção do histórico via navegação GET segura
+            // window.location.href é um GET e não reenvia POST
+            window.location.href = window.location.pathname + '?poll=1';
+        }
+        
         const hasSending = document.querySelector('.bg-sending');
         if (hasSending) {
-            setTimeout(() => {
-                window.location.reload();
-            }, 10000);
+            setTimeout(pollStatus, 10000);
         }
     </script>
 </body>
