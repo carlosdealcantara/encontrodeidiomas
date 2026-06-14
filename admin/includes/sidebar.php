@@ -140,12 +140,6 @@ $nav_items = [
         <a href="<?= $href ?>" class="nav-item <?= $isActive ? 'active' : '' ?>">
             <i class="<?= $item['icon'] ?>"></i> <?= $item['label'] ?>
         </a>
-        <?php if ($file === 'whatsapp'): ?>
-            <ul class="submenu">
-                <li><a href="wpp_broadcast.php"><i class="fas fa-bullhorn"></i> Canhão de Disparo</a></li>
-                <li><a href="wpp_resumo_semanal.php"><i class="fas fa-list-alt"></i> Resumo Semanal</a></li>
-            </ul>
-        <?php endif; ?>
         <?php endforeach; ?>
     </nav>
 

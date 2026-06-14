@@ -196,6 +196,7 @@ try {
             <a href="meetup_groups.php" class="btn btn-secondary"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
             <a href="meetup_templates.php" class="btn btn-secondary"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
             <a href="wpp_broadcast.php" class="btn btn-primary"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
+            <a href="wpp_resumo_semanal.php" class="btn btn-secondary"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
             <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-qrcode"></i> Conexão e Status</a>
         </div>
 

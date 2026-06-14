@@ -120,6 +120,15 @@ $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
     <?php include 'includes/sidebar.php'; ?>
     
     <div class="main-content">
+        <!-- WhatsApp Sub-Nav -->
+        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <a href="meetup_groups.php" class="btn btn-secondary" style="background: transparent; color: var(--text-main); font-weight: normal;"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
+            <a href="meetup_templates.php" class="btn btn-secondary" style="background: transparent; color: var(--text-main); font-weight: normal;"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
+            <a href="wpp_broadcast.php" class="btn btn-secondary" style="background: transparent; color: var(--text-main); font-weight: normal;"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
+            <a href="wpp_resumo_semanal.php" class="btn btn-primary"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
+            <a href="conectar_whatsapp.php" class="btn btn-secondary" style="background: transparent; color: var(--text-main); font-weight: normal;"><i class="fas fa-qrcode"></i> Conexão e Status</a>
+        </div>
+
         <div class="header">
             <h1 style="font-size: 2rem; margin-bottom: 5px;">Gerador de Resumo Semanal</h1>
             <p style="color: var(--text-dim);">Acompanhe o preenchimento dos hosts e gere o broadcast final.</p>

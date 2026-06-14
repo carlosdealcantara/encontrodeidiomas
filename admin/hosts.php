@@ -120,7 +120,7 @@ if (isset($_GET['toggle_status']) && isset($_GET['id'])) {
                 <p>Lista completa de todos os membros cadastrados.</p>
             </div>
             <div style="display: flex; gap: 12px; align-items: center;">
-                <a href="../hosts_app/index.php" target="_blank" class="btn-add" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);">
+                <a href="../portal_hosts/index.php" target="_blank" class="btn-add" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);">
                     <i class="fas fa-external-link-alt"></i> Portal dos Hosts
                 </a>
                 <a href="host_form.php" class="btn-add">
