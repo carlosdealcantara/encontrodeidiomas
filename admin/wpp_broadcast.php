@@ -44,14 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
                 // Enviar os grupos diretamente para a fila nativa do Baileys
                 $result = enviarWhatsApp($grupos, $mensagem, 'admin_broadcast');
                 
-                if ($result['success'] && !empty($result['data']['jobId'])) {
-                    $jobId = $result['data']['jobId'];
-                    
-                    $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, job_id, status, iniciado_em) VALUES (?, ?, ?, ?, ?, ?, 'enviando', CURRENT_TIMESTAMP)");
-                    $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos, $jobId]);
+                if ($result['success']) {
+                    $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, enviados, status, iniciado_em, concluido_em) VALUES (?, ?, ?, ?, ?, ?, 'concluido', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)");
+                    $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos, $total_grupos]);
                     
                     // PRG: redireciona para GET para evitar re-envio do formulário no reload
-                    header('Location: wpp_broadcast.php?msg=Disparo+iniciado+com+sucesso%21');
+                    header('Location: wpp_broadcast.php?msg=Disparo+concluído+com+sucesso%21');
                     exit;
                 } else {
                     $erroMsg = $result['error'] ?? 'Erro desconhecido na API do Baileys.';
@@ -98,30 +96,7 @@ try {
         ORDER BY q.criado_em DESC LIMIT 20
     ")->fetchAll();
 
-    // Atualiza status em tempo real via Baileys Server
-    $updated = false;
-    foreach ($historico as &$h) {
-        if ($h['status'] === 'enviando' && !empty($h['job_id'])) {
-            $res = sendBaileysRequest('/status?jobId=' . urlencode($h['job_id']), null, 'GET');
-            if ($res['success']) {
-                $statusData = $res['data'];
-                $nodeStatus = $statusData['status'] ?? 'unknown';
-                $current = $statusData['progress']['current'] ?? 0;
-                
-                if ($nodeStatus === 'completed' || $nodeStatus === 'idle') {
-                    $h['status'] = 'concluido';
-                    $h['enviados'] = $h['total_grupos'];
-                    $conn->exec("UPDATE wpp_broadcast_queue SET status = 'concluido', enviados = total_grupos, concluido_em = CURRENT_TIMESTAMP WHERE id = " . $h['id']);
-                } else if ($nodeStatus === 'error') {
-                    $h['status'] = 'erro';
-                    $conn->exec("UPDATE wpp_broadcast_queue SET status = 'erro', concluido_em = CURRENT_TIMESTAMP WHERE id = " . $h['id']);
-                } else {
-                    $h['enviados'] = $current;
-                    $conn->exec("UPDATE wpp_broadcast_queue SET enviados = " . (int)$current . " WHERE id = " . $h['id']);
-                }
-            }
-        }
-    }
+
 } catch (PDOException $e) {
     // Se a tabela não existir, ignora (ou exibe aviso)
     $error = "Erro ao carregar histórico: " . $e->getMessage() . " (Execute a migração primeiro se não tiver feito).";
@@ -305,11 +280,7 @@ try {
                                     </div>
                                 </td>
                                 <td>
-                                    <?php if ($h['status'] === 'pendente'): ?>
-                                        <a href="?cancel=<?= $h['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--warning);" title="Cancelar" onclick="return confirm('Cancelar e excluir este disparo?')"><i class="fas fa-times"></i></a>
-                                    <?php else: ?>
                                         <a href="?delete=<?= $h['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--accent-red);" title="Excluir do Histórico" onclick="return confirm('Excluir este item do histórico?')"><i class="fas fa-trash"></i></a>
-                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -368,21 +339,7 @@ try {
         // Call preview on load
         updatePreview();
         
-        // AJAX polling seguro: atualiza o progresso sem re-submeter o formulário
-        // Usa fetch para buscar uma versão leve dos dados de status
-        function pollStatus() {
-            const sendingRows = document.querySelectorAll('.bg-sending');
-            if (sendingRows.length === 0) return; // Nada enviando, para o poll
-            
-            // Recarrega APENAS a seção do histórico via navegação GET segura
-            // window.location.href é um GET e não reenvia POST
-            window.location.href = window.location.pathname + '?poll=1';
-        }
-        
-        const hasSending = document.querySelector('.bg-sending');
-        if (hasSending) {
-            setTimeout(pollStatus, 10000);
-        }
+
     </script>
 </body>
 </html>
