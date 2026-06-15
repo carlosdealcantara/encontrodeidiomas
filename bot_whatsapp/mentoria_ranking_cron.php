@@ -55,8 +55,22 @@ $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 $rankingMsgs = [];
 $rankingReacts = [];
 
-// Agrupa as interações de todos os grupos monitorados pelo Baileys
+// Coleta apenas os JIDs dos grupos configurados na mentoria
+$allowedGroups = [];
+if (!empty($config['groups'])) {
+    foreach ($config['groups'] as $groupKey => $groupData) {
+        if (!empty($groupData['jid'])) {
+            $allowedGroups[] = $groupData['jid'];
+        }
+    }
+}
+
+// Agrupa as interações apenas dos grupos configurados
 foreach ($activity as $groupJid => $members) {
+    if (!in_array($groupJid, $allowedGroups)) {
+        continue;
+    }
+    
     foreach ($members as $memberJid => $data) {
         if ($memberJid === $adminJid) continue;
         

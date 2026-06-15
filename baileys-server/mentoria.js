@@ -99,6 +99,10 @@ async function handleMessages({ messages, type }) {
         const groupJid = msg.key.remoteJid;
         if (!groupJid?.endsWith('@g.us')) continue; // Only groups
 
+        // Check if group is one of the configured ones, ignore others
+        const allowedGroups = Object.values(config.groups || {}).map(g => g.jid);
+        if (!allowedGroups.includes(groupJid)) continue;
+
         // Se a mensagem foi enviada pelo próprio aparelho do bot (fromMe)
         // e o participant estiver vazio, usamos o JID do próprio bot
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
