@@ -40,6 +40,8 @@ if ($check->rowCount() > 0 && !isset($_GET['force'])) {
     die("Ranking já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
 }
 
+$config = getMentoriaConfig();
+
 $targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
 if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
 
