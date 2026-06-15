@@ -46,26 +46,37 @@ $targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
 if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
 
 $activity = fetchBaileysActivity($ontem); // Pega atividade de ontem!
-$members = $activity[$targetGroup] ?? [];
 
-if (empty($members)) {
-    die("Nenhuma atividade registrada ontem ($ontem) no grupo The Lounge.");
+if (empty($activity)) {
+    die("Nenhuma atividade registrada ontem ($ontem) no servidor Baileys.");
 }
 
 $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 $rankingMsgs = [];
 $rankingReacts = [];
 
-foreach ($members as $memberJid => $data) {
-    if ($memberJid === $adminJid) continue;
-    
-    if ($data['messages'] > 0) {
-        $rankingMsgs[$memberJid] = ['name' => $data['name'], 'score' => $data['messages']];
-    }
-    if ($data['reactions_given'] > 0) {
-        $rankingReacts[$memberJid] = ['name' => $data['name'], 'score' => $data['reactions_given']];
+// Agrupa as interações de todos os grupos monitorados pelo Baileys
+foreach ($activity as $groupJid => $members) {
+    foreach ($members as $memberJid => $data) {
+        if ($memberJid === $adminJid) continue;
+        
+        // Inicializa se não existir
+        if (!isset($rankingMsgs[$memberJid])) {
+            $rankingMsgs[$memberJid] = ['name' => $data['name'], 'score' => 0];
+        }
+        if (!isset($rankingReacts[$memberJid])) {
+            $rankingReacts[$memberJid] = ['name' => $data['name'], 'score' => 0];
+        }
+        
+        // Soma os pontos
+        $rankingMsgs[$memberJid]['score'] += $data['messages'] ?? 0;
+        $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
     }
 }
+
+// Filtra quem tem score 0
+$rankingMsgs = array_filter($rankingMsgs, fn($item) => $item['score'] > 0);
+$rankingReacts = array_filter($rankingReacts, fn($item) => $item['score'] > 0);
 
 // Ordena e pega top 5 de mensagens
 uasort($rankingMsgs, fn($a, $b) => $b['score'] <=> $a['score']);
@@ -109,7 +120,7 @@ if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
 $result = enviarWhatsApp($targetGroup, $message, 'mentoria_ranking');
 if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
     $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_diario', ?, ?)")
-         ->execute([$ontem, json_encode($top5)]);
+         ->execute([$ontem, json_encode(['top5msgs' => $top5Msgs, 'top5reacts' => $top5Reacts])]);
     echo "✅ Ranking enviado!";
 } else {
     echo "❌ Erro ao enviar ranking: HTTP " . $result['httpCode'];
