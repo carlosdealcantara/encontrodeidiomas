@@ -249,10 +249,26 @@
 </div>
 
 <script>
-    function openSubTab(tabId) {
+    function openSubTab(tabId, btn) {
         document.querySelectorAll('.sub-tab-pane').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        
+        if (btn) {
+            btn.classList.add('active');
+        } else if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        } else {
+            const targetBtn = document.querySelector(`.sub-tab-btn[onclick*="${tabId}"]`);
+            if (targetBtn) targetBtn.classList.add('active');
+        }
+        localStorage.setItem('active_mentoria_sub_tab', tabId);
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const savedTab = localStorage.getItem('active_mentoria_sub_tab');
+        if (savedTab && document.getElementById(savedTab)) {
+            openSubTab(savedTab);
+        }
+    });
 </script>
