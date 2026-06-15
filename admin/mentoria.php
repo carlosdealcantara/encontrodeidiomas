@@ -44,9 +44,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     $newConfig = [
         'admin_jid' => trim($_POST['admin_jid']),
         'groups' => [
-            'our_classes' => ['jid' => trim($_POST['jid_our_classes']), 'automations' => ['lembrete_aula']],
-            'desafio' => ['jid' => trim($_POST['jid_desafio']), 'automations' => ['auto_kick', 'aviso']],
-            'the_lounge' => ['jid' => trim($_POST['jid_the_lounge']), 'automations' => ['welcome', 'ranking_geral']]
+            'our_classes'   => ['jid' => trim($_POST['jid_our_classes']),   'automations' => ['lembrete_aula']],
+            'desafio'       => ['jid' => trim($_POST['jid_desafio']),        'automations' => ['auto_kick', 'aviso']],
+            'the_lounge'    => ['jid' => trim($_POST['jid_the_lounge']),     'automations' => ['welcome', 'ranking_geral']],
+            'pronunciation' => ['jid' => trim($_POST['jid_pronunciation'] ?? ''), 'automations' => ['ranking']],
+            'music'         => ['jid' => trim($_POST['jid_music'] ?? ''),        'automations' => ['ranking']],
+            'vocabulary'    => ['jid' => trim($_POST['jid_vocabulary'] ?? ''),   'automations' => ['ranking']],
+            'games'         => ['jid' => trim($_POST['jid_games'] ?? ''),        'automations' => ['ranking']]
         ],
         'templates' => [
             'welcome' => trim($_POST['tpl_welcome']),
@@ -79,9 +83,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
 
 $config = getMentoriaConfig();
 $admin_jid = $config['admin_jid'] ?? '556192666148@s.whatsapp.net';
-$jid_our_classes = $config['groups']['our_classes']['jid'] ?? '';
-$jid_desafio = $config['groups']['desafio']['jid'] ?? '';
-$jid_the_lounge = $config['groups']['the_lounge']['jid'] ?? '';
+$jid_our_classes  = $config['groups']['our_classes']['jid']   ?? '';
+$jid_desafio      = $config['groups']['desafio']['jid']       ?? '';
+$jid_the_lounge   = $config['groups']['the_lounge']['jid']    ?? '';
+$jid_pronunciation= $config['groups']['pronunciation']['jid'] ?? '';
+$jid_music        = $config['groups']['music']['jid']         ?? '';
+$jid_vocabulary   = $config['groups']['vocabulary']['jid']    ?? '';
+$jid_games        = $config['groups']['games']['jid']         ?? '';
 
 $tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
 $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";

@@ -36,6 +36,10 @@
     <button class="sub-tab-btn" onclick="openSubTab('sub_thelounge')"><i class="fas fa-coffee"></i> The Lounge</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_desafio')"><i class="fas fa-fire"></i> Desafio Diário</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><i class="fas fa-video"></i> Our Classes</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_pronunciation')">🗣️ Reading out loud</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_music')">🎶 Music Lab</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_vocabulary')">📒 New word!</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_games')">🧩 Games</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_testes')"><i class="fas fa-vial"></i> Testes Manuais</button>
 </div>
 
@@ -178,6 +182,58 @@
                 <label>Status da Aula (!list)</label>
                 <textarea name="tpl_class_status"><?= htmlspecialchars($tpl_class_status) ?></textarea>
                 <p class="help-text">Retorna as informações da próxima aula sem registrar o aluno. Use <code>{class_info}</code>, <code>{attendees}</code> e <code>{deadline_info}</code>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB TAB READING OUT LOUD -->
+    <div id="sub_pronunciation" class="sub-tab-pane">
+        <div class="form-card">
+            <h3 class="section-title">🗣️ Reading out loud</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de prática de pronúncia. O bot detecta automaticamente quando alguém envia um <strong>áudio</strong> e registra como atividade de pronúncia (<strong>4 pts + ⭐</strong>) para o ranking diário.</p>
+            <div class="form-group">
+                <label>Mapeamento de Grupo (JID)</label>
+                <?= renderGroupSelect('jid_pronunciation', $jid_pronunciation, $available_groups) ?>
+                <p class="help-text">Selecione o grupo "Reading out loud" do WhatsApp. Mensagens de <strong>áudio</strong> enviadas aqui serão contabilizadas no ranking.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB TAB MUSIC LAB -->
+    <div id="sub_music" class="sub-tab-pane">
+        <div class="form-card">
+            <h3 class="section-title">🎶 Music Lab</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de música com LingoClip. O bot detecta automaticamente quando alguém envia uma <strong>imagem</strong> (print da partida) e registra como atividade musical (<strong>2 pts</strong>) para o ranking diário.</p>
+            <div class="form-group">
+                <label>Mapeamento de Grupo (JID)</label>
+                <?= renderGroupSelect('jid_music', $jid_music, $available_groups) ?>
+                <p class="help-text">Selecione o grupo "Music Lab" do WhatsApp. <strong>Imagens</strong> enviadas aqui serão contabilizadas no ranking.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB TAB NEW WORD! -->
+    <div id="sub_vocabulary" class="sub-tab-pane">
+        <div class="form-card">
+            <h3 class="section-title">📒 New word!</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de vocabulário. O bot detecta automaticamente quando alguém envia uma <strong>imagem</strong> (palavras novas aprendidas) e registra como atividade de vocabulário (<strong>2 pts</strong>) para o ranking diário.</p>
+            <div class="form-group">
+                <label>Mapeamento de Grupo (JID)</label>
+                <?= renderGroupSelect('jid_vocabulary', $jid_vocabulary, $available_groups) ?>
+                <p class="help-text">Selecione o grupo "New word!" do WhatsApp. <strong>Imagens</strong> enviadas aqui serão contabilizadas no ranking.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB TAB GAMES -->
+    <div id="sub_games" class="sub-tab-pane">
+        <div class="form-card">
+            <h3 class="section-title">🧩 Games</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de jogos educativos de inglês. O bot detecta automaticamente quando alguém envia uma <strong>imagem</strong> (print do jogo) e registra como atividade lúdica (<strong>2 pts</strong>) para o ranking diário.</p>
+            <div class="form-group">
+                <label>Mapeamento de Grupo (JID)</label>
+                <?= renderGroupSelect('jid_games', $jid_games, $available_groups) ?>
+                <p class="help-text">Selecione o grupo "Games" do WhatsApp. <strong>Imagens</strong> enviadas aqui serão contabilizadas no ranking.</p>
             </div>
         </div>
     </div>

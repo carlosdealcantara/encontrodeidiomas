@@ -68,9 +68,9 @@ function logActivity(groupJid, senderJid, senderName, type) {
             messages: 0,
             reactions_given: 0,
             images_sent: 0,
+            audios_sent: 0,
             first_message_at: new Date().toISOString(),
             last_message_at: new Date().toISOString(),
-            streaks: 0 // Simplification for now, full streak calc needs historical check
         };
     }
 
@@ -79,8 +79,9 @@ function logActivity(groupJid, senderJid, senderName, type) {
     } else if (type === 'reaction') {
         data[date][groupJid][senderJid].reactions_given += 1;
     } else if (type === 'image') {
-        data[date][groupJid][senderJid].messages += 1;
         data[date][groupJid][senderJid].images_sent = (data[date][groupJid][senderJid].images_sent || 0) + 1;
+    } else if (type === 'audio') {
+        data[date][groupJid][senderJid].audios_sent = (data[date][groupJid][senderJid].audios_sent || 0) + 1;
     }
     
     data[date][groupJid][senderJid].last_message_at = new Date().toISOString();
@@ -118,6 +119,9 @@ async function handleMessages({ messages, type }) {
         // Check if reaction (ignora reações automáticas do bot)
         if (msg.message?.reactionMessage && !msg.key.fromMe) {
             logActivity(groupJid, senderJid, senderName, 'reaction');
+        } else if (msg.message?.audioMessage && !msg.key.fromMe) {
+            // Áudio detectado — conta como atividade de pronúncia (Reading out loud)
+            logActivity(groupJid, senderJid, senderName, 'audio');
         } else if (msg.message?.imageMessage && !msg.key.fromMe) {
             logActivity(groupJid, senderJid, senderName, 'image');
             
