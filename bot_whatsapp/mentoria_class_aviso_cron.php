@@ -53,6 +53,8 @@ $deadlineObj->modify('-1 hour');
 
 $dateEn = date('l, F jS'); // Ex: Friday, June 13th
 
+$tpl = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nWe have a session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
+
 // Ajusta o template caso ele ainda use BRT (força a usar UTC-3)
 $tpl = str_replace(' BRT', '', $tpl); // Remove BRT se existir no template
 // Adiciona a data no cabeçalho. Se já tiver asterisco mantemos, senão ignoramos
