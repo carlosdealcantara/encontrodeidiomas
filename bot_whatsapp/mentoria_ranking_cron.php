@@ -100,38 +100,45 @@ $top5Msgs = array_slice($rankingMsgs, 0, 5, true);
 uasort($rankingReacts, fn($a, $b) => $b['score'] <=> $a['score']);
 $top5Reacts = array_slice($rankingReacts, 0, 5, true);
 
-$medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+$medals = ['🥇', '🥈', '🥉'];
 
 $msgList = '';
 $i = 0;
+$mentions = [];
 foreach ($top5Msgs as $jid => $data) {
-    $msgList .= $medals[$i] . " *{$data['name']}* — {$data['score']} msgs\n";
+    $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
+    $jidClean = explode('@', $jid)[0];
+    $msgList .= $rankStr . " @{$jidClean} — {$data['score']} msgs\n";
+    $mentions[] = $jid;
     $i++;
 }
 
 $reactList = '';
 $i = 0;
 foreach ($top5Reacts as $jid => $data) {
-    $reactList .= $medals[$i] . " *{$data['name']}* — {$data['score']} reacts\n";
+    $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
+    $jidClean = explode('@', $jid)[0];
+    $reactList .= $rankStr . " @{$jidClean} — {$data['score']} reacts\n";
+    $mentions[] = $jid;
     $i++;
 }
 
-$rankingList = "🗣️ *Word Slingers*\n";
-$rankingList .= $msgList ?: "No messages yesterday.\n";
-$rankingList .= "\n🔥 *Emoji Gang*\n";
-$rankingList .= $reactList ?: "No reactions yesterday.\n";
+$template = $config['templates']['ranking_social'] ?? "🏆 *Daily Social Ranking* ({date})\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
 
-$template = $config['templates']['ranking_diario'] ?? "🏆 *Daily Ranking* ({date})\n\n{ranking_list}";
+// Format date in English, e.g. "June 13th, 2026"
+$enDate = date('F jS, Y', strtotime($ontem));
+
 $message = str_replace(
-    ['{date}', '{ranking_list}'],
-    [date('d/m/Y', strtotime($ontem)), $rankingList],
+    ['{date}', '{word_slingers_list}', '{emoji_gang_list}'],
+    [$enDate, $msgList ?: "No messages yesterday.\n", $reactList ?: "No reactions yesterday.\n"],
     $template
 );
 
 $targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
 if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
 
-$result = enviarWhatsApp($targetGroup, $message, 'mentoria_ranking');
+$mentions = array_values(array_unique($mentions));
+$result = enviarWhatsAppMention($targetGroup, $message, $mentions);
 if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
     $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_diario', ?, ?)")
          ->execute([$ontem, json_encode(['top5msgs' => $top5Msgs, 'top5reacts' => $top5Reacts])]);
