@@ -43,13 +43,21 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
         $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
 
         // Gera prévia consolidada da semana e notifica o grupo dos hosts
-        $stmtAll = $conn->query("
-            SELECT l.flag_emoji, r.numero, r.link, r.titulo 
+        $stmtAll = $conn->prepare("
+            SELECT l.id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
             FROM languages l 
-            LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = '$semana_atual'
+            LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
+            LEFT JOIN (
+                SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
+                FROM meetings 
+                WHERE active = 1 
+                GROUP BY language_id
+            ) m ON l.id = m.language_id
             WHERE l.active = 1 
-            ORDER BY l.name ASC
+            ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC
         ");
+        $stmtAll->execute([$semana_atual]);
+        
         $replays_list = "";
         while ($row = $stmtAll->fetch()) {
             $num = !empty($row['numero']) ? $row['numero'] : "Nº";
