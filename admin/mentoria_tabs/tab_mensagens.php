@@ -71,15 +71,10 @@
                 <textarea name="tpl_welcome"><?= htmlspecialchars($tpl_welcome) ?></textarea>
                 <p class="help-text">Use <code>{name}</code> para o nome ou <code>@{name}</code> para marcar a pessoa.</p>
             </div>
-            <div class="form-group">
-                <label>Ranking Social (Enviado à meia-noite)</label>
-                <textarea name="tpl_ranking_social"><?= htmlspecialchars($tpl_ranking_social) ?></textarea>
-                <p class="help-text">Use <code>{date}</code> para a data, e <code>{word_slingers_list}</code> / <code>{emoji_gang_list}</code> para injetar as listas.</p>
-            </div>
             <div class="form-group" style="margin-top: 20px;">
-                <label>Ranking de Dedicação (Student of the Day)</label>
-                <textarea name="tpl_ranking_dedicados" style="min-height: 180px;"><?= htmlspecialchars($tpl_ranking_dedicados) ?></textarea>
-                <p class="help-text">Ranking de pontos. Use <code>{date}</code>, <code>{student_of_the_day}</code>, <code>{other_participants}</code> e <code>{legend}</code>.</p>
+                <label>Ranking Diário (Student of the Day + Social)</label>
+                <textarea name="tpl_ranking_dedicados" style="min-height: 250px;"><?= htmlspecialchars($tpl_ranking_dedicados) ?></textarea>
+                <p class="help-text">Ranking Unificado. Variáveis: <code>{date}</code>, <code>{student_of_the_day}</code>, <code>{other_participants}</code>, <code>{legend}</code>, <code>{word_slingers_list}</code> e <code>{emoji_gang_list}</code>.</p>
             </div>
         </div>
     </div>

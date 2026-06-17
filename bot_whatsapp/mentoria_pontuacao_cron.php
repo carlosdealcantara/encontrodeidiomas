@@ -1,7 +1,7 @@
 <?php
 /**
- * CRON: Ranking dos Dedicados (Student of the Day)
- * Frequência: 1x/dia, logo após o ranking social
+ * CRON: Ranking Unificado da Mentoria (Student of the Day + Social)
+ * Frequência: 1x/dia à meia-noite
  */
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
@@ -16,7 +16,6 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 
 $conn = connectDB();
 
-// Garantir que a tabela existe
 $conn->exec("
     CREATE TABLE IF NOT EXISTS mentoria_auto_logs (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -30,13 +29,11 @@ $conn->exec("
 ");
 
 $ontem = (new DateTime())->modify('-1 day')->format('Y-m-d');
-$hoje_real = date('Y-m-d');
 
-// Anti-duplicidade
-$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'ranking_dedicados' AND data_execucao = ?");
+$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'ranking_unificado' AND data_execucao = ?");
 $check->execute([$ontem]);
 if ($check->rowCount() > 0 && !isset($_GET['force'])) {
-    die("Ranking de dedicados já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
+    die("Ranking já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
 }
 
 $config = getMentoriaConfig();
@@ -48,6 +45,8 @@ $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 
 $activity = fetchBaileysActivity($ontem);
 $memberStats = [];
+$rankingMsgs = [];
+$rankingReacts = [];
 
 $SCORING_RULES = [
     'pronunciation' => [ ['field' => 'audios_sent', 'pts' => 4, 'emoji' => '🗣️'] ],
@@ -70,6 +69,17 @@ if (!empty($config['groups'])) {
             foreach ($activity[$groupJid] as $memberJid => $data) {
                 if ($memberJid === $adminJid) continue;
                 
+                // Track Social (Messages & Reactions across all groups)
+                if (!isset($rankingMsgs[$memberJid])) {
+                    $rankingMsgs[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'score' => 0];
+                }
+                if (!isset($rankingReacts[$memberJid])) {
+                    $rankingReacts[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'score' => 0];
+                }
+                $rankingMsgs[$memberJid]['score'] += $data['messages'] ?? 0;
+                $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
+
+                // Track Dedication Points
                 if (!isset($memberStats[$memberJid])) {
                     $memberStats[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'total_pts' => 0, 'emojis' => []];
                 }
@@ -102,59 +112,95 @@ foreach ($attendees as $att) {
     array_unshift($memberStats[$mJid]['emojis'], '🖥️');
 }
 
-// Filtra apenas quem tem pontos e ordena DESC
+// -----------------------------------------------------
+// 1. DEDICAÇÃO (Student of the Day)
+// -----------------------------------------------------
 $memberStats = array_filter($memberStats, fn($m) => $m['total_pts'] > 0);
 uasort($memberStats, fn($a, $b) => $b['total_pts'] <=> $a['total_pts']);
 
-if (empty($memberStats)) {
-    die("Nenhum estudante qualificado para pontuação ontem.");
-}
-
 $top1 = null;
-$top1Jid = null;
 $others = '';
 $i = 0;
-$mentions = [];
 
 foreach ($memberStats as $jid => $data) {
-    $mentions[] = $jid;
-    $jidClean = explode('@', $jid)[0];
     $emojisStr = implode('', $data['emojis']);
-    
+    $nomeStr = trim($data['name']) ?: 'Unknown';
+
     if ($i === 0) {
         $top1 = $data;
-        $top1Jid = $jidClean;
+        $top1['name'] = $nomeStr;
         $i++;
         continue;
     }
     
     $pos = $i + 1;
-    $others .= "{$pos}. @{$jidClean} — {$emojisStr} — {$data['total_pts']} pts\n";
+    $others .= "{$pos}. *{$nomeStr}* — {$emojisStr} — {$data['total_pts']} pts\n";
     $i++;
 }
 
-$studentOfTheDayStr = "🏆 @{$top1Jid} — " . implode('', $top1['emojis']) . " — *{$top1['total_pts']} pts*";
+$studentOfTheDayStr = $top1 ? "🏆 *{$top1['name']}* — " . implode('', $top1['emojis']) . " — *{$top1['total_pts']} pts*" : "No participants yesterday.";
 $othersStr = $others ?: "No other participants yesterday.";
 
-$legendStr = "🖥️ Class (15 pts) · 🗣️ Audio/Pronunciation (4 pts)\n📚 Challenge (3 pts) · 🎶 Music Lab (2 pts)\n📒 New word! (2 pts) · 🧩 Games (2 pts)\n💬 Lounge Msg (1 pt) · ❤️ Reaction (1 pt)";
+// Nova legenda
+$legendStr = "🖥️ Attended Class (15 pts)\n🗣️ Reading out loud (4 pts)\n📚 Challenge (3 pts)\n🎶 Music Lab (2 pts)\n📒 New word! (2 pts)\n🧩 Games (2 pts)\n💬 Msg sent (1 pt)\n❤️ Reaction (1 pt)";
 
-$template = $config['templates']['ranking_dedicados'] ?? "⭐ *STUDENT OF THE DAY*\n📅 {date}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{student_of_the_day}\n\n─────────────────────\n*Other participants:*\n{other_participants}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📖 *Legend:*\n{legend}";
+
+// -----------------------------------------------------
+// 2. SOCIAL (Word Slingers & Emoji Gang)
+// -----------------------------------------------------
+$rankingMsgs = array_filter($rankingMsgs, fn($item) => $item['score'] > 0);
+$rankingReacts = array_filter($rankingReacts, fn($item) => $item['score'] > 0);
+
+uasort($rankingMsgs, fn($a, $b) => $b['score'] <=> $a['score']);
+$top5Msgs = array_slice($rankingMsgs, 0, 5, true);
+
+uasort($rankingReacts, fn($a, $b) => $b['score'] <=> $a['score']);
+$top5Reacts = array_slice($rankingReacts, 0, 5, true);
+
+$medals = ['🥇', '🥈', '🥉'];
+
+$msgList = '';
+$i = 0;
+foreach ($top5Msgs as $jid => $data) {
+    $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
+    $nomeStr = trim($data['name']) ?: 'Unknown';
+    $msgList .= $rankStr . " *{$nomeStr}* — {$data['score']} msgs\n";
+    $i++;
+}
+
+$reactList = '';
+$i = 0;
+foreach ($top5Reacts as $jid => $data) {
+    $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
+    $nomeStr = trim($data['name']) ?: 'Unknown';
+    $reactList .= $rankStr . " *{$nomeStr}* — {$data['score']} reacts\n";
+    $i++;
+}
+
+$wordSlingersList = $msgList ?: "No messages yesterday.\n";
+$emojiGangList = $reactList ?: "No reactions yesterday.\n";
+
+// -----------------------------------------------------
+// 3. MONTAGEM FINAL DA MENSAGEM
+// -----------------------------------------------------
+// Tenta pegar o template novo (ranking_dedicados)
+$template = $config['templates']['ranking_dedicados'] ?? "⭐ *STUDENT OF THE DAY*\n📅 {date}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{student_of_the_day}\n\n─────────────────────\n*Other participants:*\n{other_participants}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📖 *Legend:*\n{legend}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
 
 $enDate = date('F jS, Y', strtotime($ontem));
 
 $message = str_replace(
-    ['{date}', '{student_of_the_day}', '{other_participants}', '{legend}'],
-    [$enDate, $studentOfTheDayStr, $othersStr, $legendStr],
+    ['{date}', '{student_of_the_day}', '{other_participants}', '{legend}', '{word_slingers_list}', '{emoji_gang_list}'],
+    [$enDate, $studentOfTheDayStr, $othersStr, $legendStr, $wordSlingersList, $emojiGangList],
     $template
 );
 
-$mentions = array_values(array_unique($mentions));
-$result = enviarWhatsAppMention($targetGroup, $message, $mentions);
+// Disparo simples (sem mentions de @numero)
+$result = enviarWhatsApp($targetGroup, $message, 'mentoria_ranking');
 
 if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
-    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_dedicados', ?, ?)")
+    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_unificado', ?, ?)")
          ->execute([$ontem, json_encode(['stats' => $memberStats])]);
-    echo "✅ Ranking dos Dedicados enviado!";
+    echo "✅ Ranking Unificado enviado!";
 } else {
-    echo "❌ Erro ao enviar ranking de dedicados: HTTP " . $result['httpCode'];
+    echo "❌ Erro ao enviar ranking: HTTP " . $result['httpCode'];
 }

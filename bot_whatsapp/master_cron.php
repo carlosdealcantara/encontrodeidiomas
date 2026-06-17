@@ -82,8 +82,6 @@ echo "<h2>>>> Crons Diários <<<</h2>";
 if ($horaAtual === 0) {
     echo "<h3>Rotina da Meia-Noite (00:00)</h3><ul>";
     rodarSubCron('mentoria_class_aviso_cron.php', $baseUrl, $token_secreto);
-    rodarSubCron('mentoria_ranking_cron.php', $baseUrl, $token_secreto);
-    sleep(3); // Delay curto para não embolar as mensagens no WhatsApp
     rodarSubCron('mentoria_pontuacao_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_desafio_kick_cron.php', $baseUrl, $token_secreto);
     echo "</ul>";
