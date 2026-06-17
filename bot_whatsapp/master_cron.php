@@ -69,6 +69,7 @@ function rodarSubCron($arquivo, $baseUrl, $token_secreto) {
 // =========================================================================
 echo "<h2>>>> Crons Horários <<<</h2><ul>";
 rodarSubCron('ei_meetups_hourly.php', $baseUrl, $token_secreto);
+rodarSubCron('../bot_telegram/ei_telegram_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
 echo "</ul>";
