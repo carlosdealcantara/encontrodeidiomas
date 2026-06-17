@@ -32,6 +32,9 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
     if ($lang_data) {
         $lang_id = (int)$lang_data['id'];
         $numero = trim($_POST['replay_numero'] ?? '');
+        if (is_numeric($numero)) {
+            $numero = str_pad($numero, 2, '0', STR_PAD_LEFT);
+        }
         $link   = sanitizeOdyseeUrl(trim($_POST['replay_link'] ?? ''));
         $titulo = trim($_POST['replay_titulo'] ?? '');
 
@@ -60,7 +63,7 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
         
         $replays_list = "";
         while ($row = $stmtAll->fetch()) {
-            $num = !empty($row['numero']) ? $row['numero'] : "Nº";
+            $num = !empty($row['numero']) ? str_pad($row['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
             $lnk = !empty($row['link'])   ? $row['link']   : "Link";
             $tit = !empty($row['titulo']) ? $row['titulo'] : "Título";
             $replays_list .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
@@ -253,7 +256,9 @@ function sanitizeOdyseeUrl(string $url): string {
                         <label>Link da Gravação (Odysee)</label>
                         <input type="text" name="replay_link" id="replay_link"
                                value="<?= htmlspecialchars($prefill['link'] ?? '') ?>"
-                               placeholder="https://odysee.com/@EncontroDeIdiomas..."
+                               placeholder="https://odysee.com/@EncontrodeIdiomas.../YYYY_MM_DD"
+                               pattern="^https:\/\/odysee\.com\/@[^\/]+\/\d{4}_\d{2}_\d{2}$"
+                               title="O link deve ser do Odysee e terminar com a data no padrão /AAAA_MM_DD"
                                onblur="limparLinkOdysee(this)">
                         <div class="field-cleaned" id="link-cleaned">✓ Link simplificado automaticamente</div>
                     </div>

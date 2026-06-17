@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         foreach ($_POST['replays'] as $lang_id => $data) {
             $lang_id = (int)$lang_id;
             $numero = trim($data['numero']);
+            if (is_numeric($numero)) {
+                $numero = str_pad($numero, 2, '0', STR_PAD_LEFT);
+            }
             $link = trim($data['link']);
             $titulo = trim($data['titulo']);
             
@@ -44,13 +47,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
-// Fetch all languages with their replays for the CURRENT WEEK only
+// Fetch all languages with their replays for the CURRENT WEEK only, ordered by their first meeting in the week
 $stmt = $conn->prepare("
     SELECT l.id as language_id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
     FROM languages l 
     LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
+    LEFT JOIN (
+        SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
+        FROM meetings 
+        WHERE active = 1 
+        GROUP BY language_id
+    ) m ON l.id = m.language_id
     WHERE l.active = 1 
-    ORDER BY l.name ASC
+    ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC
 ");
 $stmt->execute([$semana_atual]);
 $replays = $stmt->fetchAll();
@@ -61,7 +70,7 @@ if (isset($_GET['msg'])) $msg_success = htmlspecialchars($_GET['msg']);
 // Generate Replays List String
 $replays_list = "";
 foreach ($replays as $r) {
-    $num = !empty($r['numero']) ? $r['numero'] : "Nº";
+    $num = !empty($r['numero']) ? str_pad($r['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
     $lnk = !empty($r['link']) ? $r['link'] : "Link";
     $tit = !empty($r['titulo']) ? $r['titulo'] : "Título";
     $replays_list .= "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
@@ -165,7 +174,7 @@ $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
                                 <input type="text" name="replays[<?= $r['language_id'] ?>][numero]" value="<?= htmlspecialchars($r['numero'] ?? '') ?>" placeholder="Nº">
                             </td>
                             <td>
-                                <input type="text" name="replays[<?= $r['language_id'] ?>][link]" value="<?= htmlspecialchars($r['link'] ?? '') ?>" placeholder="Link">
+                                <input type="text" name="replays[<?= $r['language_id'] ?>][link]" value="<?= htmlspecialchars($r['link'] ?? '') ?>" placeholder="https://odysee.com/..." pattern="^https:\/\/odysee\.com\/@[^\/]+\/\d{4}_\d{2}_\d{2}$" title="O link deve ser do Odysee e terminar com a data no padrão /AAAA_MM_DD (ex: /2026_06_15)">
                             </td>
                             <td>
                                 <input type="text" name="replays[<?= $r['language_id'] ?>][titulo]" value="<?= htmlspecialchars($r['titulo'] ?? '') ?>" placeholder="Título">
