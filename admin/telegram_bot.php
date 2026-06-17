@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_templates'])) {
 
 // Lógica de Enviar Mensagem de Teste
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['test_message'])) {
-    $token = getenv('TELEGRAM_BOT_TOKEN');
-    $chat_id = getenv('TELEGRAM_CHAT_ID');
+    $token = $_ENV['TELEGRAM_BOT_TOKEN'] ?? getenv('TELEGRAM_BOT_TOKEN');
+    $chat_id = $_ENV['TELEGRAM_CHAT_ID'] ?? getenv('TELEGRAM_CHAT_ID');
     
     if (empty($token) || empty($chat_id)) {
         $api_error = "Erro: TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID não estão configurados no .env!";
@@ -59,8 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['test_message'])) {
 }
 
 // Buscar status global (token configurado)
-$token_configured = !empty(getenv('TELEGRAM_BOT_TOKEN'));
-$chat_configured = !empty(getenv('TELEGRAM_CHAT_ID'));
+$token_configured = !empty($_ENV['TELEGRAM_BOT_TOKEN'] ?? getenv('TELEGRAM_BOT_TOKEN'));
+$chat_configured = !empty($_ENV['TELEGRAM_CHAT_ID'] ?? getenv('TELEGRAM_CHAT_ID'));
 $bot_status_html = ($token_configured && $chat_configured) 
     ? "<span style='color:var(--success);'><i class='fas fa-check-circle'></i> Bot Configurado e Conectado</span>"
     : "<span style='color:var(--danger);'><i class='fas fa-exclamation-triangle'></i> Token ou Chat ID pendentes no .env</span>";

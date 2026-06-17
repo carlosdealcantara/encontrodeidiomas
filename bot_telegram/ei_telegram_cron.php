@@ -16,8 +16,8 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
-$telegramToken = getenv('TELEGRAM_BOT_TOKEN');
-$telegramChatId = getenv('TELEGRAM_CHAT_ID');
+$telegramToken = $_ENV['TELEGRAM_BOT_TOKEN'] ?? getenv('TELEGRAM_BOT_TOKEN');
+$telegramChatId = $_ENV['TELEGRAM_CHAT_ID'] ?? getenv('TELEGRAM_CHAT_ID');
 
 if (!$telegramToken || !$telegramChatId) {
     die("TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID não configurados no .env");
