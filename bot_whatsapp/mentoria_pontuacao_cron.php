@@ -73,7 +73,9 @@ if (!empty($config['groups'])) {
         
         if (isset($activity[$groupJid])) {
             foreach ($activity[$groupJid] as $memberJid => $data) {
+                // Ignora admin e JIDs de grupos (fantasmas)
                 if ($memberJid === $adminJid) continue;
+                if (str_ends_with($memberJid, '@g.us')) continue;
                 
                 // Track Social (Messages & Reactions across ALL groups)
                 if (!isset($rankingMsgs[$memberJid])) {
@@ -126,28 +128,42 @@ foreach ($attendees as $att) {
 $memberStats = array_filter($memberStats, fn($m) => $m['total_pts'] > 0);
 uasort($memberStats, fn($a, $b) => $b['total_pts'] <=> $a['total_pts']);
 
-$top1 = null;
-$others = '';
+$studentOfTheDayStr = '';
+$othersStr = '';
 $i = 0;
 
-foreach ($memberStats as $jid => $data) {
-    $emojisStr = implode('', $data['emojis']);
-    $nomeStr = trim($data['name']) ?: 'Unknown';
+if (!empty($memberStats)) {
+    // Detectar pontuação máxima e checar empates
+    $maxPts = reset($memberStats)['total_pts'];
+    $winners = array_filter($memberStats, fn($m) => $m['total_pts'] === $maxPts);
+    $losers  = array_filter($memberStats, fn($m) => $m['total_pts'] < $maxPts);
 
-    if ($i === 0) {
-        $top1 = $data;
-        $top1['name'] = $nomeStr;
-        $i++;
-        continue;
+    if (count($winners) === 1) {
+        // Vencedor único
+        $w = reset($winners);
+        $studentOfTheDayStr = "🏆 *{$w['name']}* — " . implode('', $w['emojis']) . " — *{$w['total_pts']} pts*";
+    } else {
+        // Empate no topo — lista todos
+        $tiedNames = [];
+        foreach ($winners as $w) {
+            $tiedNames[] = "*{$w['name']}* — " . implode('', $w['emojis']) . " — *{$w['total_pts']} pts*";
+        }
+        $studentOfTheDayStr = "🏆 *It's a tie!*\n" . implode("\n", $tiedNames);
     }
-    
-    $pos = $i + 1;
-    $others .= "{$pos}. *{$nomeStr}* — {$emojisStr} — {$data['total_pts']} pts\n";
-    $i++;
+
+    $startPos = count($winners) + 1;
+    $i = $startPos;
+    foreach ($losers as $jid => $data) {
+        $emojisStr = implode('', $data['emojis']);
+        $nomeStr = trim($data['name']) ?: 'Unknown';
+        $othersStr .= "{$i}. *{$nomeStr}* — {$emojisStr} — {$data['total_pts']} pts\n";
+        $i++;
+    }
+} else {
+    $studentOfTheDayStr = "No participants yesterday.";
 }
 
-$studentOfTheDayStr = $top1 ? "🏆 *{$top1['name']}* — " . implode('', $top1['emojis']) . " — *{$top1['total_pts']} pts*" : "No participants yesterday.";
-$othersStr = $others ?: "No other participants yesterday.";
+$othersStr = $othersStr ?: "No other participants yesterday.";
 
 // Nova legenda
 $legendStr = "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n📒 New word! (1 pt)";
