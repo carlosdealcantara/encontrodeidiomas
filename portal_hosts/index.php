@@ -248,7 +248,7 @@ function sanitizeOdyseeUrl(string $url): string {
                                     if ($saved) {
                                         $is_complete = !empty($saved['numero']) && !empty($saved['link']) && !empty($saved['titulo']);
                                         if ($is_complete) {
-                                            echo '<span> (Pronto ✓)</span>';
+                                            echo '<span> (Pronto ✅)</span>';
                                         } else {
                                             echo '<span> (Incompleto ⏳)</span>';
                                         }
