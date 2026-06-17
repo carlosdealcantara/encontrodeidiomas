@@ -2,8 +2,8 @@
 require_once '../config.php';
 $conn = connectDB();
 
-if (isset($_GET['update_julyana'])) {
-    $conn->query("UPDATE mentoria_desafio_streaks SET current_streak = 4 WHERE member_name LIKE '%Julyana%' OR member_name LIKE '%July%'");
+if (isset($_GET['delete_phantom'])) {
+    $conn->query("DELETE FROM mentoria_desafio_streaks WHERE member_jid LIKE '%@g.us%'");
 }
 
 $res = $conn->query("SELECT * FROM mentoria_desafio_streaks ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);

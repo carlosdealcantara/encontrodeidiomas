@@ -104,6 +104,9 @@ async function handleMessages({ messages, type }) {
         const allowedGroups = Object.values(config.groups || {}).map(g => g.jid);
         if (!allowedGroups.includes(groupJid)) continue;
 
+        // Ignore phantom/system messages in groups that lack a participant
+        if (!msg.key.fromMe && !msg.key.participant) continue;
+
         // Se a mensagem foi enviada pelo próprio aparelho do bot (fromMe)
         // e o participant estiver vazio, usamos o JID do próprio bot
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
