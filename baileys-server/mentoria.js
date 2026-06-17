@@ -133,6 +133,7 @@ async function handleMessages({ messages, type }) {
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const senderJid = msg.key.participant || (msg.key.fromMe ? botJid : msg.key.remoteJid);
         const senderName = msg.pushName || (msg.key.fromMe ? 'Eu (Admin)' : 'Desconhecido');
+        if (senderName === 'Encontro de Idiomas' || senderName === 'Eu (Admin)') continue; // Ignora o bot oficial e o admin local
 
         const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '';
 
@@ -150,8 +151,8 @@ async function handleMessages({ messages, type }) {
                 logActivity(groupJid, senderJid, senderName, 'audio');
             } else if (msg.message?.imageMessage) {
                 logActivity(groupJid, senderJid, senderName, 'image');
-            } else if (!text.startsWith('!')) {
-                // FIX 4: Commands (like !attend) are NOT conversations — don't count as messages
+            } else {
+                // Tudo o resto (texto normal e comandos) conta como 1 mensagem
                 logActivity(groupJid, senderJid, senderName, 'message');
             }
         }

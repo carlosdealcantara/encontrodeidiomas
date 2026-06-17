@@ -32,13 +32,15 @@ foreach ($config['groups'] as $groupKey => $groupData) {
     foreach ($activity[$jid] as $memberJid => $stats) {
         if ($memberJid === ($config['admin_jid'] ?? '')) continue;
         
-        echo "<tr>";
-        echo "<td>{$stats['name']}</td>";
-        echo "<td>" . ($stats['messages'] ?? 0) . "</td>";
-        echo "<td>" . ($stats['images_sent'] ?? 0) . "</td>";
-        echo "<td>" . ($stats['audios_sent'] ?? 0) . "</td>";
-        echo "<td>" . ($stats['reactions_given'] ?? 0) . "</td>";
-        echo "</tr>";
+        if (($stats['messages'] ?? 0) > 0 || ($stats['reactions_given'] ?? 0) > 0 || ($stats['images_sent'] ?? 0) > 0 || ($stats['audios_sent'] ?? 0) > 0) {
+            echo "<tr>";
+            echo "<td>" . ($stats['name'] ?? 'Unknown') . "</td>";
+            echo "<td>" . ($stats['messages'] ?? 0) . "</td>";
+            echo "<td>" . ($stats['images_sent'] ?? 0) . "</td>";
+            echo "<td>" . ($stats['audios_sent'] ?? 0) . "</td>";
+            echo "<td>" . ($stats['reactions_given'] ?? 0) . "</td>";
+            echo "</tr>";
+        }
     }
     echo "</table>";
 }

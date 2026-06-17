@@ -78,13 +78,21 @@ if (!empty($config['groups'])) {
                 if (str_ends_with($memberJid, '@g.us')) continue;
                 
                 // Track Social (Messages & Reactions across ALL groups)
-                if (!isset($rankingMsgs[$memberJid])) {
-                    $rankingMsgs[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'score' => 0];
+                $interactions = ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0) + ($data['reactions_given'] ?? 0);
+                if ($interactions > 0) {
+                    if (!isset($rankingMsgs[$memberJid])) {
+                        $rankingMsgs[$memberJid] = [
+                            'name'  => $data['name'] ?? 'Unknown',
+                            'score' => 0
+                        ];
+                    }
+                    // Para o Word Slingers, contamos todas as mensagens físicas e comandos (messages) + mídias (images/audios)
+                    $rankingMsgs[$memberJid]['score'] += ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0);
                 }
+                
                 if (!isset($rankingReacts[$memberJid])) {
                     $rankingReacts[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'score' => 0];
                 }
-                $rankingMsgs[$memberJid]['score'] += $data['messages'] ?? 0;
                 $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
 
                 // Track Dedication Points (Only for groups in SCORING_RULES)
