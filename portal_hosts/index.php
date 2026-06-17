@@ -93,11 +93,16 @@ $prefill = null;    // Dados para pré-preencher após redirect
 if ($logged_in) {
     try {
         $stmt = $conn->query("
-            SELECT DISTINCT l.id, l.name, l.flag_emoji, l.instagram_link, l.greeting, m.meet_link
+            SELECT l.id, l.name, l.flag_emoji, l.instagram_link, l.greeting, 
+                   (SELECT meet_link FROM meetings WHERE language_id = l.id AND active = 1 ORDER BY day_of_week ASC, time_hour ASC LIMIT 1) as meet_link
             FROM languages l
-            JOIN meetings m ON l.id = m.language_id
-            WHERE m.active = 1
-            ORDER BY l.name ASC
+            JOIN (
+                SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
+                FROM meetings 
+                WHERE active = 1 
+                GROUP BY language_id
+            ) m ON l.id = m.language_id
+            ORDER BY m.first_day ASC, m.first_hour ASC, l.name ASC
         ");
         $idiomas_disponiveis = $stmt->fetchAll();
 
@@ -239,7 +244,16 @@ function sanitizeOdyseeUrl(string $url): string {
                                         data-saved='<?= json_encode($saved) ?>'
                                         <?= ($prefill && $prefill['lang_id'] === $l['id']) ? 'selected' : '' ?>>
                                     <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
-                                    <?php if ($saved): ?><span> ✓</span><?php endif; ?>
+                                    <?php 
+                                    if ($saved) {
+                                        $is_complete = !empty($saved['numero']) && !empty($saved['link']) && !empty($saved['titulo']);
+                                        if ($is_complete) {
+                                            echo '<span> (Pronto ✓)</span>';
+                                        } else {
+                                            echo '<span> (Incompleto ⏳)</span>';
+                                        }
+                                    }
+                                    ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
