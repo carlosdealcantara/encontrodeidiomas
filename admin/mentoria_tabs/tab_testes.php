@@ -76,8 +76,8 @@
                 <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-dim);">Calcula a pontuação de ontem e posta no Lounge.</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_ranking_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
-                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_ranking_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
+                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_pontuacao_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
+                <button type="button" class="btn" style="background:#ea580c; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_pontuacao_cron.php', true)"><i class="fas fa-bolt"></i> Forçar Imediato</button>
             </div>
         </div>
 

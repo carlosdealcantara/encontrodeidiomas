@@ -39,7 +39,17 @@ if ($check->rowCount() > 0 && !isset($_GET['force'])) {
 $config = getMentoriaConfig();
 
 $targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
-if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
+if (!$targetGroup) {
+    // Debug: mostra o config completo para diagnóstico
+    echo "❌ Grupo alvo (The Lounge) não configurado.\n\n";
+    echo "Chaves de 'groups' disponíveis no config:\n";
+    foreach (($config['groups'] ?? []) as $key => $val) {
+        echo "  - '{$key}' => jid: " . ($val['jid'] ?? '(vazio)') . "\n";
+    }
+    echo "\nConfig completo recebido:\n";
+    echo json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    die();
+}
 
 $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 
