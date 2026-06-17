@@ -3,13 +3,15 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 $config = getMentoriaConfig();
-$hoje = date('Y-m-d');
-$activity = fetchBaileysActivity($hoje);
+$ontem = (new DateTime())->modify('-1 day')->format('Y-m-d');
+$date = $_GET['date'] ?? $ontem;
+$activity = fetchBaileysActivity($date);
 
-echo "<h1>Relatório de Atividades - $hoje</h1>";
+echo "<h1>Relatório de Atividades - $date</h1>";
+echo "<p><a href='?date=" . date('Y-m-d') . "'>Ver atividades de Hoje</a> | <a href='?date=$ontem'>Ver atividades de Ontem</a></p>";
 
 if (empty($activity)) {
-    echo "<p>Nenhuma atividade registrada ainda para hoje.</p>";
+    echo "<p>Nenhuma atividade registrada para a data $date.</p>";
     die();
 }
 
