@@ -4,6 +4,12 @@ const path = require('path');
 let sock = null;
 let dataDir = '';
 
+// Deduplication: prevents counting the same WhatsApp message event twice
+// (Baileys sometimes fires 2 events for media messages)
+let processedMessageIds = new Set();
+let processedIdsDate = '';
+
+
 // Helper to get today's date in YYYY-MM-DD for BRT
 function getTodayDate() {
     // Current time in Brazil
@@ -95,6 +101,16 @@ async function handleMessages({ messages, type }) {
     
     const config = loadConfig();
     const adminJid = config.admin_jid || "556192666148@s.whatsapp.net";
+    // Support for multiple excluded admin JIDs (configured as array in config)
+    const extraAdminJids = config.extra_admin_jids || [];
+    const excludedJids = new Set([adminJid, ...extraAdminJids]);
+
+    // Reset deduplication Set daily
+    const currentDate = getTodayDate();
+    if (currentDate !== processedIdsDate) {
+        processedMessageIds = new Set();
+        processedIdsDate = currentDate;
+    }
 
     for (const msg of messages) {
         const groupJid = msg.key.remoteJid;
@@ -107,67 +123,62 @@ async function handleMessages({ messages, type }) {
         // Ignore phantom/system messages in groups that lack a participant
         if (!msg.key.fromMe && !msg.key.participant) continue;
 
-        // Se a mensagem foi enviada pelo próprio aparelho do bot (fromMe)
-        // e o participant estiver vazio, usamos o JID do próprio bot
+        // FIX 1: Skip protocol messages (message deletions = REVOKE, edits = MESSAGE_EDIT)
+        // These are meta-events from WhatsApp and should never count as activity.
+        if (msg.message?.protocolMessage || msg.message?.editedMessage) continue;
+
+        // FIX 2: Skip stickers (no educational/engagement value for ranking)
+        if (msg.message?.stickerMessage) continue;
+
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const senderJid = msg.key.participant || (msg.key.fromMe ? botJid : msg.key.remoteJid);
         const senderName = msg.pushName || (msg.key.fromMe ? 'Eu (Admin)' : 'Desconhecido');
 
-        // Ignora apenas as mensagens automáticas do próprio bot para evitar loop e pontuação falsa.
-        // Vamos processar se for um comando manual começando com !
         const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '';
-        
-        if (msg.key.fromMe && !text.startsWith('!')) continue;
 
-        // Check if reaction (ignora reações automáticas do bot)
-        if (msg.message?.reactionMessage && !msg.key.fromMe) {
-            logActivity(groupJid, senderJid, senderName, 'reaction');
-        } else if (msg.message?.audioMessage && !msg.key.fromMe) {
-            // Áudio detectado — conta como atividade de pronúncia (Reading out loud)
-            logActivity(groupJid, senderJid, senderName, 'audio');
-        } else if (msg.message?.imageMessage && !msg.key.fromMe) {
-            logActivity(groupJid, senderJid, senderName, 'image');
-            
-            // === Streak System (Desafio Group) ===
+        // === ACTIVITY LOGGING (students only, no commands, no duplicates) ===
+        const isAdmin = msg.key.fromMe || excludedJids.has(senderJid);
+        const msgId = msg.key.id;
+
+        if (!isAdmin && !processedMessageIds.has(msgId)) {
+            processedMessageIds.add(msgId);
+
+            if (msg.message?.reactionMessage) {
+                // FIX 3: Reactions are a separate event type, always logged correctly
+                logActivity(groupJid, senderJid, senderName, 'reaction');
+            } else if (msg.message?.audioMessage) {
+                logActivity(groupJid, senderJid, senderName, 'audio');
+            } else if (msg.message?.imageMessage) {
+                logActivity(groupJid, senderJid, senderName, 'image');
+            } else if (!text.startsWith('!')) {
+                // FIX 4: Commands (like !attend) are NOT conversations — don't count as messages
+                logActivity(groupJid, senderJid, senderName, 'message');
+            }
+        }
+
+        // === STREAK SYSTEM (Desafio Group — runs independently of activity logging) ===
+        if (msg.message?.imageMessage && !isAdmin) {
             const desafioGroup = config.groups?.desafio?.jid;
             if (groupJid === desafioGroup) {
                 try {
                     const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/mentoria_desafio_streak_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            member_jid: senderJid,
-                            member_name: senderName
-                        })
+                        body: JSON.stringify({ member_jid: senderJid, member_name: senderName })
                     });
                     const data = await res.json();
                     
                     if (data.success && !data.already_computed) {
-                        // Confirmação de imagem
                         const nameOnly = senderJid.split('@')[0];
                         let msgTemplate = config.templates?.streak_confirm || `✅ Image computed, @{name}! You are on a {streak}-day streak! 🔥`;
-                        let confirmMsg = msgTemplate.replace('@{name}', `@${nameOnly}`)
-                                                    .replace('{name}', nameOnly)
-                                                    .replace('{streak}', data.streak);
+                        let confirmMsg = msgTemplate.replace('@{name}', `@${nameOnly}`).replace('{name}', nameOnly).replace('{streak}', data.streak);
+                        await sock.sendMessage(groupJid, { text: confirmMsg, mentions: [senderJid] });
                         
-                        await sock.sendMessage(groupJid, { 
-                            text: confirmMsg,
-                            mentions: [senderJid]
-                        });
-                        
-                        // Milestone celebration
                         if (data.is_milestone) {
                             let msTemplate = config.templates?.streak_milestone || `🎉 CONGRATULATIONS! @{name} just hit a {streak}-day streak! Legend! 🏆`;
-                            let milestoneMsg = msTemplate.replace('@{name}', `@${nameOnly}`)
-                                                         .replace('{name}', nameOnly)
-                                                         .replace('{streak}', data.streak);
-                            
-                            // Atraso de 2 segundos para dar tempo da primeira mensagem chegar
+                            let milestoneMsg = msTemplate.replace('@{name}', `@${nameOnly}`).replace('{name}', nameOnly).replace('{streak}', data.streak);
                             setTimeout(async () => {
-                                await sock.sendMessage(groupJid, { 
-                                    text: milestoneMsg,
-                                    mentions: [senderJid]
-                                });
+                                await sock.sendMessage(groupJid, { text: milestoneMsg, mentions: [senderJid] });
                             }, 2000);
                         }
                     }
@@ -175,8 +186,6 @@ async function handleMessages({ messages, type }) {
                     console.error('Error calling streak API:', err);
                 }
             }
-        } else if (!msg.key.fromMe) {
-            logActivity(groupJid, senderJid, senderName, 'message');
         }
             
         // Check for commands (e.g. !confirm in Our Classes)
