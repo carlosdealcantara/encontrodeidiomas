@@ -59,27 +59,23 @@ $rankingMsgs = [];
 $rankingReacts = [];
 
 $SCORING_RULES = [
-    'pronunciation' => [ ['field' => 'audios_sent', 'pts' => 4, 'emoji' => '🗣️'] ],
-    'desafio'       => [ ['field' => 'images_sent', 'pts' => 3, 'emoji' => '📚'] ],
-    'music'         => [ ['field' => 'images_sent', 'pts' => 2, 'emoji' => '🎶'] ],
-    'vocabulary'    => [ ['field' => 'images_sent', 'pts' => 2, 'emoji' => '📒'] ],
+    'pronunciation' => [ ['field' => 'audios_sent', 'pts' => 5, 'emoji' => '🗣️'] ],
+    'desafio'       => [ ['field' => 'images_sent', 'pts' => 5, 'emoji' => '📚'] ],
+    'music'         => [ ['field' => 'images_sent', 'pts' => 4, 'emoji' => '🎶'] ],
     'games'         => [ ['field' => 'images_sent', 'pts' => 2, 'emoji' => '🧩'] ],
-    'the_lounge'    => [ 
-        ['field' => 'messages', 'pts' => 1, 'emoji' => '💬'], 
-        ['field' => 'reactions_given', 'pts' => 1, 'emoji' => '❤️'] 
-    ]
+    'vocabulary'    => [ ['field' => 'images_sent', 'pts' => 1, 'emoji' => '📒'] ]
 ];
 
 if (!empty($config['groups'])) {
     foreach ($config['groups'] as $groupKey => $groupData) {
         $groupJid = $groupData['jid'] ?? '';
-        if (!$groupJid || !isset($SCORING_RULES[$groupKey])) continue;
+        if (!$groupJid) continue;
         
         if (isset($activity[$groupJid])) {
             foreach ($activity[$groupJid] as $memberJid => $data) {
                 if ($memberJid === $adminJid) continue;
                 
-                // Track Social (Messages & Reactions across all groups)
+                // Track Social (Messages & Reactions across ALL groups)
                 if (!isset($rankingMsgs[$memberJid])) {
                     $rankingMsgs[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'score' => 0];
                 }
@@ -89,16 +85,18 @@ if (!empty($config['groups'])) {
                 $rankingMsgs[$memberJid]['score'] += $data['messages'] ?? 0;
                 $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
 
-                // Track Dedication Points
-                if (!isset($memberStats[$memberJid])) {
-                    $memberStats[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'total_pts' => 0, 'emojis' => []];
-                }
-                
-                foreach ($SCORING_RULES[$groupKey] as $rule) {
-                    $field = $rule['field'];
-                    if (!empty($data[$field]) && $data[$field] > 0) {
-                        $memberStats[$memberJid]['total_pts'] += $rule['pts'];
-                        $memberStats[$memberJid]['emojis'][] = $rule['emoji'];
+                // Track Dedication Points (Only for groups in SCORING_RULES)
+                if (isset($SCORING_RULES[$groupKey])) {
+                    if (!isset($memberStats[$memberJid])) {
+                        $memberStats[$memberJid] = ['name' => $data['name'] ?? 'Unknown', 'total_pts' => 0, 'emojis' => []];
+                    }
+                    
+                    foreach ($SCORING_RULES[$groupKey] as $rule) {
+                        $field = $rule['field'];
+                        if (!empty($data[$field]) && $data[$field] > 0) {
+                            $memberStats[$memberJid]['total_pts'] += $rule['pts'];
+                            $memberStats[$memberJid]['emojis'][] = $rule['emoji'];
+                        }
                     }
                 }
             }
@@ -106,7 +104,7 @@ if (!empty($config['groups'])) {
     }
 }
 
-// Aula / Attendance (15 pts)
+// Aula / Attendance (20 pts)
 $stmt = $conn->prepare("SELECT member_jid, member_name FROM class_attendances WHERE aula_date = ?");
 $stmt->execute([$ontem]);
 $attendees = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -118,7 +116,7 @@ foreach ($attendees as $att) {
         $memberStats[$mJid] = ['name' => $att['member_name'], 'total_pts' => 0, 'emojis' => []];
     }
     // Adiciona no início do array para o 🖥️ aparecer primeiro
-    $memberStats[$mJid]['total_pts'] += 15;
+    $memberStats[$mJid]['total_pts'] += 20;
     array_unshift($memberStats[$mJid]['emojis'], '🖥️');
 }
 
@@ -152,7 +150,7 @@ $studentOfTheDayStr = $top1 ? "🏆 *{$top1['name']}* — " . implode('', $top1[
 $othersStr = $others ?: "No other participants yesterday.";
 
 // Nova legenda
-$legendStr = "🖥️ Attended Class (15 pts)\n🗣️ Reading out loud (4 pts)\n📚 Challenge (3 pts)\n🎶 Music Lab (2 pts)\n📒 New word! (2 pts)\n🧩 Games (2 pts)\n💬 Msg sent (1 pt)\n❤️ Reaction (1 pt)";
+$legendStr = "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n📒 New word! (1 pt)";
 
 
 // -----------------------------------------------------
