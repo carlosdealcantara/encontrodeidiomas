@@ -135,7 +135,7 @@ include 'includes/header.php';
                                  class="flag-icon" 
                                  style="<?= $initialFlagCode ? '' : 'display:none;' ?>" 
                                   alt="Bandeira">
-                            <span id="selected-language-emoji" style="<?= $initialFlagEmoji ? '' : 'display:none;' ?>"><?= $initialFlagEmoji ?></span>
+                            <span id="selected-language-emoji" style="<?= (!$initialFlagCode && $initialFlagEmoji) ? '' : 'display:none;' ?>"><?= $initialFlagEmoji ?></span>
                             <span id="selected-language"><?= htmlspecialchars($initialDisplayName) ?></span>
                         </div>
                         <i class="fas fa-chevron-down"></i>
