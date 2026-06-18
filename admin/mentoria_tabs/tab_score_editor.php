@@ -202,30 +202,36 @@
         if (!students || !students.length) { el.innerHTML = '<p class="rp-empty">Nenhuma atividade hoje ainda.</p>'; return; }
 
         const cols = [
-            { key: 'pronun',  label: '🎤 Pronún.',  pts: '5 pts' },
-            { key: 'desafio', label: '📸 Desafio',  pts: '5 pts' },
-            { key: 'music',   label: '🎵 Music Lab', pts: '4 pts' },
-            { key: 'games',   label: '🎮 Games',    pts: '2 pts' },
-            { key: 'vocab',   label: '📖 Vocab.',   pts: '1 pt'  },
+            { key: 'pronun',  label: '🎤 Pronún.',  pts: 5 },
+            { key: 'desafio', label: '📸 Desafio',  pts: 5 },
+            { key: 'music',   label: '🎵 Music Lab', pts: 4 },
+            { key: 'games',   label: '🎮 Games',    pts: 2 },
+            { key: 'vocab',   label: '📖 Vocab.',   pts: 1  },
         ];
 
         let th = `<th>Aluno</th>
                   <th>🖥️ Aula<span class="rp-pts">20 pts</span></th>`;
-        cols.forEach(c => { th += `<th>${c.label}<span class="rp-pts">${c.pts}</span></th>`; });
+        cols.forEach(c => { th += `<th>${c.label}<span class="rp-pts">${c.pts} pts</span></th>`; });
+        th += '<th class="rp-total-head">Total<span class="rp-pts">pts</span></th>';
 
         let rows = '';
         students.forEach(s => {
             const safe = s.jid.replace(/[@.]/g, '_');
             let cells = `<td>${s.name}</td>`;
+            
+            let rowTotal = s.class_attended ? 20 : 0;
+            
             cells += `<td><label class="rp-toggle">
-                        <input type="checkbox" ${s.class_attended ? 'checked' : ''}
+                        <input type="checkbox" id="att_${safe}" ${s.class_attended ? 'checked' : ''}
                                onchange="rpToggleAtt('${s.jid}', this.checked)">
                         <span class="rp-slider"></span></label></td>`;
             cols.forEach(c => {
                 const v = s[c.key] ?? 0;
-                cells += `<td><input type="number" min="0" class="rp-num${v === 0 ? ' rp-zero' : ''}"
+                rowTotal += v * c.pts;
+                cells += `<td><input type="number" min="0" class="rp-num${v === 0 ? ' rp-zero' : ''}" id="act_${c.key}_${safe}"
                                value="${v}" onchange="rpEditAct('${s.jid}','${c.key}',this.value,this)"></td>`;
             });
+            cells += `<td class="rp-total-cell" id="total_act_${safe}">${rowTotal}</td>`;
             rows += `<tr>${cells}</tr>`;
         });
 
@@ -237,11 +243,9 @@
         const el = document.getElementById('rpWordSlingers');
         if (!social || !social.length) { el.innerHTML = '<p class="rp-empty">Nenhuma mensagem hoje ainda.</p>'; return; }
 
-        // Filtra só quem tem pelo menos 1 interação
         const active = social.filter(s => s.total_interactions > 0);
         if (!active.length) { el.innerHTML = '<p class="rp-empty">Nenhuma mensagem hoje ainda.</p>'; return; }
 
-        // Header: Name + one col per group (messages) + Total
         let th = '<th>Aluno</th>';
         groups.forEach(g => {
             th += `<th>${g.name}<span class="rp-pts">msgs texto</span></th>`;
@@ -250,18 +254,19 @@
 
         let rows = '';
         active.forEach(s => {
+            const safe = s.jid.replace(/[@.]/g, '_');
             let cells = `<td>${s.name}</td>`;
             groups.forEach(g => {
+                const gSafe = g.jid.replace(/[@.]/g, '_');
                 const gData = s.by_group[g.jid] || {};
                 const v = gData.messages ?? 0;
-                // Mostra mídias como hint no title para auditoria
                 const media = (gData.images_sent ?? 0) + (gData.audios_sent ?? 0);
                 const hint = media > 0 ? ` title="+${media} mídia(s) neste grupo"` : '';
                 cells += `<td><input type="number" min="0" class="rp-num${v===0?' rp-zero':''}"
-                               value="${v}"${hint}
+                               id="ws_${gSafe}_${safe}" data-media="${media}" value="${v}"${hint}
                                onchange="rpEditSocial('${s.jid}','${g.jid}','messages',this.value,this)"></td>`;
             });
-            cells += `<td class="rp-total-cell">${s.total_interactions}</td>`;
+            cells += `<td class="rp-total-cell" id="total_ws_${safe}">${s.total_interactions}</td>`;
             rows += `<tr>${cells}</tr>`;
         });
 
@@ -282,35 +287,80 @@
 
         let rows = '';
         active.forEach(s => {
+            const safe = s.jid.replace(/[@.]/g, '_');
             let cells = `<td>${s.name}</td>`;
             groups.forEach(g => {
+                const gSafe = g.jid.replace(/[@.]/g, '_');
                 const v = (s.by_group[g.jid] || {}).reactions_given ?? 0;
                 cells += `<td><input type="number" min="0" class="rp-num${v===0?' rp-zero':''}"
-                               value="${v}"
+                               id="eg_${gSafe}_${safe}" value="${v}"
                                onchange="rpEditSocial('${s.jid}','${g.jid}','reactions_given',this.value,this)"></td>`;
             });
-            cells += `<td class="rp-total-cell">${s.total_reactions}</td>`;
+            cells += `<td class="rp-total-cell" id="total_eg_${safe}">${s.total_reactions}</td>`;
             rows += `<tr>${cells}</tr>`;
         });
 
         el.innerHTML = `<table class="rp-table"><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table>`;
     }
 
+    // ── DYNAMIC RECALCULATION ───────────────────────────
+    function recalcAct(jidSafe) {
+        let total = 0;
+        if (document.getElementById('att_' + jidSafe).checked) total += 20;
+        const ptsMap = { 'pronun': 5, 'desafio': 5, 'music': 4, 'games': 2, 'vocab': 1 };
+        for (const [key, pts] of Object.entries(ptsMap)) {
+            const el = document.getElementById(`act_${key}_${jidSafe}`);
+            if (el) total += (parseInt(el.value) || 0) * pts;
+        }
+        document.getElementById('total_act_' + jidSafe).innerText = total;
+    }
+
+    function recalcWs(jidSafe) {
+        let total = 0;
+        _groupsOrdered.forEach(g => {
+            const gSafe = g.jid.replace(/[@.]/g, '_');
+            const el = document.getElementById(`ws_${gSafe}_${jidSafe}`);
+            if (el) {
+                total += (parseInt(el.value) || 0);
+                total += (parseInt(el.getAttribute('data-media')) || 0);
+            }
+        });
+        document.getElementById('total_ws_' + jidSafe).innerText = total;
+    }
+
+    function recalcEg(jidSafe) {
+        let total = 0;
+        _groupsOrdered.forEach(g => {
+            const gSafe = g.jid.replace(/[@.]/g, '_');
+            const el = document.getElementById(`eg_${gSafe}_${jidSafe}`);
+            if (el) total += (parseInt(el.value) || 0);
+        });
+        document.getElementById('total_eg_' + jidSafe).innerText = total;
+    }
+
     // ── API helpers ────────────────────────────────────
     window.rpToggleAtt = function(jid, attended) {
+        const safe = jid.replace(/[@.]/g, '_');
         _post({ action: 'toggle_attendance', member_jid: jid, attended });
+        recalcAct(safe);
     };
 
     window.rpEditAct = function(jid, type, value, el) {
+        const safe = jid.replace(/[@.]/g, '_');
         const v = parseInt(value) || 0;
         el.classList.toggle('rp-zero', v === 0);
         _post({ action: 'edit_activity', member_jid: jid, type, value: v });
+        recalcAct(safe);
     };
 
     window.rpEditSocial = function(jid, groupJid, field, value, el) {
+        const safe = jid.replace(/[@.]/g, '_');
         const v = parseInt(value) || 0;
         el.classList.toggle('rp-zero', v === 0);
         _post({ action: 'edit_social', member_jid: jid, group_jid: groupJid, field, value: v });
+        
+        if (field === 'messages') recalcWs(safe);
+        if (field === 'reactions_given') recalcEg(safe);
     };
 
     function _post(body) {
