@@ -220,8 +220,8 @@ async function handleMessages({ messages, type }) {
             }
         }
             
-        // Check for commands (e.g. !confirm in Our Classes)
-        if (text.startsWith('!book') || text.startsWith('!confirm') || text.startsWith('!attend')) {
+        // Check for commands (e.g. !attend in Our Classes)
+        if (text.startsWith('!attend')) {
             // If it's the Our Classes group, log the booking
             const ourClassesGroup = config.groups?.our_classes?.jid;
             if (groupJid === ourClassesGroup) {
@@ -239,8 +239,15 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     
                     let dStr = data.class_date_en || data.class_date;
-                    let tStr = data.class_time_en || (data.class_time?.substring(0,5) + ' BRT');
-                    let listText = `\n\n📅 *Class: ${dStr} at ${tStr}*\n\n*Confirmed Attendees:*\n`;
+                    let tParts = (data.class_time || "00:00").split(':');
+                    let h = parseInt(tParts[0]);
+                    let ampm = "AM";
+                    if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
+                    if (h === 0) h = 12;
+                    let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
+                    let tStr = `${h}${mStr} ${ampm}`;
+                    
+                    let listText = `📅 ${dStr}\n⏰ Starting at ${tStr}\n\n*Confirmed Attendees:*\n`;
                     if (data.attendees && data.attendees.length > 0) {
                         data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
                     } else {
@@ -248,22 +255,24 @@ async function handleMessages({ messages, type }) {
                     }
 
                     if (data.success) {
-                        let msg = config.templates?.attend_confirm || `✅ Registration confirmed for @{name}!{listText}`;
-                        msg = msg.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
+                        // Reação ✅ na mensagem do usuário
+                        await sock.sendMessage(groupJid, { react: { text: '✅', key: msg.key } });
+                        
+                        let msgTxt = config.templates?.attend_confirm || `{listText}`;
+                        msgTxt = msgTxt.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
                         
                         await sock.sendMessage(groupJid, { 
-                            text: msg,
-                            mentions: [senderJid]
+                            text: msgTxt
                         });
                     } else if (data.reason === 'deadline_passed') {
-                        let msg = data.class_confirmed 
-                            ? (config.templates?.attend_late_good || `⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}`)
+                        let msgTxt = data.class_confirmed 
+                            ? (config.templates?.attend_late_good || `⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!\n\n{listText}`)
                             : (config.templates?.attend_late_bad || `⏰ The deadline to confirm attendance has passed, @{name}.\n\n❌ *Bad news:* The class was already cancelled due to lack of attendees.`);
                         
-                        msg = msg.replace('{name}', senderJid.split('@')[0]).replace('{listText}', data.class_confirmed ? listText : '');
+                        msgTxt = msgTxt.replace('{name}', senderJid.split('@')[0]).replace('{listText}', data.class_confirmed ? listText : '');
                         
                         await sock.sendMessage(groupJid, { 
-                            text: msg,
+                            text: msgTxt,
                             mentions: [senderJid]
                         });
                     } else {
@@ -273,7 +282,7 @@ async function handleMessages({ messages, type }) {
                     await sock.sendMessage(groupJid, { text: `⚠️ Error reaching the server to confirm: ${err.message}` });
                 }
             }
-        } else if (text.startsWith('!unattend') || text.startsWith('!cancel')) {
+        } else if (text.startsWith('!unattend')) {
             const ourClassesGroup = config.groups?.our_classes?.jid;
             if (groupJid === ourClassesGroup) {
                 try {
@@ -289,20 +298,29 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     if (data.success) {
                         let dStr = data.class_date_en || data.class_date;
-                        let tStr = data.class_time_en || (data.class_time?.substring(0,5) + ' BRT');
-                        let listText = `\n\n📅 *Class: ${dStr} at ${tStr}*\n\n*Confirmed Attendees:*\n`;
+                        let tParts = (data.class_time || "00:00").split(':');
+                        let h = parseInt(tParts[0]);
+                        let ampm = "AM";
+                        if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
+                        if (h === 0) h = 12;
+                        let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
+                        let tStr = `${h}${mStr} ${ampm}`;
+                        
+                        let listText = `📅 ${dStr}\n⏰ Starting at ${tStr}\n\n*Confirmed Attendees:*\n`;
                         if (data.attendees && data.attendees.length > 0) {
                             data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
                         } else {
                             listText += "No one yet.";
                         }
 
-                        let msg = config.templates?.unattend_confirm || `🗑️ Registration cancelled for @{name}.{listText}`;
-                        msg = msg.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
+                        // Reação de lixeira 🗑️
+                        await sock.sendMessage(groupJid, { react: { text: '🗑️', key: msg.key } });
+
+                        let msgTxt = config.templates?.unattend_confirm || `{listText}`;
+                        msgTxt = msgTxt.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
 
                         await sock.sendMessage(groupJid, { 
-                            text: msg,
-                            mentions: [senderJid]
+                            text: msgTxt
                         });
                         
                         // O Cancelamento Extremo (caiu para 0 depois do prazo)
@@ -516,6 +534,25 @@ function initRoutes(app, dir) {
     app.post('/mentoria-config', (req, res) => {
         saveConfig(req.body);
         res.json({ success: true });
+    });
+
+    // POST /mentoria-edit-activity
+    app.post('/mentoria-edit-activity', (req, res) => {
+        const { apikey, date, group_jid, member_jid, field, value } = req.body;
+        if (apikey !== 'SenhaMeetups2026') return res.status(401).json({ error: 'Unauthorized' });
+        
+        try {
+            const data = loadActivity();
+            if (!data[date]) data[date] = {};
+            if (!data[date][group_jid]) data[date][group_jid] = {};
+            if (!data[date][group_jid][member_jid]) data[date][group_jid][member_jid] = { name: "Unknown" };
+            
+            data[date][group_jid][member_jid][field] = value;
+            saveActivity(data);
+            res.json({ success: true });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
     });
 }
 

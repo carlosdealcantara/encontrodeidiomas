@@ -61,7 +61,7 @@ try {
     $isPastDeadline = ($nowObj > $deadlineObj);
 
     // Pega a lista ATUAL de confirmados ANTES da ação
-    $stmtList = $conn->prepare("SELECT member_name FROM class_attendances WHERE schedule_id = ? AND aula_date = ?");
+    $stmtList = $conn->prepare("SELECT member_name FROM class_attendances WHERE schedule_id = ? AND aula_date = ? ORDER BY id ASC");
     $stmtList->execute([$scheduleId, $hoje]);
     $currentAttendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
     $currentCount = count($currentAttendees);

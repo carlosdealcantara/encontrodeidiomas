@@ -51,18 +51,24 @@ $startTimeObj = new DateTime($hoje . ' ' . $startTime);
 $deadlineObj = clone $startTimeObj;
 $deadlineObj->modify('-1 hour');
 
+// Função para formatar a hora estilo "1 PM" ou "1:30 PM"
+function formatTime($dtObj) {
+    $h = (int)$dtObj->format('g');
+    $m = $dtObj->format('i');
+    $ampm = $dtObj->format('A');
+    if ($m === '00') {
+        return "$h $ampm";
+    }
+    return "$h:$m $ampm";
+}
+
 $dateEn = date('l, F jS'); // Ex: Friday, June 13th
 
-$tpl = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nWe have a session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
-
-// Ajusta o template caso ele ainda use BRT (força a usar UTC-3)
-$tpl = str_replace(' BRT', '', $tpl); // Remove BRT se existir no template
-// Adiciona a data no cabeçalho. Se já tiver asterisco mantemos, senão ignoramos
-$tpl = preg_replace('/Class Today!(\*)?/', 'Class Today!$1 (' . $dateEn . ')', $tpl);
+$tpl = $config['templates']['class_aviso'] ?? "📅 {date}\n\nWe have a session scheduled for {horario}.\nIf you want to participate, please reply with !attend.\n\n⏳ Deadline to confirm your attendance: {deadline}.";
 
 $msg = str_replace(
-    ['{horario}', '{deadline}'], 
-    [$startTimeObj->format('h:i A') . ' (UTC-3)', $deadlineObj->format('h:i A') . ' (UTC-3)'], 
+    ['{date}', '{horario}', '{deadline}'], 
+    [$dateEn, formatTime($startTimeObj), formatTime($deadlineObj)], 
     $tpl
 );
 
