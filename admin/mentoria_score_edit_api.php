@@ -253,7 +253,10 @@ function _callNode(string $endpoint, array $payload): array {
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 5,
         CURLOPT_POSTFIELDS     => json_encode($payload),
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'apikey: SenhaMeetups2026'
+        ],
     ]);
     $res  = curl_exec($ch);
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
