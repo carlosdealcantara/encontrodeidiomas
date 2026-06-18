@@ -62,37 +62,68 @@ function saveActivity(data) {
     fs.writeFileSync(getActivityFile(), JSON.stringify(data, null, 2));
 }
 
+// === WRITE QUEUE SYSTEM ===
+const writeQueue = [];
+let isSaving = false;
+
+async function processQueue() {
+    if (isSaving || writeQueue.length === 0) return;
+    isSaving = true;
+    
+    // Extrai todos os eventos atualmente na fila de uma vez (batch)
+    const events = writeQueue.splice(0, writeQueue.length);
+    
+    try {
+        const data = loadActivity();
+        
+        for (const event of events) {
+            const { groupJid, senderJid, senderName, type, date } = event;
+            
+            if (!data[date]) data[date] = {};
+            if (!data[date][groupJid]) data[date][groupJid] = {};
+            if (!data[date][groupJid][senderJid]) {
+                data[date][groupJid][senderJid] = {
+                    name: senderName,
+                    messages: 0,
+                    reactions_given: 0,
+                    images_sent: 0,
+                    audios_sent: 0,
+                    first_message_at: new Date().toISOString(),
+                    last_message_at: new Date().toISOString(),
+                };
+            }
+
+            if (type === 'message') {
+                data[date][groupJid][senderJid].messages += 1;
+            } else if (type === 'reaction') {
+                data[date][groupJid][senderJid].reactions_given += 1;
+            } else if (type === 'image') {
+                data[date][groupJid][senderJid].images_sent = (data[date][groupJid][senderJid].images_sent || 0) + 1;
+            } else if (type === 'audio') {
+                data[date][groupJid][senderJid].audios_sent = (data[date][groupJid][senderJid].audios_sent || 0) + 1;
+            }
+            
+            data[date][groupJid][senderJid].last_message_at = new Date().toISOString();
+        }
+        
+        saveActivity(data);
+    } catch (e) {
+        console.error('Error processing write queue:', e);
+    } finally {
+        isSaving = false;
+        // Se novos eventos chegaram enquanto salvávamos, processa-os
+        if (writeQueue.length > 0) {
+            setTimeout(processQueue, 0);
+        }
+    }
+}
+// =========================
+
+
 function logActivity(groupJid, senderJid, senderName, type) {
     const date = getTodayDate();
-    const data = loadActivity();
-
-    if (!data[date]) data[date] = {};
-    if (!data[date][groupJid]) data[date][groupJid] = {};
-    if (!data[date][groupJid][senderJid]) {
-        data[date][groupJid][senderJid] = {
-            name: senderName,
-            messages: 0,
-            reactions_given: 0,
-            images_sent: 0,
-            audios_sent: 0,
-            first_message_at: new Date().toISOString(),
-            last_message_at: new Date().toISOString(),
-        };
-    }
-
-    if (type === 'message') {
-        data[date][groupJid][senderJid].messages += 1;
-    } else if (type === 'reaction') {
-        data[date][groupJid][senderJid].reactions_given += 1;
-    } else if (type === 'image') {
-        data[date][groupJid][senderJid].images_sent = (data[date][groupJid][senderJid].images_sent || 0) + 1;
-    } else if (type === 'audio') {
-        data[date][groupJid][senderJid].audios_sent = (data[date][groupJid][senderJid].audios_sent || 0) + 1;
-    }
-    
-    data[date][groupJid][senderJid].last_message_at = new Date().toISOString();
-    
-    saveActivity(data);
+    writeQueue.push({ groupJid, senderJid, senderName, type, date });
+    processQueue();
 }
 
 async function handleMessages({ messages, type }) {

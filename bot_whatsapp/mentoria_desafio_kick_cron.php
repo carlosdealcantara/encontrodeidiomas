@@ -66,8 +66,18 @@ foreach ($members as $memberData) {
     $isAdmin = !empty($memberData['admin']);
     if ($cleanMemberJid === $cleanAdminJid || $isAdmin) continue;
     
-    // Verifica se mandou IMAGEM no grupo ontem
+    // Verifica se mandou IMAGEM no grupo ontem no JSON
     $interagiu = isset($desafioActivity[$memberJid]) && ($desafioActivity[$memberJid]['images_sent'] ?? 0) > 0;
+    
+    // Escudo MySQL: Se o JSON diz que NÃO interagiu, cruza com o banco de dados como dupla checagem
+    if (!$interagiu) {
+        $stmtShield = $conn->prepare("SELECT last_completed_date FROM mentoria_desafio_streaks WHERE member_jid = ?");
+        $stmtShield->execute([$memberJid]);
+        $rowShield = $stmtShield->fetch(PDO::FETCH_ASSOC);
+        if ($rowShield && $rowShield['last_completed_date'] === $ontem) {
+            $interagiu = true; // Salvo pelo escudo! O banco tem o registro correto.
+        }
+    }
     
     if (!$interagiu) {
         // Arruma o nome (se o template tem @{name}, trocamos por @numero. Se tem só {name}, trocamos pelo numero)

@@ -61,8 +61,18 @@ foreach ($members as $memberData) {
     $isAdmin = !empty($memberData['admin']);
     if ($cleanMemberJid === $cleanAdminJid || $isAdmin) continue;
     
-    // Verifica se enviou IMAGEM hoje
+    // Verifica se enviou IMAGEM hoje no JSON
     $enviouImagem = isset($desafioActivity[$memberJid]) && ($desafioActivity[$memberJid]['images_sent'] ?? 0) > 0;
+    
+    // Escudo MySQL: Se o JSON diz que NÃO enviou, cruza com o banco de dados como dupla checagem
+    if (!$enviouImagem) {
+        $stmtShield = $conn->prepare("SELECT last_completed_date FROM mentoria_desafio_streaks WHERE member_jid = ?");
+        $stmtShield->execute([$memberJid]);
+        $rowShield = $stmtShield->fetch(PDO::FETCH_ASSOC);
+        if ($rowShield && $rowShield['last_completed_date'] === $hoje) {
+            $enviouImagem = true; // Salvo pelo escudo!
+        }
+    }
     
     if (!$enviouImagem) {
         $numero = explode('@', $memberJid)[0];
