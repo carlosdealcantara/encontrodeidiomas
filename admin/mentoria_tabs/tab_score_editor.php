@@ -1,121 +1,204 @@
-<div class="card bg-gray-900 border-gray-700 shadow-xl mb-6">
-    <div class="card-header border-b border-gray-700 pb-4">
-        <h3 class="text-xl font-bold text-gray-100 flex items-center">
-            <span class="mr-2">✏️</span> Live Score Editor (Today)
-        </h3>
-        <p class="text-gray-400 text-sm mt-1">
-            Edit today's points before midnight. Changes are saved automatically.
-        </p>
-    </div>
-    <div class="card-body mt-4">
-        <div id="scoreEditorContainer" class="overflow-x-auto">
-            <p class="text-gray-400">Carregando painel de edição...</p>
-        </div>
+<style>
+/* ── Ranking Panel ─────────────────────────────────── */
+#rankingPanel h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+}
+#rankingPanel .rp-sub {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+}
+#rankingPanel table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+#rankingPanel thead tr {
+    border-bottom: 2px solid rgba(255,255,255,0.08);
+}
+#rankingPanel th {
+    padding: 10px 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+#rankingPanel th:first-child { text-align: left; }
+#rankingPanel tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.2s;
+}
+#rankingPanel tbody tr:hover { background: rgba(255,255,255,0.03); }
+#rankingPanel td {
+    padding: 10px 12px;
+    color: var(--text-main);
+    text-align: center;
+}
+#rankingPanel td:first-child {
+    text-align: left;
+    font-weight: 600;
+}
+
+/* Toggle switch – CSS puro */
+.rp-toggle {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+}
+.rp-toggle input { display: none; }
+.rp-slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.12);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background 0.25s;
+}
+.rp-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.25s;
+}
+.rp-toggle input:checked + .rp-slider { background: #10b981; }
+.rp-toggle input:checked + .rp-slider::before { transform: translateX(18px); }
+
+/* Number inputs */
+.rp-num {
+    width: 56px;
+    background: var(--input-bg);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: var(--text-main);
+    text-align: center;
+    padding: 4px 6px;
+    font-size: 0.9rem;
+}
+.rp-num:focus { outline: none; border-color: var(--accent-blue); }
+
+.rp-badge-pts {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+#scoreEditorContainer .rp-empty {
+    color: var(--text-dim);
+    padding: 20px 0;
+}
+</style>
+
+<div id="rankingPanel">
+    <h2>🏆 Ranking — Gestão do Dia</h2>
+    <p class="rp-sub">
+        Visualize e corrija as pontuações de hoje antes da meia-noite. Alterações são salvas imediatamente.
+    </p>
+
+    <div id="scoreEditorContainer">
+        <p class="rp-empty">Carregando dados...</p>
     </div>
 </div>
 
 <script>
-function loadScoreEditor() {
-    fetch('mentoria_score_edit_api.php?action=load')
-        .then(res => res.json())
-        .then(data => {
-            if (!data.success) {
-                document.getElementById('scoreEditorContainer').innerHTML = `<p class="text-red-400">${data.error || 'Erro ao carregar.'}</p>`;
-                return;
-            }
-            renderScoreEditor(data.students, data.today);
-        })
-        .catch(err => {
-            document.getElementById('scoreEditorContainer').innerHTML = `<p class="text-red-400">Erro de conexão: ${err.message}</p>`;
-        });
-}
-
-function renderScoreEditor(students, todayDate) {
-    if (students.length === 0) {
-        document.getElementById('scoreEditorContainer').innerHTML = '<p class="text-gray-400">Nenhuma atividade registrada hoje ainda.</p>';
-        return;
+(function() {
+    function loadScoreEditor() {
+        fetch('mentoria_score_edit_api.php?action=load')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    document.getElementById('scoreEditorContainer').innerHTML =
+                        '<p class="rp-empty" style="color:var(--accent-red)">' + (data.error || 'Erro ao carregar.') + '</p>';
+                    return;
+                }
+                renderTable(data.students);
+            })
+            .catch(err => {
+                document.getElementById('scoreEditorContainer').innerHTML =
+                    '<p class="rp-empty" style="color:var(--accent-red)">Erro de conexão: ' + err.message + '</p>';
+            });
     }
 
-    let html = `
-    <table class="w-full text-left border-collapse text-sm text-gray-300">
-        <thead>
-            <tr class="border-b border-gray-700">
-                <th class="py-2 px-3">Student</th>
-                <th class="py-2 px-3 text-center">🖥️ Class<br><small class="text-gray-500">(20 pts)</small></th>
-                <th class="py-2 px-3 text-center">🎤 Pronun<br><small class="text-gray-500">(5 pts)</small></th>
-                <th class="py-2 px-3 text-center">📸 Desafio<br><small class="text-gray-500">(5 pts)</small></th>
-                <th class="py-2 px-3 text-center">🎵 Music<br><small class="text-gray-500">(4 pts)</small></th>
-                <th class="py-2 px-3 text-center">🎮 Games<br><small class="text-gray-500">(2 pts)</small></th>
-                <th class="py-2 px-3 text-center">📖 Vocab<br><small class="text-gray-500">(1 pt)</small></th>
-            </tr>
-        </thead>
-        <tbody>`;
+    function renderTable(students) {
+        if (!students || students.length === 0) {
+            document.getElementById('scoreEditorContainer').innerHTML =
+                '<p class="rp-empty">Nenhuma atividade registrada hoje ainda.</p>';
+            return;
+        }
 
-    students.forEach(s => {
-        const jid = s.jid;
-        html += `
-            <tr class="border-b border-gray-800 hover:bg-gray-800 transition">
-                <td class="py-3 px-3 font-semibold text-gray-200">
-                    ${s.name}
-                </td>
-                <td class="py-3 px-3 text-center">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" class="sr-only peer" ${s.class_attended ? 'checked' : ''} 
-                             onchange="toggleAttendance('${jid}', this.checked)">
-                      <div class="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                </td>
-                <td class="py-3 px-3 text-center">
-                    <input type="number" min="0" class="w-12 bg-gray-900 border border-gray-700 text-center rounded p-1 text-white" 
-                           value="${s.audios}" onchange="editActivity('${jid}', 'audios', this.value)">
-                </td>
-                <td class="py-3 px-3 text-center">
-                    <input type="number" min="0" class="w-12 bg-gray-900 border border-gray-700 text-center rounded p-1 text-white" 
-                           value="${s.desafio}" onchange="editActivity('${jid}', 'desafio', this.value)">
-                </td>
-                <td class="py-3 px-3 text-center">
-                    <input type="number" min="0" class="w-12 bg-gray-900 border border-gray-700 text-center rounded p-1 text-white" 
-                           value="${s.music}" onchange="editActivity('${jid}', 'music', this.value)">
-                </td>
-                <td class="py-3 px-3 text-center">
-                    <input type="number" min="0" class="w-12 bg-gray-900 border border-gray-700 text-center rounded p-1 text-white" 
-                           value="${s.games}" onchange="editActivity('${jid}', 'games', this.value)">
-                </td>
-                <td class="py-3 px-3 text-center">
-                    <input type="number" min="0" class="w-12 bg-gray-900 border border-gray-700 text-center rounded p-1 text-white" 
-                           value="${s.vocab}" onchange="editActivity('${jid}', 'vocab', this.value)">
-                </td>
-            </tr>`;
-    });
+        const cols = [
+            { key: 'pronun',  label: '🎤 Pronún',  pts: '5 pts' },
+            { key: 'desafio', label: '📸 Desafio', pts: '5 pts' },
+            { key: 'music',   label: '🎵 Music',   pts: '4 pts' },
+            { key: 'games',   label: '🎮 Games',   pts: '2 pts' },
+            { key: 'vocab',   label: '📖 Vocab',   pts: '1 pt'  },
+        ];
 
-    html += `</tbody></table>`;
-    document.getElementById('scoreEditorContainer').innerHTML = html;
-}
+        let th = '<th>Aluno</th><th>🖥️ Aula<span class="rp-badge-pts">20 pts</span></th>';
+        cols.forEach(c => { th += `<th>${c.label}<span class="rp-badge-pts">${c.pts}</span></th>`; });
 
-function toggleAttendance(memberJid, isAttending) {
-    fetch('mentoria_score_edit_api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'toggle_attendance', member_jid: memberJid, attended: isAttending })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(!data.success) alert('Erro: ' + data.error);
-    });
-}
+        let rows = '';
+        students.forEach(s => {
+            const jidSafe = s.jid.replace(/[@.]/g, '_');
+            let cells = `<td>${s.name}</td>`;
 
-function editActivity(memberJid, type, value) {
-    fetch('mentoria_score_edit_api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'edit_activity', member_jid: memberJid, type: type, value: parseInt(value) || 0 })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(!data.success) alert('Erro: ' + data.error);
-    });
-}
+            // Toggle de presença
+            const chk = s.class_attended ? 'checked' : '';
+            cells += `<td>
+                <label class="rp-toggle">
+                    <input type="checkbox" id="att_${jidSafe}" ${chk}
+                           onchange="rpToggle('${s.jid}', this.checked)">
+                    <span class="rp-slider"></span>
+                </label>
+            </td>`;
 
-// Load on init
-document.addEventListener('DOMContentLoaded', loadScoreEditor);
+            // Campos numéricos
+            cols.forEach(c => {
+                cells += `<td>
+                    <input type="number" min="0" class="rp-num"
+                           value="${s[c.key] ?? 0}"
+                           onchange="rpEdit('${s.jid}', '${c.key}', this.value)">
+                </td>`;
+            });
+
+            rows += `<tr>${cells}</tr>`;
+        });
+
+        document.getElementById('scoreEditorContainer').innerHTML =
+            `<table><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    window.rpToggle = function(jid, attended) {
+        fetch('mentoria_score_edit_api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'toggle_attendance', member_jid: jid, attended: attended })
+        }).then(r => r.json()).then(d => { if (!d.success) alert('Erro: ' + d.error); });
+    };
+
+    window.rpEdit = function(jid, type, value) {
+        fetch('mentoria_score_edit_api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'edit_activity', member_jid: jid, type: type, value: parseInt(value) || 0 })
+        }).then(r => r.json()).then(d => { if (!d.success) alert('Erro: ' + d.error); });
+    };
+
+    // Carrega assim que a aba for ativada (não só no DOMContentLoaded,
+    // pois a aba pode ser carregada após o evento disparar)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadScoreEditor);
+    } else {
+        loadScoreEditor();
+    }
+})();
 </script>
