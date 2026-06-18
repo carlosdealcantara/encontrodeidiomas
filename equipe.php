@@ -643,7 +643,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const emojiEl = clonedItem.querySelector('.flag-emoji');
             if (imgEl) imgEl.remove();
             if (emojiEl) emojiEl.remove();
-            textSpan.textContent = clonedItem.textContent.trim();
+            
+            // Remove caracteres de emoji e bandeiras para evitar duplicação visual
+            const cleanText = clonedItem.textContent.trim()
+                .replace(/[\u{1F1E0}-\u{1F1FF}]{2}/gu, '')
+                .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
+                .trim();
+            textSpan.textContent = cleanText;
             
             if (type === 'online') {
                 const img = item.querySelector('img');
@@ -798,7 +804,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     const emojiEl = clonedItem.querySelector('.flag-emoji');
                     if (imgEl) imgEl.remove();
                     if (emojiEl) emojiEl.remove();
-                    if (textSpan) textSpan.textContent = clonedItem.textContent.trim();
+                    
+                    if (textSpan) {
+                        const cleanText = clonedItem.textContent.trim()
+                            .replace(/[\u{1F1E0}-\u{1F1FF}]{2}/gu, '')
+                            .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
+                            .trim();
+                        textSpan.textContent = cleanText;
+                    }
                     
                     if (currentTab === 'online') {
                         const btnContent = filterGroup.querySelector('.dropdown-button > span');
@@ -876,7 +889,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 2000); 
 });
-</script>
 </script>
 JS;
 
