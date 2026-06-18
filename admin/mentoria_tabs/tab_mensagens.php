@@ -144,38 +144,6 @@
                 <p class="help-text">Disparada no momento exato da aula. Use <code>{link}</code> para o URL da sala. A tolerância é de 15 minutos.</p>
             </div>
 
-            <h4 style="margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-reply"></i> Respostas aos Comandos de Inscrição</h4>
-            
-            <div class="form-group">
-                <label>Confirmação de Presença (comando !attend)</label>
-                <textarea name="tpl_attend_confirm"><?= htmlspecialchars($tpl_attend_confirm) ?></textarea>
-                <p class="help-text">Quando a pessoa confirma dentro do prazo. Use <code>@{name}</code> para mencionar e <code>{listText}</code> para a lista de presença formatada.</p>
-            </div>
-
-            <div class="form-group" style="margin-top: 20px;">
-                <label>Recusa: Fora do Prazo (Mas a Aula Vai Acontecer)</label>
-                <textarea name="tpl_attend_late_good"><?= htmlspecialchars($tpl_attend_late_good) ?></textarea>
-                <p class="help-text">Tenta confirmar fora do prazo e a aula tem quórum. Use <code>@{name}</code> e <code>{listText}</code>.</p>
-            </div>
-
-            <div class="form-group" style="margin-top: 20px;">
-                <label>Recusa: Fora do Prazo (Aula Já Cancelada)</label>
-                <textarea name="tpl_attend_late_bad"><?= htmlspecialchars($tpl_attend_late_bad) ?></textarea>
-                <p class="help-text">Tenta confirmar fora do prazo e a aula já foi cancelada por falta de quórum. Use <code>@{name}</code>.</p>
-            </div>
-
-            <div class="form-group" style="margin-top: 20px;">
-                <label>Cancelamento de Inscrição (comando !unattend)</label>
-                <textarea name="tpl_unattend_confirm"><?= htmlspecialchars($tpl_unattend_confirm) ?></textarea>
-                <p class="help-text">Quando o usuário remove sua própria inscrição. Use <code>@{name}</code> e <code>{listText}</code>.</p>
-            </div>
-
-            <div class="form-group" style="margin-top: 20px;">
-                <label>Aviso de Cancelamento Instantâneo (Falta de Quórum)</label>
-                <textarea name="tpl_unattend_cancelled_now"><?= htmlspecialchars($tpl_unattend_cancelled_now) ?></textarea>
-                <p class="help-text">Enviada como segunda mensagem após o <code>!unattend</code> caso esse cancelamento zere a turma e force o cancelamento da aula ativa.</p>
-            </div>
-
             <h4 style="margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-search"></i> Comando de Consulta</h4>
 
             <div class="form-group">

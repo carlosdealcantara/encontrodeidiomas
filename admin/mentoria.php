@@ -268,6 +268,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             <button class="main-tab-btn <?= $active_tab == 'mensagens' ? 'active' : '' ?>" onclick="switchMainTab('mensagens')"><i class="fas fa-robot"></i> Mensagens e Grupos</button>
             <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Classes</button>
             <button class="main-tab-btn <?= $active_tab == 'streaks' ? 'active' : '' ?>" onclick="switchMainTab('streaks')"><i class="fas fa-fire"></i> Streaks Desafio</button>
+            <button class="main-tab-btn <?= $active_tab == 'score_editor' ? 'active' : '' ?>" onclick="switchMainTab('score_editor')"><i class="fas fa-pencil-alt"></i> Score Editor</button>
         </div>
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
@@ -284,6 +285,10 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_streaks" class="main-tab-content <?= $active_tab == 'streaks' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_streaks.php'; ?>
+        </div>
+
+        <div id="tab_score_editor" class="main-tab-content <?= $active_tab == 'score_editor' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_score_editor.php'; ?>
         </div>
 
     </main>
