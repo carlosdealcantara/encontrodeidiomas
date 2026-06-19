@@ -81,3 +81,30 @@ INSERT IGNORE INTO mentoria_mensagens (cenario, dias_antes, texto) VALUES
 ('Aviso de Véspera', 1, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. O seu ciclo de acesso vence amanhã.\nPor favor, realize a renovação.'),
 ('Aviso de Vencimento', 0, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. O prazo de renovação do seu acesso encerra hoje.'),
 ('Aviso de Suspensão', -1, '🤖 AVISO DE SUSPENSÃO:\nOlá, {nome}. O sistema suspendeu seu acesso devido à não identificação da renovação.\nEntre em contato com o suporte para reativarmos manualmente.');
+
+-- ==========================================
+-- MÓDULO ODYSEE PIPELINE
+-- ==========================================
+
+-- Add columns to languages table
+-- Note: Assuming the 'languages' table exists as it's referenced in 'meetings'
+-- ALTER TABLE languages ADD COLUMN odysee_channel_id VARCHAR(255) DEFAULT NULL;
+-- ALTER TABLE languages ADD COLUMN odysee_channel_name VARCHAR(255) DEFAULT NULL;
+-- ALTER TABLE languages ADD COLUMN whatsapp_group_id VARCHAR(255) DEFAULT NULL;
+
+CREATE TABLE IF NOT EXISTS odysee_publish_queue (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    language_id INT NOT NULL,
+    drive_file_id VARCHAR(255) NOT NULL,
+    drive_file_name VARCHAR(500) NOT NULL,
+    topico VARCHAR(500) NOT NULL,
+    titulo_final VARCHAR(700) DEFAULT NULL,
+    odysee_slug VARCHAR(100) DEFAULT NULL,
+    odysee_url VARCHAR(500) DEFAULT NULL,
+    status ENUM('pending','processing','done','error') DEFAULT 'pending',
+    error_message TEXT DEFAULT NULL,
+    retry_count TINYINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (language_id) REFERENCES languages(id)
+);
