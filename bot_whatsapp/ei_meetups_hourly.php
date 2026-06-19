@@ -7,7 +7,7 @@
  * a cada hora, ou 15 min.
  */
 
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../config.php';
 
 $token_secreto = '83x9aZ2pLQw1'; 
 $is_cli = (php_sapi_name() === 'cli');
@@ -17,8 +17,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
-$EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-$EVOLUTION_API_KEY = "SenhaMeetups2026";
+require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
@@ -77,7 +76,7 @@ foreach ($meetings as $m) {
         
         // Se a hora alvo bate com a hora atual (com uma tolerância se o cron rodar +- minutos)
         // Como é cron de hora em hora (ou 15m), verificamos se a hora bate
-        if ($horaAtualReal === $horaAlvo) {
+        if ($horaAtualReal === (int)$horaAlvo) {
             
             // Prepara a mensagem
             $textoFinal = $t['template_texto'];
@@ -86,7 +85,8 @@ foreach ($meetings as $m) {
             $textoFinal = str_replace('{EMOJI_FLAG}', $m['flag_emoji'], $textoFinal);
             $textoFinal = str_replace('{EMOJI_FLAGS}', str_repeat($m['flag_emoji'], 5), $textoFinal);
             $textoFinal = str_replace('{SAUDACAO}', $m['greeting'] ?? 'Welcome!', $textoFinal);
-            $textoFinal = str_replace('{MEET_LINK}', $m['meet_link'] ?: 'Link não definido', $textoFinal);
+            $linkLimpo = str_replace(['https://', 'http://'], '', $m['meet_link'] ?? '');
+            $textoFinal = str_replace('{MEET_LINK}', $linkLimpo ?: 'Link não definido', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', $m['instagram_link'] ?: 'Sem link', $textoFinal);
             
             // Filtra os grupos que devem receber ESTA mensagem DESTE idioma
@@ -104,36 +104,11 @@ foreach ($meetings as $m) {
                     $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND meeting_id = ? AND template_id = ? AND data_disparo = ?");
                     $stmtCheck->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
                     
-                    if ($stmtCheck->rowCount() === 0) {
-                        // PROTEÇÃO ANTI-COLAPSO: Ignorar grupos com ID antigo (com hífen)
-                        if (strpos($g['group_id'], '-') !== false) {
-                            echo "<p>⚠️ Pulo de Segurança: O grupo '{$g['nome']}' usa um ID antigo (com hífen) que trava a Evolution API. Pulando.</p>";
-                            continue;
-                        }
-                        
-                        // Envia para a API
-                        $payload = json_encode([
-                            "number" => $g['group_id'],
-                            "options" => [
-                                "delay" => 1200
-                            ],
-                            "textMessage" => [
-                                "text" => $textoFinal
-                            ]
-                        ]);
-                        
-                        $ch = curl_init($EVOLUTION_API_URL);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                            "Content-Type: application/json",
-                            "apikey: " . $EVOLUTION_API_KEY
-                        ]);
-                        curl_setopt($ch, CURLOPT_POST, true);
-                        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-                        
-                        $response = curl_exec($ch); 
-                        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                        curl_close($ch);
+                    if ($stmtCheck->rowCount() === 0 || isset($_GET['force'])) {
+                        // Envia para o motor unificado do Baileys
+                        $result = enviarWhatsApp($g['group_id'], $textoFinal, 'meetup_cron');
+                        $httpcode = $result['httpCode'];
+                        $response = json_encode($result);
                         
                         // Só loga no banco se a API respondeu OK
                         if ($httpcode >= 200 && $httpcode < 300) {

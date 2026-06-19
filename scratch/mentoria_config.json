@@ -1,0 +1,69 @@
+{
+    "admin_jid": "556192666148@s.whatsapp.net",
+    "groups": {
+        "our_classes": {
+            "jid": "120363228807801778@g.us",
+            "automations": [
+                "lembrete_aula"
+            ]
+        },
+        "desafio": {
+            "jid": "120363246518434750@g.us",
+            "automations": [
+                "auto_kick",
+                "aviso"
+            ]
+        },
+        "the_lounge": {
+            "jid": "120363426891416419@g.us",
+            "automations": [
+                "welcome",
+                "ranking_geral"
+            ]
+        },
+        "pronunciation": {
+            "jid": "120363252165108369@g.us",
+            "automations": [
+                "ranking"
+            ]
+        },
+        "music": {
+            "jid": "120363230596474380@g.us",
+            "automations": [
+                "ranking"
+            ]
+        },
+        "vocabulary": {
+            "jid": "120363322452180439@g.us",
+            "automations": [
+                "ranking"
+            ]
+        },
+        "games": {
+            "jid": "120363417627129972@g.us",
+            "automations": [
+                "ranking"
+            ]
+        }
+    },
+    "templates": {
+        "welcome": "Hey, @{name}! 👋\r\nWelcome to *The Lounge*! 🎉\r\nIntroduce yourself to the group!",
+        "lembrete_aula": "",
+        "aviso_desafio": "⚠️ *Challenge Alert!*\r\n{pendentes}\r\nYou have until midnight to post an image of your activity! ⏳",
+        "kick_desafio": "⚠️ @{name} has been removed for missing the daily activity.",
+        "ranking_social": "",
+        "ranking_dedicados": "📅 {date}\r\n\r\n⭐ *Student of the Day*\r\n{student_of_the_day}\r\n\r\n*Honorable Mentions:*\r\n{other_participants}\r\n📖 *Legend:*\r\n{legend}\r\n\r\n━━━━━━━━━━━━━━━━━━━━\r\n\r\n🗣️ *Word Slingers of the day:*\r\n{word_slingers_list}\r\n🔥 *Emoji Gang:*\r\n{emoji_gang_list}",
+        "class_aviso": "📅 {date}\n\nWe have a session scheduled for {horario}.\nIf you want to participate, please reply with !attend.\n\n⏳ Deadline to confirm your attendance: {deadline}.",
+        "class_cancel": "❌ *Class Cancelled*\r\n\r\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋",
+        "class_kickoff": "🎉 *The Class is starting NOW!*\r\n\r\nJoin the room here: {link}\r\n\r\nHave a great session! 🗣️",
+        "attend_confirm": "✅ Registration confirmed for @{name}!{listText}",
+        "attend_late_good": "⏰ The deadline to confirm attendance has passed, @{name}.\r\n\r\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}",
+        "attend_late_bad": "⏰ The deadline to confirm attendance has passed, @{name}.\r\n\r\n❌ *Bad news:* The class was already cancelled due to lack of attendees.",
+        "unattend_confirm": "🗑️ Registration cancelled for @{name}.{listText}",
+        "unattend_cancelled_now": "🚨 *CLASS CANCELLED*\r\n\r\nSince there are no more students confirmed, today's class is now cancelled.",
+        "class_status": "📋 *Class Status — {class_info}*\r\n\r\n*Confirmed Attendees:*\r\n{attendees}\r\n\r\nDeadline to confirm: {deadline_info}",
+        "streak_confirm": "✅ Image computed, @{name}! You are on a {streak}-day streak! 🔥",
+        "streak_milestone": "🎉 CONGRATULATIONS! @{name} just hit a {streak}-day streak! Legend! 🏆",
+        "streak_leaderboard": "🏆 *All-Time Streak Records*\r\n\r\n{allTimeList}\r\n🔥 *Active Streaks Today*\r\n\r\n{activeList}"
+    }
+}

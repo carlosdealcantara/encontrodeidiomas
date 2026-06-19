@@ -57,32 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mockLista = "🇺🇸 English\n🇩🇪 Deutsch";
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $mockLista, $textoFinal);
             
-            $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-            $EVOLUTION_API_KEY = "SenhaMeetups2026";
+            require_once '../includes/whatsapp_helper.php';
             
-            $payload = json_encode([
-                "number" => $telefone,
-                "options" => [
-                    "delay" => 1200,
-                    "presence" => "composing"
-                ],
-                "textMessage" => [
-                    "text" => $textoFinal
-                ]
-            ]);
-            
-            $ch = curl_init($EVOLUTION_API_URL);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                "Content-Type: application/json",
-                "apikey: " . $EVOLUTION_API_KEY
-            ]);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            
-            $response = curl_exec($ch); 
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+            $result = enviarWhatsApp($telefone, $textoFinal, 'template_teste');
+            $httpcode = $result['httpCode'];
+            $response = json_encode($result);
             
             if ($httpcode >= 200 && $httpcode < 300) {
                 $_GET['msg'] = "🚀 Mensagem de teste enviada com sucesso para $telefone!";
@@ -165,6 +144,15 @@ try {
     <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
+        <!-- WhatsApp Sub-Nav -->
+        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
+            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
+            <a href="wpp_broadcast.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_broadcast.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
+            <a href="wpp_resumo_semanal.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_resumo_semanal.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
+            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
+        </div>
+
         <header class="header">
             <h2>Templates de Mensagem (Meetups)</h2>
             <p style="color: var(--text-dim);">Configure as mensagens que serão disparadas (ex: hora exata, lembrete).</p>

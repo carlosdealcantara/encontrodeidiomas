@@ -1,140 +1,66 @@
 <?php
 session_start();
 require_once '../config.php';
+require_once '../includes/whatsapp_helper.php';
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
     exit;
 }
 
-$instance = "meetups";
-$apiKey = "SenhaMeetups2026";
-$apiUrl = "http://136.248.92.126:8080";
+// Lógica de Renderizar QR Code via Proxy (JSON API para AJAX)
+if (isset($_GET['action']) && $_GET['action'] === 'qr_status') {
+    header('Content-Type: application/json');
+    $url = getBestBaileysUrl() . '/qr?json=true';
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if (curl_errno($ch) || $httpCode >= 400) {
+        echo json_encode(['connected' => false, 'qr' => null, 'error' => 'server_unavailable']);
+    } else {
+        echo $response;
+    }
+    curl_close($ch);
+    exit;
+}
 
-$state = "unknown";
-$qrCodeBase64 = null;
-$pairingCode = null;
 $error = null;
 
 // Lógica de Desconectar (Logout)
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    try {
-        $ch = curl_init("$apiUrl/instance/logout/$instance");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-        curl_exec($ch);
-        curl_close($ch);
-        
-        header("Location: conectar_whatsapp.php?msg=Sessão finalizada!");
-        exit;
-    } catch (Exception $e) {
-        $error = "Erro ao desconectar: " . $e->getMessage();
-    }
-}
-
-// Lógica de Reset Completo (Deletar e Recriar Instância)
-if (isset($_GET['action']) && $_GET['action'] === 'reset') {
-    try {
-        // 1. Deleta a instância atual
-        $ch = curl_init("$apiUrl/instance/delete/$instance");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-        curl_exec($ch);
-        curl_close($ch);
-        
-        // Aguarda 3 segundos para garantir que a API finalizou a exclusão no banco de dados (evita erro de conflito)
-        sleep(3);
-        
-        // 2. Recria a instância zerada
-        $body = json_encode([
-            "instanceName" => $instance,
-            "qrcode" => true,
-            "integration" => "WHATSAPP-BAILEYS"
-        ]);
-        $ch = curl_init("$apiUrl/instance/create");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "apikey: $apiKey",
-            "Content-Type: application/json"
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-        curl_exec($ch);
-        curl_close($ch);
-
-        // 3. Atualiza as configurações para NÃO ignorar grupos (necessário para buscar IDs)
-        $settingsBody = json_encode([
-            "reject_call" => false,
-            "msg_call" => "",
-            "groups_ignore" => false,
-            "always_online" => false,
-            "read_messages" => false,
-            "read_status" => false,
-            "sync_full_history" => false
-        ]);
-        $chSet = curl_init("$apiUrl/settings/set/$instance");
-        curl_setopt($chSet, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($chSet, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($chSet, CURLOPT_HTTPHEADER, [
-            "apikey: $apiKey",
-            "Content-Type: application/json"
-        ]);
-        curl_setopt($chSet, CURLOPT_POSTFIELDS, $settingsBody);
-        curl_exec($chSet);
-        curl_close($chSet);
-
-
-        header("Location: conectar_whatsapp.php?msg=Sessão recriada com sucesso! Escaneie o novo QR Code rapidamente.");
-        exit;
-    } catch (Exception $e) {
-        $error = "Erro ao resetar a conexão: " . $e->getMessage();
-    }
-}
-
-// 1. Verificar Estado da Conexão
-try {
-    $ch = curl_init("$apiUrl/instance/connectionState/$instance");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($httpCode === 200 && $response) {
-        $data = json_decode($response, true);
-        // Na v2 do Evolution, o state vem no root ou dentro de instance
-        $state = $data['instance']['state'] ?? ($data['state'] ?? 'disconnected');
-    } else {
-        $state = 'disconnected';
-    }
-} catch (Exception $e) {
-    $state = 'disconnected';
-    $error = "Erro ao checar conexão: " . $e->getMessage();
-}
-
-// 2. Se não estiver conectado, buscar QR Code
-if ($state !== 'open' && $state !== 'connected') {
-    try {
-        $ch = curl_init("$apiUrl/instance/connect/$instance");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["apikey: $apiKey"]);
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode === 200 && $response) {
-            $data = json_decode($response, true);
-            $qrCodeBase64 = $data['base64'] ?? ($data['qrcode'] ?? ($data['code'] ?? null));
-            $pairingCode = $data['pairingCode'] ?? null;
+    $res = sendBaileysRequest('/logout', null, 'DELETE');
+    if (!$res['success']) {
+        if ($res['httpCode'] >= 500) {
+            $error = "O servidor está reiniciando. Aguarde alguns segundos.";
         } else {
-            $error = "Não foi possível gerar o QR Code da API. Status: $httpCode";
+            $error = "Erro ao desconectar: " . $res['error'];
         }
-    } catch (Exception $e) {
-        $error = "Erro ao buscar QR Code: " . $e->getMessage();
+    } else {
+        header("Location: conectar_whatsapp.php?msg=Sessão finalizada! Aguarde o novo QR Code aparecer.");
+        exit;
     }
 }
+
+// Lógica de Reset Completo
+if (isset($_GET['action']) && $_GET['action'] === 'reset') {
+    $res = sendBaileysRequest('/reset', null, 'POST');
+    if (!$res['success']) {
+        if ($res['httpCode'] >= 500) {
+            $error = "O servidor está reiniciando. Aguarde alguns segundos e tente novamente.";
+        } else {
+            $error = "Erro ao resetar: " . $res['error'];
+        }
+    } else {
+        header("Location: conectar_whatsapp.php?msg=Sessão recriada com sucesso! Aguarde e escaneie o novo QR Code.");
+        exit;
+    }
+}
+
+$status = statusWhatsApp();
+$state = $status['connected'] ? 'connected' : 'disconnected';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -144,6 +70,7 @@ if ($state !== 'open' && $state !== 'connected') {
     <title>Conectar WhatsApp | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --primary-bg: #0f172a;
@@ -159,14 +86,13 @@ if ($state !== 'open' && $state !== 'connected') {
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         
-        .card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); text-align: center; max-width: 500px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); text-align: center; max-width: 500px; width: 100%; margin: 40px auto 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .card h2 { margin-bottom: 10px; font-size: 1.8rem; }
         .card p { color: var(--text-dim); margin-bottom: 25px; font-size: 0.95rem; line-height: 1.5; }
         
-        .qr-container { background: white; padding: 20px; border-radius: 15px; display: inline-block; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
-        .qr-container img { display: block; max-width: 250px; width: 100%; height: auto; }
+        .qr-container { background: white; padding: 20px; border-radius: 15px; display: inline-block; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         
         .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; margin-bottom: 25px; }
         .status-badge.connected { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
@@ -178,65 +104,131 @@ if ($state !== 'open' && $state !== 'connected') {
         .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
         .btn-secondary:hover { background: rgba(255,255,255,0.2); }
         
-        .alert { padding: 15px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16, 185, 129, 0.2); text-align: left; width: 100%; }
+        .alert { padding: 15px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16, 185, 129, 0.2); text-align: left; width: 100%; max-width: 500px; }
         .alert.error { background: rgba(227, 29, 28, 0.1); color: var(--accent-red); border-color: rgba(227, 29, 28, 0.2); }
         
-        .pairing-code { font-family: monospace; font-size: 1.4rem; letter-spacing: 2px; background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 10px; color: #38bdf8; border: 1px dashed rgba(56, 189, 248, 0.3); }
+        /* Loader */
+        .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #4f46e5; border-radius: 50%; width: 44px; height: 44px; animation: spin 1s linear infinite; margin: 25px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* QR Code container animations */
+        #qr-area { transition: opacity 0.3s ease; }
+        #qr-area.fade { opacity: 0.3; }
     </style>
 </head>
 <body>
     <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
+        <!-- WhatsApp Sub-Nav -->
+        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
+            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
+            <a href="wpp_broadcast.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_broadcast.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
+            <a href="wpp_resumo_semanal.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_resumo_semanal.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
+            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
+        </div>
+
         <?php if (isset($_GET['msg'])): ?>
-            <div class="alert" style="max-width: 500px;"><?= htmlspecialchars($_GET['msg']) ?></div>
+            <div class="alert"><?= htmlspecialchars($_GET['msg']) ?></div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert error" style="max-width: 500px;"><?= htmlspecialchars($error) ?></div>
+            <div class="alert error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
         <div class="card">
-            <?php if ($state === 'open' || $state === 'connected'): ?>
-                <div class="status-badge connected">
-                    <i class="fas fa-check-circle"></i> Conectado
+            <div id="status-badge-area">
+                <div class="status-badge <?= $state ?>" id="statusBadge">
+                    <i class="fas fa-<?= $state === 'connected' ? 'check-circle' : 'exclamation-triangle' ?>"></i>
+                    <span id="statusText"><?= $state === 'connected' ? 'Conectado' : 'Desconectado' ?></span>
                 </div>
-                <h2>WhatsApp Ativo!</h2>
-                <p>O sistema de cobranças e lembretes de Meetups e Mentorias está operando normalmente com o WhatsApp conectado.</p>
-                <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center;">
-                    <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-sync"></i> Atualizar Status</a>
-                    <a href="?action=logout" class="btn btn-primary" onclick="return confirm('Deseja realmente desconectar este WhatsApp?')"><i class="fas fa-sign-out-alt"></i> Desconectar Sessão</a>
-                </div>
-            <?php else: ?>
-                <div class="status-badge disconnected">
-                    <i class="fas fa-exclamation-triangle"></i> Desconectado
-                </div>
-                <h2>Conectar WhatsApp</h2>
-                <p>Abra o WhatsApp no seu celular, vá em <strong>Aparelhos conectados > Conectar um aparelho</strong> e aponte a câmera para o QR Code abaixo.</p>
-                
-                <?php if ($qrCodeBase64): ?>
-                    <div class="qr-container">
-                        <img src="<?= htmlspecialchars($qrCodeBase64) ?>" alt="QR Code WhatsApp">
+            </div>
+
+            <div id="main-area">
+                <?php if ($state === 'connected'): ?>
+                    <h2>WhatsApp Ativo!</h2>
+                    <p>O sistema de cobranças e lembretes de Meetups e Mentorias está operando normalmente com o WhatsApp conectado.</p>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-sync"></i> Atualizar Status</a>
+                        <a href="?action=logout" class="btn btn-primary" onclick="return confirm('Deseja realmente desconectar este WhatsApp?')"><i class="fas fa-sign-out-alt"></i> Desconectar Sessão</a>
                     </div>
                 <?php else: ?>
-                    <div style="margin: 30px 0; color: var(--text-dim);">
-                        <i class="fas fa-spinner fa-spin fa-2x"></i>
-                        <p style="margin-top: 10px;">Aguardando geração do QR Code pela API...</p>
+                    <h2>Conectar WhatsApp</h2>
+                    <p>Abra o WhatsApp no seu celular, vá em <strong>Aparelhos conectados > Conectar um aparelho</strong> e aponte a câmera para o QR Code abaixo.</p>
+                    
+                    <div id="qr-area">
+                        <div class="loader" id="qrLoader"></div>
+                        <p id="qrMessage" style="color: var(--text-dim); font-size: 0.9rem;">Aguardando QR Code do servidor...</p>
+                    </div>
+
+                    <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center;">
+                        <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-sync"></i> Atualizar QR Code</a>
+                        <a href="?action=reset" class="btn btn-secondary" style="border-color: rgba(227, 29, 28, 0.5); color: #ff8a8a;" onclick="return confirm('Isso vai apagar a sessão atual na API e gerar uma nova do zero. Tem certeza?')"><i class="fas fa-trash-alt"></i> Forçar Nova Sessão</a>
                     </div>
                 <?php endif; ?>
-
-                <?php if ($pairingCode): ?>
-                    <div style="margin-bottom: 25px;">
-                        <span style="font-size: 0.85rem; color: var(--text-dim);">Código de Pareamento Alternativo:</span><br>
-                        <div class="pairing-code"><?= htmlspecialchars($pairingCode) ?></div>
-                    </div>
-                <?php endif; ?>
-
-                <div style="margin-top: 10px; display: flex; gap: 15px; justify-content: center;">
-                    <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-sync"></i> Atualizar QR Code</a>
-                    <a href="?action=reset" class="btn btn-secondary" style="border-color: rgba(227, 29, 28, 0.5); color: #ff8a8a;" onclick="return confirm('Isso vai apagar a sessão atual na API e gerar uma nova do zero. Tem certeza?')"><i class="fas fa-trash-alt"></i> Forçar Nova Sessão</a>
-                </div>
-            <?php endif; ?>
+            </div>
         </div>
     </main>
+
+    <script>
+    (function() {
+        let currentQR = null;
+        let qrCodeObj = null;
+        let polling = true;
+
+        async function checkQR() {
+            if (!polling) return;
+            try {
+                const res = await fetch('?action=qr_status');
+                const data = await res.json();
+                
+                if (data.connected) {
+                    // Atualizar UI para conectado
+                    const badge = document.getElementById('statusBadge');
+                    badge.className = 'status-badge connected';
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> <span>Conectado</span>';
+                    
+                    const mainArea = document.getElementById('main-area');
+                    mainArea.innerHTML = '<h2>WhatsApp Ativo!</h2><p>O sistema de cobranças e lembretes de Meetups e Mentorias está operando normalmente com o WhatsApp conectado.</p><div style="display: flex; gap: 15px; justify-content: center;"><a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-sync"></i> Atualizar Status</a><a href="?action=logout" class="btn btn-primary" onclick="return confirm(\'Deseja realmente desconectar este WhatsApp?\')"><i class="fas fa-sign-out-alt"></i> Desconectar Sessão</a></div>';
+                    
+                    polling = false;
+                    return;
+                }
+                
+                const qrArea = document.getElementById('qr-area');
+                if (!qrArea) return; // Já está em modo conectado
+                
+                if (data.qr) {
+                    if (currentQR !== data.qr) {
+                        currentQR = data.qr;
+                        qrArea.innerHTML = '<div class="qr-container" id="qrCanvas"></div><p style="color: var(--text-dim); font-size: 0.85rem;">Atualizando em tempo real...</p>';
+                        qrCodeObj = new QRCode(document.getElementById("qrCanvas"), {
+                            text: data.qr,
+                            width: 256,
+                            height: 256,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
+                    }
+                } else {
+                    if (currentQR !== null) {
+                        // QR sumiu mas não conectou — servidor reiniciando
+                        currentQR = null;
+                        qrArea.innerHTML = '<div class="loader"></div><p style="color: var(--text-dim); font-size: 0.9rem;">Servidor reiniciando, aguarde...</p>';
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao checar QR:', e);
+            }
+            setTimeout(checkQR, 3000);
+        }
+        
+        // Só iniciar polling se desconectado
+        if (document.getElementById('qr-area')) {
+            checkQR();
+        }
+    })();
+    </script>
 </body>
 </html>

@@ -41,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         // ==========================================
         // DISPARO IMEDIATO DE MENSAGEM DE AGRADECIMENTO
         // ==========================================
-        $EVOLUTION_API_URL = "http://136.248.92.126:8080/message/sendText/meetups";
-        $EVOLUTION_API_KEY = "SenhaMeetups2026";
+        // ==========================================
+        require_once '../includes/whatsapp_helper.php';
         
         $primeiroNome = trim(explode(' ', $aluno['nome'])[0]);
         $novaDataFormatada = date('d/m/Y', strtotime($novaData));
@@ -66,27 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             $telefoneLimpo = "55" . $telefoneLimpo;
         }
         
-        $payload = json_encode([
-            "number" => $telefoneLimpo,
-            "options" => [
-                "delay" => 1500,
-                "presence" => "composing"
-            ],
-            "textMessage" => [
-                "text" => $textoAgradecimento
-            ]
-        ]);
-        
-        $ch = curl_init($EVOLUTION_API_URL);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json",
-            "apikey: " . $EVOLUTION_API_KEY
-        ]);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_exec($ch);
-        curl_close($ch);
+        enviarWhatsApp($telefoneLimpo, $textoAgradecimento, 'mentoria_renovar');
         // ==========================================
         
         header('Location: mentoria.php?msg=Pagamento Registrado! O aluno ' . urlencode($aluno['nome']) . ' foi renovado. Novo vencimento: ' . date('d/m/Y', strtotime($novaData)) . '.' . urlencode($mensagemExtra));

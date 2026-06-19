@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://encontrodeidiomas.com.br/sitemap.xml
+Sitemap: https://viaei.com/sitemap.xml

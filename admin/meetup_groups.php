@@ -2,6 +2,7 @@
 session_start();
 set_time_limit(0); // Impede que o PHP corte a execução antes de 120 segundos
 require_once '../config.php';
+require_once '../includes/whatsapp_helper.php';
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
@@ -11,6 +12,18 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 $conn = connectDB();
 $msg = null;
 $api_error = null;
+
+// Sincronizar Grupos
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
+    $res = sendBaileysRequest('/groups', null, 'GET');
+    if ($res['success'] && is_array($res['data'])) {
+        $cache_file = __DIR__ . '/groups_cache.json';
+        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
+        $msg = "Lista de grupos sincronizada com sucesso do WhatsApp! (" . count($res['data']) . " grupos encontrados)";
+    } else {
+        $api_error = "Erro ao buscar grupos da API: " . ($res['error'] ?? 'Desconhecido');
+    }
+}
 
 // Lógica de Importação em Lote (Batch Import)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
@@ -126,7 +139,7 @@ try {
         SELECT g.*, l.name as language_name 
         FROM meetup_whatsapp_groups g 
         LEFT JOIN languages l ON g.language_id = l.id 
-        ORDER BY g.categoria, g.nome ASC
+        ORDER BY g.ativo DESC, g.categoria, g.nome ASC
     ");
     $groups = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -206,14 +219,27 @@ foreach ($groups as $g) {
     <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
+        <!-- WhatsApp Sub-Nav -->
+        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
+            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
+            <a href="wpp_broadcast.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_broadcast.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
+            <a href="wpp_resumo_semanal.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_resumo_semanal.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
+            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
+        </div>
+
         <header class="header">
             <div>
                 <h2>Grupos de Automação (Meetups)</h2>
                 <p style="color: var(--text-dim);">Gerencie os grupos que receberão as mensagens dos encontros</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-qrcode"></i> Status do WhatsApp</a>
-                <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-sync"></i> Buscar Grupos na API</a>
+                <form method="POST" style="margin: 0;">
+                    <button type="submit" name="sync_groups" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Sincronizar Grupos (API)
+                    </button>
+                </form>
+                <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-list"></i> Carregar Grupos (Cache)</a>
             </div>
         </header>
 
@@ -371,9 +397,6 @@ foreach ($groups as $g) {
                     <td><strong><?= htmlspecialchars($g['nome']) ?></strong></td>
                     <td style="color: var(--text-dim); font-size: 0.9rem;">
                         <?= htmlspecialchars($g['group_id']) ?>
-                        <?php if (strpos($g['group_id'], '-') !== false): ?>
-                            <br><span style="color: var(--accent-red); font-size: 0.75rem; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> ID Antigo (Incompatível)</span>
-                        <?php endif; ?>
                     </td>
                     <td>
                         <?php if ($g['categoria'] == 'multi_idioma'): ?>

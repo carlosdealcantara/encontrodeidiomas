@@ -172,11 +172,13 @@ function getHostPhotoUrl(?string $fileName): string {
     } else {
         // Fallback dinâmico entre domínios (Dev <-> Prod)
         $currentHost = $_SERVER['HTTP_HOST'] ?? '';
-        $prodDomain = 'encontrodeidiomas.com.br';
+        $prodDomain    = 'viaei.com';
+        $devDomain     = 'dev.encontrodeidiomas.com.br';
+        $isProduction  = ($currentHost === $prodDomain || $currentHost === 'www.' . $prodDomain);
         
-        if (strpos($currentHost, $prodDomain) !== false && strpos($currentHost, 'dev') === false) {
+        if ($isProduction) {
             // Estamos na Produção -> Busca no Dev
-            return 'https://dev.' . $prodDomain . '/assets/images/' . $fileName;
+            return 'https://' . $devDomain . '/assets/images/' . $fileName;
         } else {
             // Estamos no Dev (ou localhost) -> Busca na Produção
             return 'https://' . $prodDomain . '/assets/images/' . $fileName;

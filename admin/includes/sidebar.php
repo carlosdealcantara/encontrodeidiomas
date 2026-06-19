@@ -5,18 +5,17 @@
  * Active state detected automatically via PHP_SELF.
  */
 $admin_current_page = basename($_SERVER['PHP_SELF']);
+$is_whatsapp_page = in_array($admin_current_page, ['meetup_groups.php', 'conectar_whatsapp.php', 'meetup_templates.php', 'wpp_broadcast.php', 'wpp_resumo_semanal.php']);
 
 $nav_items = [
     'index.php'        => ['icon' => 'fas fa-chart-pie',      'label' => 'Dashboard'],
     'hosts.php'        => ['icon' => 'fas fa-users',           'label' => 'Equipe'],
-    '../hosts_app/index.php' => ['icon' => 'fas fa-chalkboard-teacher', 'label' => 'App Hosts'],
     'meetings.php'     => ['icon' => 'fas fa-calendar-alt',   'label' => 'Online'],
     'presencial.php'   => ['icon' => 'fas fa-map-marker-alt', 'label' => 'Presencial'],
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
     'mentoria.php'         => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
-    'meetup_groups.php'    => ['icon' => 'fab fa-whatsapp',       'label' => 'Wpp Grupos'],
-    'conectar_whatsapp.php' => ['icon' => 'fas fa-qrcode',         'label' => 'Conectar Wpp'],
-    'meetup_templates.php' => ['icon' => 'fas fa-comment-dots',   'label' => 'Wpp Templates'],
+    'whatsapp'             => ['icon' => 'fab fa-whatsapp',       'label' => 'WhatsApp', 'link' => 'meetup_groups.php', 'active' => $is_whatsapp_page],
+    'telegram_bot.php'     => ['icon' => 'fab fa-telegram',       'label' => 'Telegram'],
     'useful_links.php'     => ['icon' => 'fas fa-link',           'label' => 'Links'],
     'settings.php'     => ['icon' => 'fas fa-cog',            'label' => 'Configurações'],
 ];
@@ -100,6 +99,11 @@ $nav_items = [
     .nav-item i { width: 20px; font-size: 0.95rem; text-align: center; flex-shrink: 0; }
     .nav-item:hover { background: rgba(255,255,255,0.06); color: var(--white); }
     .nav-item.active { background: var(--accent-red); color: white; }
+    
+    .submenu { list-style: none; padding-left: 45px; margin-top: 5px; margin-bottom: 5px; }
+    .submenu a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; padding: 6px 0; transition: color 0.2s; }
+    .submenu a:hover { color: var(--white); }
+    
     .nav-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 10px 0; }
     .nav-logout {
         display: flex;
@@ -130,7 +134,11 @@ $nav_items = [
 
     <nav class="nav-menu">
         <?php foreach ($nav_items as $file => $item): ?>
-        <a href="<?= $file ?>" class="nav-item <?= $admin_current_page === $file ? 'active' : '' ?>">
+        <?php 
+            $href = $item['link'] ?? $file; 
+            $isActive = isset($item['active']) ? $item['active'] : ($admin_current_page === $file);
+        ?>
+        <a href="<?= $href ?>" class="nav-item <?= $isActive ? 'active' : '' ?>">
             <i class="<?= $item['icon'] ?>"></i> <?= $item['label'] ?>
         </a>
         <?php endforeach; ?>

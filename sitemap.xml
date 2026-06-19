@@ -1,100 +1,100 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <!-- Versão Português -->
+  <!-- VersÃ£o PortuguÃªs -->
   <url>
-    <loc>https://encontrodeidiomas.com.br/</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/"/>
+    <loc>https://viaei.com/</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/online</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/online"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/online"/>
+    <loc>https://viaei.com/online</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/online"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/online"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/presencial</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/presencial"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/in-person"/>
+    <loc>https://viaei.com/presencial</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/presencial"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/in-person"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/equipe</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/equipe"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/team"/>
+    <loc>https://viaei.com/equipe</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/equipe"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/team"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/links</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/links"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/links"/>
+    <loc>https://viaei.com/links</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/links"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/links"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/contato</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/contato"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/contact"/>
+    <loc>https://viaei.com/contato</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/contato"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/contact"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
-  <!-- Versão English -->
+  <!-- VersÃ£o English -->
   <url>
-    <loc>https://encontrodeidiomas.com.br/en/</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/"/>
+    <loc>https://viaei.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/en/online</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/online"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/online"/>
+    <loc>https://viaei.com/en/online</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/online"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/online"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/en/in-person</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/presencial"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/in-person"/>
+    <loc>https://viaei.com/en/in-person</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/presencial"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/in-person"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/en/team</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/equipe"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/team"/>
+    <loc>https://viaei.com/en/team</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/equipe"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/team"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/en/links</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/links"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/links"/>
+    <loc>https://viaei.com/en/links</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/links"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/links"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://encontrodeidiomas.com.br/en/contact</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://encontrodeidiomas.com.br/contato"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://encontrodeidiomas.com.br/en/contact"/>
+    <loc>https://viaei.com/en/contact</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/contato"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/contact"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
