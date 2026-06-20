@@ -99,8 +99,10 @@ async function processQueue() {
                 data[date][groupJid][senderJid].reactions_given += 1;
             } else if (type === 'image') {
                 data[date][groupJid][senderJid].images_sent = (data[date][groupJid][senderJid].images_sent || 0) + 1;
+                data[date][groupJid][senderJid].messages += 1; // Soma também nas mensagens globais (Word Slingers)
             } else if (type === 'audio') {
                 data[date][groupJid][senderJid].audios_sent = (data[date][groupJid][senderJid].audios_sent || 0) + 1;
+                data[date][groupJid][senderJid].messages += 1; // Soma também nas mensagens globais (Word Slingers)
             }
             
             data[date][groupJid][senderJid].last_message_at = new Date().toISOString();
