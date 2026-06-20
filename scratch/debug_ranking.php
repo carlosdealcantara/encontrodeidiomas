@@ -42,6 +42,21 @@ foreach ($config['groups'] as $groupKey => $groupData) {
     }
 }
 
+$stmt = $conn->prepare("SELECT member_jid, member_name FROM class_attendances WHERE aula_date = ?");
+$stmt->execute([$ontem]);
+$attendances = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($attendances as $att) {
+    $memberJid = $att['member_jid'];
+    if (str_ends_with($memberJid, '@g.us')) continue;
+    
+    if (!isset($memberStats[$memberJid])) {
+        $memberStats[$memberJid] = ['name' => $att['member_name'], 'total_pts' => 0, 'emojis' => []];
+    }
+    $memberStats[$memberJid]['total_pts'] += 20; // 20 pts pela aula
+    $memberStats[$memberJid]['emojis'][] = '🖥️';
+}
+
 $memberStats = array_filter($memberStats, fn($m) => $m['total_pts'] > 0);
 uasort($memberStats, fn($a, $b) => $b['total_pts'] <=> $a['total_pts']);
 
