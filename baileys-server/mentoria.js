@@ -168,14 +168,28 @@ async function handleMessages({ messages, type }) {
         const senderName = msg.pushName || (msg.key.fromMe ? 'Eu (Admin)' : 'Desconhecido');
         if (senderName === 'Encontro de Idiomas' || senderName === 'Eu (Admin)') continue; // Ignora o bot oficial e o admin local
 
-        // Desembrulhar mensagens efêmeras e view-once para ler o conteúdo real
-        const realMsg = msg.message?.ephemeralMessage?.message || 
-                        msg.message?.viewOnceMessageV2?.message || 
-                        msg.message?.viewOnceMessage?.message || 
-                        msg.message?.documentWithCaptionMessage?.message ||
+        // Desembrulhar qualquer tipo de envelope (efêmero, view-once, document-with-caption)
+        // NOTA: documentWithCaptionMessage contém a mensagem diretamente em .message,
+        // NÃO num sub-campo, então ele já é aberto pelo último fallback abaixo.
+        const realMsg = msg.message?.ephemeralMessage?.message ||
+                        msg.message?.viewOnceMessageV2?.message ||
+                        msg.message?.viewOnceMessage?.message ||
                         msg.message;
 
-        const text = realMsg?.conversation || realMsg?.extendedTextMessage?.text || realMsg?.imageMessage?.caption || '';
+        // Imagem pode chegar em vários formatos conforme versão do WhatsApp / dispositivo:
+        // 1. imageMessage        — foto clássica
+        // 2. documentMessage     — arquivo enviado; quando mimeType começa com 'image/' é uma foto salva como doc
+        // 3. documentWithCaptionMessage — mesmo que acima, mas com legenda
+        // 4. viewOnceMessage (já desembrulhado acima) — visualização única
+        const innerDoc = realMsg?.documentWithCaptionMessage?.message?.documentMessage
+                         || realMsg?.documentMessage;
+        const isVisual = !!(realMsg?.imageMessage ||
+                            (innerDoc && (innerDoc.mimetype || '').startsWith('image/')) ||
+                            realMsg?.videoMessage);
+
+        const text = realMsg?.conversation || realMsg?.extendedTextMessage?.text ||
+                     realMsg?.imageMessage?.caption ||
+                     innerDoc?.caption || '';
 
         // === ACTIVITY LOGGING (students only, no commands, no duplicates) ===
         const isAdmin = msg.key.fromMe || excludedJids.has(senderJid);
@@ -184,21 +198,31 @@ async function handleMessages({ messages, type }) {
         if (!isAdmin && !processedMessageIds.has(msgId)) {
             processedMessageIds.add(msgId);
 
+            const msgTypes = Object.keys(realMsg || {});
+
             if (realMsg?.reactionMessage || msg.message?.reactionMessage) {
-                // FIX 3: Reactions are a separate event type, always logged correctly
                 logActivity(groupJid, senderJid, senderName, 'reaction');
-            } else if (realMsg?.audioMessage) {
+            } else if (realMsg?.audioMessage || realMsg?.pttMessage) {
                 logActivity(groupJid, senderJid, senderName, 'audio');
-            } else if (realMsg?.imageMessage) {
+            } else if (isVisual) {
                 logActivity(groupJid, senderJid, senderName, 'image');
+                // Log diagnóstico para acompanhamento
+                const desafioGrp = config.groups?.desafio?.jid;
+                if (groupJid === desafioGrp) {
+                    console.log('[DESAFIO-IMG]', senderName, '| tipos:', msgTypes.join(','), '| visual=true');
+                }
             } else {
-                // Tudo o resto (texto normal e comandos) conta como 1 mensagem
                 logActivity(groupJid, senderJid, senderName, 'message');
+                // Log diagnóstico temporário para qualquer tipo não-texto no Desafio
+                const desafioGrp = config.groups?.desafio?.jid;
+                if (groupJid === desafioGrp) {
+                    console.log('[DESAFIO-MISS]', senderName, '| tipos msg:', msgTypes.join(','));
+                }
             }
         }
 
         // === STREAK SYSTEM (Desafio Group — runs independently of activity logging) ===
-        if (realMsg?.imageMessage && !isAdmin) {
+        if (isVisual && !isAdmin) {
             const desafioGroup = config.groups?.desafio?.jid;
             if (groupJid === desafioGroup) {
                 try {
