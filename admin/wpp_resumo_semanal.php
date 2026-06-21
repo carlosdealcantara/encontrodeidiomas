@@ -69,17 +69,26 @@ if (isset($_GET['msg'])) $msg_success = htmlspecialchars($_GET['msg']);
 
 // Generate Replays List String
 $replays_list = "";
+$replays_list_clean = "";
 foreach ($replays as $r) {
     $num = !empty($r['numero']) ? str_pad($r['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
     $lnk = !empty($r['link']) ? $r['link'] : "Link";
     $tit = !empty($r['titulo']) ? $r['titulo'] : "Título";
-    $replays_list .= "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
+    
+    $linha = "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
+    $replays_list .= $linha;
+    
+    // Apenas inclui na lista final de disparo se houver link preenchido
+    if (!empty($r['link'])) {
+        $replays_list_clean .= $linha;
+    }
 }
 
 $default_template = "*Replays!* https://encontrodeidiomas.com.br\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
 $template = getSetting('weekly_summary_template', $default_template);
 
 $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
+$full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $template);
 
 ?>
 <!DOCTYPE html>
@@ -200,7 +209,7 @@ $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
                 <button class="btn btn-outline" onclick="document.getElementById('templateModal').style.display='block'"><i class="fas fa-edit"></i> Editar Template</button>
                 
                 <form method="POST" action="wpp_broadcast.php">
-                    <input type="hidden" name="prefill_message" id="prefillMessage" value="<?= htmlspecialchars($full_text) ?>">
+                    <input type="hidden" name="prefill_message" id="prefillMessage" value="<?= htmlspecialchars($full_text_clean) ?>">
                     <input type="hidden" name="prefill_title" value="Replays da semana">
                     <button type="submit" class="btn btn-success"><i class="fas fa-rocket"></i> Levar para o Canhão de Disparo</button>
                 </form>
