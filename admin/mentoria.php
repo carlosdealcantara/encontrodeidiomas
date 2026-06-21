@@ -96,7 +96,7 @@ $tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome t
 $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
 $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
 $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
-$tpl_ranking_dedicados = $config['templates']['ranking_dedicados'] ?? "⭐ *STUDENT OF THE DAY*\n📅 {date}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{student_of_the_day}\n\n─────────────────────\n*Other participants:*\n{other_participants}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📖 *Legend:*\n{legend}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
+$tpl_ranking_dedicados = $config['templates']['ranking_dedicados'] ?? "⭐ *STUDENT OF THE DAY*\n📅 {date}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{student_of_the_day}\n\n─────────────────────\n*Other participants:*\n{other_participants}\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📖 *Legend:*\n{legend}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
 $tpl_class_aviso = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nWe have a session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
 $tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
 $tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
@@ -262,6 +262,28 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <?php if ($msg): ?><div class="alert"><i class="fas fa-check-circle"></i> <?= htmlspecialchars($msg) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="alert error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div><?php endif; ?>
+
+        <?php
+        // ⚠️ AVISO CRÍTICO: detectar grupos não configurados
+        $groupsConfigured = array_filter([
+            $jid_the_lounge, $jid_desafio, $jid_our_classes,
+            $jid_pronunciation, $jid_music, $jid_vocabulary, $jid_games
+        ], fn($v) => !empty(trim($v ?? '')));
+        if (count($groupsConfigured) === 0): ?>
+        <div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.5); border-radius: 12px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px;">
+            <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.4rem; margin-top: 2px; flex-shrink: 0;"></i>
+            <div>
+                <strong style="color: #ef4444; font-size: 1.05rem;">⚠️ Nenhum grupo configurado — o bot está IGNORANDO todas as mensagens!</strong>
+                <p style="color: #fca5a5; margin-top: 6px; font-size: 0.93rem;">
+                    O bot precisa saber quais grupos monitorar para contabilizar mensagens, imagens e reações.
+                    Acesse a aba <strong>Mensagens e Grupos</strong>, selecione os grupos nos campos abaixo e clique em <strong>Salvar Configurações</strong>.
+                </p>
+                <button onclick="document.querySelector('[onclick=\"switchMainTab(\'mensagens\')\"]').click()" style="margin-top: 10px; background: #ef4444; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
+                    <i class="fas fa-arrow-right"></i> Ir para Mensagens e Grupos
+                </button>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <div class="main-tabs-nav">
             <button class="main-tab-btn <?= $active_tab == 'pagamentos' ? 'active' : '' ?>" onclick="switchMainTab('pagamentos')"><i class="fas fa-money-bill-wave"></i> Pagamentos</button>

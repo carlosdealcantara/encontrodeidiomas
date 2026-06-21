@@ -207,7 +207,7 @@ function setJobStatus(jobId, status) {
 
 // Connect to WhatsApp
 async function connectToWhatsApp() {
-    const { state, saveCreds } = await useMultiFileAuthState(path.join(dataDir, 'auth'));
+    const { state, saveCreds } = await useMultiFileAuthState(path.join(dataDir, 'auth_info_baileys'));
     const { version, isLatest } = await fetchLatestBaileysVersion();
     console.log(`Using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
@@ -243,7 +243,7 @@ async function connectToWhatsApp() {
                 // Desconectado pelo celular (401/loggedOut): limpar auth e gerar novo QR
                 console.log('[AUTO-RECOVERY] Sessão expirada/deslogada. Limpando credenciais e gerando novo QR...');
                 try {
-                    fs.rmSync(path.join(dataDir, 'auth'), { recursive: true, force: true });
+                    fs.rmSync(path.join(dataDir, 'auth_info_baileys'), { recursive: true, force: true });
                 } catch (e) {
                     console.error('Erro ao limpar auth:', e);
                 }
@@ -465,7 +465,7 @@ app.post('/reset', async (req, res) => {
         if (sock) await sock.logout();
         isConnected = false;
         latestQR = null;
-        fs.rmSync(path.join(dataDir, 'auth'), { recursive: true, force: true });
+        fs.rmSync(path.join(dataDir, 'auth_info_baileys'), { recursive: true, force: true });
         res.json({ success: true });
         setTimeout(() => process.exit(0), 1000); // Força reinício limpo do container
     } catch (e) {

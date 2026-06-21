@@ -25,11 +25,34 @@ function getConfigFile() {
     return path.join(dataDir, 'mentoria_config.json');
 }
 
+function getConfigBackupFile() {
+    return path.join(dataDir, 'mentoria_config.backup.json');
+}
+
 function loadConfig() {
     try {
         const file = getConfigFile();
         if (fs.existsSync(file)) {
-            return JSON.parse(fs.readFileSync(file, 'utf8'));
+            const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+            // ⚠️ SAFETY CHECK: if groups is empty but backup exists, auto-restore
+            const groupCount = Object.keys(config.groups || {}).length;
+            const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
+            if (groupsWithJid === 0) {
+                const backupFile = getConfigBackupFile();
+                if (fs.existsSync(backupFile)) {
+                    const backup = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
+                    const backupGroupCount = Object.values(backup.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
+                    if (backupGroupCount > 0) {
+                        console.warn(`[CONFIG] ⚠️ GRUPOS AUSENTES no config principal (${groupCount} entradas, 0 com JID). Restaurando ${backupGroupCount} grupos do backup automaticamente!`);
+                        config.groups = backup.groups;
+                        // Re-save the restored config
+                        fs.writeFileSync(file, JSON.stringify(config, null, 2));
+                    }
+                } else {
+                    console.warn('[CONFIG] ⚠️ ATENÇÃO: Nenhum grupo cadastrado e nenhum backup disponível. O bot vai IGNORAR todas as mensagens! Acesse o painel admin > Mensagens e Grupos > Salvar Configurações.');
+                }
+            }
+            return config;
         }
     } catch (e) {
         console.error('Error loading mentoria config:', e);
@@ -44,6 +67,12 @@ function loadConfig() {
 
 function saveConfig(config) {
     fs.writeFileSync(getConfigFile(), JSON.stringify(config, null, 2));
+    // ✅ Always keep a backup of the last config that had groups configured
+    const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
+    if (groupsWithJid > 0) {
+        fs.writeFileSync(getConfigBackupFile(), JSON.stringify(config, null, 2));
+        console.log(`[CONFIG] Backup salvo com ${groupsWithJid} grupos configurados.`);
+    }
 }
 
 function loadActivity() {
@@ -159,9 +188,6 @@ async function handleMessages({ messages, type }) {
         // FIX 1: Skip protocol messages (message deletions = REVOKE, edits = MESSAGE_EDIT)
         // These are meta-events from WhatsApp and should never count as activity.
         if (msg.message?.protocolMessage || msg.message?.editedMessage) continue;
-
-        // FIX 2: Skip stickers (no educational/engagement value for ranking)
-        if (msg.message?.stickerMessage) continue;
 
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const senderJid = msg.key.participant || (msg.key.fromMe ? botJid : msg.key.remoteJid);
