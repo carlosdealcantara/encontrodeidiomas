@@ -168,7 +168,14 @@ async function handleMessages({ messages, type }) {
         const senderName = msg.pushName || (msg.key.fromMe ? 'Eu (Admin)' : 'Desconhecido');
         if (senderName === 'Encontro de Idiomas' || senderName === 'Eu (Admin)') continue; // Ignora o bot oficial e o admin local
 
-        const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '';
+        // Desembrulhar mensagens efêmeras e view-once para ler o conteúdo real
+        const realMsg = msg.message?.ephemeralMessage?.message || 
+                        msg.message?.viewOnceMessageV2?.message || 
+                        msg.message?.viewOnceMessage?.message || 
+                        msg.message?.documentWithCaptionMessage?.message ||
+                        msg.message;
+
+        const text = realMsg?.conversation || realMsg?.extendedTextMessage?.text || realMsg?.imageMessage?.caption || '';
 
         // === ACTIVITY LOGGING (students only, no commands, no duplicates) ===
         const isAdmin = msg.key.fromMe || excludedJids.has(senderJid);
@@ -177,12 +184,12 @@ async function handleMessages({ messages, type }) {
         if (!isAdmin && !processedMessageIds.has(msgId)) {
             processedMessageIds.add(msgId);
 
-            if (msg.message?.reactionMessage) {
+            if (realMsg?.reactionMessage || msg.message?.reactionMessage) {
                 // FIX 3: Reactions are a separate event type, always logged correctly
                 logActivity(groupJid, senderJid, senderName, 'reaction');
-            } else if (msg.message?.audioMessage) {
+            } else if (realMsg?.audioMessage) {
                 logActivity(groupJid, senderJid, senderName, 'audio');
-            } else if (msg.message?.imageMessage) {
+            } else if (realMsg?.imageMessage) {
                 logActivity(groupJid, senderJid, senderName, 'image');
             } else {
                 // Tudo o resto (texto normal e comandos) conta como 1 mensagem
@@ -191,7 +198,7 @@ async function handleMessages({ messages, type }) {
         }
 
         // === STREAK SYSTEM (Desafio Group — runs independently of activity logging) ===
-        if (msg.message?.imageMessage && !isAdmin) {
+        if (realMsg?.imageMessage && !isAdmin) {
             const desafioGroup = config.groups?.desafio?.jid;
             if (groupJid === desafioGroup) {
                 try {
