@@ -215,33 +215,38 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
         logger.info(f"[PASSO 3] Arquivo '{file_path}' selecionado.")
         salvar_screenshot(page, "04_after_file_input", tarefa_id)
         
-        # PASSO 4: Preencher título
-        logger.info("[PASSO 4] Preenchendo título...")
-        try:
-            page.locator('input[name="content_title"]').first.fill(title, timeout=15000, force=True)
-        except Exception as e:
-            logger.warning(f"Erro ao preencher content_title, tentando placeholder: {e}")
-            try:
-                page.locator('input[placeholder*="Title"]').first.fill(title, timeout=15000, force=True)
-            except Exception as e2:
-                logger.error("Falha ao preencher título, salvando HTML...")
-                with open('/app/error_page.html', 'w') as f: f.write(page.content())
-                raise e2
+        # PASSO 4: Navegar pelo Wizard do Odysee
+        logger.info("[PASSO 4] Navegando pelo Wizard de publicação...")
         
-        # Define um bid mínimo (se aparecer)
-        try:
-            page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
-        except:
-            pass
-        salvar_screenshot(page, "05_form_filled", tarefa_id)
-        
-        # PASSO 5: Clicar em Upload
-        logger.info("[PASSO 5] Clicando em Upload...")
-        try:
-            page.locator('button:has-text("Upload")').first.click(timeout=15000, force=True)
-        except Exception as e:
-            logger.warning("Botão Upload não encontrado pelo texto, tentando seletor primário do botão...")
-            page.locator('button.button--primary').first.click(timeout=15000, force=True)
+        # Odysee agora usa um Wizard de múltiplas etapas (1. Arquivo, 2. Detalhes, 3. Tags, 4. Publicação)
+        for step in range(1, 6):
+            logger.info(f"Tentando preencher a etapa {step} do Wizard...")
+            page.wait_for_timeout(2000)
+            
+            # Tenta preencher o título se ele estiver visível
+            if page.locator('input[name="content_title"]').is_visible():
+                page.locator('input[name="content_title"]').first.fill(title, force=True)
+                try:
+                    page.locator('input[name="content_bid"]').first.fill("0.001", force=True)
+                except:
+                    pass
+                logger.info("Título preenchido.")
+                salvar_screenshot(page, f"05_wizard_step_{step}_title_filled", tarefa_id)
+            
+            # Verifica se já chegou no botão de Upload final
+            upload_btn = page.locator('button:has-text("Upload"), button:has-text("Publicar")').first
+            if upload_btn.is_visible():
+                logger.info("Botão final de Upload encontrado! Clicando...")
+                upload_btn.click(force=True)
+                break
+            
+            # Se não achou o Upload, clica em Próximo
+            next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
+            if next_btn.is_visible():
+                logger.info("Clicando em Próximo...")
+                next_btn.click(force=True)
+            else:
+                logger.info("Nem botão de Upload nem botão de Próximo visíveis. Verificando se já publicou...")
             
         salvar_screenshot(page, "06_after_upload_click", tarefa_id)
         
