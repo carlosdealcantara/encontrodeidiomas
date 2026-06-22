@@ -1,4 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
-echo "DB_HOST: " . DB_HOST . "\n";
-echo "DB_NAME: " . DB_NAME . "\n";
+$conn = connectDB();
+$stmt = $conn->query("SELECT * FROM odysee_publish_queue ORDER BY id DESC LIMIT 5");
+$res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+echo json_encode($res, JSON_PRETTY_PRINT);
