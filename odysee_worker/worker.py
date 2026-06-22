@@ -217,18 +217,32 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
         
         # PASSO 4: Preencher título
         logger.info("[PASSO 4] Preenchendo título...")
-        page.fill('input[name="content_title"]', title)
+        try:
+            page.locator('input[name="content_title"]').first.fill(title, timeout=15000, force=True)
+        except Exception as e:
+            logger.warning(f"Erro ao preencher content_title, tentando placeholder: {e}")
+            try:
+                page.locator('input[placeholder*="Title"]').first.fill(title, timeout=15000, force=True)
+            except Exception as e2:
+                logger.error("Falha ao preencher título, salvando HTML...")
+                with open('/app/error_page.html', 'w') as f: f.write(page.content())
+                raise e2
         
         # Define um bid mínimo (se aparecer)
         try:
-            page.fill('input[name="content_bid"]', "0.001")
+            page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
         except:
             pass
         salvar_screenshot(page, "05_form_filled", tarefa_id)
         
         # PASSO 5: Clicar em Upload
         logger.info("[PASSO 5] Clicando em Upload...")
-        page.click('button:has-text("Upload")')
+        try:
+            page.locator('button:has-text("Upload")').first.click(timeout=15000, force=True)
+        except Exception as e:
+            logger.warning("Botão Upload não encontrado pelo texto, tentando seletor primário do botão...")
+            page.locator('button.button--primary').first.click(timeout=15000, force=True)
+            
         salvar_screenshot(page, "06_after_upload_click", tarefa_id)
         
         # PASSO 6: Aguardar conclusão
