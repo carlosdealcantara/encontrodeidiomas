@@ -24,11 +24,13 @@ GOOGLE_SA_JSON = 'google_service_account.json' # montado no docker
 PASTA_RAIZ_DRIVE = os.getenv('DRIVE_RECORDINGS_FOLDER_ID')
 
 def get_db_connection():
+    print("Tentando conectar ao banco de dados...", flush=True)
     return mysql.connector.connect(
         host=DB_HOST,
         user=DB_USER,
         password=DB_PASS,
-        database=DB_NAME
+        database=DB_NAME,
+        connection_timeout=5
     )
 
 def init_drive_service():
@@ -154,7 +156,7 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         return True
 
 def escanear_drive():
-    logger.info("Escaneando Drive por novos vídeos...")
+    print("Escaneando Drive por novos vídeos...", flush=True)
     try:
         drive_service = init_drive_service()
         results = drive_service.files().list(
@@ -162,6 +164,7 @@ def escanear_drive():
             fields="files(id, name)"
         ).execute()
         arquivos = results.get('files', [])
+        print(f"Arquivos encontrados no Drive: {len(arquivos)}", flush=True)
         
         if not arquivos:
             return
@@ -267,9 +270,14 @@ def processar_fila():
             os.remove(temp_path)
 
 if __name__ == "__main__":
+    print("Iniciando Worker...", flush=True)
     while True:
         try:
+            print("Iniciando iteração...", flush=True)
             processar_fila()
+            print("Iteração concluída.", flush=True)
         except Exception as e:
             logger.error(f"Erro no loop principal: {e}")
+            print(f"Erro no loop principal: {e}", flush=True)
+        print("Dormindo por 60s...", flush=True)
         time.sleep(60)
