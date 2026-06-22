@@ -121,18 +121,31 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
 
 SCREENSHOT_DIR = "/app/screenshots"
 
-def salvar_screenshot(page, nome):
-    """Salva screenshot de diagnóstico e loga o título da página."""
+def salvar_screenshot(page, nome, tarefa_id):
+    """Salva screenshot no disco e no banco de dados em Base64."""
     try:
         import os
+        import base64
         os.makedirs(SCREENSHOT_DIR, exist_ok=True)
         path = f"{SCREENSHOT_DIR}/{nome}.png"
         page.screenshot(path=path)
+        
+        # Converte para base64 para o painel de admin
+        with open(path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE odysee_publish_queue SET last_screenshot = %s, last_screenshot_time = NOW() WHERE id = %s", (encoded_string, tarefa_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
         logger.info(f"[SCREENSHOT] {nome} | URL: {page.url} | Título: {page.title()}")
     except Exception as e:
         logger.warning(f"[SCREENSHOT] Falhou ao salvar {nome}: {e}")
 
-def publicar_odysee_playwright(auth_token, title, file_path):
+def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
     logger.info("Iniciando publicação no Odysee via Playwright")
     with sync_playwright() as p:
         # Modo otimizado para VPS de 1GB
@@ -160,7 +173,7 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         logger.info("[PASSO 1] Acessando odysee.com para injetar token...")
         page.goto("https://odysee.com", timeout=60000)
         page.wait_for_load_state("networkidle")
-        salvar_screenshot(page, "01_home")
+        salvar_screenshot(page, "01_home", tarefa_id)
         page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
         logger.info("[PASSO 1] Token injetado no localStorage.")
         
@@ -168,22 +181,22 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         logger.info("[PASSO 2] Navegando para /$/upload...")
         page.goto("https://odysee.com/$/upload", timeout=60000)
         page.wait_for_load_state("networkidle")
-        salvar_screenshot(page, "02_upload_page")
+        salvar_screenshot(page, "02_upload_page", tarefa_id)
         logger.info(f"[PASSO 2] Página carregada. URL: {page.url}")
         
         # Verificar se estamos na página certa (pode ter redirecionado para login)
         if "upload" not in page.url:
-            salvar_screenshot(page, "02_redirect_detected")
+            salvar_screenshot(page, "02_redirect_detected", tarefa_id)
             raise Exception(f"Redirecionado inesperadamente para: {page.url}. Possível bloqueio ou sessão inválida.")
         
         # PASSO 3: Localizar e preencher o input de arquivo
         logger.info("[PASSO 3] Localizando input de arquivo...")
         file_input = page.locator('input[type="file"]')
         file_input.wait_for(state="attached", timeout=60000)
-        salvar_screenshot(page, "03_before_file_input")
+        salvar_screenshot(page, "03_before_file_input", tarefa_id)
         file_input.set_input_files(file_path)
         logger.info(f"[PASSO 3] Arquivo '{file_path}' selecionado.")
-        salvar_screenshot(page, "04_after_file_input")
+        salvar_screenshot(page, "04_after_file_input", tarefa_id)
         
         # PASSO 4: Preencher título
         logger.info("[PASSO 4] Preenchendo título...")
@@ -194,17 +207,17 @@ def publicar_odysee_playwright(auth_token, title, file_path):
             page.fill('input[name="content_bid"]', "0.001")
         except:
             pass
-        salvar_screenshot(page, "05_form_filled")
+        salvar_screenshot(page, "05_form_filled", tarefa_id)
         
         # PASSO 5: Clicar em Upload
         logger.info("[PASSO 5] Clicando em Upload...")
         page.click('button:has-text("Upload")')
-        salvar_screenshot(page, "06_after_upload_click")
+        salvar_screenshot(page, "06_after_upload_click", tarefa_id)
         
         # PASSO 6: Aguardar conclusão
         logger.info("[PASSO 6] Aguardando upload terminar (máx 4h)...")
         page.wait_for_selector('text=Upload complete', timeout=14400000)
-        salvar_screenshot(page, "07_upload_complete")
+        salvar_screenshot(page, "07_upload_complete", tarefa_id)
         logger.info("[PASSO 6] Upload concluído com sucesso!")
         
         browser.close()
@@ -295,7 +308,7 @@ def processar_fila():
         if not tarefa['odysee_auth_token']:
             raise Exception("Auth token não configurado")
             
-        publicar_odysee_playwright(tarefa['odysee_auth_token'], tarefa['titulo_final'], temp_path)
+        publicar_odysee_playwright(tarefa['id'], tarefa['odysee_auth_token'], tarefa['titulo_final'], temp_path)
         
         # Odysee final URL (Canonica)
         odysee_url = f"https://odysee.com/{tarefa['odysee_channel_name']}/{tarefa['odysee_slug']}"
