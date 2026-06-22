@@ -166,8 +166,9 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         # Clica em Upload / Publish
         page.click('button:has-text("Upload")')
         
-        # Espera a confirmação e a URL
-        page.wait_for_selector('text=Upload complete', timeout=600000) # 10 min timeout para upload
+        # Aguarda a mensagem de sucesso
+        logger.info("Aguardando upload terminar...")
+        page.wait_for_selector('text=Upload complete', timeout=3600000) # 60 min timeout para upload
         
         # Pega a URL gerada (frequentemente aparece após o upload)
         # Se não for possível pegar facilmente do popup, nós deduzimos a URL
