@@ -225,9 +225,9 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             
             # Tenta preencher o título se ele estiver visível
             if page.locator('input[name="content_title"]').is_visible():
-                page.locator('input[name="content_title"]').first.fill(title, force=True)
+                page.locator('input[name="content_title"]').first.fill(title, timeout=5000, force=True)
                 try:
-                    page.locator('input[name="content_bid"]').first.fill("0.001", force=True)
+                    page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
                 except:
                     pass
                 logger.info("Título preenchido.")
@@ -237,14 +237,14 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             upload_btn = page.locator('button:has-text("Upload"), button:has-text("Publicar")').first
             if upload_btn.is_visible():
                 logger.info("Botão final de Upload encontrado! Clicando...")
-                upload_btn.click(force=True)
+                upload_btn.click(timeout=10000, force=True)
                 break
             
             # Se não achou o Upload, clica em Próximo
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
             if next_btn.is_visible():
                 logger.info("Clicando em Próximo...")
-                next_btn.click(force=True)
+                next_btn.click(timeout=10000, force=True)
             else:
                 logger.info("Nem botão de Upload nem botão de Próximo visíveis. Verificando se já publicou...")
             
