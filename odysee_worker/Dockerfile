@@ -6,8 +6,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Playwright browsers já estão na imagem base, mas garantimos que as dependências do chromium estejam prontas
-RUN playwright install chromium
+# Patchright e instalação do Chrome real
+RUN pip install patchright
+RUN patchright install chrome
 
 COPY . .
 

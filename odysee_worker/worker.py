@@ -4,11 +4,12 @@ import urllib.parse
 import logging
 import requests
 import mysql.connector
+import datetime
 from dotenv import load_dotenv
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from playwright.sync_api import sync_playwright
+from patchright.sync_api import sync_playwright
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -118,6 +119,19 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
             removeParents=",".join(file.get('parents', []))
         ).execute()
 
+SCREENSHOT_DIR = "/app/screenshots"
+
+def salvar_screenshot(page, nome):
+    """Salva screenshot de diagnóstico e loga o título da página."""
+    try:
+        import os
+        os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+        path = f"{SCREENSHOT_DIR}/{nome}.png"
+        page.screenshot(path=path)
+        logger.info(f"[SCREENSHOT] {nome} | URL: {page.url} | Título: {page.title()}")
+    except Exception as e:
+        logger.warning(f"[SCREENSHOT] Falhou ao salvar {nome}: {e}")
+
 def publicar_odysee_playwright(auth_token, title, file_path):
     logger.info("Iniciando publicação no Odysee via Playwright")
     with sync_playwright() as p:
@@ -142,35 +156,57 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         page.set_default_timeout(14400000)
         page.set_default_navigation_timeout(14400000)
         
-        # Injeta o auth_token no localStorage acessando o site primeiro
-        page.goto("https://odysee.com", timeout=14400000)
-        page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
-        
-        # Agora vamos para a página de upload
-        page.goto("https://odysee.com/$/upload", timeout=14400000)
+        # PASSO 1: Acessar home e injetar token
+        logger.info("[PASSO 1] Acessando odysee.com para injetar token...")
+        page.goto("https://odysee.com", timeout=60000)
         page.wait_for_load_state("networkidle")
+        salvar_screenshot(page, "01_home")
+        page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
+        logger.info("[PASSO 1] Token injetado no localStorage.")
         
-        # Preenche o arquivo
-        page.locator('input[type="file"]').set_input_files(file_path)
+        # PASSO 2: Ir para página de upload
+        logger.info("[PASSO 2] Navegando para /$/upload...")
+        page.goto("https://odysee.com/$/upload", timeout=60000)
+        page.wait_for_load_state("networkidle")
+        salvar_screenshot(page, "02_upload_page")
+        logger.info(f"[PASSO 2] Página carregada. URL: {page.url}")
         
-        # Preenche o título
+        # Verificar se estamos na página certa (pode ter redirecionado para login)
+        if "upload" not in page.url:
+            salvar_screenshot(page, "02_redirect_detected")
+            raise Exception(f"Redirecionado inesperadamente para: {page.url}. Possível bloqueio ou sessão inválida.")
+        
+        # PASSO 3: Localizar e preencher o input de arquivo
+        logger.info("[PASSO 3] Localizando input de arquivo...")
+        file_input = page.locator('input[type="file"]')
+        file_input.wait_for(state="attached", timeout=60000)
+        salvar_screenshot(page, "03_before_file_input")
+        file_input.set_input_files(file_path)
+        logger.info(f"[PASSO 3] Arquivo '{file_path}' selecionado.")
+        salvar_screenshot(page, "04_after_file_input")
+        
+        # PASSO 4: Preencher título
+        logger.info("[PASSO 4] Preenchendo título...")
         page.fill('input[name="content_title"]', title)
         
-        # Define um bid minúsculo
+        # Define um bid mínimo (se aparecer)
         try:
             page.fill('input[name="content_bid"]', "0.001")
         except:
-            pass # Pode estar escondido nas opções avançadas
-            
-        # Clica em Upload / Publish
+            pass
+        salvar_screenshot(page, "05_form_filled")
+        
+        # PASSO 5: Clicar em Upload
+        logger.info("[PASSO 5] Clicando em Upload...")
         page.click('button:has-text("Upload")')
+        salvar_screenshot(page, "06_after_upload_click")
         
-        # Aguarda a mensagem de sucesso
-        logger.info("Aguardando upload terminar...")
-        page.wait_for_selector('text=Upload complete', timeout=14400000) # 4 horas timeout para upload
+        # PASSO 6: Aguardar conclusão
+        logger.info("[PASSO 6] Aguardando upload terminar (máx 4h)...")
+        page.wait_for_selector('text=Upload complete', timeout=14400000)
+        salvar_screenshot(page, "07_upload_complete")
+        logger.info("[PASSO 6] Upload concluído com sucesso!")
         
-        # Pega a URL gerada (frequentemente aparece após o upload)
-        # Se não for possível pegar facilmente do popup, nós deduzimos a URL
         browser.close()
         return True
 
