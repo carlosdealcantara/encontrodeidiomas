@@ -1,16 +1,14 @@
-FROM python:3.11-slim
+FROM mcr.microsoft.com/playwright/python:v1.44.0-jammy
 
 WORKDIR /app
 
-# Instala dependências de SO necessárias para compilações se precisar
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
+# Instala dependências
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Playwright browsers já estão na imagem base, mas garantimos que as dependências do chromium estejam prontas
+RUN playwright install chromium
+
 COPY . .
 
-# Roda o worker (no worker.py teremos o loop de polling)
 CMD ["python", "-u", "worker.py"]
