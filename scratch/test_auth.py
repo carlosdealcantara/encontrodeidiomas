@@ -46,19 +46,19 @@ with sync_playwright() as p:
     print("Got token length:", len(auth_token))
     
     page.goto("https://odysee.com", timeout=60000)
-    page.wait_for_load_state("networkidle")
+    page.wait_for_timeout(5000)
     
     page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
     print("Token injected. Reloading...")
     
     page.reload()
-    page.wait_for_load_state("networkidle")
+    page.wait_for_timeout(5000)
     
     # Save screenshot of logged in state
     page.screenshot(path="/app/test_logged_in.png")
     
     page.goto("https://odysee.com/$/upload")
-    page.wait_for_load_state("networkidle")
+    page.wait_for_timeout(5000)
     
     page.screenshot(path="/app/test_upload_page.png")
     print("Done. URL is now:", page.url)
