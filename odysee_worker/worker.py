@@ -121,7 +121,7 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
 def publicar_odysee_playwright(auth_token, title, file_path):
     logger.info("Iniciando publicação no Odysee via Playwright")
     with sync_playwright() as p:
-        # Modo batata para economizar muita memória na VPS
+        # Modo otimizado para VPS de 1GB
         browser = p.chromium.launch(
             headless=True,
             args=[
@@ -129,14 +129,13 @@ def publicar_odysee_playwright(auth_token, title, file_path):
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-gpu',
-                '--js-flags="--max-old-space-size=256"',
-                '--blink-settings=imagesEnabled=false',
-                '--disable-extensions',
-                '--proxy-server="direct://"',
-                '--proxy-bypass-list=*'
+                '--js-flags="--max-old-space-size=512"',
+                '--disable-extensions'
             ]
         )
-        context = browser.new_context()
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
         page = context.new_page()
         
         # Aumenta timeout para conexões lentas ou uploads grandes (4 horas = 14400000ms)
