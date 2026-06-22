@@ -250,7 +250,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             if upload_btn.is_visible():
                 logger.info("Botão final de Upload encontrado! Clicando...")
                 try:
-                    upload_btn.click(timeout=10000, force=True)
+                    upload_btn.click(timeout=300000)
                 except Exception as e:
                     logger.warning(f"Erro ao clicar Upload: {e}")
                     upload_btn.evaluate("el => el.click()")
@@ -261,7 +261,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             if next_btn.is_visible():
                 logger.info("Clicando em Próximo...")
                 try:
-                    next_btn.click(timeout=10000, force=True)
+                    next_btn.click(timeout=300000)
                 except Exception as e:
                     logger.warning(f"Erro ao clicar Próximo: {e}")
                     next_btn.evaluate("el => el.click()")
