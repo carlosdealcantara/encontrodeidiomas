@@ -39,9 +39,9 @@ if ($check->rowCount() > 0 && !isset($_GET['force'])) {
 
 $config = getMentoriaConfig();
 $desafioJid = $config['groups']['desafio']['jid'] ?? null;
-$template = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\n\nThis is a friendly reminder that some of you haven't posted your daily activity yet. You have until midnight! ⏳";
 
 if (!$desafioJid) die("Grupo do desafio não configurado.");
+
 
 $members = fetchGroupMembers($desafioJid);
 $activity = fetchBaileysActivity($hoje);
