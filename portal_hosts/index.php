@@ -46,11 +46,15 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
         $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
 
         // AUTOMATIZAÇÃO ODYSEE:
-        // Se houver gravação esperando postagem no Drive para este idioma, 
-        // aprova automaticamente usando o título fornecido pelo host.
-        if (!empty($titulo)) {
+        // Apenas assume o controle (pending) se o host não enviou o link manualmente.
+        // Assim, podemos testar gradualmente: quem mandar o link faz manual, quem deixar em branco aciona o robô.
+        if (empty($link) && !empty($titulo)) {
             $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET titulo_final = ?, status = 'pending' WHERE language_id = ? AND status = 'waiting_host'");
             $stmtQ->execute([$titulo, $lang_id]);
+        } else if (!empty($link)) {
+            // Se o host enviou o link, marca como 'done' (ou ignora) para que o robô não duplique.
+            $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET status = 'done' WHERE language_id = ? AND status = 'waiting_host'");
+            $stmtQ->execute([$lang_id]);
         }
 
         // Gera prévia consolidada da semana e notifica o grupo dos hosts
@@ -275,13 +279,12 @@ function sanitizeOdyseeUrl(string $url): string {
                     </div>
 
                     <div class="form-group">
-                        <label>Link da Gravação (Opcional - Gerado Automático)</label>
+                        <label>Link da Gravação (Odysee)</label>
                         <input type="text" name="replay_link" id="replay_link"
                                value="<?= htmlspecialchars($prefill['link'] ?? '') ?>"
-                               placeholder="O robô preencherá isso sozinho após processar."
-                               title="Deixe em branco para o robô fazer o upload do Drive sozinho"
+                               placeholder="https://odysee.com/@EncontrodeIdiomas.../YYYY_MM_DD"
+                               title="O link deve ser do Odysee"
                                onblur="limparLinkOdysee(this)">
-                        <div class="field-hint">Apenas preencha se for postar o vídeo manualmente.</div>
                         <div class="field-cleaned" id="link-cleaned">✓ Link simplificado automaticamente</div>
                     </div>
 
