@@ -84,11 +84,25 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
     }
 }
 
+// --- Aprovar Gravação ---
+if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'approve_recording') {
+    $queue_id = (int)$_POST['queue_id'];
+    $titulo_final = trim($_POST['titulo_final'] ?? '');
+    
+    if ($queue_id > 0 && !empty($titulo_final)) {
+        $stmt = $conn->prepare("UPDATE odysee_publish_queue SET titulo_final = ?, status = 'pending' WHERE id = ?");
+        $stmt->execute([$titulo_final, $queue_id]);
+        header('Location: index.php?approved=1');
+        exit;
+    }
+}
+
 // --- Buscar dados ---
 $idiomas_disponiveis = [];
 $template_db = "";
 $dados_semana = []; // Dados já salvos nesta semana, indexados por language_id
 $prefill = null;    // Dados para pré-preencher após redirect
+$fila_gravacoes = []; // Vídeos esperando aprovação
 
 if ($logged_in) {
     try {
@@ -115,6 +129,16 @@ if ($logged_in) {
         foreach ($stmtS->fetchAll() as $row) {
             $dados_semana[$row['language_id']] = $row;
         }
+
+        // Busca vídeos na fila de gravação aguardando os hosts
+        $stmtQ = $conn->query("
+            SELECT q.id, q.drive_file_name, q.titulo_final, q.created_at, l.name as language_name, l.flag_emoji 
+            FROM odysee_publish_queue q 
+            JOIN languages l ON q.language_id = l.id 
+            WHERE q.status = 'waiting_host' 
+            ORDER BY q.created_at ASC
+        ");
+        $fila_gravacoes = $stmtQ->fetchAll();
 
         // Pré-preencher se voltou via redirect após salvar
         if (isset($_GET['saved'], $_GET['lang_id'])) {
@@ -196,6 +220,14 @@ function sanitizeOdyseeUrl(string $url): string {
         .separator { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0; }
         .logout-link { text-align: center; margin-top: 20px; }
         .logout-link a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; }
+
+        /* Lista de Gravações */
+        .queue-item { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .queue-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .queue-lang { font-weight: bold; color: #38bdf8; }
+        .queue-date { font-size: 0.8rem; color: var(--text-dim); }
+        .queue-file { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px; word-break: break-all; }
+        .queue-empty { text-align: center; color: var(--text-dim); padding: 20px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -216,19 +248,50 @@ function sanitizeOdyseeUrl(string $url): string {
             <?php if (isset($_GET['saved'])): ?>
                 <div class="success"><i class="fas fa-check-circle"></i> Replay salvo e notificação enviada ao grupo!</div>
             <?php endif; ?>
+            <?php if (isset($_GET['approved'])): ?>
+                <div class="success"><i class="fas fa-check-circle"></i> Gravação aprovada! Ela será postada no Odysee em breve.</div>
+            <?php endif; ?>
             <?php if (isset($error)): ?><div class="error"><?= $error ?></div><?php endif; ?>
 
             <div class="tabs">
-                <div class="tab-btn <?= !isset($_GET['saved']) ? '' : '' ?> active" id="tab-btn-replay" onclick="switchTab('replay')">
-                    <i class="fas fa-video"></i> Replay Semanal
+                <div class="tab-btn <?= !isset($_GET['saved']) && !isset($_GET['approved']) ? 'active' : '' ?>" id="tab-btn-inicio" onclick="switchTab('inicio')">
+                    <i class="fas fa-play-circle"></i> Início da Aula
                 </div>
-                <div class="tab-btn" id="tab-btn-inicio" onclick="switchTab('inicio')">
-                    <i class="fas fa-play-circle"></i> Mensagem de Início
+                <div class="tab-btn <?= isset($_GET['saved']) ? 'active' : '' ?>" id="tab-btn-replay" onclick="switchTab('replay')">
+                    <i class="fas fa-video"></i> Relatar Presença
+                </div>
+                <div class="tab-btn <?= isset($_GET['approved']) ? 'active' : '' ?>" id="tab-btn-gravacoes" onclick="switchTab('gravacoes')">
+                    <i class="fas fa-cloud-upload-alt"></i> Postar Gravação
+                    <?php if(count($fila_gravacoes) > 0): ?>
+                        <span style="background:var(--accent-red); color:white; padding:2px 6px; border-radius:10px; font-size:0.7rem; margin-left:4px;"><?= count($fila_gravacoes) ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <!-- === ABA PRINCIPAL: Replay Semanal === -->
-            <div id="tab-replay" class="tab-content active">
+            <!-- === ABA: Mensagem de Início === -->
+            <div id="tab-inicio" class="tab-content <?= !isset($_GET['saved']) && !isset($_GET['approved']) ? 'active' : '' ?>">
+                <p class="subtitle">Gere a mensagem para o início do seu encontro ao vivo.</p>
+                <select id="idiomaSelect" onchange="gerarMensagem()">
+                    <option value="">-- Escolha o Idioma --</option>
+                    <?php foreach ($idiomas_disponiveis as $l): ?>
+                        <option value='<?= json_encode([
+                            "nome"      => $l['name'],
+                            "emoji"     => $l['flag_emoji'],
+                            "emojis"    => str_repeat($l['flag_emoji'], 5),
+                            "saudacao"  => $l['greeting'],
+                            "meet_link" => $l['meet_link'],
+                            "instagram" => $l['instagram_link']
+                        ]) ?>'><?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <div id="messageBox" class="message-box"></div>
+                <button id="btnCopy" class="btn btn-copy" style="display:none;" onclick="copiarMensagem()">
+                    <i class="far fa-copy"></i> Copiar Mensagem
+                </button>
+            </div>
+
+            <!-- === ABA: Replay Semanal (Relatar Presença) === -->
+            <div id="tab-replay" class="tab-content <?= isset($_GET['saved']) ? 'active' : '' ?>">
                 <p class="subtitle">Preencha os dados do encontro desta semana. Você pode voltar para editar antes do disparo de domingo.</p>
                 <form method="POST" id="formReplay">
                     <input type="hidden" name="action" value="save_replay">
@@ -288,26 +351,37 @@ function sanitizeOdyseeUrl(string $url): string {
                 </form>
             </div>
 
-            <!-- === ABA SECUNDÁRIA: Mensagem de Início === -->
-            <div id="tab-inicio" class="tab-content">
-                <p class="subtitle">Gere a mensagem para o início do seu encontro ao vivo.</p>
-                <select id="idiomaSelect" onchange="gerarMensagem()">
-                    <option value="">-- Escolha o Idioma --</option>
-                    <?php foreach ($idiomas_disponiveis as $l): ?>
-                        <option value='<?= json_encode([
-                            "nome"      => $l['name'],
-                            "emoji"     => $l['flag_emoji'],
-                            "emojis"    => str_repeat($l['flag_emoji'], 5),
-                            "saudacao"  => $l['greeting'],
-                            "meet_link" => $l['meet_link'],
-                            "instagram" => $l['instagram_link']
-                        ]) ?>'><?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?></option>
+            <!-- === ABA: Aprovar Gravações (Odysee) === -->
+            <div id="tab-gravacoes" class="tab-content <?= isset($_GET['approved']) ? 'active' : '' ?>">
+                <p class="subtitle">Gravações encontradas no Drive aguardando você dar um título para serem postadas no site.</p>
+                
+                <?php if (empty($fila_gravacoes)): ?>
+                    <div class="queue-empty">Nenhum vídeo novo aguardando aprovação.</div>
+                <?php else: ?>
+                    <?php foreach ($fila_gravacoes as $video): ?>
+                        <div class="queue-item">
+                            <div class="queue-header">
+                                <span class="queue-lang"><?= $video['flag_emoji'] ?> <?= htmlspecialchars($video['language_name']) ?></span>
+                                <span class="queue-date"><i class="far fa-calendar-alt"></i> <?= date('d/m/Y H:i', strtotime($video['created_at'])) ?></span>
+                            </div>
+                            <div class="queue-file"><i class="fas fa-file-video"></i> <?= htmlspecialchars($video['drive_file_name']) ?></div>
+                            
+                            <form method="POST">
+                                <input type="hidden" name="action" value="approve_recording">
+                                <input type="hidden" name="queue_id" value="<?= $video['id'] ?>">
+                                
+                                <div class="form-group">
+                                    <label>Tópico da Aula</label>
+                                    <input type="text" name="titulo_final" required 
+                                           value="<?= htmlspecialchars($video['titulo_final']) ?>"
+                                           placeholder="Ex: Conversação sobre Viagens">
+                                </div>
+                                
+                                <button type="submit" class="btn"><i class="fas fa-check"></i> Publicar Vídeo</button>
+                            </form>
+                        </div>
                     <?php endforeach; ?>
-                </select>
-                <div id="messageBox" class="message-box"></div>
-                <button id="btnCopy" class="btn btn-copy" style="display:none;" onclick="copiarMensagem()">
-                    <i class="far fa-copy"></i> Copiar Mensagem
-                </button>
+                <?php endif; ?>
             </div>
 
             <hr class="separator">
