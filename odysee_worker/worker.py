@@ -246,9 +246,9 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
                 logger.warning(f"Erro ao tentar preencher campos no passo {step}: {outer_e}")
             
             # Verifica se já chegou no botão de Upload final
-            upload_btn = page.locator('button:has-text("Upload"), button:has-text("Publicar")').first
+            upload_btn = page.locator('button:has-text("Upload"), button:has-text("Publicar"), button:has-text("Publicação")').first
             if upload_btn.is_visible():
-                logger.info("Botão final de Upload encontrado! Clicando...")
+                logger.info("Botão final de Upload (Publicação) encontrado! Clicando...")
                 try:
                     upload_btn.click(timeout=300000)
                 except Exception as e:
@@ -266,7 +266,8 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
                     logger.warning(f"Erro ao clicar Próximo: {e}")
                     next_btn.evaluate("el => el.click()")
             else:
-                logger.info("Nem botão de Upload nem botão de Próximo visíveis. Verificando se já publicou...")
+                logger.info("Nem botão de Upload nem botão de Próximo visíveis. O Wizard pode ter terminado ou travado.")
+                break
             
         salvar_screenshot(page, "06_after_upload_click", tarefa_id)
         
