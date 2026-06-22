@@ -1,6 +1,5 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
 $conn = connectDB();
-$stmt = $conn->query("SELECT id, name, odysee_auth_token FROM languages");
-$res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-echo json_encode($res, JSON_PRETTY_PRINT);
+$stmt = $conn->query("UPDATE odysee_publish_queue SET status = 'pending', retry_count = 0 WHERE status = 'error'");
+echo "Reset " . $stmt->rowCount() . " rows.";
