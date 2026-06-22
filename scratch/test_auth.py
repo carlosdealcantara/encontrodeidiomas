@@ -48,8 +48,17 @@ with sync_playwright() as p:
     page.goto("https://odysee.com", timeout=60000)
     page.wait_for_timeout(5000)
     
+    context.add_cookies([
+        {
+            "name": "auth_token",
+            "value": auth_token,
+            "domain": ".odysee.com",
+            "path": "/"
+        }
+    ])
+    
     page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
-    print("Token injected. Reloading...")
+    print("Token injected to localStorage and Cookies. Reloading...")
     
     page.reload()
     page.wait_for_timeout(5000)
