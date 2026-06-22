@@ -224,27 +224,47 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             page.wait_for_timeout(2000)
             
             # Tenta preencher o título se ele estiver visível
-            if page.locator('input[name="content_title"]').is_visible():
-                page.locator('input[name="content_title"]').first.fill(title, timeout=5000, force=True)
-                try:
-                    page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
-                except:
-                    pass
-                logger.info("Título preenchido.")
-                salvar_screenshot(page, f"05_wizard_step_{step}_title_filled", tarefa_id)
+            try:
+                if page.locator('input[name="content_title"]').is_visible():
+                    try:
+                        page.locator('input[name="content_title"]').first.fill(title, timeout=5000, force=True)
+                    except Exception as e:
+                        logger.warning(f"Aviso: Não conseguiu preencher título com fill: {e}")
+                        # Fallback agressivo via JS
+                        page.evaluate(f"""
+                            var el = document.querySelector('input[name="content_title"]');
+                            if(el) {{ el.value = "{title}"; el.dispatchEvent(new Event('input', {{bubbles: true}})); }}
+                        """)
+                    
+                    try:
+                        page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
+                    except:
+                        pass
+                    logger.info("Título preenchido.")
+                    salvar_screenshot(page, f"05_wizard_step_{step}_title_filled", tarefa_id)
+            except Exception as outer_e:
+                logger.warning(f"Erro ao tentar preencher campos no passo {step}: {outer_e}")
             
             # Verifica se já chegou no botão de Upload final
             upload_btn = page.locator('button:has-text("Upload"), button:has-text("Publicar")').first
             if upload_btn.is_visible():
                 logger.info("Botão final de Upload encontrado! Clicando...")
-                upload_btn.click(timeout=10000, force=True)
+                try:
+                    upload_btn.click(timeout=10000, force=True)
+                except Exception as e:
+                    logger.warning(f"Erro ao clicar Upload: {e}")
+                    upload_btn.evaluate("el => el.click()")
                 break
             
             # Se não achou o Upload, clica em Próximo
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
             if next_btn.is_visible():
                 logger.info("Clicando em Próximo...")
-                next_btn.click(timeout=10000, force=True)
+                try:
+                    next_btn.click(timeout=10000, force=True)
+                except Exception as e:
+                    logger.warning(f"Erro ao clicar Próximo: {e}")
+                    next_btn.evaluate("el => el.click()")
             else:
                 logger.info("Nem botão de Upload nem botão de Próximo visíveis. Verificando se já publicou...")
             
