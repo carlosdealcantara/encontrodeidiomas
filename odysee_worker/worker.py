@@ -255,11 +255,12 @@ def processar_fila():
         
         if tarefa['whatsapp_group_id']:
             mensagem = f"🎬 *Gravação do Encontro publicada!*\n\n📌 {tarefa['titulo_final']}\n\n🔗 {url_curta}"
-            requests.post("http://baileys-server:3000/send", json={
-                "to": tarefa['whatsapp_group_id'],
-                "message": mensagem,
-                "source": "odysee_pipeline"
-            }, headers={"apikey": "SenhaMeetups2026"})
+            # DESABILITADO PARA TESTES
+            # requests.post("http://baileys-server:3000/send", json={
+            #     "to": tarefa['whatsapp_group_id'],
+            #     "message": mensagem,
+            #     "source": "odysee_pipeline"
+            # }, headers={"apikey": "SenhaMeetups2026"})
             
     except Exception as e:
         logger.error(f"Erro: {e}")
