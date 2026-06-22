@@ -139,16 +139,16 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         context = browser.new_context()
         page = context.new_page()
         
-        # Aumenta timeout para conexões lentas ou uploads grandes (1 hora = 3600000ms)
-        page.set_default_timeout(3600000)
-        page.set_default_navigation_timeout(3600000)
+        # Aumenta timeout para conexões lentas ou uploads grandes (4 horas = 14400000ms)
+        page.set_default_timeout(14400000)
+        page.set_default_navigation_timeout(14400000)
         
         # Injeta o auth_token no localStorage acessando o site primeiro
-        page.goto("https://odysee.com", timeout=3600000)
+        page.goto("https://odysee.com", timeout=14400000)
         page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
         
         # Agora vamos para a página de upload
-        page.goto("https://odysee.com/$/upload", timeout=3600000)
+        page.goto("https://odysee.com/$/upload", timeout=14400000)
         page.wait_for_load_state("networkidle")
         
         # Preenche o arquivo
@@ -168,7 +168,7 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         
         # Aguarda a mensagem de sucesso
         logger.info("Aguardando upload terminar...")
-        page.wait_for_selector('text=Upload complete', timeout=3600000) # 60 min timeout para upload
+        page.wait_for_selector('text=Upload complete', timeout=14400000) # 4 horas timeout para upload
         
         # Pega a URL gerada (frequentemente aparece após o upload)
         # Se não for possível pegar facilmente do popup, nós deduzimos a URL
