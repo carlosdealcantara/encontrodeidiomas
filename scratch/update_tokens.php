@@ -15,21 +15,15 @@ $tokens = [
     'Russo' => '9VrMnun7v3JYFKH1EvAGBxYYHxVULfoG',
     'Polonês' => 'ByguMc6T8KgWK4GSgVVZbzyYbkH93bUN',
     'Português' => '5TBnpbPz45Ttx5xbh9ksSEoX79qXETn9',
-    'Servocroata' => '2EuEcv9s2kkgtyxREkd9G8tkZG5v2LFx'
+    'Servo-Croata' => '2EuEcv9s2kkgtyxREkd9G8tkZG5v2LFx'
 ];
 
-try {
-    // 1. Criar a coluna se não existir
-    $conn->exec("ALTER TABLE languages ADD COLUMN IF NOT EXISTS odysee_auth_token VARCHAR(100) NULL");
-    
-    // 2. Atualizar os tokens e o short name
-    $stmt = $conn->prepare("UPDATE languages SET odysee_auth_token = :token WHERE name LIKE :nome");
-    
-    foreach ($tokens as $nome => $token) {
-        $like = '%' . $nome . '%';
-        $stmt->execute([':token' => $token, ':nome' => $like]);
-        echo "Atualizado $nome com sucesso.<br>";
-    }
-} catch (Exception $e) {
-    echo "Erro: " . $e->getMessage();
+$updated = 0;
+foreach ($tokens as $name => $token) {
+    // The db has names like 'Inglês', 'Servo-Croata'
+    $stmt = $conn->prepare("UPDATE languages SET odysee_auth_token = ? WHERE name LIKE ?");
+    $stmt->execute([$token, "%$name%"]);
+    $updated += $stmt->rowCount();
 }
+
+echo "Tokens updated: $updated";
