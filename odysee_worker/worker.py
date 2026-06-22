@@ -94,7 +94,8 @@ def atualizar_status(tarefa_id, status, error_msg=None, odysee_url=None, retry_c
 def baixar_video_drive(drive_service, file_id, file_name):
     logger.info(f"Baixando vídeo: {file_id}")
     request = drive_service.files().get_media(fileId=file_id)
-    temp_path = f"/tmp/{file_name}"
+    safe_name = file_name.replace("/", "-").replace("\\", "-")
+    temp_path = f"/tmp/{safe_name}"
     with open(temp_path, "wb") as f:
         downloader = MediaIoBaseDownload(f, request)
         done = False
