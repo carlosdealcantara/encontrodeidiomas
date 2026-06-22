@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS odysee_publish_queue (
     titulo_final VARCHAR(700) DEFAULT NULL,
     odysee_slug VARCHAR(100) DEFAULT NULL,
     odysee_url VARCHAR(500) DEFAULT NULL,
-    status ENUM('pending','processing','done','error') DEFAULT 'pending',
+    status ENUM('waiting_host', 'pending', 'processing', 'done', 'error') DEFAULT 'waiting_host',
     error_message TEXT DEFAULT NULL,
     retry_count TINYINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

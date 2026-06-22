@@ -145,6 +145,62 @@ def publicar_odysee_playwright(auth_token, title, file_path):
         browser.close()
         return True
 
+def escanear_drive():
+    logger.info("Escaneando Drive por novos vídeos...")
+    try:
+        drive_service = init_drive_service()
+        results = drive_service.files().list(
+            q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType contains 'video/' and name contains ' - Recording'",
+            fields="files(id, name)"
+        ).execute()
+        arquivos = results.get('files', [])
+        
+        if not arquivos:
+            return
+            
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, name FROM languages")
+        idiomas = cursor.fetchall()
+        
+        for arquivo in arquivos:
+            file_id = arquivo['id']
+            file_name = arquivo['name']
+            
+            # Verifica se já está na fila
+            cursor.execute("SELECT id FROM odysee_publish_queue WHERE drive_file_id = %s", (file_id,))
+            if cursor.fetchone():
+                continue
+                
+            # Identifica o idioma
+            language_id = None
+            for idioma in idiomas:
+                if idioma['name'] in file_name:
+                    language_id = idioma['id']
+                    break
+                    
+            if not language_id:
+                logger.warning(f"Idioma não identificado no arquivo: {file_name}")
+                continue
+                
+            # Formata o título preliminar
+            # Original: 🇺🇲 Encontro Online de Inglês - 2026/06/16 20:06 GMT-03:00 - Recording.mp4
+            titulo_limpo = file_name.split(" GMT")[0] if " GMT" in file_name else file_name.replace(" - Recording", "").replace(".mp4", "")
+            
+            # Insere no banco como waiting_host
+            cursor.execute("""
+                INSERT INTO odysee_publish_queue 
+                (language_id, drive_file_id, drive_file_name, status, titulo_final) 
+                VALUES (%s, %s, %s, 'waiting_host', %s)
+            """, (language_id, file_id, file_name, titulo_limpo))
+            conn.commit()
+            logger.info(f"Novo vídeo adicionado à fila de triagem: {file_name}")
+            
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        logger.error(f"Erro ao escanear Drive: {e}")
+
 def encurtar_url(url_longa):
     api_url = f"http://tinyurl.com/api-create.php?url={urllib.parse.quote(url_longa)}"
     res = requests.get(api_url)
@@ -153,6 +209,10 @@ def encurtar_url(url_longa):
     return url_longa
 
 def processar_fila():
+    # 1. Escanear o Drive por novos arquivos
+    escanear_drive()
+    
+    # 2. Processar a fila existente
     tarefa = buscar_proxima_tarefa()
     if not tarefa:
         return
