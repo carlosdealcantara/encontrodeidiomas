@@ -218,22 +218,24 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
         # PASSO 4: Navegar pelo Wizard do Odysee
         logger.info("[PASSO 4] Navegando pelo Wizard de publicação...")
         
-        # Odysee agora usa um Wizard de múltiplas etapas (1. Arquivo, 2. Detalhes, 3. Tags, 4. Publicação)
+        # Odysee usa um Wizard de 4 etapas: 1. Arquivo, 2. Detalhes, 3. Tags, 4. Publicação
+        # O botão final "Publicação" está na parte inferior da página (não na barra de navegação do topo)
         for step in range(1, 6):
             logger.info(f"Tentando preencher a etapa {step} do Wizard...")
             page.wait_for_timeout(2000)
             
-            # Tenta preencher o título se ele estiver visível
+            # Tenta preencher o título se ele estiver visível (somente na etapa de Detalhes)
             try:
                 if page.locator('input[name="content_title"]').is_visible():
                     try:
                         page.locator('input[name="content_title"]').first.fill(title, timeout=5000, force=True)
                     except Exception as e:
                         logger.warning(f"Aviso: Não conseguiu preencher título com fill: {e}")
-                        # Fallback agressivo via JS
+                        # Fallback via JS para React inputs
+                        safe_title = title.replace('"', '\\"').replace("'", "\\'") 
                         page.evaluate(f"""
                             var el = document.querySelector('input[name="content_title"]');
-                            if(el) {{ el.value = "{title}"; el.dispatchEvent(new Event('input', {{bubbles: true}})); }}
+                            if(el) {{ el.value = "{safe_title}"; el.dispatchEvent(new Event('input', {{bubbles: true}})); }}
                         """)
                     
                     try:
@@ -245,18 +247,23 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             except Exception as outer_e:
                 logger.warning(f"Erro ao tentar preencher campos no passo {step}: {outer_e}")
             
-            # Verifica se já chegou no botão de Upload final
-            upload_btn = page.locator('button:has-text("Upload"), button:has-text("Publicar"), button:has-text("Publicação")').first
-            if upload_btn.is_visible():
-                logger.info("Botão final de Upload (Publicação) encontrado! Clicando...")
+            # Verifica o botão de Publicação FINAL (botão no rodapé, não na barra de navegação do topo)
+            # O seletor '.publish-form__actions button' aponta especificamente para o botão de submit
+            publish_btn = page.locator('.button--primary >> text="Publicação"').first
+            if not publish_btn.is_visible():
+                # Fallback: botão primário no fim do formulário que não seja de navegação
+                publish_btn = page.locator('form button.button--primary:has-text("Publicação"), .publish__actions button.button--primary').first
+            
+            if publish_btn.is_visible():
+                logger.info("Botão FINAL de Publicação encontrado no rodapé! Clicando...")
                 try:
-                    upload_btn.click(timeout=300000)
+                    publish_btn.click(timeout=300000)
                 except Exception as e:
-                    logger.warning(f"Erro ao clicar Upload: {e}")
-                    upload_btn.evaluate("el => el.click()")
+                    logger.warning(f"Erro ao clicar Publicação: {e}")
+                    publish_btn.evaluate("el => el.click()")
                 break
             
-            # Se não achou o Upload, clica em Próximo
+            # Se não achou o Publicação, clica em Próximo (aguarda até 5 min por ele estar habilitado)
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
             if next_btn.is_visible():
                 logger.info("Clicando em Próximo...")
@@ -266,7 +273,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
                     logger.warning(f"Erro ao clicar Próximo: {e}")
                     next_btn.evaluate("el => el.click()")
             else:
-                logger.info("Nem botão de Upload nem botão de Próximo visíveis. O Wizard pode ter terminado ou travado.")
+                logger.info("Nem botão de Publicação nem botão de Próximo visíveis. Wizard pode ter terminado.")
                 break
             
         salvar_screenshot(page, "06_after_upload_click", tarefa_id)
@@ -319,18 +326,30 @@ def escanear_drive():
                 logger.warning(f"Idioma não identificado no arquivo: {file_name}")
                 continue
                 
-            # Formata o título preliminar
+            # Formata o título e o slug
             # Original: 🇺🇲 Encontro Online de Inglês - 2026/06/16 20:06 GMT-03:00 - Recording.mp4
-            titulo_limpo = file_name.split(" GMT")[0] if " GMT" in file_name else file_name.replace(" - Recording", "").replace(".mp4", "")
+            # Título limpo: 🇺🇲 Encontro Online de Inglês - 2026/06/16  (sem hora e sem "- Recording")
+            import re as _re
+            # Remove " HH:MM GMT..." e " - Recording" e extensão do arquivo
+            titulo_limpo = file_name
+            titulo_limpo = _re.sub(r'\s+\d{2}:\d{2}\s+GMT.*', '', titulo_limpo)  # Remove horário e GMT
+            titulo_limpo = titulo_limpo.replace(' - Recording', '').replace('.mp4', '').strip()
+            
+            # Gera o slug de URL com apenas a data (YYYY_MM_DD)
+            date_match = _re.search(r'(\d{4})[/\-](\d{2})[/\-](\d{2})', file_name)
+            if date_match:
+                slug = f"{date_match.group(1)}_{date_match.group(2)}_{date_match.group(3)}"
+            else:
+                slug = titulo_limpo  # fallback
             
             # Insere no banco como waiting_host
             cursor.execute("""
                 INSERT INTO odysee_publish_queue 
-                (language_id, drive_file_id, drive_file_name, status, titulo_final) 
-                VALUES (%s, %s, %s, 'waiting_host', %s)
-            """, (language_id, file_id, file_name, titulo_limpo))
+                (language_id, drive_file_id, drive_file_name, status, titulo_final, odysee_slug) 
+                VALUES (%s, %s, %s, 'waiting_host', %s, %s)
+            """, (language_id, file_id, file_name, titulo_limpo, slug))
             conn.commit()
-            logger.info(f"Novo vídeo adicionado à fila de triagem: {file_name}")
+            logger.info(f"Novo vídeo adicionado à fila de triagem: {file_name} | Título: {titulo_limpo} | Slug: {slug}")
             
         cursor.close()
         conn.close()
