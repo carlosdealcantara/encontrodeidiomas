@@ -121,16 +121,30 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
 def publicar_odysee_playwright(auth_token, title, file_path):
     logger.info("Iniciando publicação no Odysee via Playwright")
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        # Modo batata para economizar muita memória na VPS
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--js-flags="--max-old-space-size=256"',
+                '--blink-settings=imagesEnabled=false',
+                '--disable-extensions',
+                '--proxy-server="direct://"',
+                '--proxy-bypass-list=*'
+            ]
+        )
         context = browser.new_context()
         page = context.new_page()
         
         # Injeta o auth_token no localStorage acessando o site primeiro
-        page.goto("https://odysee.com")
+        page.goto("https://odysee.com", timeout=120000)
         page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
         
         # Agora vamos para a página de upload
-        page.goto("https://odysee.com/$/upload")
+        page.goto("https://odysee.com/$/upload", timeout=120000)
         page.wait_for_load_state("networkidle")
         
         # Preenche o arquivo
