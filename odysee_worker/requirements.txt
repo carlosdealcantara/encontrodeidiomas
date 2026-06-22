@@ -5,4 +5,4 @@ google-auth-httplib2
 google-auth-oauthlib
 mysql-connector-python
 python-dotenv
-patchright
+playwright
