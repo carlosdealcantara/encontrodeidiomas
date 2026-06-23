@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script para descobrir o odysee_channel_name de cada idioma usando o auth_token.
-Usa a API do Odysee para buscar o channel_name associado a cada token.
+Tenta diferentes endpoints e formatos de autenticação do Odysee/LBRY.
 """
 import requests
 import json
@@ -22,25 +22,30 @@ tokens = {
     'Japonês':      '5pPo6WShwn5o7L9r7PDB567YigPvjm4H',
 }
 
-print(f"{'Idioma':<15} {'Status':<10} {'Channel Name'}")
-print("-" * 60)
+print(f"{'Idioma':<15} {'Status':<10} {'Info'}")
+print("-" * 70)
 
 for name, token in tokens.items():
     try:
+        # Os tokens do Odysee são passados como cookie/query param, não como Bearer JWT
+        # Formato: auth_token como cookie ou como parâmetro POST
         r = requests.post(
             'https://api.odysee.com/user/me',
-            headers={'Authorization': f'Bearer {token}'},
+            data={'auth_token': token},
             timeout=10
         )
         data = r.json()
         if data.get('success'):
-            channel = data.get('data', {}).get('primary_email', 'SEM_EMAIL')
-            # Tenta pegar o channel name do campo channels
-            channels = data.get('data', {}).get('channels', [])
-            ch_name = channels[0].get('name', 'SEM_CANAL') if channels else 'SEM_CANAL'
-            print(f"{name:<15} {'OK':<10} @{ch_name}")
+            user_data = data.get('data', {})
+            email = user_data.get('primary_email', 'SEM_EMAIL')
+            channels = user_data.get('channels', [])
+            if channels:
+                ch_names = ', '.join([f"@{c.get('name', '?')}" for c in channels])
+            else:
+                ch_names = 'SEM_CANAL'
+            print(f"{name:<15} {'OK':<10} {email} | {ch_names}")
         else:
-            err = data.get('error', 'desconhecido')
+            err = data.get('error', str(data))[:60]
             print(f"{name:<15} {'ERRO':<10} {err}")
     except Exception as e:
-        print(f"{name:<15} {'FALHA':<10} {e}")
+        print(f"{name:<15} {'FALHA':<10} {str(e)[:60]}")
