@@ -435,14 +435,29 @@ def processar_fila():
         
         atualizar_status(tarefa['id'], 'done', odysee_url=url_curta)
         
-        if tarefa['whatsapp_group_id']:
-            mensagem = f"🎬 *Gravação do Encontro publicada!*\n\n📌 {tarefa['titulo_final']}\n\n🔗 {url_curta}"
-            # DESABILITADO PARA TESTES
-            # requests.post("http://baileys-server:3000/send", json={
-            #     "to": tarefa['whatsapp_group_id'],
-            #     "message": mensagem,
-            #     "source": "odysee_pipeline"
-            # }, headers={"apikey": "SenhaMeetups2026"})
+        if tarefa.get('whatsapp_group_id'):
+            title_msg = tarefa.get('titulo_final') or tarefa.get('topico') or tarefa.get('drive_file_name', '')
+            mensagem = f"⚬️ *Gravação do Encontro publicada!*\n\n📌 {title_msg}\n\n🔗 {url_curta}"
+            try:
+                requests.post("http://baileys-server:3000/send", json={
+                    "to": tarefa['whatsapp_group_id'],
+                    "message": mensagem,
+                    "source": "odysee_pipeline"
+                }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
+                logger.info(f"[WHATSAPP] Mensagem enviada para o grupo {tarefa['whatsapp_group_id']}")
+            except Exception as e:
+                logger.warning(f"[WHATSAPP] Falhou ao enviar mensagem: {e}")
+            
+            # Também notifica o grupo dos hosts com o resumo da semana
+            try:
+                requests.post("http://baileys-server:3000/send", json={
+                    "to": "120363164732845564@g.us",
+                    "message": f"🤖 *Worker Odysee publicou automaticamente!*\n\n{mensagem}\n\n✅ URL canonica: https://odysee.com/{tarefa.get('odysee_channel_name', '')}/{tarefa.get('odysee_slug', '')}",
+                    "source": "odysee_pipeline"
+                }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
+                logger.info("[WHATSAPP] Notificação enviada ao grupo dos hosts")
+            except Exception as e:
+                logger.warning(f"[WHATSAPP] Falhou ao notificar hosts: {e}")
             
     except Exception as e:
         logger.error(f"Erro: {e}")
