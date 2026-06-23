@@ -13,8 +13,8 @@ $canais = [
 
 $ok = 0;
 foreach ($canais as $name => $channel) {
-    $stmt = $conn->prepare("UPDATE languages SET odysee_channel_name = ? WHERE name = ?");
-    $stmt->execute([$channel, $name]);
+    $stmt = $conn->prepare("UPDATE languages SET odysee_channel_name = ? WHERE name LIKE ?");
+    $stmt->execute([$channel, "%$name%"]);
     $ok += $stmt->rowCount();
     echo "✅ $name → $channel\n";
 }
