@@ -102,7 +102,27 @@ def baixar_video_drive(drive_service, file_id, file_name):
         done = False
         while not done:
             status, done = downloader.next_chunk()
-    return temp_path
+    
+    # Re-codifica o áudio com ffmpeg para garantir compatibilidade com o Odysee
+    # O Zoom grava em AAC-LC que pode perder o áudio no transcoder do Odysee
+    import subprocess
+    fixed_path = temp_path.replace(".mp4", "_fixed.mp4")
+    try:
+        logger.info(f"Processando áudio com ffmpeg...")
+        result = subprocess.run(
+            ["ffmpeg", "-y", "-i", temp_path, "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", fixed_path],
+            capture_output=True, text=True, timeout=600
+        )
+        if result.returncode == 0 and os.path.exists(fixed_path):
+            os.remove(temp_path)
+            logger.info(f"ffmpeg concluído. Arquivo processado: {fixed_path}")
+            return fixed_path
+        else:
+            logger.warning(f"ffmpeg falhou (rc={result.returncode}), usando arquivo original. Stderr: {result.stderr[-500:]}")
+            return temp_path
+    except Exception as e:
+        logger.warning(f"ffmpeg não disponível ou erro: {e}. Usando arquivo original.")
+        return temp_path
 
 def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
     results = drive_service.files().list(
@@ -278,14 +298,39 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             
         salvar_screenshot(page, "06_after_upload_click", tarefa_id)
         
-        # PASSO 6: Aguardar conclusão
+        # PASSO 6: Aguardar conclusão — detecta mudança de URL (Odysee redireciona ao terminar)
         logger.info("[PASSO 6] Aguardando upload terminar (máx 4h)...")
-        page.wait_for_selector('text=Upload complete', timeout=14400000)
+        url_inicial = page.url
+        upload_ok = False
+        for _ in range(480):  # 480 x 30s = 4h
+            page.wait_for_timeout(30000)
+            url_atual = page.url
+            titulo_atual = page.title()
+            logger.info(f"[PASSO 6] URL: {url_atual} | Título: {titulo_atual}")
+            
+            # Odysee redireciona para a página do vídeo ao concluir
+            if url_atual != url_inicial and "/upload" not in url_atual:
+                logger.info(f"[PASSO 6] Redirecionado para {url_atual} — upload concluído!")
+                upload_ok = True
+                break
+            
+            # Textos de sucesso em português e inglês
+            for texto in ["Upload complete", "concluído", "publicado", "published", "Seu vídeo", "foi publicado"]:
+                if page.locator(f'text={texto}').count() > 0:
+                    logger.info(f"[PASSO 6] Texto de sucesso detectado: '{texto}'")
+                    upload_ok = True
+                    break
+            if upload_ok:
+                break
+        
         salvar_screenshot(page, "07_upload_complete", tarefa_id)
-        logger.info("[PASSO 6] Upload concluído com sucesso!")
+        if upload_ok:
+            logger.info("[PASSO 6] Upload concluído com sucesso!")
+        else:
+            logger.warning("[PASSO 6] Timeout de 4h atingido. O upload pode ter sido concluído mesmo assim.")
         
         browser.close()
-        return True
+        return upload_ok
 
 def escanear_drive():
     print("Escaneando Drive por novos vídeos...", flush=True)
