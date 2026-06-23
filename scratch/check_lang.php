@@ -1,11 +1,7 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
 $conn = connectDB();
-try {
-    $stmt = $conn->query("SELECT id, name, odysee_auth_token, odysee_channel_name FROM languages WHERE name LIKE '%Inglês%'");
-    $row = $stmt->fetch();
-    print_r($row);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+$stmt = $conn->query("SELECT id, name, odysee_auth_token, odysee_channel_name FROM languages ORDER BY id");
+$res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+echo json_encode($res, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ?>
