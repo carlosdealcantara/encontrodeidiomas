@@ -103,26 +103,7 @@ def baixar_video_drive(drive_service, file_id, file_name):
         while not done:
             status, done = downloader.next_chunk()
     
-    # Re-codifica o áudio com ffmpeg para garantir compatibilidade com o Odysee
-    # O Zoom grava em AAC-LC que pode perder o áudio no transcoder do Odysee
-    import subprocess
-    fixed_path = temp_path.replace(".mp4", "_fixed.mp4")
-    try:
-        logger.info(f"Processando áudio com ffmpeg...")
-        result = subprocess.run(
-            ["ffmpeg", "-y", "-i", temp_path, "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", fixed_path],
-            capture_output=True, text=True, timeout=600
-        )
-        if result.returncode == 0 and os.path.exists(fixed_path):
-            os.remove(temp_path)
-            logger.info(f"ffmpeg concluído. Arquivo processado: {fixed_path}")
-            return fixed_path
-        else:
-            logger.warning(f"ffmpeg falhou (rc={result.returncode}), usando arquivo original. Stderr: {result.stderr[-500:]}")
-            return temp_path
-    except Exception as e:
-        logger.warning(f"ffmpeg não disponível ou erro: {e}. Usando arquivo original.")
-        return temp_path
+    return temp_path
 
 def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
     results = drive_service.files().list(
@@ -165,7 +146,7 @@ def salvar_screenshot(page, nome, tarefa_id):
     except Exception as e:
         logger.warning(f"[SCREENSHOT] Falhou ao salvar {nome}: {e}")
 
-def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
+def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None):
     logger.info("Iniciando publicação no Odysee via Playwright")
     with sync_playwright() as p:
         # Modo otimizado para VPS de 1GB
@@ -246,17 +227,27 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path):
             
             # Tenta preencher o título se ele estiver visível (somente na etapa de Detalhes)
             try:
-                if page.locator('input[name="content_title"]').is_visible():
+                if page.locator('input[name="content_title"], input[placeholder*="ítulo"], input[placeholder*="Title"]').first.is_visible():
                     try:
-                        page.locator('input[name="content_title"]').first.fill(title, timeout=5000, force=True)
+                        page.locator('input[name="content_title"], input[placeholder*="ítulo"], input[placeholder*="Title"]').first.fill(title, timeout=5000, force=True)
                     except Exception as e:
                         logger.warning(f"Aviso: Não conseguiu preencher título com fill: {e}")
-                        # Fallback via JS para React inputs
-                        safe_title = title.replace('"', '\\"').replace("'", "\\'") 
+                        safe_title = title.replace('"', '\\"').replace("'", "\\'")
                         page.evaluate(f"""
-                            var el = document.querySelector('input[name="content_title"]');
+                            var el = document.querySelector('input[name="content_title"]') || document.querySelector('input[placeholder*="ítulo"]');
                             if(el) {{ el.value = "{safe_title}"; el.dispatchEvent(new Event('input', {{bubbles: true}})); }}
                         """)
+                    
+                    if slug:
+                        try:
+                            url_input = page.locator('input[name="content_name"], input[placeholder*="url" i], input[placeholder*="URL"]').first
+                            if url_input.is_visible():
+                                url_input.click(click_count=3)
+                                page.keyboard.press('Backspace')
+                                url_input.fill(slug, timeout=5000, force=True)
+                                logger.info(f"URL preenchida com o slug: {slug}")
+                        except Exception as e:
+                            logger.warning(f"Erro ao preencher a URL: {e}")
                     
                     try:
                         page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
@@ -431,7 +422,8 @@ def processar_fila():
         if not tarefa['odysee_auth_token']:
             raise Exception("Auth token não configurado")
             
-        publicar_odysee_playwright(tarefa['id'], tarefa['odysee_auth_token'], tarefa['titulo_final'], temp_path)
+        title = tarefa.get('titulo_final') or tarefa.get('topico') or tarefa.get('drive_file_name', 'Sem Título')
+        publicar_odysee_playwright(tarefa['id'], tarefa['odysee_auth_token'], title, temp_path, slug=tarefa.get('odysee_slug'))
         
         # Odysee final URL (Canonica)
         odysee_url = f"https://odysee.com/{tarefa['odysee_channel_name']}/{tarefa['odysee_slug']}"
