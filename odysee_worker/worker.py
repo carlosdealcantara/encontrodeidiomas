@@ -351,6 +351,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         logger.info("[PASSO 6] Aguardando upload terminar (máx 4h)...")
         url_inicial = page.url
         upload_ok = False
+        missing_title_count = 0
         for _ in range(480):  # 480 x 30s = 4h
             page.wait_for_timeout(30000)
             url_atual = page.url
@@ -367,11 +368,27 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             # Removemos "concluído" pois o aviso "até que o upload seja concluído" acionava ele.
             textos_sucesso = ["Upload complete", "foi publicado", "Your video was published", "Upload concluído"]
             for texto in textos_sucesso:
-                # Usa 'has-text' com uma div ou span para garantir que não pega partes do layout global facilmente
                 if page.locator(f'text="{texto}"').count() > 0:
                     logger.info(f"[PASSO 6] Texto de sucesso detectado: '{texto}'")
                     upload_ok = True
                     break
+                    
+            if not upload_ok:
+                # O Odysee frequentemente deixa a página de uploads vazia (com um spinner) quando termina.
+                # Se o título do vídeo não estiver mais na página por 3 verificações seguidas (1.5 minutos), assumimos sucesso.
+                try:
+                    if page.locator(f'text="{title}"').count() == 0 and page.locator('text="Enviando"').count() == 0:
+                        missing_title_count += 1
+                        logger.info(f"[PASSO 6] Título sumiu da fila. Verificação {missing_title_count}/3")
+                        if missing_title_count >= 3:
+                            logger.info("[PASSO 6] Vídeo não está mais na fila de uploads. Assumindo sucesso!")
+                            upload_ok = True
+                            break
+                    else:
+                        missing_title_count = 0
+                except:
+                    pass
+                    
             if upload_ok:
                 break
         
