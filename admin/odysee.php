@@ -357,6 +357,10 @@ if (isset($_GET['msg']) && !$msg) {
             const url = new URL(window.location);
             url.searchParams.set('tab', tabId);
             window.history.pushState({}, '', url);
+            
+            if (tabId === 'config') {
+                testAllTokens();
+            }
         }
 
         async function testToken(id) {
@@ -386,6 +390,23 @@ if (isset($_GET['msg']) && !$msg) {
                 resDiv.innerHTML = '<span style="color:var(--accent-red);"><i class="fas fa-times-circle"></i> Erro de rede ao testar.</span>';
             }
         }
+
+        async function testAllTokens() {
+            const inputs = document.querySelectorAll('input[id^="token_"]');
+            for (const input of inputs) {
+                if (input.value.trim() !== '') {
+                    const id = input.id.replace('token_', '');
+                    await testToken(id); // Espera um terminar para testar o próximo (evita bloqueio da API)
+                }
+            }
+        }
+
+        // Executar auto-teste se a aba ativa na inicialização for a de config
+        window.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('tab-config').classList.contains('active')) {
+                testAllTokens();
+            }
+        });
 
         // Auto-refresh logic for Diag Tab
         let secs = 15;

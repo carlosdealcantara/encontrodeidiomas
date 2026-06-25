@@ -15,8 +15,8 @@ if (empty($token)) {
     exit;
 }
 
-// Odysee Backend API
-$url = "https://api.na-backend.odysee.com/api/v1/proxy";
+// Odysee Backend API - Exige o token na URL ou no header
+$url = "https://api.na-backend.odysee.com/api/v1/proxy?auth_token=" . urlencode(trim($token));
 $payload = json_encode([
     "jsonrpc" => "2.0",
     "method" => "user_me",
@@ -29,7 +29,8 @@ curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
-    'Cookie: auth_token=' . trim($token)
+    'Cookie: auth_token=' . trim($token),
+    'X-Lbry-Auth-Token: ' . trim($token)
 ]);
 
 $response = curl_exec($ch);
