@@ -277,9 +277,10 @@ if (isset($_GET['msg']) && !$msg) {
                                 <td>
                                     <div style="display: flex; gap: 10px; align-items: center;">
                                         <input type="password" id="token_<?= $l['id'] ?>" name="langs[<?= $l['id'] ?>][token]" value="<?= htmlspecialchars($l['odysee_auth_token'] ?? '') ?>" placeholder="Colar token longo aqui...">
-                                        <button type="button" class="btn-sm" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;" onclick="testToken(<?= $l['id'] ?>)" title="Testar Token"><i class="fas fa-stethoscope"></i></button>
+                                        <div id="token_status_<?= $l['id'] ?>" style="flex-shrink: 0; width: 30px; text-align: center; font-size: 1.1rem; cursor: default;">
+                                            <?php if (!empty($l['odysee_auth_token'])): ?><span style="color: var(--text-dim);"><i class="fas fa-circle-notch fa-spin"></i></span><?php endif; ?>
+                                        </div>
                                     </div>
-                                    <div id="test_result_<?= $l['id'] ?>" style="font-size: 0.8rem; margin-top: 5px; min-height: 15px;"></div>
                                 </td>
                                 <td><input type="text" name="langs[<?= $l['id'] ?>][channel]" value="<?= htmlspecialchars($l['odysee_channel_name'] ?? '') ?>" placeholder="@Exemplo"></td>
                                 <td>
@@ -365,29 +366,32 @@ if (isset($_GET['msg']) && !$msg) {
 
         async function testToken(id) {
             const token = document.getElementById('token_' + id).value;
-            const resDiv = document.getElementById('test_result_' + id);
-            
+            const statusDiv = document.getElementById('token_status_' + id);
+            if (!statusDiv) return;
+
             if (!token.trim()) {
-                resDiv.innerHTML = '<span style="color:var(--warning);"><i class="fas fa-exclamation-circle"></i> Token vazio.</span>';
+                statusDiv.innerHTML = '';
                 return;
             }
-            
-            resDiv.innerHTML = '<span style="color:var(--text-dim);"><i class="fas fa-spinner fa-spin"></i> Testando...</span>';
-            
+
+            statusDiv.innerHTML = '<span style="color:var(--text-dim);"><i class="fas fa-circle-notch fa-spin"></i></span>';
+
             try {
                 const fd = new FormData();
                 fd.append('token', token);
-                
+
                 const response = await fetch('ajax_test_odysee_token.php', { method: 'POST', body: fd });
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    resDiv.innerHTML = '<span style="color:var(--success);"><i class="fas fa-check-circle"></i> ' + data.message + ' (' + data.email + ')</span>';
+                    const tip = 'Válido — ' + (data.email || '');
+                    statusDiv.innerHTML = '<span style="color:var(--success);" title="' + tip + '"><i class="fas fa-check-circle"></i></span>';
                 } else {
-                    resDiv.innerHTML = '<span style="color:var(--accent-red);"><i class="fas fa-times-circle"></i> ' + data.error + (data.details ? ' - ' + data.details : '') + '</span>';
+                    const tip = (data.error || 'Erro') + (data.details ? ': ' + data.details : '');
+                    statusDiv.innerHTML = '<span style="color:var(--accent-red);" title="' + tip.replace(/"/g, "'") + '"><i class="fas fa-times-circle"></i></span>';
                 }
             } catch (err) {
-                resDiv.innerHTML = '<span style="color:var(--accent-red);"><i class="fas fa-times-circle"></i> Erro de rede ao testar.</span>';
+                statusDiv.innerHTML = '<span style="color:var(--accent-red);" title="Erro de rede"><i class="fas fa-times-circle"></i></span>';
             }
         }
 
