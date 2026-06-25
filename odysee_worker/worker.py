@@ -341,7 +341,7 @@ def escanear_drive():
         cursor = conn.cursor(dictionary=True)
         # Só busca idiomas que já têm canal e token do Odysee configurados
         # Idiomas sem token são silenciosamente ignorados (sem criar fila ou erro)
-        cursor.execute("SELECT id, name FROM languages WHERE odysee_auth_token IS NOT NULL AND odysee_auth_token != '' AND odysee_channel_name IS NOT NULL AND odysee_channel_name != ''")
+        cursor.execute("SELECT id, name FROM languages WHERE odysee_auth_token IS NOT NULL AND odysee_auth_token != '' AND odysee_channel_name IS NOT NULL AND odysee_channel_name != '' AND odysee_auto_enabled = 1")
         idiomas = cursor.fetchall()
         
         for arquivo in arquivos:

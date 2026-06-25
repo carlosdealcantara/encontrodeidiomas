@@ -16,6 +16,7 @@ $nav_items = [
     'mentoria.php'         => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
     'whatsapp'             => ['icon' => 'fab fa-whatsapp',       'label' => 'WhatsApp', 'link' => 'meetup_groups.php', 'active' => $is_whatsapp_page],
     'odysee_queue.php'     => ['icon' => 'fas fa-cloud-upload-alt','label' => 'Odysee Fila'],
+    'odysee_settings.php'  => ['icon' => 'fas fa-cogs',           'label' => 'Odysee Config'],
     'telegram_bot.php'     => ['icon' => 'fab fa-telegram',       'label' => 'Telegram'],
     'useful_links.php'     => ['icon' => 'fas fa-link',           'label' => 'Links'],
     'settings.php'         => ['icon' => 'fas fa-cog',            'label' => 'Configurações'],
