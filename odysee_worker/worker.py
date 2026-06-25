@@ -47,7 +47,7 @@ def buscar_proxima_tarefa():
             SELECT q.*, l.odysee_auth_token, l.odysee_channel_name, l.whatsapp_group_id, l.name as language_name
             FROM odysee_publish_queue q
             JOIN languages l ON q.language_id = l.id
-            WHERE q.status = "pending"
+            WHERE q.status = "pending" AND l.odysee_auto_enabled = 1
             ORDER BY q.id ASC LIMIT 1
         ''')
         return cursor.fetchone()
