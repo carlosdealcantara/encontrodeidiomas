@@ -378,7 +378,11 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         else:
             logger.warning("[PASSO 6] Timeout de 4h atingido. O upload pode ter sido concluído mesmo assim.")
         
-        browser.close()
+        try:
+            browser.close()
+        except Exception as e:
+            logger.warning(f"[PASSO 6] Ignorando erro ao fechar browser: {e}")
+            
         return upload_ok
 
 def escanear_drive():
@@ -481,8 +485,11 @@ def processar_fila():
             raise Exception("Auth token não configurado")
             
         title = tarefa.get('titulo_final') or tarefa.get('topico') or tarefa.get('drive_file_name', 'Sem Título')
-        publicar_odysee_playwright(tarefa['id'], tarefa['odysee_auth_token'], title, temp_path, slug=tarefa.get('odysee_slug'))
+        upload_ok = publicar_odysee_playwright(tarefa['id'], tarefa['odysee_auth_token'], title, temp_path, slug=tarefa.get('odysee_slug'))
         
+        if not upload_ok:
+            raise Exception("Falha no processo de publicação (Timeout ou Erro no Odysee)")
+            
         # Odysee final URL (Canonica)
         odysee_url = f"https://odysee.com/{tarefa['odysee_channel_name']}/{tarefa['odysee_slug']}"
         
@@ -518,7 +525,7 @@ def processar_fila():
                 logger.warning(f"[WHATSAPP] Falhou ao notificar hosts: {e}")
             
     except Exception as e:
-        logger.error(f"Erro: {e}")
+        logger.exception("Erro durante o processamento da fila")
         retry = tarefa['retry_count'] + 1
         novo_status = 'error' if retry >= 3 else 'pending'
         atualizar_status(tarefa['id'], novo_status, error_msg=str(e), retry_count=retry)
