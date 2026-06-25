@@ -302,7 +302,20 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     if thumb_input.count() > 0:
                         thumb_input.set_input_files(thumbnail_path)
                         logger.info("[THUMBNAIL] Arquivo enviado via input[type=file].")
-                        page.wait_for_timeout(3000)  # aguarda o preview carregar
+                        page.wait_for_timeout(2000)  # aguarda modal aparecer
+                        
+                        # NOVO: Odysee agora pede confirmação no modal "Enviar Thumbnail"
+                        confirm_btn = page.locator('button:has-text("Enviar"), button:has-text("Upload")').filter(has_text="Enviar").last
+                        if not confirm_btn.is_visible():
+                            confirm_btn = page.locator('.modal button, .dialog button').filter(has_text="Enviar").first
+                        
+                        if confirm_btn.is_visible():
+                            logger.info("[THUMBNAIL] Modal de confirmação detectado. Clicando em Enviar...")
+                            confirm_btn.click()
+                            page.wait_for_timeout(3000) # aguarda upload da thumbnail finalizar
+                        else:
+                            page.wait_for_timeout(2000)
+                            
                         salvar_screenshot(page, "05c_thumbnail_uploaded", tarefa_id)
                     else:
                         # Fallback: tentar via botão "Enviar" visível na tela
