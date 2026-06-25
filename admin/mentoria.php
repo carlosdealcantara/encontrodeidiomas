@@ -308,7 +308,8 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
         <?php endif; ?>
 
         <div class="main-tabs-nav">
-            <button class="main-tab-btn <?= $active_tab == 'pagamentos' ? 'active' : '' ?>" onclick="switchMainTab('pagamentos')"><i class="fas fa-money-bill-wave"></i> Pagamentos</button>
+            <button class="main-tab-btn <?= $active_tab == 'pagamentos' ? 'active' : '' ?>" onclick="switchMainTab('pagamentos')"><i class="fas fa-users"></i> Alunos</button>
+            <button class="main-tab-btn <?= $active_tab == 'cobrancas' ? 'active' : '' ?>" onclick="switchMainTab('cobrancas')"><i class="fas fa-money-bill-wave"></i> Mensalidades</button>
             <button class="main-tab-btn <?= $active_tab == 'mensagens' ? 'active' : '' ?>" onclick="switchMainTab('mensagens')"><i class="fas fa-robot"></i> Mensagens e Grupos</button>
             <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Classes</button>
             <button class="main-tab-btn <?= $active_tab == 'streaks' ? 'active' : '' ?>" onclick="switchMainTab('streaks')"><i class="fas fa-fire"></i> Streaks Desafio</button>
@@ -317,6 +318,10 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_pagamentos.php'; ?>
+        </div>
+
+        <div id="tab_cobrancas" class="main-tab-content <?= $active_tab == 'cobrancas' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_cobrancas.php'; ?>
         </div>
 
         <div id="tab_mensagens" class="main-tab-content <?= $active_tab == 'mensagens' ? 'active' : '' ?>">
