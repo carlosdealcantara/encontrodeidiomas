@@ -9,6 +9,10 @@ let dataDir = '';
 let processedMessageIds = new Set();
 let processedIdsDate = '';
 
+// Cache for group admins to avoid fetching metadata on every message
+let groupAdminsCache = {};
+let groupAdminsCacheTime = {};
+
 
 // Helper to get today's date in YYYY-MM-DD for BRT
 function getTodayDate() {
@@ -218,7 +222,22 @@ async function handleMessages({ messages, type }) {
                      innerDoc?.caption || '';
 
         // === ACTIVITY LOGGING (students only, no commands, no duplicates) ===
-        const isAdmin = msg.key.fromMe || excludedJids.has(senderJid);
+        // Determine if sender is a group admin
+        let isGroupAdmin = false;
+        try {
+            const now = Date.now();
+            if (!groupAdminsCache[groupJid] || (now - groupAdminsCacheTime[groupJid] > 3600000)) { // 1 hour cache
+                const metadata = await sock.groupMetadata(groupJid);
+                const admins = metadata.participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin').map(p => p.id);
+                groupAdminsCache[groupJid] = new Set(admins);
+                groupAdminsCacheTime[groupJid] = now;
+            }
+            isGroupAdmin = groupAdminsCache[groupJid].has(senderJid);
+        } catch (e) {
+            console.error('Error fetching group admins:', e);
+        }
+
+        const isAdmin = msg.key.fromMe || excludedJids.has(senderJid) || isGroupAdmin;
         const msgId = msg.key.id;
 
         if (!isAdmin && !processedMessageIds.has(msgId)) {
