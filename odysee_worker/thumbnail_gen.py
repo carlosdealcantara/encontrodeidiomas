@@ -184,6 +184,7 @@ def gerar_thumbnail_inteligente(video_path: str) -> str | None:
             f"(score={melhor['score']}, rostos={melhor['faces']}, sorrisos={melhor['smiles']})"
         )
 
+        os.makedirs("/app/screenshots", exist_ok=True)
         dest_path = os.path.join("/app/screenshots", "thumbnail_selected.jpg")
         shutil.copy2(melhor["path"], dest_path)
         return dest_path
