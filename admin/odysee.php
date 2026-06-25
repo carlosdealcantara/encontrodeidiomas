@@ -65,6 +65,16 @@ $stmt = $conn->query("
 ");
 $queue = $stmt->fetchAll();
 
+// --- LOGIC: DIAGNOSTICS ---
+$stmt = $conn->query("
+    SELECT q.id, q.titulo_final, q.status, q.last_screenshot, q.last_screenshot_time, l.name as language_name
+    FROM odysee_publish_queue q
+    LEFT JOIN languages l ON q.language_id = l.id
+    WHERE q.last_screenshot IS NOT NULL
+    ORDER BY q.id DESC LIMIT 10
+");
+$screenshots = $stmt->fetchAll();
+
 if (isset($_GET['msg']) && !$msg) {
     $msg = $_GET['msg'];
 }
@@ -153,6 +163,18 @@ if (isset($_GET['msg']) && !$msg) {
         .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
         .status-ok { background: rgba(16, 185, 129, 0.2); color: var(--success); }
         .status-warn { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+        /* Diag Styles */
+        .screenshots-grid { display: grid; grid-template-columns: 1fr; gap: 30px; max-width: 900px; margin: 0 auto;}
+        .screenshot-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.07); }
+        .screenshot-card-header { padding: 15px 20px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center; }
+        .screenshot-name { font-weight: 600; font-size: 1.1rem; color: var(--accent-blue); }
+        .screenshot-time { font-size: 0.9rem; color: var(--text-dim); }
+        .screenshot-card img { width: 100%; display: block; border-top: 1px solid rgba(255,255,255,0.05); }
+        .empty-state { text-align: center; padding: 60px; color: var(--text-dim); }
+        .info-box { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; font-size: 0.9rem; color: #bae6fd; }
+        .auto-refresh { display: inline-flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-dim); }
+        .countdown { font-weight: 700; color: var(--accent-blue); }
     </style>
 </head>
 <body>
@@ -175,6 +197,9 @@ if (isset($_GET['msg']) && !$msg) {
             </button>
             <button class="main-tab-btn <?= $active_tab === 'config' ? 'active' : '' ?>" onclick="switchMainTab('config')">
                 <i class="fas fa-cogs"></i> Configurações
+            </button>
+            <button class="main-tab-btn <?= $active_tab === 'diag' ? 'active' : '' ?>" onclick="switchMainTab('diag')">
+                <i class="fas fa-camera"></i> Diagnóstico (Em Tempo Real)
             </button>
         </nav>
 
@@ -274,6 +299,44 @@ if (isset($_GET['msg']) && !$msg) {
                 </div>
             </form>
         </div>
+
+        <!-- ABA 3: DIAGNÓSTICO -->
+        <div id="tab-diag" class="main-tab-content <?= $active_tab === 'diag' ? 'active' : '' ?>">
+            <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom: 20px;">
+                <button class="btn-sm" style="margin-right: 15px;" onclick="location.href='odysee.php?tab=diag'"><i class="fas fa-sync-alt"></i> Atualizar Agora</button>
+                <div class="auto-refresh">Auto-refresh: <span class="countdown" id="countdown">15s</span></div>
+            </div>
+            
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <strong>Visão em Tempo Real:</strong> Aqui você acompanha a tela do navegador do robô durante o upload. A imagem é atualizada automaticamente a cada etapa do processo.
+            </div>
+
+            <?php if (empty($screenshots)): ?>
+            <div class="empty-state">
+                <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 16px; display: block;"></i>
+                <p>Nenhuma transmissão ativa. O robô não tirou nenhuma foto recentemente.</p>
+            </div>
+            <?php else: ?>
+            <div class="screenshots-grid">
+                <?php foreach ($screenshots as $s): ?>
+                <div class="screenshot-card">
+                    <div class="screenshot-card-header">
+                        <div>
+                            <div class="screenshot-name">
+                                #<?= $s['id'] ?> - <?= htmlspecialchars($s['language_name']) ?>
+                                <span class="badge badge-<?= $s['status'] ?>" style="margin-left:10px;"><?= $s['status'] ?></span>
+                            </div>
+                            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;"><?= htmlspecialchars($s['titulo_final']) ?></div>
+                        </div>
+                        <span class="screenshot-time"><i class="far fa-clock"></i> <?= date('d/m H:i:s', strtotime($s['last_screenshot_time'])) ?></span>
+                    </div>
+                    <img src="data:image/png;base64,<?= $s['last_screenshot'] ?>" alt="Screenshot">
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
     </main>
 
     <script>
@@ -288,6 +351,24 @@ if (isset($_GET['msg']) && !$msg) {
             const url = new URL(window.location);
             url.searchParams.set('tab', tabId);
             window.history.pushState({}, '', url);
+        }
+
+        // Auto-refresh logic for Diag Tab
+        let secs = 15;
+        const el = document.getElementById('countdown');
+        if (el) {
+            setInterval(() => {
+                if (document.getElementById('tab-diag').classList.contains('active')) {
+                    secs--;
+                    el.textContent = secs + 's';
+                    if (secs <= 0) {
+                        window.location.href = 'odysee.php?tab=diag';
+                    }
+                } else {
+                    secs = 15; // Reset se sair da aba
+                    el.textContent = '15s';
+                }
+            }, 1000);
         }
     </script>
 </body>
