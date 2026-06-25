@@ -531,7 +531,22 @@ def processar_fila():
             except Exception as e:
                 logger.warning(f"Não foi possível ler o thumbnail para base64: {e}")
                 
-        if tarefa.get('whatsapp_group_id'):
+        # Busca os grupos de WhatsApp alvo (herdando a configuração do painel de Meetups)
+        grupos_alvo = []
+        try:
+            conn_wpp = get_db_connection()
+            cursor_wpp = conn_wpp.cursor(dictionary=True)
+            cursor_wpp.execute("""
+                SELECT group_id FROM meetup_whatsapp_groups 
+                WHERE ativo = 1 AND (categoria = 'multi_idioma' OR (categoria = 'especifico' AND language_id = %s))
+            """, (tarefa['language_id'],))
+            grupos_alvo = [row['group_id'] for row in cursor_wpp.fetchall()]
+            cursor_wpp.close()
+            conn_wpp.close()
+        except Exception as e:
+            logger.error(f"Erro ao buscar grupos de WhatsApp: {e}")
+            
+        if grupos_alvo:
             title_msg = tarefa.get('titulo_final') or tarefa.get('topico') or tarefa.get('drive_file_name', '')
             mensagem = f"⚬️ *Gravação do Encontro publicada!*\n\n📌 {title_msg}\n\n🔗 {url_curta}"
             
@@ -543,16 +558,17 @@ def processar_fila():
             if thumbnail_b64:
                 link_preview_data["thumbnailBase64"] = thumbnail_b64
                 
-            try:
-                requests.post("http://baileys-server:3000/send", json={
-                    "to": tarefa['whatsapp_group_id'],
-                    "message": mensagem,
-                    "source": "odysee_pipeline",
-                    "linkPreview": link_preview_data
-                }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
-                logger.info(f"[WHATSAPP] Mensagem enviada para o grupo {tarefa['whatsapp_group_id']}")
-            except Exception as e:
-                logger.warning(f"[WHATSAPP] Falhou ao enviar mensagem: {e}")
+            for grupo_id in grupos_alvo:
+                try:
+                    requests.post("http://baileys-server:3000/send", json={
+                        "to": grupo_id,
+                        "message": mensagem,
+                        "source": "odysee_pipeline",
+                        "linkPreview": link_preview_data
+                    }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
+                    logger.info(f"[WHATSAPP] Mensagem enviada para o grupo {grupo_id}")
+                except Exception as e:
+                    logger.warning(f"[WHATSAPP] Falhou ao enviar mensagem para {grupo_id}: {e}")
             
             # Também notifica o grupo dos hosts com o resumo da semana
             try:
