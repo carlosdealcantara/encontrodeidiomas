@@ -6,3 +6,4 @@ google-auth-oauthlib
 mysql-connector-python
 python-dotenv
 playwright
+opencv-python-headless

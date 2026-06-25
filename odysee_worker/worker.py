@@ -10,6 +10,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from playwright.sync_api import sync_playwright
+from thumbnail_gen import gerar_thumbnail_inteligente
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -148,6 +149,18 @@ def salvar_screenshot(page, nome, tarefa_id):
 
 def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None):
     logger.info("Iniciando publicação no Odysee via Playwright")
+    
+    # Gera thumbnail inteligente antes de abrir o browser (independe de GPU)
+    thumbnail_path = None
+    try:
+        thumbnail_path = gerar_thumbnail_inteligente(file_path)
+        if thumbnail_path:
+            logger.info(f"[THUMBNAIL] Thumbnail gerada com sucesso: {thumbnail_path}")
+        else:
+            logger.warning("[THUMBNAIL] Não foi possível gerar thumbnail. Prosseguindo sem ela.")
+    except Exception as e:
+        logger.warning(f"[THUMBNAIL] Erro inesperado na geração: {e}. Prosseguindo sem thumbnail.")
+        
     with sync_playwright() as p:
         # Modo otimizado para VPS de 1GB
         browser = p.chromium.launch(
@@ -272,28 +285,39 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     publish_btn.evaluate("el => el.click()")
                 break
             
-            # AGUARDAR THUMBNAILS: antes de clicar Próximo na aba de Detalhes,
-            # espera até 3 minutos pelas thumbnails geradas pelo Odysee.
-            # O botão Próximo fica desabilitado enquanto elas não carregam.
-            # Detectamos as thumbnails pela presença de <img> dentro do .card--thumbnail ou
-            # do botão de Próximo ficar habilitado.
-            if page.locator('input[name="content_title"]').first.is_visible():
-                logger.info("Aba de Detalhes detectada — aguardando thumbnails carregarem (máx 3 min)...")
-                thumbnail_loaded = False
-                for t in range(36):  # 36 x 5s = 3 min
-                    page.wait_for_timeout(5000)
-                    # Thumbnails do Odysee aparecem como <img> dentro dos botões de seleção de thumbnail
-                    thumb_imgs = page.locator('.card--thumbnail img, .publish__thumbnail img, .thumbnail-picker img, .file-page__thumbnail img').count()
-                    # Alternativa: verifica se o botão Próximo está habilitado
-                    next_enabled = page.locator('button:has-text("Próximo"):not([disabled]), button:has-text("Next"):not([disabled])').count()
-                    logger.info(f"[THUMBNAIL WAIT] t={t*5}s | thumb_imgs={thumb_imgs} | next_enabled={next_enabled}")
-                    salvar_screenshot(page, f"05b_thumbnail_wait_{t}", tarefa_id)
-                    if thumb_imgs > 0 or next_enabled > 0:
-                        logger.info(f"[THUMBNAIL] Thumbnails detectadas ou botão habilitado após {t*5}s")
-                        thumbnail_loaded = True
-                        break
-                if not thumbnail_loaded:
-                    logger.warning("[THUMBNAIL] Thumbnails não carregaram em 3 min — prosseguindo mesmo assim.")
+            # UPLOAD DE THUMBNAIL PRÉ-GERADA
+            # Em vez de esperar o browser gerar thumbnails (requer GPU), fazemos
+            # o upload do arquivo que já geramos com OpenCV antes de abrir o browser.
+            if page.locator('input[name="content_title"]').first.is_visible() and thumbnail_path:
+                logger.info("[THUMBNAIL] Aba de Detalhes detectada. Fazendo upload da thumbnail pré-gerada...")
+                try:
+                    # O wizard tem um input[type="file"] específico para thumbnail
+                    thumb_input = page.locator(
+                        '.publish__thumbnail input[type="file"], '
+                        '.card--thumbnail input[type="file"], '
+                        'input[name="thumbnail"], '
+                        '.thumbnail-picker input[type="file"]'
+                    ).first
+
+                    if thumb_input.count() > 0:
+                        thumb_input.set_input_files(thumbnail_path)
+                        logger.info("[THUMBNAIL] Arquivo enviado via input[type=file].")
+                        page.wait_for_timeout(3000)  # aguarda o preview carregar
+                        salvar_screenshot(page, "05c_thumbnail_uploaded", tarefa_id)
+                    else:
+                        # Fallback: tentar via botão "Enviar" visível na tela
+                        enviar_btn = page.locator('button:has-text("Enviar"), button:has-text("Upload")').first
+                        if enviar_btn.is_visible():
+                            enviar_btn.click()
+                            page.wait_for_timeout(1000)
+                            thumb_input2 = page.locator('input[type="file"]').last
+                            thumb_input2.set_input_files(thumbnail_path)
+                            page.wait_for_timeout(3000)
+                            salvar_screenshot(page, "05c_thumbnail_uploaded_fallback", tarefa_id)
+                        else:
+                            logger.warning("[THUMBNAIL] Input de thumbnail não encontrado na página.")
+                except Exception as e:
+                    logger.warning(f"[THUMBNAIL] Erro ao fazer upload da thumbnail: {e}. Continuando sem ela.")
 
             # Se não achou o Publicação, clica em Próximo
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
