@@ -520,14 +520,35 @@ def processar_fila():
         
         atualizar_status(tarefa['id'], 'done', odysee_url=url_curta)
         
+        # Prepara a imagem em base64 para o Link Preview
+        thumbnail_b64 = None
+        thumb_path = "/app/screenshots/thumbnail_selected.jpg"
+        if os.path.exists(thumb_path):
+            try:
+                import base64
+                with open(thumb_path, "rb") as img_file:
+                    thumbnail_b64 = base64.b64encode(img_file.read()).decode('utf-8')
+            except Exception as e:
+                logger.warning(f"Não foi possível ler o thumbnail para base64: {e}")
+                
         if tarefa.get('whatsapp_group_id'):
             title_msg = tarefa.get('titulo_final') or tarefa.get('topico') or tarefa.get('drive_file_name', '')
             mensagem = f"⚬️ *Gravação do Encontro publicada!*\n\n📌 {title_msg}\n\n🔗 {url_curta}"
+            
+            link_preview_data = {
+                "title": f"Assista à gravação: {title_msg}",
+                "body": "Disponível agora no Odysee",
+                "url": url_curta
+            }
+            if thumbnail_b64:
+                link_preview_data["thumbnailBase64"] = thumbnail_b64
+                
             try:
                 requests.post("http://baileys-server:3000/send", json={
                     "to": tarefa['whatsapp_group_id'],
                     "message": mensagem,
-                    "source": "odysee_pipeline"
+                    "source": "odysee_pipeline",
+                    "linkPreview": link_preview_data
                 }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
                 logger.info(f"[WHATSAPP] Mensagem enviada para o grupo {tarefa['whatsapp_group_id']}")
             except Exception as e:
@@ -535,10 +556,14 @@ def processar_fila():
             
             # Também notifica o grupo dos hosts com o resumo da semana
             try:
+                link_preview_data_hosts = link_preview_data.copy()
+                link_preview_data_hosts["url"] = f"https://odysee.com/{tarefa.get('odysee_channel_name', '')}/{tarefa.get('odysee_slug', '')}"
+                
                 requests.post("http://baileys-server:3000/send", json={
                     "to": "120363164732845564@g.us",
                     "message": f"🤖 *Worker Odysee publicou automaticamente!*\n\n{mensagem}\n\n✅ URL canonica: https://odysee.com/{tarefa.get('odysee_channel_name', '')}/{tarefa.get('odysee_slug', '')}",
-                    "source": "odysee_pipeline"
+                    "source": "odysee_pipeline",
+                    "linkPreview": link_preview_data_hosts
                 }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
                 logger.info("[WHATSAPP] Notificação enviada ao grupo dos hosts")
             except Exception as e:

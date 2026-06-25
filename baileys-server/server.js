@@ -319,7 +319,30 @@ async function processQueue() {
 
                 const startTime = Date.now();
                 
-                await sock.sendMessage(jid, { text });
+                const msgPayload = { text };
+                
+                if (item.linkPreview) {
+                    msgPayload.contextInfo = {
+                        externalAdReply: {
+                            title: item.linkPreview.title || 'Encontro de Idiomas',
+                            body: item.linkPreview.body || 'Acesse agora',
+                            sourceUrl: item.linkPreview.url || '',
+                            mediaType: 1,
+                            renderLargerThumbnail: true,
+                            showAdAttribution: false
+                        }
+                    };
+                    if (item.linkPreview.thumbnailUrl) {
+                        msgPayload.contextInfo.externalAdReply.thumbnailUrl = item.linkPreview.thumbnailUrl;
+                    }
+                    if (item.linkPreview.thumbnailBase64) {
+                        const buffer = Buffer.from(item.linkPreview.thumbnailBase64, 'base64');
+                        msgPayload.contextInfo.externalAdReply.thumbnail = buffer;
+                        msgPayload.contextInfo.externalAdReply.jpegThumbnail = buffer;
+                    }
+                }
+                
+                await sock.sendMessage(jid, msgPayload);
                 
                 const duration = ((Date.now() - startTime) / 1000).toFixed(2);
                 addLog(jobId, 'success', `[SUCESSO] Mensagem entregue. Tempo: ${duration}s.`);
@@ -421,7 +444,7 @@ app.post('/send-bulk', (req, res) => {
 app.post('/send', (req, res) => {
     if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado. Escaneie o QR Code primeiro.' });
     try {
-        const { to, message, source } = req.body;
+        const { to, message, source, linkPreview } = req.body;
         if (!to || !message) return res.status(400).json({ success: false, error: 'Parâmetros "to" e "message" são obrigatórios' });
         
         const jobId = 'unit_' + Math.random().toString(36).substring(2, 10);
@@ -433,7 +456,8 @@ app.post('/send', (req, res) => {
             jobId,
             number: to,
             text: message,
-            index: 1
+            index: 1,
+            linkPreview
         });
         
         if (isConnected && !isProcessingQueue) {
