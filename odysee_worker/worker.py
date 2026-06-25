@@ -525,11 +525,26 @@ def processar_fila():
         thumb_path = "/app/screenshots/thumbnail_selected.jpg"
         if os.path.exists(thumb_path):
             try:
+                import cv2
                 import base64
-                with open(thumb_path, "rb") as img_file:
-                    thumbnail_b64 = base64.b64encode(img_file.read()).decode('utf-8')
+                
+                # Lê a imagem
+                img = cv2.imread(thumb_path)
+                if img is not None:
+                    # Redimensiona para máximo de 800px de largura mantendo a proporção (16:9)
+                    height, width = img.shape[:2]
+                    if width > 800:
+                        ratio = 800.0 / width
+                        new_dim = (800, int(height * ratio))
+                        img = cv2.resize(img, new_dim, interpolation=cv2.INTER_AREA)
+                    
+                    # Codifica como JPEG em memória com 80% de qualidade
+                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
+                    result, encimg = cv2.imencode('.jpg', img, encode_param)
+                    if result:
+                        thumbnail_b64 = base64.b64encode(encimg).decode('utf-8')
             except Exception as e:
-                logger.warning(f"Não foi possível ler o thumbnail para base64: {e}")
+                logger.warning(f"Não foi possível processar o thumbnail para base64: {e}")
                 
         # Busca os grupos de WhatsApp alvo (herdando a configuração do painel de Meetups)
         grupos_alvo = []
