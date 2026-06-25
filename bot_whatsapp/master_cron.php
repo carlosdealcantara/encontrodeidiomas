@@ -102,5 +102,12 @@ if ($horaAtual === 21) {
     echo "</ul>";
 }
 
+// 11:00 (UTC) = 08:00 (BRT) - Cobrança de Mensalidades
+if ($horaAtual === 11) {
+    echo "<h3>Rotina de Faturamento Mensalidades (11:00 UTC / 08:00 BRT)</h3><ul>";
+    rodarSubCron('mentoria_cobranca_cron.php', $baseUrl, $token_secreto);
+    echo "</ul>";
+}
+
 echo "<hr><h1>MASTER CRON FINALIZADO</h1>";
 ?>

@@ -15,7 +15,7 @@ $error = null;
 // The active tab for redirecting back correctly
 $active_tab = $_POST['tab'] ?? $_GET['tab'] ?? 'pagamentos';
 
-// --- LOGIC: PAGAMENTOS ---
+// --- LOGIC: PAGAMENTOS E MENSALIDADES ---
 if (isset($_GET['toggle_pagamento']) && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $newStatus = $_GET['toggle_pagamento'] === 'Pago' ? 'Pendente' : 'Pago';
@@ -25,10 +25,32 @@ if (isset($_GET['toggle_pagamento']) && isset($_GET['id'])) {
     exit;
 }
 
+// Salvar mensagens de faturamento
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_cobranca'])) {
+    if (isset($_POST['pix_footer'])) {
+        updateSetting('mentoria_pix_footer', $_POST['pix_footer']);
+    }
+    if (isset($_POST['msgs']) && is_array($_POST['msgs'])) {
+        $stmtUpdateMsg = $conn->prepare("UPDATE mentoria_mensagens SET dias_antes = ?, texto = ?, ativo = ? WHERE id = ?");
+        foreach ($_POST['msgs'] as $msg_id => $data) {
+            $dias = (int)$data['dias'];
+            $texto = $data['texto'];
+            $ativo = isset($data['ativo']) ? 1 : 0;
+            $stmtUpdateMsg->execute([$dias, $texto, $ativo, $msg_id]);
+        }
+    }
+    $msg = "Mensagens de faturamento salvas com sucesso!";
+}
+
 $stmt = $conn->query("SELECT * FROM mentoria_alunos ORDER BY CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, proximo_vencimento ASC");
 $alunos = $stmt->fetchAll();
 
-// --- LOGIC: MENSAGENS (Automações) ---
+// Pega os templates de cobrança para a aba pagamentos
+$stmtMsgs = $conn->query("SELECT * FROM mentoria_mensagens ORDER BY dias_antes DESC");
+$mensagens_cobranca = $stmtMsgs->fetchAll();
+$pix_footer_atual = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
+
+// --- LOGIC: MENSAGENS (Automações do Clube) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
     $res = sendBaileysRequest('/groups', null, 'GET');
     if ($res['success'] && is_array($res['data'])) {
