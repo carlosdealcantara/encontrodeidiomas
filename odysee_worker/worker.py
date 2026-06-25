@@ -363,9 +363,12 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 upload_ok = True
                 break
             
-            # Textos de sucesso em português e inglês
-            for texto in ["Upload complete", "concluído", "publicado", "published", "Seu vídeo", "foi publicado"]:
-                if page.locator(f'text={texto}').count() > 0:
+            # Textos de sucesso mais específicos para evitar falsos positivos
+            # Removemos "concluído" pois o aviso "até que o upload seja concluído" acionava ele.
+            textos_sucesso = ["Upload complete", "foi publicado", "Your video was published", "Upload concluído"]
+            for texto in textos_sucesso:
+                # Usa 'has-text' com uma div ou span para garantir que não pega partes do layout global facilmente
+                if page.locator(f'text="{texto}"').count() > 0:
                     logger.info(f"[PASSO 6] Texto de sucesso detectado: '{texto}'")
                     upload_ok = True
                     break
