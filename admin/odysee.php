@@ -58,7 +58,7 @@ if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
 }
 
 $stmt = $conn->query("
-    SELECT q.*, l.name as language_name 
+    SELECT q.*, l.name as language_name, l.odysee_auto_enabled, l.odysee_auth_token
     FROM odysee_publish_queue q
     LEFT JOIN languages l ON q.language_id = l.id
     ORDER BY q.id DESC LIMIT 100
@@ -154,6 +154,13 @@ if (isset($_GET['msg']) && !$msg) {
         .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         .btn-danger:hover { background: #ef4444; color: white; }
 
+        .status-DONE { background: #28a745; color: white; }
+        .status-PENDING { background: #ffc107; color: black; }
+        .status-WAITING_TITLE { background: #6c757d; color: white; }
+        .status-DISABLED { background: #475569; color: #cbd5e1; border: 1px solid #334155; }
+        .status-NO_TOKEN { background: #b91c1c; color: white; border: 1px dashed #ef4444; }
+        .actions-col { display: flex; gap: 5px; flex-wrap: nowrap; align-items: center; }
+
         /* Config Table Styles */
         .bulk-card { background: var(--card-bg); border-radius: 24px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); }
         .config-table { width: 100%; border-collapse: collapse; }
@@ -234,7 +241,31 @@ if (isset($_GET['msg']) && !$msg) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($queue as $row): ?>
+                    <?php foreach ($queue as $row): 
+                        $display_status = $row['status'];
+                        $badge_class = strtoupper($row['status']);
+                        
+                        if ($row['status'] === 'waiting_host') {
+                            if (!$row['odysee_auto_enabled']) {
+                                $display_status = 'DISABLED';
+                                $badge_class = 'DISABLED';
+                            } elseif (empty(trim($row['odysee_auth_token']))) {
+                                $display_status = 'NO_TOKEN';
+                                $badge_class = 'NO_TOKEN';
+                            } else {
+                                $display_status = 'WAITING_TITLE';
+                                $badge_class = 'WAITING_TITLE';
+                            }
+                        } elseif ($row['status'] === 'pending') {
+                            if (!$row['odysee_auto_enabled']) {
+                                $display_status = 'DISABLED';
+                                $badge_class = 'DISABLED';
+                            } elseif (empty(trim($row['odysee_auth_token']))) {
+                                $display_status = 'NO_TOKEN';
+                                $badge_class = 'NO_TOKEN';
+                            }
+                        }
+                    ?>
                     <tr>
                         <td>#<?= $row['id'] ?></td>
                         <td><?= htmlspecialchars($row['language_name']) ?></td>
@@ -244,17 +275,17 @@ if (isset($_GET['msg']) && !$msg) {
                                 <br><a href="<?= $row['odysee_url'] ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= $row['odysee_url'] ?></a>
                             <?php endif; ?>
                         </td>
-                        <td><span class="badge badge-<?= $row['status'] ?>"><?= $row['status'] ?></span></td>
+                        <td><span class="status-badge status-<?= $badge_class ?>"><?= $display_status ?></span></td>
                         <td><?= $row['retry_count'] ?>/3</td>
                         <td style="font-size: 0.85rem; color: var(--text-dim); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?= htmlspecialchars($row['error_message'] ?? '') ?>">
                             <?= htmlspecialchars($row['error_message'] ?? '') ?>
                         </td>
-                        <td>
-                            <?php if ($row['status'] === 'error' || $row['status'] === 'processing'): ?>
-                                <a href="?retry=<?= $row['id'] ?>" class="btn-sm"><i class="fas fa-redo"></i> Tentar Novamente</a>
+                        <td class="actions-col">
+                            <?php if ($row['status'] === 'error' || $display_status === 'DISABLED' || $display_status === 'NO_TOKEN' || $row['status'] === 'processing' || $row['status'] === 'pending'): ?>
+                                <button class="btn-sm" onclick="location.href='odysee.php?retry=<?= $row['id'] ?>'"><i class="fas fa-redo"></i> Tentar Novamente</button>
                             <?php endif; ?>
-                            <?php if ($row['status'] === 'pending' || $row['status'] === 'processing'): ?>
-                                <a href="?cancel=<?= $row['id'] ?>" class="btn-sm btn-danger"><i class="fas fa-times"></i> Cancelar</a>
+                            <?php if ($row['status'] === 'processing' || $row['status'] === 'pending' || $row['status'] === 'waiting_host'): ?>
+                                <button class="btn-sm btn-danger" onclick="if(confirm('Tem certeza? Isso marcará a tarefa como erro.')) location.href='odysee.php?cancel=<?= $row['id'] ?>'"><i class="fas fa-times"></i> Cancelar</button>
                             <?php endif; ?>
                         </td>
                     </tr>
