@@ -259,10 +259,8 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 logger.warning(f"Erro ao tentar preencher campos no passo {step}: {outer_e}")
             
             # Verifica o botão de Publicação FINAL (botão no rodapé, não na barra de navegação do topo)
-            # O seletor '.publish-form__actions button' aponta especificamente para o botão de submit
             publish_btn = page.locator('.button--primary >> text="Publicação"').first
             if not publish_btn.is_visible():
-                # Fallback: botão primário no fim do formulário que não seja de navegação
                 publish_btn = page.locator('form button.button--primary:has-text("Publicação"), .publish__actions button.button--primary').first
             
             if publish_btn.is_visible():
@@ -274,7 +272,30 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     publish_btn.evaluate("el => el.click()")
                 break
             
-            # Se não achou o Publicação, clica em Próximo (aguarda até 5 min por ele estar habilitado)
+            # AGUARDAR THUMBNAILS: antes de clicar Próximo na aba de Detalhes,
+            # espera até 3 minutos pelas thumbnails geradas pelo Odysee.
+            # O botão Próximo fica desabilitado enquanto elas não carregam.
+            # Detectamos as thumbnails pela presença de <img> dentro do .card--thumbnail ou
+            # do botão de Próximo ficar habilitado.
+            if page.locator('input[name="content_title"]').first.is_visible():
+                logger.info("Aba de Detalhes detectada — aguardando thumbnails carregarem (máx 3 min)...")
+                thumbnail_loaded = False
+                for t in range(36):  # 36 x 5s = 3 min
+                    page.wait_for_timeout(5000)
+                    # Thumbnails do Odysee aparecem como <img> dentro dos botões de seleção de thumbnail
+                    thumb_imgs = page.locator('.card--thumbnail img, .publish__thumbnail img, .thumbnail-picker img, .file-page__thumbnail img').count()
+                    # Alternativa: verifica se o botão Próximo está habilitado
+                    next_enabled = page.locator('button:has-text("Próximo"):not([disabled]), button:has-text("Next"):not([disabled])').count()
+                    logger.info(f"[THUMBNAIL WAIT] t={t*5}s | thumb_imgs={thumb_imgs} | next_enabled={next_enabled}")
+                    salvar_screenshot(page, f"05b_thumbnail_wait_{t}", tarefa_id)
+                    if thumb_imgs > 0 or next_enabled > 0:
+                        logger.info(f"[THUMBNAIL] Thumbnails detectadas ou botão habilitado após {t*5}s")
+                        thumbnail_loaded = True
+                        break
+                if not thumbnail_loaded:
+                    logger.warning("[THUMBNAIL] Thumbnails não carregaram em 3 min — prosseguindo mesmo assim.")
+
+            # Se não achou o Publicação, clica em Próximo
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
             if next_btn.is_visible():
                 logger.info("Clicando em Próximo...")

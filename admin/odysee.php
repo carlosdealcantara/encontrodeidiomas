@@ -66,14 +66,27 @@ $stmt = $conn->query("
 $queue = $stmt->fetchAll();
 
 // --- LOGIC: DIAGNOSTICS ---
-$stmt = $conn->query("
+// Prioridade 1: tarefa ativa (status=processing). Prioridade 2: a mais recente com screenshot
+$screenshots = [];
+$active = $conn->query("
     SELECT q.id, q.titulo_final, q.status, q.last_screenshot, q.last_screenshot_time, l.name as language_name
     FROM odysee_publish_queue q
     LEFT JOIN languages l ON q.language_id = l.id
-    WHERE q.last_screenshot IS NOT NULL
-    ORDER BY q.id DESC LIMIT 10
-");
-$screenshots = $stmt->fetchAll();
+    WHERE q.status = 'processing' AND q.last_screenshot IS NOT NULL
+    ORDER BY q.last_screenshot_time DESC LIMIT 1
+")->fetchAll();
+
+if (!empty($active)) {
+    $screenshots = $active;
+} else {
+    $screenshots = $conn->query("
+        SELECT q.id, q.titulo_final, q.status, q.last_screenshot, q.last_screenshot_time, l.name as language_name
+        FROM odysee_publish_queue q
+        LEFT JOIN languages l ON q.language_id = l.id
+        WHERE q.last_screenshot IS NOT NULL
+        ORDER BY q.last_screenshot_time DESC LIMIT 1
+    ")->fetchAll();
+}
 
 if (isset($_GET['msg']) && !$msg) {
     $msg = $_GET['msg'];
