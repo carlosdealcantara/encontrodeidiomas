@@ -48,13 +48,18 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
         // AUTOMATIZAÇÃO ODYSEE:
         // Apenas assume o controle (pending) se o host não enviou o link manualmente.
         // Assim, podemos testar gradualmente: quem mandar o link faz manual, quem deixar em branco aciona o robô.
-        if (empty($link) && !empty($titulo)) {
-            $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET titulo_final = ?, status = 'pending' WHERE language_id = ? AND status = 'waiting_host'");
-            $stmtQ->execute([$titulo, $lang_id]);
-        } else if (!empty($link)) {
-            // Se o host enviou o link, marca como 'done' (ou ignora) para que o robô não duplique.
-            $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET status = 'done' WHERE language_id = ? AND status = 'waiting_host'");
-            $stmtQ->execute([$lang_id]);
+        try {
+            if (empty($link) && !empty($titulo)) {
+                $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET titulo_final = ?, status = 'pending' WHERE language_id = ? AND status = 'waiting_host'");
+                $stmtQ->execute([$titulo, $lang_id]);
+            } else if (!empty($link)) {
+                // Se o host enviou o link, marca como 'done' (ou ignora) para que o robô não duplique.
+                $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET status = 'done' WHERE language_id = ? AND status = 'waiting_host'");
+                $stmtQ->execute([$lang_id]);
+            }
+        } catch (PDOException $e) {
+            // Falha silenciosa: não bloqueia o envio da notificação ao grupo dos hosts
+            error_log("[portal_hosts] Erro ao atualizar odysee_publish_queue: " . $e->getMessage());
         }
 
         // Gera prévia consolidada da semana e notifica o grupo dos hosts
