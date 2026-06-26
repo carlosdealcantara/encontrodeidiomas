@@ -68,28 +68,4 @@ foreach ($languages as $lang) {
         break;
     }
 }
-
-/**
- * Agrupa eventos por horário para tratamento de eventos simultâneos.
- * Retorna array de grupos. Cada grupo tem 'type' ('single' ou 'pair') e os 'events' (array).
- */
-function groupEventsByHour(array $events): array {
-    $grouped = [];
-    foreach ($events as $ev) {
-        $hour = $ev['time_hour'];
-        $grouped[$hour][] = $ev;
-    }
-    
-    $result = [];
-    foreach ($grouped as $hour => $hourEvents) {
-        if (count($hourEvents) == 2) {
-            $result[] = ['type' => 'pair', 'events' => $hourEvents];
-        } else {
-            foreach ($hourEvents as $ev) {
-                $result[] = ['type' => 'single', 'event' => $ev];
-            }
-        }
-    }
-    return $result;
-}
 ?>

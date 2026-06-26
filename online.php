@@ -176,16 +176,7 @@ include 'includes/header.php';
                     ?>
                     <div id="lang-events-<?= $lang['id'] ?>" class="language-events-container" style="display:<?= $lang['id'] == $initialLang ? 'block' : 'none'; ?>;">
                         <div class="timeline">
-                            <?php 
-                            $groupedLangEvents = groupEventsByHour($langEvents);
-                            foreach ($groupedLangEvents as $group) {
-                                if ($group['type'] === 'pair') {
-                                    renderEventPair($group['events'][0], $group['events'][1], $currentDayOfWeek, $currentHour);
-                                } else {
-                                    renderEventCard($group['event'], $currentDayOfWeek, $currentHour);
-                                }
-                            }
-                            ?>
+                            <?php foreach ($langEvents as $ev) renderEventCard($ev, $currentDayOfWeek, $currentHour); ?>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -209,23 +200,16 @@ include 'includes/header.php';
                         $focusAssigned = false;
                         
                         if (!empty($dayEvents)) {
-                            $groupedDayEvents = groupEventsByHour($dayEvents);
-                            foreach ($groupedDayEvents as $group) {
+                            foreach ($dayEvents as $ev) {
                                 $isTarget = false;
                                 if (!$focusAssigned) {
-                                    $checkEv = ($group['type'] === 'pair') ? $group['events'][0] : $group['event'];
-                                    $evHour = (int)$checkEv['time_hour'];
-                                    $isToday = ($currentDayOfWeek === (int)$checkEv['day_of_week']);
+                                    $evHour = (int)$ev['time_hour'];
+                                    $isToday = ($currentDayOfWeek === (int)$ev['day_of_week']);
                                     $isNow = $isToday && ($currentHour === $evHour);
                                     $isFuture = ($isToday && $evHour > $currentHour);
                                     if ($isNow || $isFuture) { $isTarget = true; $focusAssigned = true; }
                                 }
-                                
-                                if ($group['type'] === 'pair') {
-                                    renderEventPair($group['events'][0], $group['events'][1], $currentDayOfWeek, $currentHour, $isTarget);
-                                } else {
-                                    renderEventCard($group['event'], $currentDayOfWeek, $currentHour, $isTarget); 
-                                }
+                                renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget); 
                             }
                         }
                         ?>
