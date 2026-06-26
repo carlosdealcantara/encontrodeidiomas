@@ -84,6 +84,16 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
 }
 
 /**
+ * Renderiza um par de eventos simultâneos
+ */
+function renderEventPair($ev1, $ev2, $currentDayOfWeek, $currentHour, $isTarget = false) {
+    echo '<div class="timeline-pair">';
+    renderEventCard($ev1, $currentDayOfWeek, $currentHour, $isTarget);
+    renderEventCard($ev2, $currentDayOfWeek, $currentHour);
+    echo '</div>';
+}
+
+/**
  * Renderiza um card de anfitrião — estrutura original usada por equipe.php
  */
 function renderHostCard($host) {
