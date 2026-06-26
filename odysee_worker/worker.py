@@ -75,7 +75,7 @@ def atualizar_status(tarefa_id, status, error_msg=None, odysee_url=None, retry_c
             row = cursor.fetchone()
             if row:
                 lang_id = row[0]
-                cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND (link IS NULL OR link = '') ORDER BY id DESC LIMIT 1", (odysee_url, lang_id))
+                cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND (link IS NULL OR link = '') ORDER BY semana DESC LIMIT 1", (odysee_url, lang_id))
             
         if retry_count is not None:
             update_cols.append("retry_count = %s")
