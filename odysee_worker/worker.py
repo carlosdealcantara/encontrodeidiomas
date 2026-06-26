@@ -640,58 +640,16 @@ def processar_fila():
                 except Exception as e:
                     logger.warning(f"[WHATSAPP] Falhou ao enviar mensagem para {grupo_id}: {e}")
             
-            # Notifica os hosts com o resumo semanal atualizado da semana
+            # Notifica os hosts via webhook integrado para garantir o mesmo padrão do portal
             try:
-                conn_hosts = get_db_connection()
-                cursor_hosts = conn_hosts.cursor(dictionary=True)
-                
-                # Gera a semana no formato ISO (ex: 2026-W26)
-                semana_atual = datetime.datetime.now().strftime('%G-W%V')
-                
-                # Busca todos os idiomas ativos com status do replay da semana atual
-                cursor_hosts.execute("""
-                    SELECT l.name, l.flag_emoji, r.link, r.titulo
-                    FROM languages l
-                    LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = %s
-                    WHERE l.active = 1 AND l.odysee_auto_enabled = 1
-                    ORDER BY l.name ASC
-                """, (semana_atual,))
-                todos_idiomas = cursor_hosts.fetchall()
-                
-                linhas_prontas = []
-                linhas_faltando = []
-                for i in todos_idiomas:
-                    flag = i.get('flag_emoji') or ''
-                    nome = i.get('name') or ''
-                    link = i.get('link') or ''
-                    titulo = i.get('titulo') or ''
-                    if link:
-                        linhas_prontas.append(f"{flag} *{nome}*: {link}")
-                        if titulo:
-                            linhas_prontas[-1] += f"\n   _{titulo}_"
-                    else:
-                        linhas_faltando.append(f"{flag} {nome}")
-                
-                resumo = f"📋 *Resumo Semanal dos Replays* — {semana_atual}\n\n"
-                if linhas_prontas:
-                    resumo += "✅ *Publicados:*\n" + "\n".join(linhas_prontas)
-                if linhas_faltando:
-                    if linhas_prontas:
-                        resumo += "\n\n"
-                    resumo += "⏳ *Aguardando:*\n" + "\n".join(linhas_faltando)
-                resumo += f"\n\n🔗 Painel: https://dev.encontrodeidiomas.com.br/admin/wpp_resumo_semanal.php"
-                
-                requests.post("http://127.0.0.1:3000/send", json={
-                    "to": "120363164732845564@g.us",
-                    "message": resumo,
-                    "source": "odysee_weekly_summary"
-                }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
-                logger.info("[WHATSAPP] Resumo semanal atualizado enviado ao grupo dos hosts")
-                
-                cursor_hosts.close()
-                conn_hosts.close()
+                webhook_url = "https://dev.encontrodeidiomas.com.br/ajax/webhook_odysee_success.php"
+                res_webhook = requests.post(webhook_url, json={
+                    "apikey": "SenhaMeetups2026",
+                    "lang_id": tarefa.get('language_id')
+                }, timeout=15)
+                logger.info(f"[WHATSAPP] Webhook de notificação dos hosts acionado: {res_webhook.status_code}")
             except Exception as e:
-                logger.warning(f"[WHATSAPP] Falhou ao enviar resumo semanal: {e}")
+                logger.warning(f"[WHATSAPP] Falhou ao acionar webhook de notificação dos hosts: {e}")
             
     except Exception as e:
         logger.exception("Erro durante o processamento da fila")

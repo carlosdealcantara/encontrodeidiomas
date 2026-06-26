@@ -62,40 +62,10 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
             error_log("[portal_hosts] Erro ao atualizar odysee_publish_queue: " . $e->getMessage());
         }
 
-        // Gera prévia consolidada da semana e notifica o grupo dos hosts
-        $stmtAll = $conn->prepare("
-            SELECT l.id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
-            FROM languages l 
-            LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
-            LEFT JOIN (
-                SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
-                FROM meetings 
-                WHERE active = 1 
-                GROUP BY language_id
-            ) m ON l.id = m.language_id
-            WHERE l.active = 1 
-            ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC
-        ");
-        $stmtAll->execute([$semana_atual]);
+        // Chama a função centralizada para gerar e notificar a atualização
+        require_once dirname(__DIR__) . '/includes/hosts_notification.php';
+        notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, "atualizou dados");
         
-        $replays_list = "";
-        while ($row = $stmtAll->fetch()) {
-            $num = !empty($row['numero']) ? str_pad($row['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
-            $lnk = !empty($row['link'])   ? $row['link']   : "Link";
-            $tit = !empty($row['titulo']) ? $row['titulo'] : "Título";
-            $replays_list .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
-        }
-        
-        $default_template = "*Replays!* https://viaei.com\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
-        $template = getSetting('weekly_summary_template', $default_template);
-        $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
-
-        $lang_emoji = $lang_data['emoji'] ?? '';
-        enviarWhatsApp('120363164732845564@g.us',
-            "🔄 *Mensagem Semanal Atualizada!*\nO idioma {$lang_emoji} *{$lang_data['nome']}* atualizou dados desta semana.\n\n🔗 *Acesse o Portal dos Hosts:* https://dev.encontrodeidiomas.com.br/portal_hosts/\n\nPrévia da mensagem final:\n\n" . $full_text,
-            'hosts_app'
-        );
-
         header('Location: index.php?saved=1&lang_id=' . $lang_id);
         exit;
     }
