@@ -45,7 +45,7 @@ def buscar_proxima_tarefa():
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute('''
-            SELECT q.*, l.odysee_auth_token, l.odysee_channel_name, l.whatsapp_group_id, l.name as language_name
+            SELECT q.*, l.odysee_auth_token, l.odysee_channel_name, l.whatsapp_group_id, l.name as language_name, l.flag_emoji
             FROM odysee_publish_queue q
             JOIN languages l ON q.language_id = l.id
             WHERE q.status = "pending" AND l.odysee_auto_enabled = 1
@@ -539,12 +539,9 @@ def processar_fila():
                 # Lê a imagem
                 img = cv2.imread(thumb_path)
                 if img is not None:
-                    # Redimensiona para máximo de 800px de largura mantendo a proporção (16:9)
-                    height, width = img.shape[:2]
-                    if width > 800:
-                        ratio = 800.0 / width
-                        new_dim = (800, int(height * ratio))
-                        img = cv2.resize(img, new_dim, interpolation=cv2.INTER_AREA)
+                    # Redimensiona para 320x180 (tamanho reduzido que o WhatsApp prefere para thumbs em base64)
+                    new_dim = (320, 180)
+                    img = cv2.resize(img, new_dim, interpolation=cv2.INTER_AREA)
                     
                     # Codifica como JPEG em memória com 80% de qualidade
                     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
@@ -554,27 +551,39 @@ def processar_fila():
             except Exception as e:
                 logger.warning(f"Não foi possível processar o thumbnail para base64: {e}")
                 
-        # Busca os grupos de WhatsApp alvo (herdando a configuração do painel de Meetups)
+        template = "🎬 *Replay:* {bandeira} {titulo}\n\n🔗 {link}"
         grupos_alvo = []
         try:
             conn_wpp = get_db_connection()
             cursor_wpp = conn_wpp.cursor(dictionary=True)
+            
+            # Tenta buscar o template configurado no painel
+            cursor_wpp.execute("SELECT setting_value FROM settings WHERE setting_key = 'odysee_whatsapp_template'")
+            row = cursor_wpp.fetchone()
+            if row and row['setting_value']:
+                template = row['setting_value']
+                
             cursor_wpp.execute("""
                 SELECT group_id FROM meetup_whatsapp_groups 
                 WHERE ativo = 1 AND (categoria = 'multi_idioma' OR (categoria = 'especifico' AND language_id = %s))
             """, (tarefa['language_id'],))
-            grupos_alvo = [row['group_id'] for row in cursor_wpp.fetchall()]
+            grupos_alvo = [r['group_id'] for r in cursor_wpp.fetchall()]
             cursor_wpp.close()
             conn_wpp.close()
         except Exception as e:
-            logger.error(f"Erro ao buscar grupos de WhatsApp: {e}")
+            logger.error(f"Erro ao buscar configurações: {e}")
             
         if grupos_alvo:
             title_msg = tarefa.get('titulo_final') or tarefa.get('topico') or tarefa.get('drive_file_name', '')
-            mensagem = f"⚬️ *Gravação do Encontro publicada!*\n\n📌 {title_msg}\n\n🔗 {url_curta}"
+            idioma_nome = tarefa.get('language_name', '')
+            bandeira = tarefa.get('flag_emoji', '')
+            if not bandeira:
+                bandeira = ''
+                
+            mensagem = template.replace('{titulo}', title_msg).replace('{link}', url_curta).replace('{idioma}', idioma_nome).replace('{bandeira}', bandeira)
             
             link_preview_data = {
-                "title": f"Assista à gravação: {title_msg}",
+                "title": title_msg,
                 "body": "Disponível agora no Odysee",
                 "url": url_curta
             }
@@ -583,7 +592,7 @@ def processar_fila():
                 
             for grupo_id in grupos_alvo:
                 try:
-                    requests.post("http://baileys-server:3000/send", json={
+                    requests.post("http://127.0.0.1:3000/send", json={
                         "to": grupo_id,
                         "message": mensagem,
                         "source": "odysee_pipeline",
@@ -598,9 +607,9 @@ def processar_fila():
                 link_preview_data_hosts = link_preview_data.copy()
                 link_preview_data_hosts["url"] = f"https://odysee.com/{tarefa.get('odysee_channel_name', '')}/{tarefa.get('odysee_slug', '')}"
                 
-                requests.post("http://baileys-server:3000/send", json={
+                requests.post("http://127.0.0.1:3000/send", json={
                     "to": "120363164732845564@g.us",
-                    "message": f"🤖 *Worker Odysee publicou automaticamente!*\n\n{mensagem}\n\n✅ URL canonica: https://odysee.com/{tarefa.get('odysee_channel_name', '')}/{tarefa.get('odysee_slug', '')}",
+                    "message": f"🤖 *Worker Odysee publicou automaticamente!*\n\n{mensagem}\n\n✅ URL canonica: {link_preview_data_hosts['url']}",
                     "source": "odysee_pipeline",
                     "linkPreview": link_preview_data_hosts
                 }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)

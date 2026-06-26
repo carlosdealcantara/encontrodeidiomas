@@ -40,6 +40,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
 }
 $languages = $conn->query("SELECT id, name, odysee_auth_token, odysee_channel_name, odysee_auto_enabled FROM languages ORDER BY name ASC")->fetchAll();
 
+// --- LOGIC: WHATSAPP TEMPLATE ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_template'])) {
+    try {
+        $template_texto = trim($_POST['template_texto']);
+        
+        $stmt = $conn->prepare("SELECT id FROM settings WHERE setting_key = 'odysee_whatsapp_template'");
+        $stmt->execute();
+        if ($stmt->fetch()) {
+            $stmt = $conn->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = 'odysee_whatsapp_template'");
+            $stmt->execute([$template_texto]);
+        } else {
+            $stmt = $conn->prepare("INSERT INTO settings (setting_key, setting_value, label, category, type) VALUES ('odysee_whatsapp_template', ?, 'Template do WhatsApp', 'odysee', 'text')");
+            $stmt->execute([$template_texto]);
+        }
+        $msg = "Template salvo com sucesso!";
+        $active_tab = 'template';
+    } catch (Exception $e) {
+        $error = "Erro ao salvar template: " . $e->getMessage();
+        $active_tab = 'template';
+    }
+}
+
+$stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'odysee_whatsapp_template'");
+$stmt->execute();
+$row = $stmt->fetch();
+$current_template = $row ? $row['setting_value'] : "🎬 *Replay:* {bandeira} {titulo}\\n\\n🔗 {link}";
+
 // --- LOGIC: FILA ---
 if (isset($_GET['retry']) && is_numeric($_GET['retry'])) {
     $id = (int)$_GET['retry'];
@@ -212,15 +239,10 @@ if (isset($_GET['msg']) && !$msg) {
         <?php if ($error): ?> <div class="alert error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div> <?php endif; ?>
 
         <nav class="main-tabs-nav">
-            <button class="main-tab-btn <?= $active_tab === 'fila' ? 'active' : '' ?>" onclick="switchMainTab('fila')">
-                <i class="fas fa-list"></i> Fila de Uploads
-            </button>
-            <button class="main-tab-btn <?= $active_tab === 'config' ? 'active' : '' ?>" onclick="switchMainTab('config')">
-                <i class="fas fa-cogs"></i> Configurações
-            </button>
-            <button class="main-tab-btn <?= $active_tab === 'diag' ? 'active' : '' ?>" onclick="switchMainTab('diag')">
-                <i class="fas fa-camera"></i> Diagnóstico (Em Tempo Real)
-            </button>
+            <button type="button" class="main-tab-btn <?= $active_tab === 'fila' ? 'active' : '' ?>" onclick="switchMainTab('fila')">Fila de Publicação</button>
+            <button type="button" class="main-tab-btn <?= $active_tab === 'config' ? 'active' : '' ?>" onclick="switchMainTab('config')">Contas Conectadas</button>
+            <button type="button" class="main-tab-btn <?= $active_tab === 'template' ? 'active' : '' ?>" onclick="switchMainTab('template')">WhatsApp Template</button>
+            <button type="button" class="main-tab-btn <?= $active_tab === 'diag' ? 'active' : '' ?>" onclick="switchMainTab('diag')"><i class="fas fa-camera"></i> Diagnóstico (Em Tempo Real)</button>
         </nav>
 
         <!-- ABA 1: FILA DE UPLOADS -->
@@ -351,16 +373,40 @@ if (isset($_GET['msg']) && !$msg) {
             </form>
         </div>
 
+        <!-- ABA: WHATSAPP TEMPLATE -->
+        <div id="tab-template" class="main-tab-content <?= $active_tab === 'template' ? 'active' : '' ?>">
+            <div class="bulk-card" style="max-width: 800px; margin: 0 auto;">
+                <h2 style="margin-bottom: 20px; color: var(--accent-red);"><i class="fab fa-whatsapp"></i> Template de Mensagem</h2>
+                <p style="color: var(--text-dim); margin-bottom: 20px;">Esta é a mensagem que o robô dispara automaticamente nos grupos de WhatsApp quando o vídeo termina de fazer upload no Odysee.</p>
+                <form method="POST" action="odysee.php">
+                    <input type="hidden" name="tab" value="template">
+                    <textarea name="template_texto" style="width: 100%; height: 150px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; color: white; margin-bottom: 15px; font-family: monospace; font-size: 14px;" required><?= htmlspecialchars($current_template) ?></textarea>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 0.9rem;">
+                        <strong>Variáveis Dinâmicas Disponíveis:</strong><br><br>
+                        <code>{bandeira}</code> = Emoji da bandeira (ex: 🇺🇸)<br>
+                        <code>{idioma}</code> = Nome do idioma (ex: Inglês)<br>
+                        <code>{titulo}</code> = Título do encontro gravado (ex: O que você faria se ganhasse na loteria?)<br>
+                        <code>{link}</code> = Link encurtado oficial da postagem no Odysee<br>
+                    </div>
+                    
+                    <div style="text-align: right;">
+                        <button type="submit" name="save_template" class="btn-save"><i class="fas fa-save"></i> Salvar Template</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- ABA 3: DIAGNÓSTICO -->
         <div id="tab-diag" class="main-tab-content <?= $active_tab === 'diag' ? 'active' : '' ?>">
             <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom: 20px;">
                 <button class="btn-sm" style="margin-right: 15px;" onclick="location.href='odysee.php?tab=diag'"><i class="fas fa-sync-alt"></i> Atualizar Agora</button>
-                <div class="auto-refresh">Auto-refresh: <span class="countdown" id="countdown">15s</span></div>
+                <div class="auto-refresh">Atualiza a página em: <span class="countdown" id="countdown">60s</span></div>
             </div>
             
             <div class="info-box">
                 <i class="fas fa-info-circle"></i>
-                <strong>Visão em Tempo Real:</strong> Aqui você acompanha a tela do navegador do robô durante o upload. A imagem é atualizada automaticamente a cada etapa do processo.
+                <strong>Atenção:</strong> Esta página se auto-atualiza a cada 60s, mas o robô só envia <strong>uma foto nova a cada 2.5 minutos</strong> durante o processo de envio. Não se assuste se a mesma foto continuar aparecendo por alguns minutos.
             </div>
 
             <?php if (empty($screenshots)): ?>
@@ -457,7 +503,7 @@ if (isset($_GET['msg']) && !$msg) {
         });
 
         // Auto-refresh logic for Diag Tab
-        let secs = 15;
+        let secs = 60;
         const el = document.getElementById('countdown');
         if (el) {
             setInterval(() => {
@@ -468,8 +514,8 @@ if (isset($_GET['msg']) && !$msg) {
                         window.location.href = 'odysee.php?tab=diag';
                     }
                 } else {
-                    secs = 15; // Reset se sair da aba
-                    el.textContent = '15s';
+                    secs = 60; // Reset se sair da aba
+                    el.textContent = '60s';
                 }
             }, 1000);
         }
