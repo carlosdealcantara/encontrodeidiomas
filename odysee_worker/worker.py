@@ -640,20 +640,58 @@ def processar_fila():
                 except Exception as e:
                     logger.warning(f"[WHATSAPP] Falhou ao enviar mensagem para {grupo_id}: {e}")
             
-            # Também notifica o grupo dos hosts com o resumo da semana
+            # Notifica os hosts com o resumo semanal atualizado da semana
             try:
-                link_preview_data_hosts = link_preview_data.copy()
-                link_preview_data_hosts["url"] = f"https://odysee.com/{tarefa.get('odysee_channel_name', '')}/{tarefa.get('odysee_slug', '')}"
+                conn_hosts = get_db_connection()
+                cursor_hosts = conn_hosts.cursor(dictionary=True)
+                
+                # Gera a semana no formato ISO (ex: 2026-W26)
+                semana_atual = datetime.datetime.now().strftime('%G-W%V')
+                
+                # Busca todos os idiomas ativos com status do replay da semana atual
+                cursor_hosts.execute("""
+                    SELECT l.name, l.flag_emoji, r.link, r.titulo
+                    FROM languages l
+                    LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = %s
+                    WHERE l.active = 1 AND l.odysee_auto_enabled = 1
+                    ORDER BY l.name ASC
+                """, (semana_atual,))
+                todos_idiomas = cursor_hosts.fetchall()
+                
+                linhas_prontas = []
+                linhas_faltando = []
+                for i in todos_idiomas:
+                    flag = i.get('flag_emoji') or ''
+                    nome = i.get('name') or ''
+                    link = i.get('link') or ''
+                    titulo = i.get('titulo') or ''
+                    if link:
+                        linhas_prontas.append(f"{flag} *{nome}*: {link}")
+                        if titulo:
+                            linhas_prontas[-1] += f"\n   _{titulo}_"
+                    else:
+                        linhas_faltando.append(f"{flag} {nome}")
+                
+                resumo = f"📋 *Resumo Semanal dos Replays* — {semana_atual}\n\n"
+                if linhas_prontas:
+                    resumo += "✅ *Publicados:*\n" + "\n".join(linhas_prontas)
+                if linhas_faltando:
+                    if linhas_prontas:
+                        resumo += "\n\n"
+                    resumo += "⏳ *Aguardando:*\n" + "\n".join(linhas_faltando)
+                resumo += f"\n\n🔗 Painel: https://dev.encontrodeidiomas.com.br/admin/wpp_resumo_semanal.php"
                 
                 requests.post("http://127.0.0.1:3000/send", json={
                     "to": "120363164732845564@g.us",
-                    "message": f"🤖 *Worker Odysee publicou automaticamente!*\n\n{mensagem}\n\n✅ URL canonica: {link_preview_data_hosts['url']}",
-                    "source": "odysee_pipeline",
-                    "linkPreview": link_preview_data_hosts
+                    "message": resumo,
+                    "source": "odysee_weekly_summary"
                 }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
-                logger.info("[WHATSAPP] Notificação enviada ao grupo dos hosts")
+                logger.info("[WHATSAPP] Resumo semanal atualizado enviado ao grupo dos hosts")
+                
+                cursor_hosts.close()
+                conn_hosts.close()
             except Exception as e:
-                logger.warning(f"[WHATSAPP] Falhou ao notificar hosts: {e}")
+                logger.warning(f"[WHATSAPP] Falhou ao enviar resumo semanal: {e}")
             
     except Exception as e:
         logger.exception("Erro durante o processamento da fila")
