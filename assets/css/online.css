@@ -161,16 +161,16 @@
 
 /* Encontros simultâneos (mesmo horário) */
 .timeline-pair {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
     width: 100%;
     margin-bottom: 2rem;
     position: relative;
 }
 .timeline-pair .timeline-event {
+    width: auto !important;
     margin: 0 !important;
-    width: 45%;
 }
 .timeline-pair .timeline-event::before {
     display: none !important;
@@ -314,12 +314,12 @@
     .timeline-event { width:calc(100% - 60px); margin-left:50px !important; }
     .timeline-event::before { left:-40px !important; right:auto !important; }
     .timeline-pair {
-        flex-direction: column;
-        width: 100%;
+        grid-template-columns: 1fr;
+        width: calc(100% - 60px);
         margin-left: 0;
     }
     .timeline-pair .timeline-event {
-        width: calc(100% - 60px) !important;
+        width: 100% !important;
         margin-left: 50px !important;
     }
     .timeline-pair::before {
