@@ -345,53 +345,61 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 logger.info("Nem botão de Publicação nem botão de Próximo visíveis. Wizard pode ter terminado.")
                 break
             
+        # PASSO 6: Aguardar conclusão
+        logger.info("[PASSO 6] Aguardando upload terminar (máx 4h)...")
+        # Aguarda 8 segundos para a interface React do Odysee renderizar a barra de progresso
+        page.wait_for_timeout(8000)
         salvar_screenshot(page, "06_after_upload_click", tarefa_id)
         
-        # PASSO 6: Aguardar conclusão — detecta mudança de URL (Odysee redireciona ao terminar)
-        logger.info("[PASSO 6] Aguardando upload terminar (máx 4h)...")
         url_inicial = page.url
         upload_ok = False
-        missing_title_count = 0
-        for _ in range(480):  # 480 x 30s = 4h
+        
+        for ciclo in range(480):  # 480 x 30s = 4h
             page.wait_for_timeout(30000)
             url_atual = page.url
             titulo_atual = page.title()
-            logger.info(f"[PASSO 6] URL: {url_atual} | Título: {titulo_atual}")
+            logger.info(f"[PASSO 6] Ciclo {ciclo}/480 | URL: {url_atual}")
             
-            # Odysee redireciona para a página do vídeo ao concluir
+            # Atualiza o screenshot a cada 2.5 minutos (5 ciclos) para mostrar progresso
+            if ciclo % 5 == 0:
+                salvar_screenshot(page, "06_upload_progress", tarefa_id)
+            
+            # Estratégia 1: Redirecionamento para a página final do vídeo
             if url_atual != url_inicial and "/upload" not in url_atual:
                 logger.info(f"[PASSO 6] Redirecionado para {url_atual} — upload concluído!")
                 upload_ok = True
                 break
-            
-            # Textos de sucesso mais específicos para evitar falsos positivos
-            # Removemos "concluído" pois o aviso "até que o upload seja concluído" acionava ele.
-            textos_sucesso = ["Upload complete", "foi publicado", "Your video was published", "Upload concluído"]
-            for texto in textos_sucesso:
-                if page.locator(f'text="{texto}"').count() > 0:
-                    logger.info(f"[PASSO 6] Texto de sucesso detectado: '{texto}'")
-                    upload_ok = True
-                    break
-                    
-            if not upload_ok:
-                # O Odysee frequentemente deixa a página de uploads vazia (com um spinner) quando termina.
-                # Se o título do vídeo não estiver mais na página por 3 verificações seguidas (1.5 minutos), assumimos sucesso.
+                
+            # Estratégia 2: Se estivermos na página de uploads, checa se o card do vídeo sumiu
+            if "/$/uploads" in url_atual:
                 try:
-                    if page.locator(f'text="{title}"').count() == 0 and page.locator('text="Enviando"').count() == 0:
-                        missing_title_count += 1
-                        logger.info(f"[PASSO 6] Título sumiu da fila. Verificação {missing_title_count}/3")
-                        if missing_title_count >= 3:
-                            logger.info("[PASSO 6] Vídeo não está mais na fila de uploads. Assumindo sucesso!")
+                    # Conta quantos elementos na página têm o título exato do vídeo
+                    cards_do_video = page.locator(f'text="{title}"').count()
+                    if cards_do_video == 0 and ciclo > 2:
+                        # Se não tem mais card, e já passamos dos primeiros ciclos (garantindo que ele apareceu antes), terminou.
+                        logger.info("[PASSO 6] Card do vídeo não está mais na fila de uploads. Assumindo sucesso!")
+                        upload_ok = True
+                        break
+                except Exception as e:
+                    logger.warning(f"[PASSO 6] Erro ao buscar card na DOM: {e}")
+            
+            # Estratégia 3: Fallback via API do Odysee (verifica se o claim já existe)
+            if ciclo > 10 and ciclo % 10 == 0:  # A cada 5 minutos
+                try:
+                    channel_name = tarefa.get('odysee_channel_name', '')
+                    video_slug = tarefa.get('odysee_slug', '')
+                    api_url = f"https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
+                    payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [f"lbry://{channel_name}#{video_slug}"]}}
+                    res = requests.post(api_url, json=payload, timeout=10)
+                    if res.status_code == 200:
+                        data = res.json()
+                        if "result" in data and len(data["result"]) > 0:
+                            logger.info("[PASSO 6] Vídeo encontrado na API REST do Odysee! Upload finalizado na nuvem.")
                             upload_ok = True
                             break
-                    else:
-                        missing_title_count = 0
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Erro ao checar API: {e}")
                     
-            if upload_ok:
-                break
-        
         salvar_screenshot(page, "07_upload_complete", tarefa_id)
         if upload_ok:
             logger.info("[PASSO 6] Upload concluído com sucesso!")
