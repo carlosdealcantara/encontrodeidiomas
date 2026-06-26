@@ -376,7 +376,6 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         for ciclo in range(480):  # 480 x 30s = 4h
             page.wait_for_timeout(30000)
             url_atual = page.url
-            titulo_atual = page.title()
             logger.info(f"[PASSO 6] Ciclo {ciclo}/480 | URL: {url_atual}")
             
             # Atualiza o screenshot a cada 2.5 minutos (5 ciclos) para mostrar progresso
@@ -389,35 +388,55 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 upload_ok = True
                 break
                 
-            # Estratégia 2: Se estivermos na página de uploads, checa se o card do vídeo sumiu
+            # Estratégia 2: Detecta o botão/badge "Published" dentro do card de upload ativo
+            # NOTA: não buscamos o título globalmente (ele também aparece no listing do canal)
+            # Em vez disso, buscamos o botão "Published" que só aparece na seção "Enviando Atualmente"
             if "/$/uploads" in url_atual:
                 try:
-                    # Conta quantos elementos na página têm o título exato do vídeo
-                    cards_do_video = page.locator(f'text="{title}"').count()
-                    if cards_do_video == 0 and ciclo > 2:
-                        # Se não tem mais card, e já passamos dos primeiros ciclos (garantindo que ele apareceu antes), terminou.
-                        logger.info("[PASSO 6] Card do vídeo não está mais na fila de uploads. Assumindo sucesso!")
+                    # O botão Published aparece especificamente no card do upload ativo
+                    published_el = page.locator('button:has-text("Published"), [class*="upload"]:has-text("Published"), [class*="claim-preview"]:has-text("Published")').first
+                    if published_el.is_visible(timeout=2000):
+                        logger.info("[PASSO 6] Botão 'Published' detectado na seção de upload — concluído!")
+                        upload_ok = True
+                        break
+                except Exception:
+                    pass
+                    
+                try:
+                    # Estratégia 2b: O card de "Confirmando" desapareceu da lista de uploads
+                    # Buscamos especificamente dentro do elemento de uploads pendentes
+                    confirmando_el = page.locator('text="Confirmando"').count()
+                    cards_enviando = page.locator('[class*="uploading"], [class*="pending"], [aria-label*="upload"]').count()
+                    if confirmando_el == 0 and cards_enviando == 0 and ciclo > 3:
+                        logger.info("[PASSO 6] Nenhum card 'Confirmando' visível — upload concluído!")
                         upload_ok = True
                         break
                 except Exception as e:
-                    logger.warning(f"[PASSO 6] Erro ao buscar card na DOM: {e}")
+                    logger.warning(f"[PASSO 6] Erro ao buscar indicador Confirmando: {e}")
             
-            # Estratégia 3: Fallback via API do Odysee (verifica se o claim já existe)
-            if ciclo > 10 and ciclo % 10 == 0:  # A cada 5 minutos
+            # Estratégia 3: API LBRY (URL correta: lbry://@canal/slug)
+            if ciclo > 5 and ciclo % 5 == 0:  # A cada 2.5 minutos
                 try:
-                    channel_name = tarefa.get('odysee_channel_name', '')
+                    channel_name = tarefa.get('odysee_channel_name', '').lstrip('@')
                     video_slug = tarefa.get('odysee_slug', '')
-                    api_url = f"https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
-                    payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [f"lbry://{channel_name}#{video_slug}"]}}
+                    # Formato correto da LBRY: lbry://@canal/slug
+                    lbry_url = f"lbry://@{channel_name}/{video_slug}"
+                    api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
+                    payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
                     res = requests.post(api_url, json=payload, timeout=10)
                     if res.status_code == 200:
                         data = res.json()
-                        if "result" in data and len(data["result"]) > 0:
-                            logger.info("[PASSO 6] Vídeo encontrado na API REST do Odysee! Upload finalizado na nuvem.")
+                        result = data.get("result", {})
+                        # O resolve retorna um dict com a URL como chave; se não tiver "error" na entrada, está publicado
+                        entry = result.get(lbry_url, {})
+                        if entry and "error" not in entry:
+                            logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY ({lbry_url}) — concluído!")
                             upload_ok = True
                             break
+                        else:
+                            logger.debug(f"[PASSO 6] API LBRY ainda não encontrou o claim.")
                 except Exception as e:
-                    logger.debug(f"Erro ao checar API: {e}")
+                    logger.debug(f"Erro ao checar API LBRY: {e}")
                     
         salvar_screenshot(page, "07_upload_complete", tarefa_id)
         if upload_ok:
