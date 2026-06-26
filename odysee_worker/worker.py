@@ -107,19 +107,38 @@ def baixar_video_drive(drive_service, file_id, file_name):
     return temp_path
 
 def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
-    results = drive_service.files().list(
-        q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name contains '{language_name}'",
-        fields="files(id, name)"
-    ).execute()
-    pastas = results.get('files', [])
-    if pastas:
-        pasta_id = pastas[0]['id']
-        file = drive_service.files().get(fileId=file_id, fields='parents').execute()
-        drive_service.files().update(
-            fileId=file_id,
-            addParents=pasta_id,
-            removeParents=",".join(file.get('parents', []))
+    try:
+        # 1. Move o vídeo para a pasta do idioma
+        results = drive_service.files().list(
+            q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
+            fields="files(id, name)"
         ).execute()
+        pastas = results.get('files', [])
+        if pastas:
+            pasta_id = pastas[0]['id']
+            file = drive_service.files().get(fileId=file_id, fields='parents').execute()
+            drive_service.files().update(
+                fileId=file_id,
+                addParents=pasta_id,
+                removeParents=",".join(file.get('parents', []))
+            ).execute()
+            logger.info(f"[DRIVE] Vídeo movido para a pasta '{language_name}'")
+        
+        # 2. Apaga o arquivo de Chat (.txt) correspondente
+        # O nome do vídeo original é parecido com "... - Recording" e do chat "... - Chat"
+        base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
+        chat_results = drive_service.files().list(
+            q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='text/plain' and name contains '{base_name}'",
+            fields="files(id, name)"
+        ).execute()
+        
+        chats = chat_results.get('files', [])
+        for chat in chats:
+            # Apaga (move para lixeira)
+            drive_service.files().update(fileId=chat['id'], body={'trashed': True}).execute()
+            logger.info(f"[DRIVE] Chat de texto movido para lixeira: {chat['name']}")
+    except Exception as e:
+        logger.error(f"[DRIVE] Erro ao mover vídeo ou apagar chat: {e}")
 
 SCREENSHOT_DIR = "/app/screenshots"
 
