@@ -172,6 +172,9 @@
     margin: 0 !important;
     width: 45%;
 }
+.timeline-pair .timeline-event::before {
+    display: none !important;
+}
 .timeline-pair::before {
     content: '';
     position: absolute;
