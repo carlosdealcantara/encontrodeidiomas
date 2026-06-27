@@ -406,7 +406,7 @@ if (isset($_GET['msg']) && !$msg) {
             
             <div class="info-box">
                 <i class="fas fa-info-circle"></i>
-                <strong>Atenção:</strong> Esta página se auto-atualiza a cada 60s, mas o robô só envia <strong>uma foto nova a cada 2.5 minutos</strong> durante o processo de envio. Não se assuste se a mesma foto continuar aparecendo por alguns minutos.
+                <strong>Diagnóstico em tempo real:</strong> Esta tela se atualiza automaticamente via AJAX a cada 15 segundos — <strong>sem precisar recarregar o navegador</strong>. Durante o upload, o robô captura screenshots a cada ciclo de ~30s.
             </div>
 
             <?php if (empty($screenshots)): ?>
@@ -451,6 +451,10 @@ if (isset($_GET['msg']) && !$msg) {
             
             if (tabId === 'config') {
                 testAllTokens();
+            }
+            // Ao entrar na aba de diagnóstico, busca imediatamente sem esperar o intervalo
+            if (tabId === 'diag') {
+                fetchDiagUpdate();
             }
         }
 

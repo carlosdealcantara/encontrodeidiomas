@@ -375,10 +375,19 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         
         for ciclo in range(480):  # 480 x 30s = 4h
             page.wait_for_timeout(30000)
+            
+            # IMPORTANTE: Recarrega a página a cada ciclo.
+            # O React do Odysee não atualiza o badge "Published" no DOM sem reload.
+            try:
+                page.reload(wait_until='domcontentloaded', timeout=30000)
+                page.wait_for_timeout(3000)  # Aguarda o React renderizar após o reload
+            except Exception as e:
+                logger.warning(f"[PASSO 6] Erro ao recarregar página no ciclo {ciclo}: {e}")
+            
             url_atual = page.url
             logger.info(f"[PASSO 6] Ciclo {ciclo}/480 | URL: {url_atual}")
             
-            # Atualiza o screenshot a cada 2.5 minutos (5 ciclos) para mostrar progresso
+            # Atualiza o screenshot a cada ciclo para mostrar progresso em tempo real
             if ciclo % 5 == 0:
                 salvar_screenshot(page, "06_upload_progress", tarefa_id)
             
@@ -388,61 +397,51 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 upload_ok = True
                 break
                 
-            # Estratégia 2: Detecta o badge "Published" na seção "Enviando Atualmente"
-            # O badge é um div/span com fundo vermelho — NÃO necessariamente um <button>
-            # Usamos seletor de texto simples que cobre todos os elementos HTML possíveis
+            # Estratégia 2: Detecta o badge "Published" via DOM após reload
             if "/$/uploads" in url_atual:
                 try:
-                    # Tenta encontrar o texto "Published" em QUALQUER elemento dentro da seção de upload ativo.
-                    # A seção tem o heading "Enviando Atualmente" — buscamos within dessa seção.
-                    # Fallback: se não achar scoped, busca globalmente mas só na área acima da lista (primeiro match)
-                    published_count = page.locator(':has-text("Published")').filter(has_text='Published').count()
-                    # Garantimos que não seja apenas o título do vídeo que contenha a palavra
-                    # O badge "Published" aparece como texto exato/isolado num elemento
+                    # Regex de texto exato para o badge vermelho
                     published_exact = page.locator('text=/^Published$/').count()
+                    # Também tenta variantes com letra inicial maiúscula ou minúscula
+                    published_broad = page.locator(':text("Published")').count()
+                    logger.info(f"[PASSO 6] Diagnóstico Published: exact={published_exact}, broad={published_broad}")
+                    
                     if published_exact > 0 and ciclo > 0:
-                        logger.info(f"[PASSO 6] Badge 'Published' detectado ({published_exact}x) — upload concluído!")
+                        logger.info(f"[PASSO 6] Badge 'Published' detectado (exato: {published_exact}x) — upload concluído!")
+                        salvar_screenshot(page, "06_published_detected", tarefa_id)
+                        upload_ok = True
+                        break
+                    elif published_broad > 0 and ciclo > 0:
+                        logger.info(f"[PASSO 6] Badge 'Published' detectado (broad: {published_broad}x) — upload concluído!")
                         salvar_screenshot(page, "06_published_detected", tarefa_id)
                         upload_ok = True
                         break
                 except Exception as e:
-                    logger.debug(f"[PASSO 6] Erro ao buscar badge Published: {e}")
-                    
-                try:
-                    # Estratégia 2b: Conta elementos com texto exato "Confirmando"
-                    # Quando some = acabou a fase de confirmação do blockchain
-                    confirmando_count = page.locator('text=/^Confirmando/').count()
-                    if confirmando_count == 0 and ciclo > 5:
-                        logger.info("[PASSO 6] Nenhum 'Confirmando' visível — upload concluído!")
-                        salvar_screenshot(page, "06_confirmando_gone", tarefa_id)
-                        upload_ok = True
-                        break
-                except Exception as e:
-                    logger.warning(f"[PASSO 6] Erro ao buscar indicador Confirmando: {e}")
+                    logger.warning(f"[PASSO 6] Erro ao buscar badge Published: {e}")
             
-            # Estratégia 3: API LBRY (URL correta: lbry://@canal/slug)
-            if ciclo > 5 and ciclo % 5 == 0:  # A cada 2.5 minutos
+            # Estratégia 3: API LBRY — mais confiável que o DOM, verifica a cada 2.5 min
+            if ciclo > 2 and ciclo % 5 == 0:
                 try:
                     channel_name = tarefa.get('odysee_channel_name', '').lstrip('@')
                     video_slug = tarefa.get('odysee_slug', '')
-                    # Formato correto da LBRY: lbry://@canal/slug
                     lbry_url = f"lbry://@{channel_name}/{video_slug}"
                     api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
                     payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
-                    res = requests.post(api_url, json=payload, timeout=10)
+                    res = requests.post(api_url, json=payload, timeout=15)
+                    logger.info(f"[PASSO 6] API LBRY check | URL: {lbry_url} | HTTP: {res.status_code}")
                     if res.status_code == 200:
                         data = res.json()
                         result = data.get("result", {})
-                        # O resolve retorna um dict com a URL como chave; se não tiver "error" na entrada, está publicado
                         entry = result.get(lbry_url, {})
                         if entry and "error" not in entry:
-                            logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY ({lbry_url}) — concluído!")
+                            logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY — concluído!")
+                            salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
                             upload_ok = True
                             break
                         else:
-                            logger.debug(f"[PASSO 6] API LBRY ainda não encontrou o claim.")
+                            logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Resposta: {str(entry)[:200]}")
                 except Exception as e:
-                    logger.debug(f"Erro ao checar API LBRY: {e}")
+                    logger.warning(f"[PASSO 6] Erro ao checar API LBRY: {e}")
                     
         salvar_screenshot(page, "07_upload_complete", tarefa_id)
         if upload_ok:
@@ -686,8 +685,27 @@ def processar_fila():
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
 
+def cleanup_zombies():
+    """Ao iniciar, reverte tarefas 'processing' para 'pending'.
+    Isso evita que tarefas fiquem presas se o worker foi reiniciado no meio do processo."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE odysee_publish_queue SET status='pending', error_message='[RESTART] Worker reiniciado no meio do processo — retry automático' WHERE status='processing'")
+        affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+        if affected > 0:
+            logger.info(f"[STARTUP] {affected} tarefa(s) zombie revertida(s) para 'pending'.")
+        else:
+            logger.info("[STARTUP] Nenhuma tarefa zombie encontrada.")
+    except Exception as e:
+        logger.error(f"[STARTUP] Erro ao limpar tarefas zombie: {e}")
+
 if __name__ == "__main__":
     print("Iniciando Worker...", flush=True)
+    cleanup_zombies()
     while True:
         try:
             print("Iniciando iteração...", flush=True)
