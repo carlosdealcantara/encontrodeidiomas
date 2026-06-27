@@ -513,15 +513,28 @@ def escanear_drive():
                 slug = f"{date_match.group(1)}_{date_match.group(2)}_{date_match.group(3)}"
             else:
                 slug = titulo_limpo  # fallback
+            # Verifica se já tem título preenchido no portal (meetup_replays)
+            semana_atual = datetime.datetime.now().strftime("%G-W%V")
+            cursor.execute("SELECT titulo FROM meetup_replays WHERE language_id = %s AND semana = %s AND titulo IS NOT NULL AND titulo != ''", (language_id, semana_atual))
+            row_replay = cursor.fetchone()
             
-            # Insere no banco como waiting_host
+            if row_replay:
+                # Host já preencheu o título antes de o robô escanear!
+                titulo_final = row_replay['titulo']
+                status_inicial = 'pending'
+                logger.info(f"Título já preenchido previamente pelo host: {titulo_final}. Indo direto para pending.")
+            else:
+                titulo_final = titulo_limpo
+                status_inicial = 'waiting_host'
+            
+            # Insere no banco
             cursor.execute("""
                 INSERT INTO odysee_publish_queue 
                 (language_id, drive_file_id, drive_file_name, status, titulo_final, odysee_slug) 
-                VALUES (%s, %s, %s, 'waiting_host', %s, %s)
-            """, (language_id, file_id, file_name, titulo_limpo, slug))
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (language_id, file_id, file_name, status_inicial, titulo_final, slug))
             conn.commit()
-            logger.info(f"Novo vídeo adicionado à fila de triagem: {file_name} | Título: {titulo_limpo} | Slug: {slug}")
+            logger.info(f"Novo vídeo adicionado à fila de triagem: {file_name} | Status Inicial: {status_inicial} | Slug: {slug}")
             
         cursor.close()
         conn.close()
