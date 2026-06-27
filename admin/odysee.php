@@ -502,23 +502,53 @@ if (isset($_GET['msg']) && !$msg) {
             }
         });
 
-        // Auto-refresh logic for Diag Tab
-        let secs = 60;
-        const el = document.getElementById('countdown');
-        if (el) {
-            setInterval(() => {
-                if (document.getElementById('tab-diag').classList.contains('active')) {
-                    secs--;
-                    el.textContent = secs + 's';
-                    if (secs <= 0) {
-                        window.location.href = 'odysee.php?tab=diag';
+        // Auto-refresh logic for Diag Tab using AJAX
+        let lastTimestamp = "";
+        
+        async function fetchDiagUpdate() {
+            if (!document.getElementById('tab-diag').classList.contains('active')) return;
+            
+            try {
+                const res = await fetch('ajax_diag_screenshot.php');
+                const json = await res.json();
+                
+                if (json.success && json.data) {
+                    const data = json.data;
+                    
+                    // Se houver uma nova screenshot (timestamp mudou)
+                    if (data.last_screenshot_time !== lastTimestamp) {
+                        lastTimestamp = data.last_screenshot_time;
+                        
+                        // Encontra o container (assumindo que só tem um screenshot em destaque na página)
+                        const grid = document.querySelector('.screenshots-grid');
+                        if (grid) {
+                            grid.innerHTML = `
+                                <div class="screenshot-card">
+                                    <div class="screenshot-card-header">
+                                        <div>
+                                            <div class="screenshot-name">
+                                                #${data.id} - ${data.language_name}
+                                                <span class="badge badge-${data.status}" style="margin-left:10px;">${data.status}</span>
+                                            </div>
+                                            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;">${data.titulo_final || ''}</div>
+                                        </div>
+                                        <span class="screenshot-time"><i class="far fa-clock"></i> ${data.last_screenshot_time_fmt}</span>
+                                    </div>
+                                    <img src="data:image/png;base64,${data.last_screenshot}" alt="Screenshot">
+                                </div>
+                            `;
+                        }
                     }
-                } else {
-                    secs = 60; // Reset se sair da aba
-                    el.textContent = '60s';
                 }
-            }, 1000);
+            } catch (e) {
+                console.error("Erro ao fazer polling da screenshot:", e);
+            }
         }
+        
+        // Verifica a cada 15 segundos
+        setInterval(fetchDiagUpdate, 15000);
+        // Chama na primeira carga para pegar o timestamp atual invisível
+        setTimeout(fetchDiagUpdate, 1000);
     </script>
 </body>
 </html>
