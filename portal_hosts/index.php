@@ -38,12 +38,24 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
         $link   = sanitizeOdyseeUrl(trim($_POST['replay_link'] ?? ''));
         $titulo = trim($_POST['replay_titulo'] ?? '');
 
-        $stmt = $conn->prepare("
-            INSERT INTO meetup_replays (language_id, semana, numero, link, titulo)
-            VALUES (?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE numero = VALUES(numero), link = VALUES(link), titulo = VALUES(titulo)
-        ");
-        $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
+        // Não sobrescreve o link se o host não enviou um — o campo pode ter sido
+        // preenchido automaticamente pelo robô Odysee e não aparece mais no formulário.
+        if (!empty($link)) {
+            $stmt = $conn->prepare("
+                INSERT INTO meetup_replays (language_id, semana, numero, link, titulo)
+                VALUES (?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE numero = VALUES(numero), link = VALUES(link), titulo = VALUES(titulo)
+            ");
+            $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
+        } else {
+            // Link veio vazio: preserva o link existente no banco (não o apaga)
+            $stmt = $conn->prepare("
+                INSERT INTO meetup_replays (language_id, semana, numero, link, titulo)
+                VALUES (?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE numero = VALUES(numero), titulo = VALUES(titulo)
+            ");
+            $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
+        }
 
         // AUTOMATIZAÇÃO ODYSEE:
         // Apenas assume o controle (pending) se o host não enviou o link manualmente.
