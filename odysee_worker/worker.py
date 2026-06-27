@@ -523,7 +523,7 @@ def escanear_drive():
         logger.error(f"Erro ao escanear Drive: {e}")
 
 def encurtar_url(url_longa):
-    api_url = f"http://tinyurl.com/api-create.php?url={urllib.parse.quote(url_longa)}"
+    api_url = f"https://is.gd/create.php?format=simple&url={urllib.parse.quote(url_longa)}"
     res = requests.get(api_url)
     if res.status_code == 200:
         return res.text
