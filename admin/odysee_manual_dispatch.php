@@ -100,14 +100,31 @@ if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
             $template
         );
         
+        // Função para expandir URL curta (resolve redirecionamentos)
+        function expandUrl($url) {
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            $response = curl_exec($ch);
+            if (preg_match('/^Location:\s*(.+?)$/mi', $response, $matches)) {
+                return trim($matches[1]);
+            }
+            return $url;
+        }
+
+        $urlOriginal = expandUrl($link);
+
         // 2. Link Preview Data
         $linkPreview = [
             "title" => $titulo,
             "body" => "Disponível agora no Odysee",
-            "url" => $link
+            "url" => $urlOriginal // Passamos a URL original para o Baileys conseguir ler a thumbnail!
         ];
         // Nota: Não usamos $tarefa['last_screenshot'] como thumbnail porque ele é um print inteiro da tela do Odysee!
-        // O Baileys vai automaticamente ler as tags OpenGraph da URL e baixar a thumbnail oficial do vídeo.
+        // O Baileys vai automaticamente ler as tags OpenGraph da URL original e baixar a thumbnail oficial do vídeo.
         
         // 3. Grupos Alvo
         $stmtG = $conn->prepare("
