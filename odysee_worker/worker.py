@@ -388,27 +388,33 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 upload_ok = True
                 break
                 
-            # Estratégia 2: Detecta o botão/badge "Published" dentro do card de upload ativo
-            # NOTA: não buscamos o título globalmente (ele também aparece no listing do canal)
-            # Em vez disso, buscamos o botão "Published" que só aparece na seção "Enviando Atualmente"
+            # Estratégia 2: Detecta o badge "Published" na seção "Enviando Atualmente"
+            # O badge é um div/span com fundo vermelho — NÃO necessariamente um <button>
+            # Usamos seletor de texto simples que cobre todos os elementos HTML possíveis
             if "/$/uploads" in url_atual:
                 try:
-                    # O botão Published aparece especificamente no card do upload ativo
-                    published_el = page.locator('button:has-text("Published"), [class*="upload"]:has-text("Published"), [class*="claim-preview"]:has-text("Published")').first
-                    if published_el.is_visible(timeout=2000):
-                        logger.info("[PASSO 6] Botão 'Published' detectado na seção de upload — concluído!")
+                    # Tenta encontrar o texto "Published" em QUALQUER elemento dentro da seção de upload ativo.
+                    # A seção tem o heading "Enviando Atualmente" — buscamos within dessa seção.
+                    # Fallback: se não achar scoped, busca globalmente mas só na área acima da lista (primeiro match)
+                    published_count = page.locator(':has-text("Published")').filter(has_text='Published').count()
+                    # Garantimos que não seja apenas o título do vídeo que contenha a palavra
+                    # O badge "Published" aparece como texto exato/isolado num elemento
+                    published_exact = page.locator('text=/^Published$/').count()
+                    if published_exact > 0 and ciclo > 0:
+                        logger.info(f"[PASSO 6] Badge 'Published' detectado ({published_exact}x) — upload concluído!")
+                        salvar_screenshot(page, "06_published_detected", tarefa_id)
                         upload_ok = True
                         break
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"[PASSO 6] Erro ao buscar badge Published: {e}")
                     
                 try:
-                    # Estratégia 2b: O card de "Confirmando" desapareceu da lista de uploads
-                    # Buscamos especificamente dentro do elemento de uploads pendentes
-                    confirmando_el = page.locator('text="Confirmando"').count()
-                    cards_enviando = page.locator('[class*="uploading"], [class*="pending"], [aria-label*="upload"]').count()
-                    if confirmando_el == 0 and cards_enviando == 0 and ciclo > 3:
-                        logger.info("[PASSO 6] Nenhum card 'Confirmando' visível — upload concluído!")
+                    # Estratégia 2b: Conta elementos com texto exato "Confirmando"
+                    # Quando some = acabou a fase de confirmação do blockchain
+                    confirmando_count = page.locator('text=/^Confirmando/').count()
+                    if confirmando_count == 0 and ciclo > 5:
+                        logger.info("[PASSO 6] Nenhum 'Confirmando' visível — upload concluído!")
+                        salvar_screenshot(page, "06_confirmando_gone", tarefa_id)
                         upload_ok = True
                         break
                 except Exception as e:
@@ -652,10 +658,17 @@ def processar_fila():
                 logger.warning(f"[WHATSAPP] Falhou ao acionar webhook de notificação dos hosts: {e}")
             
     except Exception as e:
-        logger.exception("Erro durante o processamento da fila")
-        retry = tarefa['retry_count'] + 1
-        novo_status = 'error' if retry >= 3 else 'pending'
-        atualizar_status(tarefa['id'], novo_status, error_msg=str(e), retry_count=retry)
+        erro_str = str(e).lower()
+        # Se o erro for de arquivo não disponível no Drive ainda (host preencheu antes do Drive processar),
+        # volta para 'pending' SEM incrementar retry_count — o worker vai retentar sem penalidade
+        if any(termo in erro_str for termo in ['not found', 'file not found', '404', 'httplib2', 'invalid file id', 'does not exist', 'no such file']):
+            logger.warning(f"[DRIVE] Arquivo ainda não disponível no Drive: {e}. Voltando para 'pending' para retry automático.")
+            atualizar_status(tarefa['id'], 'pending', error_msg=f"[AGUARDANDO DRIVE] {str(e)}", retry_count=tarefa['retry_count'])
+        else:
+            logger.exception("Erro durante o processamento da fila")
+            retry = tarefa['retry_count'] + 1
+            novo_status = 'error' if retry >= 3 else 'pending'
+            atualizar_status(tarefa['id'], novo_status, error_msg=str(e), retry_count=retry)
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)

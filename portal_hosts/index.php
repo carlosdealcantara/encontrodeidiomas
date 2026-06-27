@@ -233,7 +233,8 @@ function sanitizeOdyseeUrl(string $url): string {
                                     <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
                                     <?php 
                                     if ($saved) {
-                                        $is_complete = !empty($saved['numero']) && !empty($saved['link']) && !empty($saved['titulo']);
+                                        // "Pronto" = titulo preenchido (link é responsabilidade do robô)
+                                        $is_complete = !empty($saved['numero']) && !empty($saved['titulo']);
                                         if ($is_complete) {
                                             echo '<span> (Pronto ✅)</span>';
                                         } else {
@@ -253,15 +254,6 @@ function sanitizeOdyseeUrl(string $url): string {
                                placeholder="Ex: 12">
                     </div>
 
-                    <div class="form-group">
-                        <label>Link da Gravação (Odysee)</label>
-                        <input type="text" name="replay_link" id="replay_link"
-                               value="<?= htmlspecialchars($prefill['link'] ?? '') ?>"
-                               placeholder="https://odysee.com/@EncontrodeIdiomas.../YYYY_MM_DD"
-                               title="O link deve ser do Odysee"
-                               onblur="limparLinkOdysee(this)">
-                        <div class="field-cleaned" id="link-cleaned">✓ Link simplificado automaticamente</div>
-                    </div>
 
                     <div class="form-group">
                         <label>Título (Clickbait Honesto)</label>
@@ -320,22 +312,9 @@ function sanitizeOdyseeUrl(string $url): string {
         const saved = JSON.parse(opt.dataset.saved || 'null');
 
         document.getElementById('replay_numero').value = saved?.numero || '';
-        document.getElementById('replay_link').value   = saved?.link   || '';
         document.getElementById('replay_titulo').value = saved?.titulo || '';
-        document.getElementById('link-cleaned').style.display = 'none';
     }
 
-    // Limpa o link do Odysee removendo :código após cada segmento
-    function limparLinkOdysee(input) {
-        const original = input.value;
-        // Remove :codigo de cada segmento (ex: :0, :2, :a) em URLs Odysee
-        const limpo = original.replace(/(https:\/\/odysee\.com\/[^?# ]*?):[a-zA-Z0-9]+/g, '$1')
-                               .replace(/(https:\/\/odysee\.com\/[^?# ]*?):[a-zA-Z0-9]+/g, '$1'); // 2nd pass
-        if (limpo !== original) {
-            input.value = limpo;
-            document.getElementById('link-cleaned').style.display = 'block';
-        }
-    }
 
     // Mensagem de início do encontro
     const templateOriginal = `<?= $template_db ?>`;
