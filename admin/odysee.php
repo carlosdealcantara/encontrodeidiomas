@@ -309,6 +309,9 @@ if (isset($_GET['msg']) && !$msg) {
                             <?php if ($row['status'] === 'processing' || $row['status'] === 'pending' || $row['status'] === 'waiting_host'): ?>
                                 <button class="btn-sm btn-danger" onclick="if(confirm('Tem certeza? Isso marcará a tarefa como erro.')) location.href='odysee.php?cancel=<?= $row['id'] ?>'"><i class="fas fa-times"></i> Cancelar</button>
                             <?php endif; ?>
+                            <?php if ($row['status'] === 'done'): ?>
+                                <button class="btn-sm" style="background-color: #25D366; border-color: #25D366; color: white;" onclick="location.href='odysee_manual_dispatch.php?id=<?= $row['id'] ?>'"><i class="fab fa-whatsapp"></i> Disparar Zap</button>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
