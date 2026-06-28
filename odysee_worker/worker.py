@@ -291,9 +291,11 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 logger.warning(f"Erro ao tentar preencher campos no passo {step}: {outer_e}")
             
             # Verifica o botão de Publicação FINAL (botão no rodapé, não na barra de navegação do topo)
-            publish_btn = page.locator('.button--primary >> text="Publicação"').first
+            publish_btn = page.locator('.button--primary >> text="Publish"').first
             if not publish_btn.is_visible():
-                publish_btn = page.locator('form button.button--primary:has-text("Publicação"), .publish__actions button.button--primary').first
+                publish_btn = page.locator('.button--primary >> text="Publicação"').first
+            if not publish_btn.is_visible():
+                publish_btn = page.locator('form button.button--primary:has-text("Publish"), form button.button--primary:has-text("Publicação"), .publish__actions button.button--primary').first
             
             if publish_btn.is_visible():
                 logger.info("Botão FINAL de Publicação encontrado no rodapé! Clicando...")
@@ -324,7 +326,11 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                         page.wait_for_timeout(2000)  # aguarda modal aparecer
                         
                         # NOVO: Odysee agora pede confirmação no modal "Enviar Thumbnail"
-                        confirm_btn = page.locator('button:has-text("Enviar"), button:has-text("Upload")').filter(has_text="Enviar").last
+                        confirm_btn = page.locator('button:has-text("Upload")').last
+                        if not confirm_btn.is_visible():
+                            confirm_btn = page.locator('button:has-text("Enviar")').last
+                        if not confirm_btn.is_visible():
+                            confirm_btn = page.locator('.modal button, .dialog button').filter(has_text="Upload").first
                         if not confirm_btn.is_visible():
                             confirm_btn = page.locator('.modal button, .dialog button').filter(has_text="Enviar").first
                         
@@ -338,7 +344,9 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                         salvar_screenshot(page, "05c_thumbnail_uploaded", tarefa_id)
                     else:
                         # Fallback: tentar via botão "Enviar" visível na tela
-                        enviar_btn = page.locator('button:has-text("Enviar"), button:has-text("Upload")').first
+                        enviar_btn = page.locator('button:has-text("Upload")').first
+                        if not enviar_btn.is_visible():
+                            enviar_btn = page.locator('button:has-text("Enviar")').first
                         if enviar_btn.is_visible():
                             enviar_btn.click()
                             page.wait_for_timeout(1000)
@@ -386,7 +394,16 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             elif next_btn.is_visible():
                 logger.info("Clicando em Próximo...")
                 try:
-                    next_btn.wait_for(state="enabled", timeout=300000)  # Espera sair do disabled
+                    # Espera o botão sair do disabled via evaluate, já que o wait_for(state="enabled") não existe
+                    page.wait_for_function(
+                        """
+                        () => {
+                            const btn = document.querySelector('button[aria-label="Next"], button[aria-label="Próximo"]');
+                            return btn && !btn.disabled;
+                        }
+                        """,
+                        timeout=300000
+                    )
                     next_btn.click(timeout=30000)
                 except Exception as e:
                     logger.warning(f"Erro ao clicar Próximo (ainda disabled?): {e}")
