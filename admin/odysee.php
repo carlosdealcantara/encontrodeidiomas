@@ -294,7 +294,12 @@ if (isset($_GET['msg']) && !$msg) {
                         <td>
                             <?= htmlspecialchars($row['titulo_final'] ?? 'Aguardando Host...') ?>
                             <?php if ($row['odysee_url']): ?>
-                                <br><a href="<?= $row['odysee_url'] ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= $row['odysee_url'] ?></a>
+                                <br><a href="<?= htmlspecialchars($row['odysee_url']) ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= htmlspecialchars(strlen($row['odysee_url']) > 40 ? substr($row['odysee_url'], 0, 40) . '...' : $row['odysee_url']) ?></a>
+                                <?php if ($row['status'] === 'done' && (strlen($row['odysee_url']) > 30 || strpos($row['odysee_url'], 'is.gd') === false)): ?>
+                                    <button onclick="reshortenUrl(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via is.gd" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </td>
                         <td><span class="status-badge status-<?= $badge_class ?>"><?= $display_status ?></span></td>
@@ -509,6 +514,48 @@ if (isset($_GET['msg']) && !$msg) {
                 testAllTokens();
             }
         });
+
+        // ==========================================
+        // AÇÕES MANUAIS
+        // ==========================================
+
+        function deleteQueueItem(id) {
+            if (!confirm('Tem certeza que deseja apagar esta tarefa da fila? O arquivo não será publicado e será descartado do Drive.')) return;
+            
+            fetch('?action=delete_queue&id=' + id)
+                .then(() => location.reload());
+        }
+
+        function reshortenUrl(id, btn) {
+            const icon = btn.querySelector('i');
+            const originalClass = icon.className;
+            icon.className = 'fas fa-circle-notch fa-spin';
+            btn.disabled = true;
+
+            fetch('ajax/odysee_reshorten.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'queue_id=' + id
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                    icon.className = originalClass;
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                alert('Erro de rede ao tentar encurtar URL.');
+                icon.className = originalClass;
+                btn.disabled = false;
+            });
+        }
 
         // Auto-refresh logic for Diag Tab using AJAX
         let lastTimestamp = "";
