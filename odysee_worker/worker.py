@@ -129,14 +129,17 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
         base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
         chat_results = drive_service.files().list(
             q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='text/plain' and name contains '{base_name}'",
-            fields="files(id, name)"
+            fields="files(id, name, parents)"
         ).execute()
         
         chats = chat_results.get('files', [])
         for chat in chats:
-            # Apaga (move para lixeira)
-            drive_service.files().update(fileId=chat['id'], body={'trashed': True}).execute()
-            logger.info(f"[DRIVE] Chat de texto movido para lixeira: {chat['name']}")
+            # Oculta o chat da pasta principal (como a conta de serviço não é a dona, não pode usar trashed=True)
+            drive_service.files().update(
+                fileId=chat['id'],
+                removeParents=",".join(chat.get('parents', []))
+            ).execute()
+            logger.info(f"[DRIVE] Chat de texto ocultado da pasta principal: {chat['name']}")
     except Exception as e:
         logger.error(f"[DRIVE] Erro ao mover vídeo ou apagar chat: {e}")
 
