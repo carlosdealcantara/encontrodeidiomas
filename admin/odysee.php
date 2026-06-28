@@ -404,7 +404,6 @@ if (isset($_GET['msg']) && !$msg) {
         <div id="tab-diag" class="main-tab-content <?= $active_tab === 'diag' ? 'active' : '' ?>">
             <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom: 20px;">
                 <button class="btn-sm" style="margin-right: 15px;" onclick="location.href='odysee.php?tab=diag'"><i class="fas fa-sync-alt"></i> Atualizar Agora</button>
-                <div class="auto-refresh">Atualiza a página em: <span class="countdown" id="countdown">60s</span></div>
             </div>
             
             <div class="info-box">
