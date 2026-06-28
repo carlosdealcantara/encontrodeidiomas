@@ -71,24 +71,30 @@ try {
 
     // Aciona API do is.gd
     $api_url = "https://is.gd/create.php?format=simple&url=" . urlencode($url_longa);
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $api_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    $res_url = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    // Fallback para TinyURL se is.gd falhar
-    if (!$res_url || strpos($res_url, 'http') !== 0) {
-        $api_url = "https://tinyurl.com/api-create.php?url=" . urlencode($url_longa);
-        $res_url = file_get_contents($api_url);
+    $url_curta = null;
+    $max_tentativas = 3;
+    $res_url = null;
+    
+    for ($t = 0; $t < $max_tentativas; $t++) {
+        $ch = curl_init($api_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        $res_url = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($http_code == 200 && $res_url && strpos($res_url, 'http') === 0) {
+            $url_curta = trim($res_url);
+            break; // Sucesso, sai do loop
+        }
+        
+        // Se falhou, e ainda não é a última tentativa, espera 1.5s
+        if ($t < $max_tentativas - 1) {
+            usleep(1500000); // 1.5 segundos
+        }
     }
 
-    if ($res_url && strpos($res_url, 'http') === 0) {
-        $url_curta = trim($res_url);
-        
+    if ($url_curta) {
         // Atualiza odysee_publish_queue
         $stmtUpd1 = $conn->prepare("UPDATE odysee_publish_queue SET odysee_url = ? WHERE id = ?");
         $stmtUpd1->execute([$url_curta, $queue_id]);

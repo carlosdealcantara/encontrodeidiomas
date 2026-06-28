@@ -617,8 +617,7 @@ def escanear_drive():
         logger.error(f"Erro ao escanear Drive: {e}")
 
 def encurtar_url(url_longa):
-def encurtar_url(url_longa):
-    tentativas = 2
+    tentativas = 5
     for t in range(tentativas):
         try:
             api_url = f"https://is.gd/create.php?format=simple&url={urllib.parse.quote(url_longa)}"
@@ -631,20 +630,12 @@ def encurtar_url(url_longa):
             logger.warning(f"Erro de conexão com is.gd na tentativa {t+1}: {e}")
             
         if t < tentativas - 1:
-            time.sleep(2)
+            espera = (t + 1) * 3  # Espera 3s, 6s, 9s, 12s...
+            logger.info(f"Aguardando {espera} segundos antes da próxima tentativa...")
+            time.sleep(espera)
             
-    # Fallback 1: TinyURL
-    try:
-        logger.info("Usando TinyURL como fallback...")
-        api_url = f"https://tinyurl.com/api-create.php?url={urllib.parse.quote(url_longa)}"
-        res = requests.get(api_url, timeout=10)
-        if res.status_code == 200 and res.text.startswith('http'):
-            return res.text.strip()
-    except Exception as e:
-        logger.warning(f"Erro de conexão com TinyURL: {e}")
-
-    # Fallback 2: Odysee Canonica
-    logger.warning("Ambos encurtadores falharam. Usando URL canônica.")
+    # Fallback 1: Odysee Canonica (Removido TinyURL para evitar tela de preview)
+    logger.warning("is.gd falhou 5 vezes. Usando URL canônica do Odysee para evitar tela de preview.")
     return url_longa
 
 def processar_fila():
