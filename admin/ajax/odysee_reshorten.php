@@ -1,7 +1,12 @@
 <?php
+session_start();
 require_once dirname(dirname(__DIR__)) . '/config.php';
-require_once dirname(dirname(__DIR__)) . '/includes/auth.php';
-verificarAdmin(); // Garante que só admin acesse
+
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    http_response_code(403);
+    echo json_encode(["status" => "error", "message" => "Não autorizado"]);
+    exit;
+}
 
 header('Content-Type: application/json');
 
