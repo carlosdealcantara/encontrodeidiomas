@@ -298,7 +298,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             if publish_btn.is_visible():
                 logger.info("Botão FINAL de Publicação encontrado no rodapé! Clicando...")
                 try:
-                    publish_btn.click(timeout=300000)
+                    publish_btn.click(timeout=30000)
                 except Exception as e:
                     logger.warning(f"Erro ao clicar Publicação: {e}")
                     publish_btn.evaluate("el => el.click()")
@@ -351,17 +351,37 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 except Exception as e:
                     logger.warning(f"[THUMBNAIL] Erro ao fazer upload da thumbnail: {e}. Continuando sem ela.")
 
-            # Se não achou o Publicação, clica em Próximo
+            # Espera até 10 segundos para ver se algum botão aparece (Odysee pode estar analisando o arquivo)
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
-            if next_btn.is_visible():
+            try:
+                # Usa locator.or_ para esperar um OU outro
+                page.locator('.button--primary >> text="Publicação"').or_(next_btn).wait_for(state="visible", timeout=10000)
+            except:
+                pass # Ignora timeout, tenta checar is_visible() abaixo
+
+            # Atualiza a referência caso tenha aparecido durante a espera
+            publish_btn = page.locator('.button--primary >> text="Publicação"').first
+            if not publish_btn.is_visible():
+                publish_btn = page.locator('form button.button--primary:has-text("Publicação"), .publish__actions button.button--primary').first
+
+            if publish_btn.is_visible():
+                logger.info("Botão FINAL de Publicação apareceu após espera! Clicando...")
+                try:
+                    publish_btn.click(timeout=30000)
+                except Exception as e:
+                    logger.warning(f"Erro ao clicar Publicação: {e}")
+                    publish_btn.evaluate("el => el.click()")
+                break
+            elif next_btn.is_visible():
                 logger.info("Clicando em Próximo...")
                 try:
-                    next_btn.click(timeout=300000)
+                    next_btn.click(timeout=30000)
                 except Exception as e:
                     logger.warning(f"Erro ao clicar Próximo: {e}")
                     next_btn.evaluate("el => el.click()")
             else:
-                logger.info("Nem botão de Publicação nem botão de Próximo visíveis. Wizard pode ter terminado.")
+                logger.info("Nem botão de Publicação nem botão de Próximo visíveis. Wizard pode ter terminado ou travou.")
+                salvar_screenshot(page, f"05d_wizard_step_{step}_stuck", tarefa_id)
                 break
             
         # PASSO 6: Aguardar conclusão
