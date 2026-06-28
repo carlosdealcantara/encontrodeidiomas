@@ -617,10 +617,18 @@ def escanear_drive():
         logger.error(f"Erro ao escanear Drive: {e}")
 
 def encurtar_url(url_longa):
-    api_url = f"https://is.gd/create.php?format=simple&url={urllib.parse.quote(url_longa)}"
-    res = requests.get(api_url)
-    if res.status_code == 200:
-        return res.text
+    try:
+        api_url = f"https://is.gd/create.php?format=simple&url={urllib.parse.quote(url_longa)}"
+        res = requests.get(api_url, timeout=10)
+        # is.gd pode retornar erro em plain text com HTTP 200 (ex: "Error, database insert failed")
+        if res.status_code == 200 and res.text.startswith('http'):
+            return res.text.strip()
+        else:
+            logger.warning(f"is.gd falhou ou retornou texto inválido: {res.text[:100]}")
+    except Exception as e:
+        logger.warning(f"Erro de conexão com is.gd: {e}")
+        
+    # Fallback confiável
     return url_longa
 
 def processar_fila():
@@ -724,7 +732,8 @@ def processar_fila():
                 
             for grupo_id in grupos_alvo:
                 try:
-                    requests.post("http://127.0.0.1:3000/send", json={
+                    # Usa host.docker.internal para o container acessar o localhost do host onde roda o Baileys
+                    requests.post("http://host.docker.internal:3000/send", json={
                         "to": grupo_id,
                         "message": mensagem,
                         "source": "odysee_pipeline",
