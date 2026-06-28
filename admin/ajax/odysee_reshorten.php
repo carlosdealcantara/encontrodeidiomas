@@ -87,14 +87,14 @@ try {
         $stmtUpd1 = $conn->prepare("UPDATE odysee_publish_queue SET odysee_url = ? WHERE id = ?");
         $stmtUpd1->execute([$url_curta, $queue_id]);
         
-        // Atualiza meetup_replays (resumo dos hosts)
+        // Atualiza meetup_replays (resumo dos hosts) - garantindo que atualiza o registro da semana atual
         $stmtUpd2 = $conn->prepare("
             UPDATE meetup_replays 
             SET link = ? 
             WHERE language_id = ? 
-            AND link = ?
+            AND semana = DATE_FORMAT(NOW(), '%x-W%v')
         ");
-        $stmtUpd2->execute([$url_curta, $tarefa['language_id'], $tarefa['odysee_url']]);
+        $stmtUpd2->execute([$url_curta, $tarefa['language_id']]);
         
         // Dispara notificação para os hosts via cURL localmente
         if (defined('SITE_URL')) {
