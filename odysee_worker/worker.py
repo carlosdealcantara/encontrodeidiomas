@@ -207,8 +207,8 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         
         # PASSO 1: Acessar home e injetar token
         logger.info("[PASSO 1] Acessando odysee.com para injetar token...")
-        page.goto("https://odysee.com", timeout=60000)
-        page.wait_for_load_state("networkidle")
+        page.goto("https://odysee.com", timeout=60000, wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
         salvar_screenshot(page, "01_home", tarefa_id)
         
         # Injeta o token como Cookie e no localStorage
@@ -224,13 +224,13 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         logger.info("[PASSO 1] Token injetado no Cookie e localStorage.")
         
         # Fazemos um reload para garantir que o cookie e o localStorage entrem em vigor na Home
-        page.reload(timeout=60000)
-        page.wait_for_load_state("networkidle")
+        page.reload(timeout=60000, wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
         
         # PASSO 2: Ir para página de upload
         logger.info("[PASSO 2] Navegando para /$/upload...")
-        page.goto("https://odysee.com/$/upload", timeout=60000)
-        page.wait_for_load_state("networkidle")
+        page.goto("https://odysee.com/$/upload", timeout=60000, wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
         salvar_screenshot(page, "02_upload_page", tarefa_id)
         logger.info(f"[PASSO 2] Página carregada. URL: {page.url}")
         
