@@ -29,6 +29,9 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
     
     $replays_list = "";
     while ($row = $stmtAll->fetch()) {
+        if (empty($row['numero']) && empty($row['link']) && empty($row['titulo'])) {
+            continue; // Pula idiomas que ainda não tiveram preenchimento nesta semana
+        }
         $num = !empty($row['numero']) ? str_pad($row['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
         $lnk = !empty($row['link'])   ? $row['link']   : "Link";
         $tit = !empty($row['titulo']) ? $row['titulo'] : "Título";
