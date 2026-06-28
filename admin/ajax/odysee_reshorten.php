@@ -43,7 +43,12 @@ try {
 
     // Se for texto de erro, URL base sem o link canônico do Odysee ou vazia, precisamos buscar o slug real
     if (empty($url_longa) || strpos($url_longa, 'odysee.com') === false) {
-        $stmtSlug = $conn->prepare("SELECT odysee_slug, odysee_channel_name FROM odysee_publish_queue WHERE id = ?");
+        $stmtSlug = $conn->prepare("
+            SELECT q.odysee_slug, l.odysee_channel_name 
+            FROM odysee_publish_queue q
+            JOIN languages l ON q.language_id = l.id
+            WHERE q.id = ?
+        ");
         $stmtSlug->execute([$queue_id]);
         $slugData = $stmtSlug->fetch(PDO::FETCH_ASSOC);
         if ($slugData && !empty($slugData['odysee_slug']) && !empty($slugData['odysee_channel_name'])) {
