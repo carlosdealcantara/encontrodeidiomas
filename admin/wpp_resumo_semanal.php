@@ -68,26 +68,22 @@ $replays = $stmt->fetchAll();
 if (isset($_GET['msg'])) $msg_success = htmlspecialchars($_GET['msg']);
 
 // Generate Replays List String
-$replays_list = "";
 $replays_list_clean = "";
 foreach ($replays as $r) {
+    if (empty($r['numero']) && empty($r['link']) && empty($r['titulo'])) {
+        continue; // Pula idiomas que ainda não tiveram preenchimento nesta semana
+    }
     $num = !empty($r['numero']) ? str_pad($r['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
     $lnk = !empty($r['link']) ? $r['link'] : "Link";
     $tit = !empty($r['titulo']) ? $r['titulo'] : "Título";
     
     $linha = "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
-    $replays_list .= $linha;
-    
-    // Apenas inclui na lista final de disparo se houver link preenchido
-    if (!empty($r['link'])) {
-        $replays_list_clean .= $linha;
-    }
+    $replays_list_clean .= $linha;
 }
 
 $default_template = "*Replays!* https://encontrodeidiomas.com.br\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
 $template = getSetting('weekly_summary_template', $default_template);
 
-$full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
 $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $template);
 
 ?>
@@ -202,7 +198,7 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
                 Abaixo está a mensagem consolidada pronta para ser disparada.
             </p>
             
-            <textarea id="finalMessage" readonly><?= htmlspecialchars($full_text) ?></textarea>
+            <textarea id="finalMessage" readonly><?= htmlspecialchars($full_text_clean) ?></textarea>
             
             <div class="actions-bar">
                 <button class="btn btn-outline" onclick="copiarTexto()"><i class="far fa-copy"></i> Copiar Texto</button>
