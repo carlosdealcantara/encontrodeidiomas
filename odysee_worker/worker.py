@@ -422,24 +422,38 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             # Estratégia 3: API LBRY — mais confiável que o DOM, verifica a cada 2.5 min
             if ciclo > 2 and ciclo % 5 == 0:
                 try:
-                    channel_name = tarefa.get('odysee_channel_name', '').lstrip('@')
-                    video_slug = tarefa.get('odysee_slug', '')
-                    lbry_url = f"lbry://@{channel_name}/{video_slug}"
-                    api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
-                    payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
-                    res = requests.post(api_url, json=payload, timeout=15)
-                    logger.info(f"[PASSO 6] API LBRY check | URL: {lbry_url} | HTTP: {res.status_code}")
-                    if res.status_code == 200:
-                        data = res.json()
-                        result = data.get("result", {})
-                        entry = result.get(lbry_url, {})
-                        if entry and "error" not in entry:
-                            logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY — concluído!")
-                            salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
-                            upload_ok = True
-                            break
-                        else:
-                            logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Resposta: {str(entry)[:200]}")
+                    # Busca o channel_name do banco de dados já que tarefa não está no escopo
+                    conn_check = get_db_connection()
+                    cursor_check = conn_check.cursor(dictionary=True)
+                    cursor_check.execute("""
+                        SELECT l.odysee_channel_name, q.odysee_slug 
+                        FROM odysee_publish_queue q 
+                        JOIN languages l ON q.language_id = l.id 
+                        WHERE q.id = %s
+                    """, (tarefa_id,))
+                    row_check = cursor_check.fetchone()
+                    cursor_check.close()
+                    conn_check.close()
+                    
+                    if row_check:
+                        channel_name = row_check['odysee_channel_name'].lstrip('@')
+                        video_slug = row_check['odysee_slug'] or slug
+                        lbry_url = f"lbry://@{channel_name}/{video_slug}"
+                        api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
+                        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
+                        res = requests.post(api_url, json=payload, timeout=15)
+                        logger.info(f"[PASSO 6] API LBRY check | URL: {lbry_url} | HTTP: {res.status_code}")
+                        if res.status_code == 200:
+                            data = res.json()
+                            result = data.get("result", {})
+                            entry = result.get(lbry_url, {})
+                            if entry and "error" not in entry:
+                                logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY — concluído!")
+                                salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
+                                upload_ok = True
+                                break
+                            else:
+                                logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Resposta: {str(entry)[:200]}")
                 except Exception as e:
                     logger.warning(f"[PASSO 6] Erro ao checar API LBRY: {e}")
                     

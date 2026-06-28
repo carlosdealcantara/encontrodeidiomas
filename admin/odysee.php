@@ -412,30 +412,32 @@ if (isset($_GET['msg']) && !$msg) {
                 <strong>Diagnóstico em tempo real:</strong> Esta tela se atualiza automaticamente via AJAX a cada 15 segundos — <strong>sem precisar recarregar o navegador</strong>. Durante o upload, o robô captura screenshots a cada ciclo de ~30s.
             </div>
 
-            <?php if (empty($screenshots)): ?>
-            <div class="empty-state">
-                <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 16px; display: block;"></i>
-                <p>Nenhuma transmissão ativa. O robô não tirou nenhuma foto recentemente.</p>
-            </div>
-            <?php else: ?>
-            <div class="screenshots-grid">
-                <?php foreach ($screenshots as $s): ?>
-                <div class="screenshot-card">
-                    <div class="screenshot-card-header">
-                        <div>
-                            <div class="screenshot-name">
-                                #<?= $s['id'] ?> - <?= htmlspecialchars($s['language_name']) ?>
-                                <span class="badge badge-<?= $s['status'] ?>" style="margin-left:10px;"><?= $s['status'] ?></span>
-                            </div>
-                            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;"><?= htmlspecialchars($s['titulo_final']) ?></div>
-                        </div>
-                        <span class="screenshot-time"><i class="far fa-clock"></i> <?= date('d/m H:i:s', strtotime($s['last_screenshot_time'])) ?></span>
-                    </div>
-                    <img src="data:image/png;base64,<?= $s['last_screenshot'] ?>" alt="Screenshot">
+            <div id="diag-container">
+                <?php if (empty($screenshots)): ?>
+                <div class="empty-state">
+                    <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 16px; display: block;"></i>
+                    <p>Nenhuma transmissão ativa. O robô não tirou nenhuma foto recentemente.</p>
                 </div>
-                <?php endforeach; ?>
+                <?php else: ?>
+                <div class="screenshots-grid">
+                    <?php foreach ($screenshots as $s): ?>
+                    <div class="screenshot-card">
+                        <div class="screenshot-card-header">
+                            <div>
+                                <div class="screenshot-name">
+                                    #<?= $s['id'] ?> - <?= htmlspecialchars($s['language_name']) ?>
+                                    <span class="badge badge-<?= $s['status'] ?>" style="margin-left:10px;"><?= $s['status'] ?></span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;"><?= htmlspecialchars($s['titulo_final']) ?></div>
+                            </div>
+                            <span class="screenshot-time"><i class="far fa-clock"></i> <?= date('d/m H:i:s', strtotime($s['last_screenshot_time'])) ?></span>
+                        </div>
+                        <img src="data:image/png;base64,<?= $s['last_screenshot'] ?>" alt="Screenshot">
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
         </div>
     </main>
 
@@ -526,22 +528,24 @@ if (isset($_GET['msg']) && !$msg) {
                     if (data.last_screenshot_time !== lastTimestamp) {
                         lastTimestamp = data.last_screenshot_time;
                         
-                        // Encontra o container (assumindo que só tem um screenshot em destaque na página)
-                        const grid = document.querySelector('.screenshots-grid');
-                        if (grid) {
-                            grid.innerHTML = `
-                                <div class="screenshot-card">
-                                    <div class="screenshot-card-header">
-                                        <div>
-                                            <div class="screenshot-name">
-                                                #${data.id} - ${data.language_name}
-                                                <span class="badge badge-${data.status}" style="margin-left:10px;">${data.status}</span>
+                        // Encontra o container raiz de diagnóstico
+                        const container = document.getElementById('diag-container');
+                        if (container) {
+                            container.innerHTML = `
+                                <div class="screenshots-grid">
+                                    <div class="screenshot-card">
+                                        <div class="screenshot-card-header">
+                                            <div>
+                                                <div class="screenshot-name">
+                                                    #${data.id} - ${data.language_name}
+                                                    <span class="badge badge-${data.status}" style="margin-left:10px;">${data.status}</span>
+                                                </div>
+                                                <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;">${data.titulo_final || ''}</div>
                                             </div>
-                                            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;">${data.titulo_final || ''}</div>
+                                            <span class="screenshot-time"><i class="far fa-clock"></i> ${data.last_screenshot_time_fmt}</span>
                                         </div>
-                                        <span class="screenshot-time"><i class="far fa-clock"></i> ${data.last_screenshot_time_fmt}</span>
+                                        <img src="data:image/png;base64,${data.last_screenshot}" alt="Screenshot">
                                     </div>
-                                    <img src="data:image/png;base64,${data.last_screenshot}" alt="Screenshot">
                                 </div>
                             `;
                         }
