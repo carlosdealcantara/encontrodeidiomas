@@ -96,7 +96,26 @@ try {
         ");
         $stmtUpd2->execute([$url_curta, $tarefa['language_id'], $tarefa['odysee_url']]);
         
-        echo json_encode(["status" => "success", "new_url" => $url_curta, "message" => "URL encurtada com sucesso!"]);
+        // Dispara notificação para os hosts via cURL localmente
+        if (defined('SITE_URL')) {
+            $webhook_url = SITE_URL . "/ajax/webhook_odysee_success.php";
+        } else {
+            $webhook_url = "https://dev.encontrodeidiomas.com.br/ajax/webhook_odysee_success.php";
+        }
+        
+        $chWH = curl_init($webhook_url);
+        curl_setopt($chWH, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($chWH, CURLOPT_POST, true);
+        curl_setopt($chWH, CURLOPT_POSTFIELDS, json_encode([
+            "apikey" => "SenhaMeetups2026",
+            "lang_id" => $tarefa['language_id']
+        ]));
+        curl_setopt($chWH, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($chWH, CURLOPT_TIMEOUT, 5);
+        curl_exec($chWH);
+        curl_close($chWH);
+        
+        echo json_encode(["status" => "success", "new_url" => $url_curta, "message" => "URL encurtada com sucesso e resumo dos Hosts atualizado!"]);
     } else {
         echo json_encode(["status" => "error", "message" => "is.gd falhou: " . htmlspecialchars(substr($res_url ?? '', 0, 50))]);
     }

@@ -617,17 +617,22 @@ def escanear_drive():
         logger.error(f"Erro ao escanear Drive: {e}")
 
 def encurtar_url(url_longa):
-    try:
-        api_url = f"https://is.gd/create.php?format=simple&url={urllib.parse.quote(url_longa)}"
-        res = requests.get(api_url, timeout=10)
-        # is.gd pode retornar erro em plain text com HTTP 200 (ex: "Error, database insert failed")
-        if res.status_code == 200 and res.text.startswith('http'):
-            return res.text.strip()
-        else:
-            logger.warning(f"is.gd falhou ou retornou texto inválido: {res.text[:100]}")
-    except Exception as e:
-        logger.warning(f"Erro de conexão com is.gd: {e}")
-        
+    tentativas = 2
+    for t in range(tentativas):
+        try:
+            api_url = f"https://is.gd/create.php?format=simple&url={urllib.parse.quote(url_longa)}"
+            res = requests.get(api_url, timeout=10)
+            # is.gd pode retornar erro em plain text com HTTP 200 (ex: "Error, database insert failed")
+            if res.status_code == 200 and res.text.startswith('http'):
+                return res.text.strip()
+            else:
+                logger.warning(f"is.gd falhou na tentativa {t+1}: {res.text[:100]}")
+        except Exception as e:
+            logger.warning(f"Erro de conexão com is.gd na tentativa {t+1}: {e}")
+            
+        if t < tentativas - 1:
+            time.sleep(2) # Espera 2 segundos antes de tentar de novo
+            
     # Fallback confiável
     return url_longa
 
