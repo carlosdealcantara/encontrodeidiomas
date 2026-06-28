@@ -617,12 +617,12 @@ def escanear_drive():
         logger.error(f"Erro ao escanear Drive: {e}")
 
 def encurtar_url(url_longa):
+def encurtar_url(url_longa):
     tentativas = 2
     for t in range(tentativas):
         try:
             api_url = f"https://is.gd/create.php?format=simple&url={urllib.parse.quote(url_longa)}"
             res = requests.get(api_url, timeout=10)
-            # is.gd pode retornar erro em plain text com HTTP 200 (ex: "Error, database insert failed")
             if res.status_code == 200 and res.text.startswith('http'):
                 return res.text.strip()
             else:
@@ -631,9 +631,20 @@ def encurtar_url(url_longa):
             logger.warning(f"Erro de conexão com is.gd na tentativa {t+1}: {e}")
             
         if t < tentativas - 1:
-            time.sleep(2) # Espera 2 segundos antes de tentar de novo
+            time.sleep(2)
             
-    # Fallback confiável
+    # Fallback 1: TinyURL
+    try:
+        logger.info("Usando TinyURL como fallback...")
+        api_url = f"https://tinyurl.com/api-create.php?url={urllib.parse.quote(url_longa)}"
+        res = requests.get(api_url, timeout=10)
+        if res.status_code == 200 and res.text.startswith('http'):
+            return res.text.strip()
+    except Exception as e:
+        logger.warning(f"Erro de conexão com TinyURL: {e}")
+
+    # Fallback 2: Odysee Canonica
+    logger.warning("Ambos encurtadores falharam. Usando URL canônica.")
     return url_longa
 
 def processar_fila():
@@ -681,20 +692,21 @@ def processar_fila():
                 import cv2
                 import base64
                 
-                # Lê a imagem
+                # Lê a imagem original gerada do vídeo (geralmente 1280x720)
                 img = cv2.imread(thumb_path)
                 if img is not None:
-                    # Redimensiona para 320x180 (tamanho reduzido que o WhatsApp prefere para thumbs em base64)
-                    new_dim = (320, 180)
+                    # Redimensiona para 480x270 (Ideal para Link Previews limpos no WhatsApp sem ficar pesado)
+                    new_dim = (480, 270)
                     img = cv2.resize(img, new_dim, interpolation=cv2.INTER_AREA)
                     
-                    # Codifica como JPEG em memória com 80% de qualidade
-                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
+                    # Codifica como JPEG em memória com 85% de qualidade (bom balanço tamanho/qualidade)
+                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 85]
                     result, encimg = cv2.imencode('.jpg', img, encode_param)
                     if result:
                         thumbnail_b64 = base64.b64encode(encimg).decode('utf-8')
+                        logger.info(f"Thumbnail comprimido com sucesso via OpenCV ({len(thumbnail_b64)} chars base64)")
             except Exception as e:
-                logger.warning(f"Não foi possível processar o thumbnail para base64: {e}")
+                logger.warning(f"Erro ao converter thumbnail para base64: {e}")
                 
         template = "🎬 *Replay:* {bandeira} {titulo}\n\n🔗 {link}"
         grupos_alvo = []

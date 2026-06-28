@@ -80,7 +80,13 @@ try {
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    if ($http_code == 200 && $res_url && strpos($res_url, 'http') === 0) {
+    // Fallback para TinyURL se is.gd falhar
+    if (!$res_url || strpos($res_url, 'http') !== 0) {
+        $api_url = "https://tinyurl.com/api-create.php?url=" . urlencode($url_longa);
+        $res_url = file_get_contents($api_url);
+    }
+
+    if ($res_url && strpos($res_url, 'http') === 0) {
         $url_curta = trim($res_url);
         
         // Atualiza odysee_publish_queue
