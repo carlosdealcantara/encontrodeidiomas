@@ -1,5 +1,6 @@
 <?php
 require_once dirname(dirname(__DIR__)) . '/config.php';
+require_once dirname(dirname(__DIR__)) . '/includes/auth.php';
 verificarAdmin(); // Garante que só admin acesse
 
 header('Content-Type: application/json');
@@ -34,19 +35,12 @@ if ($tarefa['status'] !== 'done') {
 
 $url_longa = trim($tarefa['odysee_url']);
 
-// Verifica se é uma URL do Odysee ou de erro para poder tentar encurtar
-// A URL longa pode ser a url oficial ou o texto do erro "Error, database insert failed"
-if (empty($url_longa)) {
-    echo json_encode(["status" => "error", "message" => "URL vazia no banco"]);
-    exit;
-}
-
-// Se for texto de erro ou a URL base sem o link canônico do Odysee, precisamos buscar o slug real
-if (strpos($url_longa, 'odysee.com') === false) {
+// Se for texto de erro, URL base sem o link canônico do Odysee ou vazia, precisamos buscar o slug real
+if (empty($url_longa) || strpos($url_longa, 'odysee.com') === false) {
     $stmtSlug = $conn->prepare("SELECT odysee_slug, odysee_channel_name FROM odysee_publish_queue WHERE id = ?");
     $stmtSlug->execute([$queue_id]);
     $slugData = $stmtSlug->fetch(PDO::FETCH_ASSOC);
-    if ($slugData && $slugData['odysee_slug'] && $slugData['odysee_channel_name']) {
+    if ($slugData && !empty($slugData['odysee_slug']) && !empty($slugData['odysee_channel_name'])) {
         $url_longa = "https://odysee.com/{$slugData['odysee_channel_name']}/{$slugData['odysee_slug']}";
     } else {
         echo json_encode(["status" => "error", "message" => "URL inválida para encurtar e sem slug disponível"]);

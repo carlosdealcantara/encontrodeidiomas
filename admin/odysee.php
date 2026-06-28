@@ -293,13 +293,14 @@ if (isset($_GET['msg']) && !$msg) {
                         <td><?= htmlspecialchars($row['language_name']) ?></td>
                         <td>
                             <?= htmlspecialchars($row['titulo_final'] ?? 'Aguardando Host...') ?>
-                            <?php if ($row['odysee_url']): ?>
+                            <?php if (!empty($row['odysee_url'])): ?>
                                 <br><a href="<?= htmlspecialchars($row['odysee_url']) ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= htmlspecialchars(strlen($row['odysee_url']) > 40 ? substr($row['odysee_url'], 0, 40) . '...' : $row['odysee_url']) ?></a>
-                                <?php if ($row['status'] === 'done' && (strlen($row['odysee_url']) > 30 || strpos($row['odysee_url'], 'is.gd') === false)): ?>
-                                    <button onclick="reshortenUrl(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via is.gd" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
-                                        <i class="fas fa-sync-alt"></i>
-                                    </button>
-                                <?php endif; ?>
+                            <?php endif; ?>
+                            
+                            <?php if ($row['status'] === 'done' && (empty($row['odysee_url']) || strlen($row['odysee_url']) > 30 || strpos($row['odysee_url'], 'is.gd') === false)): ?>
+                                <button onclick="reshortenUrl(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via is.gd" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: <?php echo empty($row['odysee_url']) ? '0' : '8px'; ?>;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
+                                    <i class="fas fa-sync-alt"></i> <?php echo empty($row['odysee_url']) ? 'Gerar Link' : ''; ?>
+                                </button>
                             <?php endif; ?>
                         </td>
                         <td><span class="status-badge status-<?= $badge_class ?>"><?= $display_status ?></span></td>
