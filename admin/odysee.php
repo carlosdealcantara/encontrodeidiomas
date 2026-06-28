@@ -403,7 +403,7 @@ if (isset($_GET['msg']) && !$msg) {
         <!-- ABA 3: DIAGNÓSTICO -->
         <div id="tab-diag" class="main-tab-content <?= $active_tab === 'diag' ? 'active' : '' ?>">
             <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom: 20px;">
-                <button class="btn-sm" style="margin-right: 15px;" onclick="location.href='odysee.php?tab=diag'"><i class="fas fa-sync-alt"></i> Atualizar Agora</button>
+                <button class="btn-sm" style="margin-right: 15px;" onclick="fetchDiagUpdate()"><i class="fas fa-sync-alt"></i> Atualizar Agora</button>
             </div>
             
             <div class="info-box">
@@ -512,42 +512,42 @@ if (isset($_GET['msg']) && !$msg) {
 
         // Auto-refresh logic for Diag Tab using AJAX
         let lastTimestamp = "";
+        let diagPollTimer = null;
         
         async function fetchDiagUpdate() {
-            if (!document.getElementById('tab-diag').classList.contains('active')) return;
-            
+            // Sempre tentar, independente de qual aba está ativa
             try {
                 const res = await fetch('ajax_diag_screenshot.php');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 const json = await res.json();
                 
                 if (json.success && json.data) {
                     const data = json.data;
+                    const container = document.getElementById('diag-container');
                     
-                    // Se houver uma nova screenshot (timestamp mudou)
-                    if (data.last_screenshot_time !== lastTimestamp) {
+                    // Atualiza sempre que tiver dados (independente do timestamp)
+                    if (container && data.last_screenshot) {
+                        container.innerHTML = `
+                            <div class="screenshots-grid">
+                                <div class="screenshot-card">
+                                    <div class="screenshot-card-header">
+                                        <div>
+                                            <div class="screenshot-name">
+                                                #${data.id} - ${data.language_name}
+                                                <span class="badge badge-${data.status}" style="margin-left:10px;">${data.status}</span>
+                                            </div>
+                                            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;">${data.titulo_final || ''}</div>
+                                        </div>
+                                        <span class="screenshot-time"><i class="far fa-clock"></i> ${data.last_screenshot_time_fmt} <span id="diag-age" style="color:#f59e0b;font-size:0.8em;"></span></span>
+                                    </div>
+                                    <img src="data:image/png;base64,${data.last_screenshot}" alt="Screenshot" style="width:100%;">
+                                </div>
+                            </div>
+                        `;
                         lastTimestamp = data.last_screenshot_time;
                         
-                        // Encontra o container raiz de diagnóstico
-                        const container = document.getElementById('diag-container');
-                        if (container) {
-                            container.innerHTML = `
-                                <div class="screenshots-grid">
-                                    <div class="screenshot-card">
-                                        <div class="screenshot-card-header">
-                                            <div>
-                                                <div class="screenshot-name">
-                                                    #${data.id} - ${data.language_name}
-                                                    <span class="badge badge-${data.status}" style="margin-left:10px;">${data.status}</span>
-                                                </div>
-                                                <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px;">${data.titulo_final || ''}</div>
-                                            </div>
-                                            <span class="screenshot-time"><i class="far fa-clock"></i> ${data.last_screenshot_time_fmt}</span>
-                                        </div>
-                                        <img src="data:image/png;base64,${data.last_screenshot}" alt="Screenshot">
-                                    </div>
-                                </div>
-                            `;
-                        }
+                        // Mostra há quantos segundos a foto foi tirada
+                        atualizarIdade(data.last_screenshot_time);
                     }
                 }
             } catch (e) {
@@ -555,10 +555,24 @@ if (isset($_GET['msg']) && !$msg) {
             }
         }
         
-        // Verifica a cada 15 segundos
-        setInterval(fetchDiagUpdate, 15000);
-        // Chama na primeira carga para pegar o timestamp atual invisível
-        setTimeout(fetchDiagUpdate, 1000);
+        function atualizarIdade(timestamp) {
+            const el = document.getElementById('diag-age');
+            if (!el || !timestamp) return;
+            const taken = new Date(timestamp.replace(' ', 'T') + 'Z');
+            const diffSec = Math.round((Date.now() - taken.getTime()) / 1000);
+            el.textContent = `(${diffSec}s atrás)`;
+        }
+        
+        // Atualiza a "idade" da foto a cada segundo, sem rebuscar
+        setInterval(() => {
+            if (lastTimestamp) atualizarIdade(lastTimestamp);
+        }, 1000);
+        
+        // Busca nova foto a cada 15 segundos (independente de qual aba está visível)
+        diagPollTimer = setInterval(fetchDiagUpdate, 15000);
+        
+        // Busca imediatamente ao carregar
+        setTimeout(fetchDiagUpdate, 500);
     </script>
 </body>
 </html>

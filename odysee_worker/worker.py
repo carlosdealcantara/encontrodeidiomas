@@ -197,7 +197,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
             viewport={"width": 1920, "height": 1080},
-            locale="pt-BR"
+            locale="en-US"
         )
         page = context.new_page()
         
@@ -396,19 +396,29 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         for ciclo in range(480):  # 480 x 30s = 4h
             page.wait_for_timeout(30000)
             
-            # IMPORTANTE: Recarrega a página a cada ciclo.
-            # O React do Odysee não atualiza o badge "Published" no DOM sem reload.
+            # IMPORTANTE: Recarrega a página se o upload NÃO estiver em andamento.
+            # O React do Odysee não atualiza o badge "Published" no DOM sem reload,
+            # mas recarregar durante o upload cancela a transferência.
             try:
-                page.reload(wait_until='domcontentloaded', timeout=30000)
-                page.wait_for_timeout(3000)  # Aguarda o React renderizar após o reload
-            except Exception as e:
-                logger.warning(f"[PASSO 6] Erro ao recarregar página no ciclo {ciclo}: {e}")
+                is_uploading = page.locator(':text("Enviando"), :text("Sending"), :text("Uploading")').count() > 0
+            except:
+                is_uploading = False
+
+            if not is_uploading:
+                try:
+                    page.reload(wait_until='domcontentloaded', timeout=30000)
+                    page.wait_for_timeout(3000)  # Aguarda o React renderizar após o reload
+                except Exception as e:
+                    logger.warning(f"[PASSO 6] Erro ao recarregar página no ciclo {ciclo}: {e}")
+            else:
+                logger.info(f"[PASSO 6] Upload em andamento, skip reload para não interromper.")
+                page.wait_for_timeout(5000)
             
             url_atual = page.url
             logger.info(f"[PASSO 6] Ciclo {ciclo}/480 | URL: {url_atual}")
             
-            # Atualiza o screenshot a cada ciclo para mostrar progresso em tempo real
-            if ciclo % 5 == 0:
+            # Atualiza o screenshot a cada 2 ciclos (1 minuto) para mostrar progresso
+            if ciclo % 2 == 0:
                 salvar_screenshot(page, "06_upload_progress", tarefa_id)
             
             # Estratégia 1: Redirecionamento para a página final do vídeo
@@ -421,9 +431,9 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             if "/$/uploads" in url_atual:
                 try:
                     # Regex de texto exato para o badge vermelho
-                    published_exact = page.locator('text=/^Published$/').count()
+                    published_exact = page.locator('text=/^Published$/').count() + page.locator('text=/^Publicado$/').count()
                     # Também tenta variantes com letra inicial maiúscula ou minúscula
-                    published_broad = page.locator(':text("Published")').count()
+                    published_broad = page.locator(':text("Published"), :text("Publicado")').count()
                     logger.info(f"[PASSO 6] Diagnóstico Published: exact={published_exact}, broad={published_broad}")
                     
                     if published_exact > 0 and ciclo > 0:
