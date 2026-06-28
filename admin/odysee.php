@@ -548,6 +548,16 @@ if (isset($_GET['msg']) && !$msg) {
                         
                         // Mostra há quantos segundos a foto foi tirada
                         atualizarIdade(data.last_screenshot_time);
+                    } else if (container) {
+                        // Não há screenshot ativa — mostrar estado atual da fila
+                        container.innerHTML = `
+                            <div class="info-box" style="text-align:center; padding:40px;">
+                                <p style="color:#94a3b8; font-size:1.1rem;">
+                                    ⏳ Nenhuma tarefa em processamento no momento.<br>
+                                    Status atual: <strong>${data.status || 'sem dados'}</strong>
+                                </p>
+                            </div>
+                        `;
                     }
                 }
             } catch (e) {

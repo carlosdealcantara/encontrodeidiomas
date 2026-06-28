@@ -351,18 +351,29 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 except Exception as e:
                     logger.warning(f"[THUMBNAIL] Erro ao fazer upload da thumbnail: {e}. Continuando sem ela.")
 
-            # Espera até 10 segundos para ver se algum botão aparece (Odysee pode estar analisando o arquivo)
-            next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
             try:
-                # Usa locator.or_ para esperar um OU outro
-                page.locator('.button--primary >> text="Publicação"').or_(next_btn).wait_for(state="visible", timeout=10000)
-            except:
-                pass # Ignora timeout, tenta checar is_visible() abaixo
+                # Aguarda até 5 minutos o botão "Próximo" sair do estado disabled
+                # (Odysee analisa o arquivo antes de liberar o botão — para vídeos grandes isso leva minutos)
+                page.wait_for_function(
+                    """
+                    () => {
+                        const pub = document.querySelector('button[aria-label="Publish"], button[aria-label="Publicação"]');
+                        if (pub && !pub.disabled) return true;
+                        const nxt = document.querySelector('button[aria-label="Next"], button[aria-label="Próximo"]');
+                        return nxt && !nxt.disabled;
+                    }
+                    """,
+                    timeout=300000  # 5 minutos para vídeos grandes
+                )
+                logger.info("[PASSO 4] Botão habilitado após análise do arquivo.")
+            except Exception as e:
+                logger.warning(f"[PASSO 4] Timeout aguardando botão ser habilitado: {e}")
 
-            # Atualiza a referência caso tenha aparecido durante a espera
-            publish_btn = page.locator('.button--primary >> text="Publicação"').first
+            # Atualiza referências após a espera
+            next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
+            publish_btn = page.locator('.button--primary >> text="Publicação", .button--primary >> text="Publish"').first
             if not publish_btn.is_visible():
-                publish_btn = page.locator('form button.button--primary:has-text("Publicação"), .publish__actions button.button--primary').first
+                publish_btn = page.locator('form button.button--primary:has-text("Publicação"), form button.button--primary:has-text("Publish"), .publish__actions button.button--primary').first
 
             if publish_btn.is_visible():
                 logger.info("Botão FINAL de Publicação apareceu após espera! Clicando...")
@@ -375,10 +386,14 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             elif next_btn.is_visible():
                 logger.info("Clicando em Próximo...")
                 try:
+                    next_btn.wait_for(state="enabled", timeout=300000)  # Espera sair do disabled
                     next_btn.click(timeout=30000)
                 except Exception as e:
-                    logger.warning(f"Erro ao clicar Próximo: {e}")
-                    next_btn.evaluate("el => el.click()")
+                    logger.warning(f"Erro ao clicar Próximo (ainda disabled?): {e}")
+                    try:
+                        next_btn.evaluate("el => el.click()")
+                    except:
+                        pass
             else:
                 logger.info("Nem botão de Publicação nem botão de Próximo visíveis. Wizard pode ter terminado ou travou.")
                 salvar_screenshot(page, f"05d_wizard_step_{step}_stuck", tarefa_id)
