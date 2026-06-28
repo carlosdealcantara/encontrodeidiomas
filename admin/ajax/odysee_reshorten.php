@@ -52,7 +52,11 @@ try {
         $stmtSlug->execute([$queue_id]);
         $slugData = $stmtSlug->fetch(PDO::FETCH_ASSOC);
         if ($slugData && !empty($slugData['odysee_slug']) && !empty($slugData['odysee_channel_name'])) {
-            $url_longa = "https://odysee.com/{$slugData['odysee_channel_name']}/{$slugData['odysee_slug']}";
+            $channelName = trim($slugData['odysee_channel_name']);
+            if (strpos($channelName, '@') !== 0) {
+                $channelName = '@' . $channelName;
+            }
+            $url_longa = "https://odysee.com/{$channelName}/{$slugData['odysee_slug']}";
         } else {
             echo json_encode(["status" => "error", "message" => "URL inválida para encurtar e sem slug disponível"]);
             exit;
