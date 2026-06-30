@@ -74,7 +74,7 @@ foreach ($replays as $r) {
         continue; // Pula idiomas que ainda não tiveram preenchimento nesta semana
     }
     $num = !empty($r['numero']) ? str_pad($r['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
-    $lnk = !empty($r['link']) ? $r['link'] : "Link";
+    $lnk = !empty($r['link']) ? str_replace(['https://', 'http://'], '', $r['link']) : "Link";
     $tit = !empty($r['titulo']) ? $r['titulo'] : "Título";
     
     $linha = "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";

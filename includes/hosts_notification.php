@@ -33,7 +33,7 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
             continue; // Pula idiomas que ainda não tiveram preenchimento nesta semana
         }
         $num = !empty($row['numero']) ? str_pad($row['numero'], 2, '0', STR_PAD_LEFT) : "Nº";
-        $lnk = !empty($row['link'])   ? $row['link']   : "Link";
+        $lnk = !empty($row['link'])   ? str_replace(['https://', 'http://'], '', $row['link']) : "Link";
         $tit = !empty($row['titulo']) ? $row['titulo'] : "Título";
         $replays_list .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
     }
