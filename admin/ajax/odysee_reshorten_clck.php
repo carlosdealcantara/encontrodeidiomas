@@ -63,14 +63,14 @@ try {
         }
     }
 
-    // Se já for curta (tinyurl), não precisa
-    if (strpos($url_longa, 'tinyurl.com') !== false) {
-        echo json_encode(["status" => "error", "message" => "A URL já está encurtada com tinyurl.com"]);
+    // Se já for curta (clck.ru), não precisa
+    if (strpos($url_longa, 'clck.ru') !== false) {
+        echo json_encode(["status" => "error", "message" => "A URL já está encurtada com clck.ru"]);
         exit;
     }
 
-    // Aciona API do tinyurl.com
-    $api_url = "https://tinyurl.com/api-create.php?url=" . urlencode($url_longa);
+    // Aciona API do clck.ru
+    $api_url = "https://clck.ru/--";
     
     $url_curta = null;
     $max_tentativas = 3;
@@ -81,6 +81,9 @@ try {
         $ch = curl_init($api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, ['url' => $url_longa]);
+        
         $res_body = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
@@ -129,10 +132,10 @@ try {
         curl_exec($chWH);
         curl_close($chWH);
         
-        echo json_encode(["status" => "success", "new_url" => $url_curta, "message" => "URL encurtada com tinyurl.com com sucesso!"]);
+        echo json_encode(["status" => "success", "new_url" => $url_curta, "message" => "URL encurtada com clck.ru com sucesso!"]);
     } else {
-        $errorPreview = $res_body ? substr(htmlspecialchars($res_body), 0, 100) : "Timeout ou falha na API do tinyurl.com";
-        echo json_encode(["status" => "error", "message" => "tinyurl.com falhou (HTTP {$http_code}): " . $errorPreview]);
+        $errorPreview = $res_body ? substr(htmlspecialchars($res_body), 0, 100) : "Timeout ou falha na API do clck.ru";
+        echo json_encode(["status" => "error", "message" => "clck.ru falhou (HTTP {$http_code}): " . $errorPreview]);
     }
 } catch (Throwable $e) {
     echo json_encode(["status" => "error", "message" => "Erro PHP: " . $e->getMessage() . " na linha " . $e->getLine()]);

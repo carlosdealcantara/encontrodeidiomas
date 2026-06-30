@@ -296,12 +296,12 @@ if (isset($_GET['msg']) && !$msg) {
                             <?php if (!empty($row['odysee_url'])): ?>
                                 <br><a href="<?= htmlspecialchars($row['odysee_url']) ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= htmlspecialchars(strlen($row['odysee_url']) > 40 ? substr($row['odysee_url'], 0, 40) . '...' : $row['odysee_url']) ?></a>
                             <?php endif; ?>
-                            <?php if ($row['status'] === 'done' && (empty($row['odysee_url']) || strlen($row['odysee_url']) > 30 || (strpos($row['odysee_url'], 'is.gd') === false && strpos($row['odysee_url'], 'tinyurl.com') === false))): ?>
+                            <?php if ($row['status'] === 'done' && (empty($row['odysee_url']) || strlen($row['odysee_url']) > 30 || (strpos($row['odysee_url'], 'is.gd') === false && strpos($row['odysee_url'], 'clck.ru') === false))): ?>
                                 <button onclick="reshortenUrl(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via is.gd" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: <?php echo empty($row['odysee_url']) ? '0' : '8px'; ?>;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
                                     <i class="fas fa-sync-alt"></i> <?php echo empty($row['odysee_url']) ? 'is.gd' : ''; ?>
                                 </button>
-                                <button onclick="reshortenUrlTinyURL(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via tinyurl.com" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
-                                    <i class="fas fa-link"></i> <?php echo empty($row['odysee_url']) ? 'tinyurl' : ''; ?>
+                                <button onclick="reshortenUrlClck(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via clck.ru" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
+                                    <i class="fas fa-link"></i> <?php echo empty($row['odysee_url']) ? 'clck' : ''; ?>
                                 </button>
                             <?php endif; ?>
                         </td>
@@ -559,13 +559,13 @@ if (isset($_GET['msg']) && !$msg) {
                 btn.disabled = false;
             });
         }
-        function reshortenUrlTinyURL(id, btn) {
+        function reshortenUrlClck(id, btn) {
             const icon = btn.querySelector('i');
             const originalClass = icon.className;
             icon.className = 'fas fa-circle-notch fa-spin';
             btn.disabled = true;
 
-            fetch('ajax/odysee_reshorten_tinyurl.php', {
+            fetch('ajax/odysee_reshorten_clck.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -584,7 +584,7 @@ if (isset($_GET['msg']) && !$msg) {
                 }
             })
             .catch(err => {
-                alert('Erro de rede ao tentar encurtar URL via tinyurl.com.');
+                alert('Erro de rede ao tentar encurtar URL via clck.ru.');
                 icon.className = originalClass;
                 btn.disabled = false;
             });
