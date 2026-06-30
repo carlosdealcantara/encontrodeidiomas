@@ -621,55 +621,29 @@ def escanear_drive():
 
 def encurtar_url(url_longa):
     import requests
+    import urllib.parse
     
-    # Busca o token do banco de dados
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT setting_value FROM settings WHERE setting_key = 'tly_api_key'")
-        row = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        token = row['setting_value'] if row else None
-    except Exception as e:
-        logger.error(f"Erro ao buscar token do t.ly: {e}")
-        return url_longa
-        
-    if not token:
-        logger.warning("Token t.ly não encontrado. Usando URL canônica.")
-        return url_longa
-
-    api_url = "https://t.ly/api/v1/link/shorten"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
-    payload = {
-        "long_url": url_longa
-    }
+    api_url = f"https://ulvis.net/api.php?url={urllib.parse.quote(url_longa)}"
     
     tentativas = 3
     for t in range(tentativas):
         try:
-            res = requests.post(api_url, json=payload, headers=headers, timeout=10)
-            if res.status_code == 200:
-                data = res.json()
-                short_url = data.get('short_url')
-                if short_url:
-                    logger.info(f"URL encurtada com sucesso via t.ly: {short_url}")
-                    return short_url
+            res = requests.get(api_url, timeout=10)
+            if res.status_code == 200 and res.text.startswith('http'):
+                short_url = res.text.strip()
+                logger.info(f"URL encurtada com sucesso via ulvis.net: {short_url}")
+                return short_url
             else:
-                logger.warning(f"t.ly falhou na tentativa {t+1}: {res.text[:200]}")
+                logger.warning(f"ulvis.net falhou na tentativa {t+1}: {res.text[:200]}")
         except Exception as e:
-            logger.warning(f"Erro de conexão com t.ly na tentativa {t+1}: {e}")
+            logger.warning(f"Erro de conexão com ulvis.net na tentativa {t+1}: {e}")
             
         if t < tentativas - 1:
             espera = 3
             logger.info(f"Aguardando {espera} segundos antes da próxima tentativa...")
             time.sleep(espera)
             
-    logger.warning("t.ly falhou 3 vezes. Usando URL canônica do Odysee.")
+    logger.warning("ulvis.net falhou 3 vezes. Usando URL canônica do Odysee.")
     return url_longa
 
 def processar_fila():

@@ -296,13 +296,12 @@ if (isset($_GET['msg']) && !$msg) {
                             <?php if (!empty($row['odysee_url'])): ?>
                                 <br><a href="<?= htmlspecialchars($row['odysee_url']) ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= htmlspecialchars(strlen($row['odysee_url']) > 40 ? substr($row['odysee_url'], 0, 40) . '...' : $row['odysee_url']) ?></a>
                             <?php endif; ?>
-                            
-                            <?php if ($row['status'] === 'done' && (empty($row['odysee_url']) || strlen($row['odysee_url']) > 30 || (strpos($row['odysee_url'], 'is.gd') === false && strpos($row['odysee_url'], 't.ly') === false))): ?>
+                            <?php if ($row['status'] === 'done' && (empty($row['odysee_url']) || strlen($row['odysee_url']) > 30 || (strpos($row['odysee_url'], 'is.gd') === false && strpos($row['odysee_url'], 'ulvis.net') === false))): ?>
                                 <button onclick="reshortenUrl(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via is.gd" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: <?php echo empty($row['odysee_url']) ? '0' : '8px'; ?>;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
                                     <i class="fas fa-sync-alt"></i> <?php echo empty($row['odysee_url']) ? 'is.gd' : ''; ?>
                                 </button>
-                                <button onclick="reshortenUrlTly(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via t.ly" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
-                                    <i class="fas fa-link"></i> <?php echo empty($row['odysee_url']) ? 't.ly' : ''; ?>
+                                <button onclick="reshortenUrlUlvis(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via ulvis.net" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
+                                    <i class="fas fa-link"></i> <?php echo empty($row['odysee_url']) ? 'ulvis' : ''; ?>
                                 </button>
                             <?php endif; ?>
                         </td>
@@ -560,14 +559,13 @@ if (isset($_GET['msg']) && !$msg) {
                 btn.disabled = false;
             });
         }
-
-        function reshortenUrlTly(id, btn) {
+        function reshortenUrlUlvis(id, btn) {
             const icon = btn.querySelector('i');
             const originalClass = icon.className;
             icon.className = 'fas fa-circle-notch fa-spin';
             btn.disabled = true;
 
-            fetch('ajax/odysee_reshorten_tly.php', {
+            fetch('ajax/odysee_reshorten_ulvis.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -586,7 +584,7 @@ if (isset($_GET['msg']) && !$msg) {
                 }
             })
             .catch(err => {
-                alert('Erro de rede ao tentar encurtar URL via t.ly.');
+                alert('Erro de rede ao tentar encurtar URL via ulvis.net.');
                 icon.className = originalClass;
                 btn.disabled = false;
             });
