@@ -297,9 +297,12 @@ if (isset($_GET['msg']) && !$msg) {
                                 <br><a href="<?= htmlspecialchars($row['odysee_url']) ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= htmlspecialchars(strlen($row['odysee_url']) > 40 ? substr($row['odysee_url'], 0, 40) . '...' : $row['odysee_url']) ?></a>
                             <?php endif; ?>
                             
-                            <?php if ($row['status'] === 'done' && (empty($row['odysee_url']) || strlen($row['odysee_url']) > 30 || strpos($row['odysee_url'], 'is.gd') === false)): ?>
+                            <?php if ($row['status'] === 'done' && (empty($row['odysee_url']) || strlen($row['odysee_url']) > 30 || (strpos($row['odysee_url'], 'is.gd') === false && strpos($row['odysee_url'], 't.ly') === false))): ?>
                                 <button onclick="reshortenUrl(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via is.gd" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: <?php echo empty($row['odysee_url']) ? '0' : '8px'; ?>;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
-                                    <i class="fas fa-sync-alt"></i> <?php echo empty($row['odysee_url']) ? 'Gerar Link' : ''; ?>
+                                    <i class="fas fa-sync-alt"></i> <?php echo empty($row['odysee_url']) ? 'is.gd' : ''; ?>
+                                </button>
+                                <button onclick="reshortenUrlTly(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via t.ly" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
+                                    <i class="fas fa-link"></i> <?php echo empty($row['odysee_url']) ? 't.ly' : ''; ?>
                                 </button>
                             <?php endif; ?>
                         </td>
@@ -553,6 +556,37 @@ if (isset($_GET['msg']) && !$msg) {
             })
             .catch(err => {
                 alert('Erro de rede ao tentar encurtar URL.');
+                icon.className = originalClass;
+                btn.disabled = false;
+            });
+        }
+
+        function reshortenUrlTly(id, btn) {
+            const icon = btn.querySelector('i');
+            const originalClass = icon.className;
+            icon.className = 'fas fa-circle-notch fa-spin';
+            btn.disabled = true;
+
+            fetch('ajax/odysee_reshorten_tly.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'queue_id=' + id
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                    icon.className = originalClass;
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                alert('Erro de rede ao tentar encurtar URL via t.ly.');
                 icon.className = originalClass;
                 btn.disabled = false;
             });
