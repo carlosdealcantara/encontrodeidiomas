@@ -303,6 +303,10 @@ if (isset($_GET['msg']) && !$msg) {
                                 <button onclick="reshortenUrlClck(<?= $row['id'] ?>, this)" title="Tentar encurtar URL novamente via clck.ru" style="background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#94a3b8'">
                                     <i class="fas fa-link"></i> <?php echo empty($row['odysee_url']) ? 'clck' : ''; ?>
                                 </button>
+                            <?php elseif ($row['status'] === 'done' && !empty($row['odysee_url'])): ?>
+                                <button onclick="notifyHosts(<?= $row['language_id'] ?>, this)" title="Reenviar notificação para o grupo dos Hosts" style="background: none; border: none; color: #10b981; cursor: pointer; margin-left: 8px;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='#10b981'">
+                                    <i class="fas fa-paper-plane"></i> Notificar
+                                </button>
                             <?php endif; ?>
                         </td>
                         <td><span class="status-badge status-<?= $badge_class ?>"><?= $display_status ?></span></td>
@@ -585,6 +589,41 @@ if (isset($_GET['msg']) && !$msg) {
             })
             .catch(err => {
                 alert('Erro de rede ao tentar encurtar URL via clck.ru.');
+                icon.className = originalClass;
+                btn.disabled = false;
+            });
+        }
+
+        function notifyHosts(langId, btn) {
+            const icon = btn.querySelector('i');
+            const originalClass = icon.className;
+            icon.className = 'fas fa-circle-notch fa-spin';
+            btn.disabled = true;
+
+            fetch('../ajax/webhook_odysee_success.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    apikey: 'SenhaMeetups2026',
+                    lang_id: langId
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    alert('Notificação enviada para o grupo dos Hosts com sucesso!');
+                    icon.className = originalClass;
+                    btn.disabled = false;
+                } else {
+                    alert('Erro ao enviar notificação.');
+                    icon.className = originalClass;
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                alert('Erro de rede ao tentar enviar notificação.');
                 icon.className = originalClass;
                 btn.disabled = false;
             });
