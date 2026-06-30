@@ -689,12 +689,12 @@ def processar_fila():
                 # Lê a imagem original gerada do vídeo (geralmente 1280x720)
                 img = cv2.imread(thumb_path)
                 if img is not None:
-                    # Redimensiona para 480x270 (Ideal para Link Previews limpos no WhatsApp sem ficar pesado)
-                    new_dim = (480, 270)
+                    # Redimensiona para 854x480 (480p) para garantir nitidez quando o WhatsApp esticar a imagem
+                    new_dim = (854, 480)
                     img = cv2.resize(img, new_dim, interpolation=cv2.INTER_AREA)
                     
-                    # Codifica como JPEG em memória com 85% de qualidade (bom balanço tamanho/qualidade)
-                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 85]
+                    # Codifica como JPEG em memória com 75% de qualidade para compensar o aumento da resolução e manter sob 100KB
+                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 75]
                     result, encimg = cv2.imencode('.jpg', img, encode_param)
                     if result:
                         thumbnail_b64 = base64.b64encode(encimg).decode('utf-8')
