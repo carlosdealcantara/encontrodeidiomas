@@ -63,14 +63,14 @@ try {
         }
     }
 
-    // Se já for curta (ulvis), não precisa
-    if (strpos($url_longa, 'ulvis.net') !== false) {
-        echo json_encode(["status" => "error", "message" => "A URL já está encurtada com ulvis.net"]);
+    // Se já for curta (tinyurl), não precisa
+    if (strpos($url_longa, 'tinyurl.com') !== false) {
+        echo json_encode(["status" => "error", "message" => "A URL já está encurtada com tinyurl.com"]);
         exit;
     }
 
-    // Aciona API do ulvis.net
-    $api_url = "https://ulvis.net/api.php?url=" . urlencode($url_longa);
+    // Aciona API do tinyurl.com
+    $api_url = "https://tinyurl.com/api-create.php?url=" . urlencode($url_longa);
     
     $url_curta = null;
     $max_tentativas = 3;
@@ -129,10 +129,10 @@ try {
         curl_exec($chWH);
         curl_close($chWH);
         
-        echo json_encode(["status" => "success", "new_url" => $url_curta, "message" => "URL encurtada com ulvis.net com sucesso!"]);
+        echo json_encode(["status" => "success", "new_url" => $url_curta, "message" => "URL encurtada com tinyurl.com com sucesso!"]);
     } else {
-        $errorPreview = $res_body ? substr(htmlspecialchars($res_body), 0, 100) : "Timeout ou falha na API do ulvis.net";
-        echo json_encode(["status" => "error", "message" => "ulvis.net falhou (HTTP {$http_code}): " . $errorPreview]);
+        $errorPreview = $res_body ? substr(htmlspecialchars($res_body), 0, 100) : "Timeout ou falha na API do tinyurl.com";
+        echo json_encode(["status" => "error", "message" => "tinyurl.com falhou (HTTP {$http_code}): " . $errorPreview]);
     }
 } catch (Throwable $e) {
     echo json_encode(["status" => "error", "message" => "Erro PHP: " . $e->getMessage() . " na linha " . $e->getLine()]);

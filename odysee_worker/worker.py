@@ -623,7 +623,7 @@ def encurtar_url(url_longa):
     import requests
     import urllib.parse
     
-    api_url = f"https://ulvis.net/api.php?url={urllib.parse.quote(url_longa)}"
+    api_url = f"https://tinyurl.com/api-create.php?url={urllib.parse.quote(url_longa)}"
     
     tentativas = 3
     for t in range(tentativas):
@@ -631,19 +631,19 @@ def encurtar_url(url_longa):
             res = requests.get(api_url, timeout=10)
             if res.status_code == 200 and res.text.startswith('http'):
                 short_url = res.text.strip()
-                logger.info(f"URL encurtada com sucesso via ulvis.net: {short_url}")
+                logger.info(f"URL encurtada com sucesso via tinyurl.com: {short_url}")
                 return short_url
             else:
-                logger.warning(f"ulvis.net falhou na tentativa {t+1}: {res.text[:200]}")
+                logger.warning(f"tinyurl.com falhou na tentativa {t+1}: {res.text[:200]}")
         except Exception as e:
-            logger.warning(f"Erro de conexão com ulvis.net na tentativa {t+1}: {e}")
+            logger.warning(f"Erro de conexão com tinyurl.com na tentativa {t+1}: {e}")
             
         if t < tentativas - 1:
             espera = 3
             logger.info(f"Aguardando {espera} segundos antes da próxima tentativa...")
             time.sleep(espera)
             
-    logger.warning("ulvis.net falhou 3 vezes. Usando URL canônica do Odysee.")
+    logger.warning("tinyurl.com falhou 3 vezes. Usando URL canônica do Odysee.")
     return url_longa
 
 def processar_fila():
