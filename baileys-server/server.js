@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers, makeCacheableSignalKeyStore, PHONENUMBER_MCC } = require('@whiskeysockets/baileys');
 const express = require('express');
 const pino = require('pino');
 const qrcode = require('qrcode-terminal');
@@ -376,11 +376,20 @@ async function connectToWhatsApp() {
 
     sock = makeWASocket({
         version,
-        auth: state,
+        auth: {
+            creds: state.creds,
+            // Usar cache para chaves de sinal melhora estabilidade
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
+        },
         printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
-        browser: ['Ubuntu', 'Chrome', '20.0.04'],
-        mobile: false
+        // macOS Chrome fingerprint: menos suspeito para o WhatsApp do que 'Ubuntu'
+        browser: Browsers.macOS('Chrome'),
+        mobile: false,
+        // Necessário para sessão estável — sem isso, algumas mensagens não chegam
+        getMessage: async (key) => {
+            return { conversation: '' };
+        }
     });
 
     sock.ev.on('connection.update', (update) => {
@@ -401,19 +410,29 @@ async function connectToWhatsApp() {
             pairingPhoneNumber = null;
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-            console.log('Connection closed:', lastDisconnect?.error, 'StatusCode:', statusCode, 'Reconnecting:', shouldReconnect);
+            console.log('Connection closed. StatusCode:', statusCode, '| Reconnecting:', shouldReconnect);
             
             if (shouldReconnect) {
                 setTimeout(connectToWhatsApp, 3000);
             } else {
-                // Desconectado pelo celular (401/loggedOut): limpar auth e gerar novo QR
-                console.log('[AUTO-RECOVERY] Sessão expirada/deslogada. Limpando credenciais e gerando novo QR...');
-                try {
-                    fs.rmSync(path.join(dataDir, 'auth_info_baileys'), { recursive: true, force: true });
-                } catch (e) {
-                    console.error('Erro ao limpar auth:', e);
-                }
-                setTimeout(connectToWhatsApp, 2000);
+                // 401/loggedOut durante Pairing Code pode ser transitório:
+                // O WhatsApp leva até 8s para completar o handshake de credenciais
+                // após o usuário confirmar no celular. Aguardamos antes de limpar.
+                console.log('[RECOVERY] Status 401 recebido. Aguardando 8s antes de limpar credenciais...');
+                setTimeout(() => {
+                    // Verificar se não conectou nesse intervalo
+                    if (!isConnected) {
+                        console.log('[AUTO-RECOVERY] Nenhuma conexão estabelecida. Limpando credenciais e gerando novo QR...');
+                        try {
+                            fs.rmSync(path.join(dataDir, 'auth_info_baileys'), { recursive: true, force: true });
+                        } catch (e) {
+                            console.error('Erro ao limpar auth:', e);
+                        }
+                        setTimeout(connectToWhatsApp, 1000);
+                    } else {
+                        console.log('[RECOVERY] Conexão já restabelecida. Auth preservada.');
+                    }
+                }, 8000);
             }
         } else if (connection === 'open') {
             isConnected = true;
