@@ -110,19 +110,18 @@ if (!empty($config['groups'])) {
                     }
                 }
 
+                // Ignora contas da Staff / Testes (devido a limitações de @lid no WhatsApp Business)
+                if (stripos($nome, 'Staff') !== false || stripos($nome, 'Test') !== false) continue;
+
                 // Track Social (Messages & Reactions across ALL groups)
-                $interactions = ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0) + ($data['reactions_given'] ?? 0);
-                if ($interactions > 0) {
-                    if (!isset($rankingMsgs[$memberJid])) {
-                        $rankingMsgs[$memberJid] = [
-                            'name'  => $nome,
-                            'score' => 0
-                        ];
-                    }
-                    // Para o Word Slingers, contamos todas as mensagens físicas e comandos (messages) + mídias (images/audios)
-                    $rankingMsgs[$memberJid]['score'] += ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0);
+                if (!isset($rankingMsgs[$memberJid])) {
+                    $rankingMsgs[$memberJid] = [
+                        'name'  => $nome,
+                        'score' => 0
+                    ];
                 }
-                
+                $rankingMsgs[$memberJid]['score'] += ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0);
+
                 if (!isset($rankingReacts[$memberJid])) {
                     $rankingReacts[$memberJid] = ['name' => $nome, 'score' => 0];
                 }
@@ -177,6 +176,9 @@ if (isset($SCORING_RULES[$desafioGroupKey])) {
             $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
             if ($rowName) $mName = $rowName['nome'];
         }
+
+        // Ignora contas da Staff / Testes (devido a limitações de @lid)
+        if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
 
         if (!isset($memberStats[$mJid])) {
             $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
