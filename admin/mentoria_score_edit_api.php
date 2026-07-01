@@ -81,6 +81,14 @@ try {
                 if (str_ends_with($memberJid, '@g.us')) continue;
 
                 $name = $stats['name'] ?? 'Unknown';
+                if ($name === 'Unknown' || trim($name) === '') {
+                    $stmtName = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE member_jid = ? LIMIT 1");
+                    $stmtName->execute([$memberJid]);
+                    $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+                    if ($rowName && !empty($rowName['member_name'])) {
+                        $name = $rowName['member_name'];
+                    }
+                }
                 
                 // Ignora o perfil da Staff mesmo se ele usou um device linkado diferente
                 if (stripos($name, 'Staff') !== false) continue;
