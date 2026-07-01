@@ -4,6 +4,9 @@
  * Frequência: 1x/dia à meia-noite
  */
 require_once __DIR__ . '/../config.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 $token_secreto = '83x9aZ2pLQw1'; 
