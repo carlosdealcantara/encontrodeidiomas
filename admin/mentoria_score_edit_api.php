@@ -81,6 +81,9 @@ try {
                 if (str_ends_with($memberJid, '@g.us')) continue;
 
                 $name = $stats['name'] ?? 'Unknown';
+                
+                // Ignora o perfil da Staff mesmo se ele usou um device linkado diferente
+                if (stripos($name, 'Staff') !== false) continue;
 
                 // --- Seção ATIVIDADES ---
                 if (!isset($students[$memberJid])) {
