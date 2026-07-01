@@ -5,8 +5,8 @@ error_reporting(E_ALL);
 
 $conn = connectDB();
 try {
-    $conn->exec("ALTER TABLE mentoria_desafio_streaks ADD COLUMN member_name VARCHAR(255) NULL");
-    echo "Column added.";
+    $stmt = $conn->query("DESCRIBE mentoria_alunos");
+    print_r($stmt->fetchAll(PDO::FETCH_ASSOC));
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
