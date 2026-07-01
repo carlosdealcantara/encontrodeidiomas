@@ -31,6 +31,10 @@ $conn->exec("
     )
 ");
 
+try {
+    $conn->exec("ALTER TABLE mentoria_desafio_streaks ADD COLUMN member_name VARCHAR(255) NULL");
+} catch (Exception $e) {}
+
 $ontem = (new DateTime())->modify('-1 day')->format('Y-m-d');
 
 $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'ranking_unificado' AND data_execucao = ?");
