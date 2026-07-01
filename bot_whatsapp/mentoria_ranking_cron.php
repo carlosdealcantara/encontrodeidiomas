@@ -138,8 +138,10 @@ $targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
 if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
 
 $mentions = array_values(array_unique($mentions));
+var_dump(['target' => $targetGroup, 'message' => $message, 'mentions' => $mentions]);
 $result = enviarWhatsAppMention($targetGroup, $message, $mentions);
 if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
+    var_dump($targetGroup, $message, $mentions);
     $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_diario', ?, ?)")
          ->execute([$ontem, json_encode(['top5msgs' => $top5Msgs, 'top5reacts' => $top5Reacts])]);
     echo "✅ Ranking enviado!";
