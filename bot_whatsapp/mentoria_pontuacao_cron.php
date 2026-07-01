@@ -170,10 +170,11 @@ if (isset($SCORING_RULES[$desafioGroupKey])) {
         
         $mName = $completer['member_name'] ?? 'Unknown';
         if ($mName === 'Unknown' || empty(trim($mName))) {
-            $stmtName = $conn->prepare("SELECT member_name FROM mentoria_alunos WHERE member_jid = ? AND member_name IS NOT NULL AND member_name != '' LIMIT 1");
-            $stmtName->execute([$mJid]);
+            $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+            $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]); // Extrai só o número para bater com telefone
+            $stmtName->execute([$phoneOnly]);
             $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-            if ($rowName) $mName = $rowName['member_name'];
+            if ($rowName) $mName = $rowName['nome'];
         }
 
         if (!isset($memberStats[$mJid])) {
