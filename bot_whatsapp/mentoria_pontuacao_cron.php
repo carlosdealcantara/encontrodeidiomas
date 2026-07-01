@@ -94,11 +94,12 @@ if (!empty($config['groups'])) {
                 
                 $nome = trim($data['name'] ?? 'Unknown');
                 if ($nome === 'Unknown' || empty($nome)) {
-                    $stmtName = $conn->prepare("SELECT member_name FROM mentoria_alunos WHERE member_jid = ? AND member_name IS NOT NULL AND member_name != '' LIMIT 1");
-                    $stmtName->execute([$memberJid]);
+                    $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+                    $phoneOnly = preg_replace('/\D/', '', explode('@', $memberJid)[0]);
+                    $stmtName->execute([$phoneOnly]);
                     $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
                     if ($rowName) {
-                        $nome = $rowName['member_name'];
+                        $nome = $rowName['nome'];
                     } else {
                         $stmtName2 = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE member_jid = ? AND member_name IS NOT NULL AND member_name != '' LIMIT 1");
                         $stmtName2->execute([$memberJid]);
