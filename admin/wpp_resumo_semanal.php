@@ -251,3 +251,4 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
     </script>
 </body>
 </html>
+

@@ -16,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_flags'])) {
     $flags = [
         'wpp_meetups_hourly_ativo' => isset($_POST['wpp_meetups_hourly_ativo']) ? '1' : '0',
         'wpp_meetups_daily_ativo'  => isset($_POST['wpp_meetups_daily_ativo']) ? '1' : '0',
-        'wpp_mentoria_ativo'       => isset($_POST['wpp_mentoria_ativo']) ? '1' : '0'
+        'wpp_mentoria_ativo'       => isset($_POST['wpp_mentoria_ativo']) ? '1' : '0',
+        'wpp_odysee_ativo'         => isset($_POST['wpp_odysee_ativo']) ? '1' : '0'
     ];
 
     try {
@@ -34,13 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_flags'])) {
 $meetups_hourly = getSystemSetting($conn, 'wpp_meetups_hourly_ativo', '0');
 $meetups_daily  = getSystemSetting($conn, 'wpp_meetups_daily_ativo', '0');
 $mentoria_ativo = getSystemSetting($conn, 'wpp_mentoria_ativo', '1');
+$odysee_ativo   = getSystemSetting($conn, 'wpp_odysee_ativo', '0');
 
 // Buscar status do bot
 $bot_status = statusWhatsApp();
 $is_connected = $bot_status['connected'] ?? false;
 
 // Determinar estado de contenção global
-$modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0');
+$modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0' || $odysee_ativo === '0');
 
 ?>
 <!DOCTYPE html>
@@ -99,13 +101,7 @@ $modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0');
 
     <main class="main-content">
         <!-- Sub-Nav -->
-        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <a href="meetup_groups.php" class="btn btn-secondary"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
-            <a href="meetup_templates.php" class="btn btn-secondary"><i class="fas fa-comment-dots"></i> Templates</a>
-            <a href="wpp_broadcast.php" class="btn btn-secondary"><i class="fas fa-bullhorn"></i> Disparar</a>
-            <a href="conectar_whatsapp.php" class="btn btn-secondary"><i class="fas fa-qrcode"></i> Conexão e Status</a>
-            <a href="wpp_contencao.php" class="btn btn-primary"><i class="fas fa-shield-alt"></i> Modo Contenção</a>
-        </div>
+        <?php include __DIR__ . '/includes/whatsapp_subnav.php'; ?>
 
         <header class="header">
             <div>
@@ -163,6 +159,19 @@ $modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0');
                     <div>
                         <label class="switch">
                             <input type="checkbox" name="wpp_meetups_daily_ativo" <?= $meetups_daily === '1' ? 'checked' : '' ?>>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h3>Disparos de Vídeos do Odysee</h3>
+                        <p>🔴 <strong>ALTO RISCO:</strong> Dispara mensagens do mesmo vídeo para vários grupos correspondentes ao idioma.</p>
+                    </div>
+                    <div>
+                        <label class="switch">
+                            <input type="checkbox" name="wpp_odysee_ativo" <?= $odysee_ativo === '1' ? 'checked' : '' ?>>
                             <span class="slider"></span>
                         </label>
                     </div>

@@ -82,7 +82,11 @@ if (empty($tarefa['odysee_url'])) {
 
 // Processo de disparo real
 if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
-    try {
+    // MODO DE CONTENÇÃO: verifica flag no banco
+    if (getSystemSetting($conn, 'wpp_odysee_ativo', '0') !== '1') {
+        $error = "⛔ Modo de Contenção Ativo. O disparo do Odysee está desligado temporariamente para evitar banimento. Ative-o no painel de Modo Contenção.";
+    } else {
+        try {
         // 1. Template
         $stmtT = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'odysee_whatsapp_template'");
         $stmtT->execute();
@@ -171,8 +175,9 @@ if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
         header("Location: odysee.php?tab=fila&msg=" . urlencode("Disparado com sucesso para $enviados grupos!"));
         exit;
         
-    } catch (Exception $e) {
-        $error = $e->getMessage();
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
     }
 }
 ?>
