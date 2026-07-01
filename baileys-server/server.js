@@ -508,6 +508,10 @@ async function processQueue() {
                 
                 const msgPayload = { text };
                 
+                if (item.mentions && Array.isArray(item.mentions)) {
+                    msgPayload.mentions = item.mentions;
+                }
+                
                 if (item.linkPreview) {
                     msgPayload.contextInfo = {
                         externalAdReply: {
@@ -645,6 +649,34 @@ app.post('/send', (req, res) => {
             text: message,
             index: 1,
             linkPreview
+        });
+        
+        if (isConnected && !isProcessingQueue) {
+            processQueue();
+        }
+        
+        res.json({ success: true, jobId, queued: 1 });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Send Mention Route
+app.post('/send-mention', (req, res) => {
+    if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado.' });
+    try {
+        const { to, message, mentions } = req.body;
+        if (!to || !message || !Array.isArray(mentions)) return res.status(400).json({ success: false, error: 'Parâmetros "to", "message" e "mentions" são obrigatórios' });
+        
+        const jobId = 'ment_' + Math.random().toString(36).substring(2, 10);
+        jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
+        
+        queue.push({
+            jobId,
+            number: to,
+            text: message,
+            index: 1,
+            mentions
         });
         
         if (isConnected && !isProcessingQueue) {
