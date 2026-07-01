@@ -144,5 +144,5 @@ if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
          ->execute([$ontem, json_encode(['top5msgs' => $top5Msgs, 'top5reacts' => $top5Reacts])]);
     echo "✅ Ranking enviado!";
 } else {
-    echo "❌ Erro ao enviar ranking: HTTP " . $result['httpCode'];
+    echo "❌ Erro ao enviar ranking: HTTP " . $result['httpCode'] . " | Raw: " . json_encode($result);
 }
