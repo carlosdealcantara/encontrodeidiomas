@@ -21,6 +21,12 @@ require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
+// MODO DE CONTENÇÃO: verifica flag no banco
+if (getSystemSetting($conn, 'wpp_meetups_hourly_ativo', '0') !== '1') {
+    echo "<h2>⛔ Modo de Contenção Ativo</h2><p>Avisos de meetup estão desativados. Ative em Admin → Modo de Contenção.</p>";
+    exit;
+}
+
 if (isset($_GET['clear_logs']) && $_GET['clear_logs'] == '1') {
     $conn->exec("DELETE FROM meetup_whatsapp_logs WHERE data_disparo = CURRENT_DATE()");
     echo "<h3>Logs de hoje apagados com sucesso.</h3>";

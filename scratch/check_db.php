@@ -1,10 +1,4 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
-$conn = connectDB();
-try {
-    $stmt = $conn->query("SELECT id, status, last_screenshot_time FROM odysee_publish_queue WHERE language_id = (SELECT id FROM languages WHERE name = 'Inglês' LIMIT 1)");
-    $row = $stmt->fetch();
-    echo "Status Atual: " . $row['status'] . "\n";
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+$stmt = $conn->query("SELECT id, language_id, status, titulo_final, created_at, updated_at FROM odysee_publish_queue ORDER BY id DESC LIMIT 5;");
+print_r($stmt->fetchAll(PDO::FETCH_ASSOC));

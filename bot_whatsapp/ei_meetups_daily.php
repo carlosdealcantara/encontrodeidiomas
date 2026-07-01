@@ -21,6 +21,12 @@ require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 $conn = connectDB();
 
+// MODO DE CONTENÇÃO: verifica flag no banco
+if (getSystemSetting($conn, 'wpp_meetups_daily_ativo', '0') !== '1') {
+    echo "<h2>⛔ Modo de Contenção Ativo</h2><p>Resumo diário de meetups está desativado. Ative em Admin → Modo de Contenção.</p>";
+    exit;
+}
+
 // Desliga o buffer do PHP para mostrar o texto na tela em tempo real
 while (ob_get_level()) { ob_end_flush(); }
 ob_implicit_flush(1);

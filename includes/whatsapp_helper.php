@@ -129,3 +129,21 @@ function removerDoGrupo(string $groupId, array $participants): array {
     ];
     return sendBaileysRequest('/group-remove', $payload, 'POST');
 }
+
+/**
+ * Lê uma configuração do sistema na tabela system_settings.
+ * @param PDO $conn Conexão já aberta
+ * @param string $chave
+ * @param string $default Valor padrão se não encontrar
+ * @return string
+ */
+function getSystemSetting(PDO $conn, string $chave, string $default = ''): string {
+    try {
+        $stmt = $conn->prepare("SELECT valor FROM system_settings WHERE chave = ? LIMIT 1");
+        $stmt->execute([$chave]);
+        $row = $stmt->fetch();
+        return $row ? $row['valor'] : $default;
+    } catch (Exception $e) {
+        return $default; // Falha silenciosa — nunca quebra o cron
+    }
+}
