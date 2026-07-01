@@ -104,12 +104,9 @@ $medals = ['🥇', '🥈', '🥉'];
 
 $msgList = '';
 $i = 0;
-$mentions = [];
 foreach ($top5Msgs as $jid => $data) {
     $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
-    $jidClean = explode('@', $jid)[0];
-    $msgList .= $rankStr . " @{$jidClean} — {$data['score']} msgs\n";
-    $mentions[] = $jid;
+    $msgList .= $rankStr . " {$data['name']} — {$data['score']} msgs\n";
     $i++;
 }
 
@@ -117,13 +114,11 @@ $reactList = '';
 $i = 0;
 foreach ($top5Reacts as $jid => $data) {
     $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
-    $jidClean = explode('@', $jid)[0];
-    $reactList .= $rankStr . " @{$jidClean} — {$data['score']} reacts\n";
-    $mentions[] = $jid;
+    $reactList .= $rankStr . " {$data['name']} — {$data['score']} reacts\n";
     $i++;
 }
 
-$template = $config['templates']['ranking_social'] ?? "🏆 *Daily Social Ranking* ({date})\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
+$template = !empty($config['templates']['ranking_social']) ? $config['templates']['ranking_social'] : "🏆 *Daily Social Ranking* ({date})\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
 
 // Format date in English, e.g. "June 13th, 2026"
 $enDate = date('F jS, Y', strtotime($ontem));
@@ -137,14 +132,11 @@ $message = str_replace(
 $targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
 if (!$targetGroup) die("Grupo alvo (The Lounge) não configurado.");
 
-$mentions = array_values(array_unique($mentions));
-var_dump(['target' => $targetGroup, 'message' => $message, 'mentions' => $mentions]);
-$result = enviarWhatsAppMention($targetGroup, $message, $mentions);
+$result = enviarWhatsApp($targetGroup, $message, 'mentoria_ranking');
 if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
-    var_dump($targetGroup, $message, $mentions);
     $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_diario', ?, ?)")
          ->execute([$ontem, json_encode(['top5msgs' => $top5Msgs, 'top5reacts' => $top5Reacts])]);
     echo "✅ Ranking enviado!";
 } else {
-    echo "❌ Erro ao enviar ranking: HTTP " . $result['httpCode'] . " | Raw: " . json_encode($result);
+    echo "❌ Erro ao enviar ranking: HTTP " . $result['httpCode'];
 }
