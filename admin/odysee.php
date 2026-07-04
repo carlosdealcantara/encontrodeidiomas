@@ -253,13 +253,14 @@ if (isset($_GET['msg']) && !$msg) {
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Idioma</th>
-                        <th>Título Final</th>
-                        <th>Status</th>
-                        <th>Tentativas</th>
-                        <th>Erro/Detalhe</th>
-                        <th>Ações</th>
+                        <th width="5%">ID</th>
+                        <th width="15%">Idioma</th>
+                        <th width="20%">Título Final</th>
+                        <th width="10%">Criado Em</th>
+                        <th width="10%">Status</th>
+                        <th width="10%">Tentativas</th>
+                        <th width="20%">Erro/Detalhe</th>
+                        <th width="10%">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -292,7 +293,12 @@ if (isset($_GET['msg']) && !$msg) {
                         <td>#<?= $row['id'] ?></td>
                         <td><?= htmlspecialchars($row['language_name']) ?></td>
                         <td>
-                            <?= htmlspecialchars($row['titulo_final'] ?? 'Aguardando Host...') ?>
+                            <?php if ($row['status'] === 'waiting_title' || $row['status'] === 'waiting_host'): ?>
+                                <span style="color:var(--text-dim); font-size:0.9rem;"><?= htmlspecialchars($row['topico']) ?></span>
+                            <?php else: ?>
+                                <strong style="color:var(--text-main);"><?= htmlspecialchars($row['titulo_final']) ?></strong>
+                            <?php endif; ?>
+                            
                             <?php if (!empty($row['odysee_url'])): ?>
                                 <br><a href="<?= htmlspecialchars($row['odysee_url']) ?>" target="_blank" style="color:var(--accent-blue); font-size:0.85rem;"><?= htmlspecialchars(strlen($row['odysee_url']) > 40 ? substr($row['odysee_url'], 0, 40) . '...' : $row['odysee_url']) ?></a>
                             <?php endif; ?>
@@ -308,6 +314,9 @@ if (isset($_GET['msg']) && !$msg) {
                                     <i class="fas fa-paper-plane"></i> Notificar
                                 </button>
                             <?php endif; ?>
+                        </td>
+                        <td style="font-size: 0.85rem; color: var(--text-dim);">
+                            <?= htmlspecialchars(date('d/m/Y H:i', strtotime($row['created_at']))) ?>
                         </td>
                         <td><span class="status-badge status-<?= $badge_class ?>"><?= $display_status ?></span></td>
                         <td><?= $row['retry_count'] ?>/3</td>
