@@ -37,12 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_template') {
     $new_template = trim($_POST['template_text']);
+    $item_template_text = trim($_POST['item_template_text']);
+    
     $stmt = $conn->prepare("
         INSERT INTO settings (setting_key, category, label, type, setting_value)
         VALUES ('weekly_summary_template', 'WhatsApp', 'Template do Resumo Semanal', 'textarea', ?)
         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
     ");
     $stmt->execute([$new_template]);
+    
+    $stmt2 = $conn->prepare("
+        INSERT INTO settings (setting_key, category, label, type, setting_value)
+        VALUES ('weekly_summary_item_template', 'WhatsApp', 'Template da Linha do Resumo', 'text', ?)
+        ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    ");
+    $stmt2->execute([$item_template_text]);
+    
     header('Location: wpp_resumo_semanal.php?msg=Template+salvo!');
     exit;
 }
@@ -67,6 +77,9 @@ $replays = $stmt->fetchAll();
 // Success message from redirect
 if (isset($_GET['msg'])) $msg_success = htmlspecialchars($_GET['msg']);
 
+$default_item_template = "{flag} {num} {link} {title}";
+$item_template = getSetting('weekly_summary_item_template', $default_item_template);
+
 // Generate Replays List String
 $replays_list_clean = "";
 foreach ($replays as $r) {
@@ -77,7 +90,11 @@ foreach ($replays as $r) {
     $lnk = !empty($r['link']) ? str_replace(['https://', 'http://'], '', $r['link']) : "Link";
     $tit = !empty($r['titulo']) ? $r['titulo'] : "Título";
     
-    $linha = "{$r['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
+    $linha = str_replace(
+        ['{flag}', '{num}', '{link}', '{title}'],
+        [$r['flag_emoji'], $num, $lnk, $tit],
+        $item_template
+    ) . "\n";
     $replays_list_clean .= $linha;
 }
 
@@ -134,14 +151,8 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
     <?php include 'includes/sidebar.php'; ?>
     
     <div class="main-content">
-        <!-- WhatsApp Sub-Nav -->
-        <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <a href="meetup_groups.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_groups.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fab fa-whatsapp"></i> Configurar Grupos</a>
-            <a href="meetup_templates.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'meetup_templates.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-comment-dots"></i> Templates de Mensagem</a>
-            <a href="wpp_broadcast.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_broadcast.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-bullhorn"></i> Disparar Mensagem</a>
-            <a href="wpp_resumo_semanal.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'wpp_resumo_semanal.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-list-alt"></i> Resumo Semanal</a>
-            <a href="conectar_whatsapp.php" class="btn <?= basename($_SERVER['PHP_SELF']) == 'conectar_whatsapp.php' ? 'btn-primary' : 'btn-secondary' ?>"><i class="fas fa-qrcode"></i> Conexão e Status</a>
-        </div>
+        <!-- Sub-Nav -->
+        <?php include __DIR__ . '/includes/whatsapp_subnav.php'; ?>
 
         <div class="header">
             <h1 style="font-size: 2rem; margin-bottom: 5px;">Gerador de Resumo Semanal</h1>
@@ -219,11 +230,17 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
             <button onclick="document.getElementById('templateModal').style.display='none'" style="position:absolute; top:20px; right:20px; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
             <h2>Editar Layout da Mensagem</h2>
             <p style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.9rem;">
-                Use a tag <strong>{REPLAYS_LIST}</strong> no local exato onde deseja que a lista de idiomas apareça.
+                Configure a mensagem principal e a regra de formatação de cada linha da lista.
             </p>
             <form method="POST">
                 <input type="hidden" name="action" value="save_template">
+                
+                <label style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 5px; display: block;">Template de cada Linha de Idioma (Use {flag}, {num}, {link}, {title}):</label>
+                <input type="text" name="item_template_text" value="<?= htmlspecialchars($item_template) ?>" required style="margin-bottom: 20px;">
+                
+                <label style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 5px; display: block;">Template Geral da Mensagem (Use {REPLAYS_LIST}):</label>
                 <textarea name="template_text" required><?= htmlspecialchars($template) ?></textarea>
+                
                 <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Salvar Layout</button>
             </form>
         </div>
@@ -251,4 +268,6 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
     </script>
 </body>
 </html>
+
+
 

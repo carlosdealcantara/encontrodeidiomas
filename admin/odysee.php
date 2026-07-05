@@ -316,7 +316,11 @@ if (isset($_GET['msg']) && !$msg) {
                             <?php endif; ?>
                         </td>
                         <td style="font-size: 0.85rem; color: var(--text-dim);">
-                            <?= htmlspecialchars(date('d/m/Y H:i', strtotime($row['created_at']))) ?>
+                            <?php 
+                                $dt = new DateTime($row['created_at'], new DateTimeZone('UTC'));
+                                $dt->setTimezone(new DateTimeZone('America/Sao_Paulo'));
+                                echo htmlspecialchars($dt->format('d/m/Y H:i'));
+                            ?>
                         </td>
                         <td><span class="status-badge status-<?= $badge_class ?>"><?= $display_status ?></span></td>
                         <td><?= $row['retry_count'] ?>/3</td>
