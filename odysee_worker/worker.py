@@ -11,6 +11,13 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from playwright.sync_api import sync_playwright
 from thumbnail_gen import gerar_thumbnail_inteligente
+import unicodedata
+
+def normalize_text(text):
+    if not text:
+        return ""
+    return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn').lower()
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -595,8 +602,9 @@ def escanear_drive():
             # Identifica o idioma
             language_id = None
             idioma_escolhido = None
+            file_name_norm = normalize_text(file_name)
             for idioma in idiomas:
-                if idioma['name'] in file_name:
+                if normalize_text(idioma['name']) in file_name_norm:
                     language_id = idioma['id']
                     idioma_escolhido = idioma
                     break
