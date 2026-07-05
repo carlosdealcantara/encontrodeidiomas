@@ -423,13 +423,13 @@ if (isset($_GET['msg']) && !$msg) {
 
         <!-- ABA 3: DIAGNÓSTICO -->
         <div id="tab-diag" class="main-tab-content <?= $active_tab === 'diag' ? 'active' : '' ?>">
-            <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom: 20px;">
-                <button class="btn-sm" style="margin-right: 15px;" onclick="fetchDiagUpdate()"><i class="fas fa-sync-alt"></i> Atualizar Agora</button>
+            <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom: 20px; min-height: 38px;">
+                <span id="diag-status-text" style="color:var(--text-dim); font-size:0.9rem;">🔄 Aguardando primeira verificação...</span>
             </div>
             
             <div class="info-box">
                 <i class="fas fa-info-circle"></i>
-                <strong>Diagnóstico em tempo real:</strong> Esta tela se atualiza automaticamente via AJAX a cada 15 segundos — <strong>sem precisar recarregar o navegador</strong>. Durante o upload, o robô captura screenshots a cada ciclo de ~30s.
+                <strong>Diagnóstico em tempo real:</strong> Esta tela verifica automaticamente por novos screenshots a cada 15 segundos. O robô captura uma nova imagem a cada ~1 minuto durante o upload — quando detectar uma atualização, a tela muda sozinha.
             </div>
 
             <div id="diag-container">
@@ -649,6 +649,12 @@ if (isset($_GET['msg']) && !$msg) {
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const json = await res.json();
                 
+                const statusText = document.getElementById('diag-status-text');
+                if (statusText) {
+                    statusText.innerHTML = `🔄 Última verificação: ${new Date().toLocaleTimeString('pt-BR')}`;
+                    statusText.style.color = 'var(--text-dim)';
+                }
+                
                 if (json.success && json.data) {
                     const data = json.data;
                     const container = document.getElementById('diag-container');
@@ -690,6 +696,23 @@ if (isset($_GET['msg']) && !$msg) {
                 }
             } catch (e) {
                 console.error("Erro ao fazer polling da screenshot:", e);
+                const statusText = document.getElementById('diag-status-text');
+                if (statusText) {
+                    statusText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro de rede ou servidor ao buscar atualizações`;
+                    statusText.style.color = 'var(--accent-red)';
+                }
+                const container = document.getElementById('diag-container');
+                if (container && !lastTimestamp) { // Só mostra o erro grandão se ainda não tinha foto nenhuma
+                    container.innerHTML = `
+                        <div class="info-box" style="text-align:center; padding:40px; border-left-color: var(--accent-red);">
+                            <p style="color:var(--accent-red); font-size:1.1rem;">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                Falha na conexão com o servidor ao buscar atualizações.<br>
+                                Detalhe do erro: ${e.message}
+                            </p>
+                        </div>
+                    `;
+                }
             }
         }
         

@@ -2,6 +2,8 @@
 require_once dirname(__DIR__) . '/config.php';
 header('Content-Type: application/json');
 
+$conn = connectDB();
+
 try {
     $active = $conn->query("
         SELECT q.id, q.titulo_final, q.status, q.last_screenshot_time, l.name as language_name, q.last_screenshot
