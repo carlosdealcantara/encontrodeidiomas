@@ -48,7 +48,7 @@ def buscar_proxima_tarefa():
             SELECT q.*, l.odysee_auth_token, l.odysee_channel_name, l.whatsapp_group_id, l.name as language_name, l.flag_emoji
             FROM odysee_publish_queue q
             JOIN languages l ON q.language_id = l.id
-            WHERE q.status = "pending" AND l.odysee_auto_enabled = 1
+            WHERE q.status = "pending" OR q.status = "skip_publish"
             ORDER BY q.id ASC LIMIT 1
         ''')
         return cursor.fetchone()
@@ -106,25 +106,28 @@ def baixar_video_drive(drive_service, file_id, file_name):
     
     return temp_path
 
-def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
+def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, move_video=True):
     try:
         # 1. Move o vídeo para a pasta do idioma
-        results = drive_service.files().list(
-            q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
-            fields="files(id, name)"
-        ).execute()
-        pastas = results.get('files', [])
-        if pastas:
-            pasta_id = pastas[0]['id']
-            file = drive_service.files().get(fileId=file_id, fields='parents').execute()
-            drive_service.files().update(
-                fileId=file_id,
-                addParents=pasta_id,
-                removeParents=",".join(file.get('parents', []))
+        if move_video:
+            results = drive_service.files().list(
+                q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
+                fields="files(id, name)"
             ).execute()
-            logger.info(f"[DRIVE] Vídeo movido para a pasta '{language_name}'")
+            pastas = results.get('files', [])
+            if pastas:
+                pasta_id = pastas[0]['id']
+                file = drive_service.files().get(fileId=file_id, fields='parents').execute()
+                drive_service.files().update(
+                    fileId=file_id,
+                    addParents=pasta_id,
+                    removeParents=",".join(file.get('parents', []))
+                ).execute()
+                logger.info(f"[DRIVE] Vídeo movido para a pasta '{language_name}'")
+            else:
+                logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo mantido na raiz.")
         
-        # 2. Apaga o arquivo de Chat (.txt) correspondente
+        # 2. Apaga o arquivo de Chat (.txt) correspondente - movendo para Geral/Transcrições
         # O nome do vídeo original é parecido com "... - Recording" e do chat "... - Chat"
         base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
         chat_results = drive_service.files().list(
@@ -133,13 +136,38 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name):
         ).execute()
         
         chats = chat_results.get('files', [])
-        for chat in chats:
-            # Oculta o chat da pasta principal (como a conta de serviço não é a dona, não pode usar trashed=True)
-            drive_service.files().update(
-                fileId=chat['id'],
-                removeParents=",".join(chat.get('parents', []))
+        if chats:
+            # Encontrar a pasta "Geral"
+            geral_results = drive_service.files().list(
+                q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = 'Geral'",
+                fields="files(id, name)"
             ).execute()
-            logger.info(f"[DRIVE] Chat de texto ocultado da pasta principal: {chat['name']}")
+            pastas_geral = geral_results.get('files', [])
+            
+            if pastas_geral:
+                id_geral = pastas_geral[0]['id']
+                
+                # Encontrar a pasta "Transcrições" dentro de "Geral"
+                transc_results = drive_service.files().list(
+                    q=f"'{id_geral}' in parents and mimeType='application/vnd.google-apps.folder' and name = 'Transcrições'",
+                    fields="files(id, name)"
+                ).execute()
+                pastas_transc = transc_results.get('files', [])
+                
+                if pastas_transc:
+                    id_transcricoes = pastas_transc[0]['id']
+                    for chat in chats:
+                        drive_service.files().update(
+                            fileId=chat['id'],
+                            addParents=id_transcricoes,
+                            removeParents=",".join(chat.get('parents', []))
+                        ).execute()
+                        logger.info(f"[DRIVE] Chat movido para Geral/Transcrições: {chat['name']}")
+                else:
+                    logger.warning("[DRIVE] Pasta 'Transcrições' não encontrada dentro de 'Geral'.")
+            else:
+                logger.warning("[DRIVE] Pasta 'Geral' não encontrada na raiz.")
+                
     except Exception as e:
         logger.error(f"[DRIVE] Erro ao mover vídeo ou apagar chat: {e}")
 
@@ -551,9 +579,8 @@ def escanear_drive():
             
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        # Só busca idiomas que já têm canal e token do Odysee configurados
-        # Idiomas sem token são silenciosamente ignorados (sem criar fila ou erro)
-        cursor.execute("SELECT id, name FROM languages WHERE odysee_auth_token IS NOT NULL AND odysee_auth_token != '' AND odysee_channel_name IS NOT NULL AND odysee_channel_name != '' AND odysee_auto_enabled = 1")
+        # Busca TODOS os idiomas, independente de ter odysee configurado.
+        cursor.execute("SELECT id, name, odysee_auth_token, odysee_channel_name, odysee_auto_enabled FROM languages")
         idiomas = cursor.fetchall()
         
         for arquivo in arquivos:
@@ -567,9 +594,11 @@ def escanear_drive():
                 
             # Identifica o idioma
             language_id = None
+            idioma_escolhido = None
             for idioma in idiomas:
                 if idioma['name'] in file_name:
                     language_id = idioma['id']
+                    idioma_escolhido = idioma
                     break
                     
             if not language_id:
@@ -591,19 +620,27 @@ def escanear_drive():
                 slug = f"{date_match.group(1)}_{date_match.group(2)}_{date_match.group(3)}"
             else:
                 slug = titulo_limpo  # fallback
-            # Verifica se já tem título preenchido no portal (meetup_replays)
-            semana_atual = datetime.datetime.now().strftime("%G-W%V")
-            cursor.execute("SELECT titulo FROM meetup_replays WHERE language_id = %s AND semana = %s AND titulo IS NOT NULL AND titulo != ''", (language_id, semana_atual))
-            row_replay = cursor.fetchone()
+            # Verifica se o idioma está configurado para publicar no Odysee
+            has_odysee = bool(idioma_escolhido.get('odysee_auth_token')) and bool(idioma_escolhido.get('odysee_channel_name')) and bool(idioma_escolhido.get('odysee_auto_enabled'))
             
-            if row_replay:
-                # Host já preencheu o título antes de o robô escanear!
-                titulo_final = row_replay['titulo']
-                status_inicial = 'pending'
-                logger.info(f"Título já preenchido previamente pelo host: {titulo_final}. Indo direto para pending.")
-            else:
+            if not has_odysee:
                 titulo_final = titulo_limpo
-                status_inicial = 'waiting_host'
+                status_inicial = 'skip_publish'
+                logger.info(f"Idioma sem canal ({idioma_escolhido['name']}). Marcando para apenas organizar arquivos.")
+            else:
+                # Verifica se já tem título preenchido no portal (meetup_replays)
+                semana_atual = datetime.datetime.now().strftime("%G-W%V")
+                cursor.execute("SELECT titulo FROM meetup_replays WHERE language_id = %s AND semana = %s AND titulo IS NOT NULL AND titulo != ''", (language_id, semana_atual))
+                row_replay = cursor.fetchone()
+                
+                if row_replay:
+                    # Host já preencheu o título antes de o robô escanear!
+                    titulo_final = row_replay['titulo']
+                    status_inicial = 'pending'
+                    logger.info(f"Título já preenchido previamente pelo host: {titulo_final}. Indo direto para pending.")
+                else:
+                    titulo_final = titulo_limpo
+                    status_inicial = 'waiting_host'
             
             # Insere no banco
             cursor.execute("""
@@ -654,13 +691,28 @@ def processar_fila():
     if not tarefa:
         return
         
-    logger.info(f"Processando tarefa: {tarefa['titulo_final']}")
+    logger.info(f"Processando tarefa: {tarefa['titulo_final']} (Status: {tarefa['status']})")
     atualizar_status(tarefa['id'], 'processing')
     
     temp_path = None
     try:
         drive_service = init_drive_service()
         
+        if tarefa.get('status') == 'skip_publish' or tarefa['status'] == 'processing':
+            # Se for skip_publish, só foi mudado pra processing pela linha acima, então o original era skip_publish
+            # Porém a query também retorna tarefas que eram pending.
+            # Como saber se era skip_publish antes da atualização? O worker vai tentar verificar se tem token.
+            pass
+            
+        # Refinando a verificação:
+        is_skip_publish = (not tarefa['odysee_auth_token']) or (not tarefa['odysee_channel_name'])
+        
+        if is_skip_publish:
+            logger.info("Tarefa não tem canal Odysee. Apenas organizando pastas.")
+            mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=False)
+            atualizar_status(tarefa['id'], 'done', error_msg="Organizado no Drive (sem canal para publicar).")
+            return
+
         temp_path = baixar_video_drive(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
         
         if not tarefa['odysee_auth_token']:
