@@ -806,7 +806,8 @@ def processar_fila():
             odysee_url = f"https://odysee.com/{channel_name}/{tarefa['odysee_slug']}"
             url_curta = encurtar_url(odysee_url)
             logger.warning(f"[SHARE] Fallback para URL canônica encurtada: {url_curta}")
-        
+        # Re-inicializa a conexão do Drive pois uploads longos causam timeout/Broken Pipe
+        drive_service = init_drive_service()
         mover_arquivos_mentoria(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
         
         thumbnail_b64 = None
