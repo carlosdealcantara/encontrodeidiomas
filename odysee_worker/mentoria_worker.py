@@ -365,6 +365,10 @@ def escanear_drive():
             cursor.execute("SELECT id FROM mentoria_odysee_queue WHERE drive_file_id = %s", (file_id,))
             if cursor.fetchone(): continue
                 
+            if 'feedback' in file_name.lower():
+                logger.info(f"Arquivo ignorado (Feedback): {file_name}")
+                continue
+                
             # Ex: Mentorship Class - 2026/07/01 13:06 GMT-03:00 - Recording.mp4
             titulo_limpo = re.sub(r'\s+\d{2}:\d{2}\s+GMT.*', '', file_name)
             titulo_limpo = titulo_limpo.replace(' - Recording', '').replace('.mp4', '').strip()

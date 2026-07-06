@@ -114,7 +114,7 @@ if (!empty($active)) {
                                         <i class="fa-solid fa-rotate-right"></i>
                                     </a>
                                 <?php endif; ?>
-                                <?php if(in_array($item['status'], ['pending', 'error'])): ?>
+                                <?php if(in_array($item['status'], ['pending', 'error', 'processing'])): ?>
                                     <a href="mentoria.php?tab=odysee&cancel=<?= $item['id'] ?>" style="color: var(--danger); text-decoration: none;" title="Cancelar" onclick="return confirm('Certeza que deseja cancelar esta tarefa?')">
                                         <i class="fa-solid fa-xmark"></i>
                                     </a>
