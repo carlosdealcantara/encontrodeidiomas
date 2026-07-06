@@ -72,7 +72,7 @@ if (!empty($active)) {
                     <?php else: ?>
                         <?php foreach($queue as $item): 
                             $statusColor = match($item['status']) {
-                                'pending' => 'var(--text-dim)',
+                                'pending' => 'var(--warning)',
                                 'processing' => 'var(--accent-blue)',
                                 'done' => 'var(--success)',
                                 'error' => 'var(--danger)',
