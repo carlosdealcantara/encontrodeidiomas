@@ -581,7 +581,6 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     row_check = cursor_check.fetchone()
                     cursor_check.execute("SELECT odysee_channel_name FROM languages WHERE id = %s", (os.getenv('MENTORIA_ODYSEE_LANGUAGE_ID', '10'),))
                     lang_row = cursor_check.fetchone()
-                    row_check = cursor_check.fetchone()
                     cursor_check.close()
                     conn_check.close()
                     
