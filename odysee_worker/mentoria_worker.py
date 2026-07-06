@@ -57,7 +57,7 @@ def buscar_proxima_tarefa():
             SELECT *
             FROM mentoria_odysee_queue
             WHERE status = "pending"
-            ORDER BY id ASC LIMIT 1
+            ORDER BY titulo_final ASC LIMIT 1
         ''')
         return cursor.fetchone()
     finally:
