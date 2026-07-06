@@ -177,76 +177,108 @@ def salvar_screenshot(page, nome, tarefa_id):
         logger.warning(f"[SCREENSHOT] Falhou ao salvar {nome}: {e}")
 
 def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None):
-    logger.info("Iniciando publicação de MENTORIA no Odysee via Playwright")
+    logger.info("Iniciando publicação no Odysee via Playwright")
     
+    # Gera thumbnail inteligente antes de abrir o browser (independe de GPU)
     thumbnail_path = None
     try:
         thumbnail_path = gerar_thumbnail_inteligente(file_path)
+        if thumbnail_path:
+            logger.info(f"[THUMBNAIL] Thumbnail gerada com sucesso: {thumbnail_path}")
+        else:
+            logger.warning("[THUMBNAIL] Não foi possível gerar thumbnail. Prosseguindo sem ela.")
     except Exception as e:
-        logger.warning(f"[THUMBNAIL] Erro: {e}")
+        logger.warning(f"[THUMBNAIL] Erro inesperado na geração: {e}. Prosseguindo sem thumbnail.")
         
     with sync_playwright() as p:
+        # Modo otimizado para VPS de 1GB
         browser = p.chromium.launch(
             headless=True,
             args=[
-                '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
-                '--disable-gpu', '--disable-blink-features=AutomationControlled',
-                '--disable-infobars', '--window-size=1920,1080',
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--disable-blink-features=AutomationControlled',
+                '--disable-infobars',
+                '--window-size=1920,1080',
             ]
         )
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-            viewport={"width": 1920, "height": 1080}, 
+            viewport={"width": 1920, "height": 1080},
             locale="en-US"
         )
         page = context.new_page()
+        
+        # Aumenta timeout para conexões lentas ou uploads grandes (4 horas = 14400000ms)
         page.set_default_timeout(14400000)
         page.set_default_navigation_timeout(14400000)
         
-        logger.info("[PASSO 1] Acessando odysee.com...")
+        # PASSO 1: Acessar home e injetar token
+        logger.info("[PASSO 1] Acessando odysee.com para injetar token...")
         page.goto("https://odysee.com", timeout=60000, wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
+        salvar_screenshot(page, "01_home", tarefa_id)
         
+        # Injeta o token como Cookie e no localStorage
         context.add_cookies([
-            {"name": "auth_token", "value": auth_token, "domain": ".odysee.com", "path": "/"}
+            {
+                "name": "auth_token",
+                "value": auth_token,
+                "domain": ".odysee.com",
+                "path": "/"
+            }
         ])
         page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
+        logger.info("[PASSO 1] Token injetado no Cookie e localStorage.")
+        
+        # Fazemos um reload para garantir que o cookie e o localStorage entrem em vigor na Home
         page.reload(timeout=60000, wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
         
+        # PASSO 2: Ir para página de upload
         logger.info("[PASSO 2] Navegando para /$/upload...")
         page.goto("https://odysee.com/$/upload", timeout=60000, wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
+        salvar_screenshot(page, "02_upload_page", tarefa_id)
+        logger.info(f"[PASSO 2] Página carregada. URL: {page.url}")
+        
+        # Verificar se estamos na página certa (pode ter redirecionado para login)
         if "upload" not in page.url:
-            raise Exception(f"Redirecionado inesperadamente para: {page.url}")
+            salvar_screenshot(page, "02_redirect_detected", tarefa_id)
+            raise Exception(f"Redirecionado inesperadamente para: {page.url}. Possível bloqueio ou sessão inválida.")
         
-        logger.info("[PASSO 3] Input de arquivo...")
-        salvar_screenshot(page, "00_before_file_input", tarefa_id)
-        
-        # Odysee pode ter um botão de "Browse" ou a class '.file-selector' ou semelhante
+        # PASSO 3: Localizar e preencher o input de arquivo
+        logger.info("[PASSO 3] Localizando input de arquivo...")
         file_input = page.locator('input[type="file"]')
-        try:
-            file_input.wait_for(state="attached", timeout=60000)
-        except Exception as e:
-            salvar_screenshot(page, "00_error_file_input", tarefa_id)
-            raise e
-            
+        file_input.wait_for(state="attached", timeout=60000)
+        salvar_screenshot(page, "03_before_file_input", tarefa_id)
         file_input.set_input_files(file_path)
-        salvar_screenshot(page, "01_after_file_input", tarefa_id)
+        logger.info(f"[PASSO 3] Arquivo '{file_path}' selecionado.")
+        salvar_screenshot(page, "04_after_file_input", tarefa_id)
         
-        logger.info("[PASSO 4] Wizard...")
+        # PASSO 4: Navegar pelo Wizard do Odysee
+        logger.info("[PASSO 4] Navegando pelo Wizard de publicação...")
         
+        # Odysee usa um Wizard de 4 etapas: 1. Arquivo, 2. Detalhes, 3. Tags, 4. Publicação
+        # O botão final "Publicação" está na parte inferior da página (não na barra de navegação do topo)
         for step in range(1, 6):
+            logger.info(f"Tentando preencher a etapa {step} do Wizard...")
             page.wait_for_timeout(2000)
             
-            # Aba Detalhes
+            # Tenta preencher o título se ele estiver visível (somente na etapa de Detalhes)
             try:
                 if page.locator('input[name="content_title"], input[placeholder*="ítulo"], input[placeholder*="Title"]').first.is_visible():
                     try:
                         page.locator('input[name="content_title"], input[placeholder*="ítulo"], input[placeholder*="Title"]').first.fill(title, timeout=5000, force=True)
-                    except:
+                    except Exception as e:
+                        logger.warning(f"Aviso: Não conseguiu preencher título com fill: {e}")
                         safe_title = title.replace('"', '\\"').replace("'", "\\'")
-                        page.evaluate(f"var el = document.querySelector('input[name=\"content_title\"]') || document.querySelector('input[placeholder*=\"ítulo\"]'); if(el) {{ el.value = '{safe_title}'; el.dispatchEvent(new Event('input', {{bubbles: true}})); }}")
+                        page.evaluate(f"""
+                            var el = document.querySelector('input[name="content_title"]') || document.querySelector('input[placeholder*="ítulo"]');
+                            if(el) {{ el.value = "{safe_title}"; el.dispatchEvent(new Event('input', {{bubbles: true}})); }}
+                        """)
                     
                     if slug:
                         try:
@@ -255,26 +287,109 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                                 url_input.click(click_count=3)
                                 page.keyboard.press('Backspace')
                                 url_input.fill(slug, timeout=5000, force=True)
-                        except: pass
+                                logger.info(f"URL preenchida com o slug: {slug}")
+                        except Exception as e:
+                            logger.warning(f"Erro ao preencher a URL: {e}")
                     
-                    try: page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
-                    except: pass
-            except: pass
+                    try:
+                        page.locator('input[name="content_bid"]').first.fill("0.001", timeout=5000, force=True)
+                    except:
+                        pass
+                    logger.info("Título preenchido.")
+                    salvar_screenshot(page, f"05_wizard_step_{step}_title_filled", tarefa_id)
+            except Exception as outer_e:
+                logger.warning(f"Erro ao tentar preencher campos no passo {step}: {outer_e}")
             
-            # Tentar fazer upload de thumbnail
-            if page.locator('input[name="content_title"]').first.is_visible() and thumbnail_path:
+            # Verifica o botão de Publicação FINAL (botão no rodapé, não na barra de navegação do topo)
+            publish_btn = page.locator('.button--primary >> text="Publish"').first
+            if not publish_btn.is_visible():
+                publish_btn = page.locator('.button--primary >> text="Publicação"').first
+            if not publish_btn.is_visible():
+                publish_btn = page.locator('form button.button--primary:has-text("Publish"), form button.button--primary:has-text("Publicação"), .publish__actions button.button--primary').first
+            
+            if publish_btn.is_visible():
+                logger.info("Botão FINAL de Publicação encontrado no rodapé! Clicando...")
                 try:
-                    thumb_input = page.locator('.publish__thumbnail input[type="file"], .card--thumbnail input[type="file"], input[name="thumbnail"]').first
+                    publish_btn.click(timeout=30000)
+                except Exception as e:
+                    logger.warning(f"Erro ao clicar Publicação: {e}")
+                    publish_btn.evaluate("el => el.click()")
+                break
+            
+            # UPLOAD DE THUMBNAIL PRÉ-GERADA
+            # Em vez de esperar o browser gerar thumbnails (requer GPU), fazemos
+            # o upload do arquivo que já geramos com OpenCV antes de abrir o browser.
+            if page.locator('input[name="content_title"]').first.is_visible() and thumbnail_path:
+                logger.info("[THUMBNAIL] Aba de Detalhes detectada. Fazendo upload da thumbnail pré-gerada...")
+                try:
+                    # O wizard tem um input[type="file"] específico para thumbnail
+                    thumb_input = page.locator(
+                        '.publish__thumbnail input[type="file"], '
+                        '.card--thumbnail input[type="file"], '
+                        'input[name="thumbnail"], '
+                        '.thumbnail-picker input[type="file"]'
+                    ).first
+
                     if thumb_input.count() > 0:
                         thumb_input.set_input_files(thumbnail_path)
-                        page.wait_for_timeout(2000)
-                        confirm_btn = page.locator('.modal button, .dialog button, button').filter(has_text=re.compile(r"Upload|Enviar", re.I)).last
+                        logger.info("[THUMBNAIL] Arquivo enviado via input[type=file].")
+                        page.wait_for_timeout(2000)  # aguarda modal aparecer
+                        
+                        # NOVO: Odysee agora pede confirmação no modal "Enviar Thumbnail"
+                        confirm_btn = page.locator('button:has-text("Upload")').last
+                        if not confirm_btn.is_visible():
+                            confirm_btn = page.locator('button:has-text("Enviar")').last
+                        if not confirm_btn.is_visible():
+                            confirm_btn = page.locator('.modal button, .dialog button').filter(has_text="Upload").first
+                        if not confirm_btn.is_visible():
+                            confirm_btn = page.locator('.modal button, .dialog button').filter(has_text="Enviar").first
+                        
                         if confirm_btn.is_visible():
+                            logger.info("[THUMBNAIL] Modal de confirmação detectado. Clicando em Enviar...")
                             confirm_btn.click()
+                            page.wait_for_timeout(3000) # aguarda upload da thumbnail finalizar
+                        else:
+                            page.wait_for_timeout(2000)
+                            
+                        salvar_screenshot(page, "05c_thumbnail_uploaded", tarefa_id)
+                    else:
+                        # Fallback: tentar via botão "Enviar" visível na tela
+                        enviar_btn = page.locator('button:has-text("Upload")').first
+                        if not enviar_btn.is_visible():
+                            enviar_btn = page.locator('button:has-text("Enviar")').first
+                        if enviar_btn.is_visible():
+                            enviar_btn.click()
+                            page.wait_for_timeout(1000)
+                            thumb_input2 = page.locator('input[type="file"]').last
+                            thumb_input2.set_input_files(thumbnail_path)
                             page.wait_for_timeout(3000)
-                except: pass
+                            salvar_screenshot(page, "05c_thumbnail_uploaded_fallback", tarefa_id)
+                        else:
+                            logger.warning("[THUMBNAIL] Input de thumbnail não encontrado na página.")
+                except Exception as e:
+                    logger.warning(f"[THUMBNAIL] Erro ao fazer upload da thumbnail: {e}. Continuando sem ela.")
 
-            # Aba de Visibilidade (NÃO LISTADO)
+            try:
+                # Aguarda até 5 minutos o botão "Próximo" sair do estado disabled
+                # (Odysee analisa o arquivo antes de liberar o botão — para vídeos grandes isso leva minutos)
+                page.wait_for_function(
+                    """
+                    () => {
+                        const pub = document.querySelector('button[aria-label="Publish"], button[aria-label="Publicação"]');
+                        if (pub && !pub.disabled) return true;
+                        const nxt = document.querySelector('button[aria-label="Next"], button[aria-label="Próximo"]');
+                        return nxt && !nxt.disabled;
+                    }
+                    """,
+                    timeout=300000  # 5 minutos para vídeos grandes
+                )
+                logger.info("[PASSO 4] Botão habilitado após análise do arquivo.")
+            except Exception as e:
+                logger.warning(f"[PASSO 4] Timeout aguardando botão ser habilitado: {e}")
+
+            # Atualiza referências após a espera
+            next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
+                        # Aba de Visibilidade (NÃO LISTADO) - ESPECÍFICO DA MENTORIA
             try:
                 unlisted_option = page.locator('text="Não-listado"').first
                 if not unlisted_option.is_visible():
@@ -282,61 +397,158 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 if unlisted_option.is_visible():
                     unlisted_option.click()
                     logger.info("[VISIBILIDADE] Opção 'Não-listado' selecionada.")
-                    salvar_screenshot(page, "03_visibility_unlisted", tarefa_id)
+                    salvar_screenshot(page, "05e_visibility_unlisted", tarefa_id)
             except Exception as e:
                 logger.warning(f"[VISIBILIDADE] Erro ao selecionar não-listado: {e}")
-
-            # Botão Publish
-            publish_btn = page.locator('.button--primary >> text="Publish", .button--primary >> text="Publicação", form button.button--primary:has-text("Publish"), .publish__actions button.button--primary').first
-            next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
+            publish_btn = page.locator('.button--primary >> text="Publicação", .button--primary >> text="Publish"').first
+            if not publish_btn.is_visible():
+                publish_btn = page.locator('form button.button--primary:has-text("Publicação"), form button.button--primary:has-text("Publish"), .publish__actions button.button--primary').first
 
             if publish_btn.is_visible():
-                try: publish_btn.click(timeout=30000)
-                except: publish_btn.evaluate("el => el.click()")
+                logger.info("Botão FINAL de Publicação apareceu após espera! Clicando...")
+                try:
+                    publish_btn.click(timeout=30000)
+                except Exception as e:
+                    logger.warning(f"Erro ao clicar Publicação: {e}")
+                    publish_btn.evaluate("el => el.click()")
                 break
             elif next_btn.is_visible():
+                logger.info("Clicando em Próximo...")
                 try:
-                    page.wait_for_function("() => { const btn = document.querySelector('button[aria-label=\"Next\"], button[aria-label=\"Próximo\"]'); return btn && !btn.disabled; }", timeout=300000)
+                    # Espera o botão sair do disabled via evaluate, já que o wait_for(state="enabled") não existe
+                    page.wait_for_function(
+                        """
+                        () => {
+                            const btn = document.querySelector('button[aria-label="Next"], button[aria-label="Próximo"]');
+                            return btn && !btn.disabled;
+                        }
+                        """,
+                        timeout=300000
+                    )
                     next_btn.click(timeout=30000)
-                except: 
-                    try: next_btn.evaluate("el => el.click()")
-                    except: pass
+                except Exception as e:
+                    logger.warning(f"Erro ao clicar Próximo (ainda disabled?): {e}")
+                    try:
+                        next_btn.evaluate("el => el.click()")
+                    except:
+                        pass
             else:
+                logger.info("Nem botão de Publicação nem botão de Próximo visíveis. Wizard pode ter terminado ou travou.")
+                salvar_screenshot(page, f"05d_wizard_step_{step}_stuck", tarefa_id)
                 break
             
-        logger.info("[PASSO 6] Aguardando upload...")
+        # PASSO 6: Aguardar conclusão
+        logger.info("[PASSO 6] Aguardando upload terminar (máx 4h)...")
+        # Aguarda 8 segundos para a interface React do Odysee renderizar a barra de progresso
         page.wait_for_timeout(8000)
-        salvar_screenshot(page, "04_after_upload_click", tarefa_id)
+        salvar_screenshot(page, "06_after_upload_click", tarefa_id)
         
         url_inicial = page.url
         upload_ok = False
         
-        for ciclo in range(480):
+        for ciclo in range(480):  # 480 x 30s = 4h
             page.wait_for_timeout(30000)
-            try: is_uploading = page.locator(':text("Enviando"), :text("Sending"), :text("Uploading")').count() > 0
-            except: is_uploading = False
+            
+            # IMPORTANTE: Recarrega a página se o upload NÃO estiver em andamento.
+            # O React do Odysee não atualiza o badge "Published" no DOM sem reload,
+            # mas recarregar durante o upload cancela a transferência.
+            try:
+                is_uploading = page.locator(':text("Enviando"), :text("Sending"), :text("Uploading")').count() > 0
+            except:
+                is_uploading = False
 
             if not is_uploading:
-                try: page.reload(wait_until='domcontentloaded', timeout=30000); page.wait_for_timeout(3000)
-                except: pass
+                try:
+                    page.reload(wait_until='domcontentloaded', timeout=30000)
+                    page.wait_for_timeout(3000)  # Aguarda o React renderizar após o reload
+                except Exception as e:
+                    logger.warning(f"[PASSO 6] Erro ao recarregar página no ciclo {ciclo}: {e}")
+            else:
+                logger.info(f"[PASSO 6] Upload em andamento, skip reload para não interromper.")
+                page.wait_for_timeout(5000)
             
             url_atual = page.url
-            if ciclo % 2 == 0: salvar_screenshot(page, "05_upload_progress", tarefa_id)
+            logger.info(f"[PASSO 6] Ciclo {ciclo}/480 | URL: {url_atual}")
             
+            # Atualiza o screenshot a cada 2 ciclos (1 minuto) para mostrar progresso
+            if ciclo % 2 == 0:
+                salvar_screenshot(page, "06_upload_progress", tarefa_id)
+            
+            # Estratégia 1: Redirecionamento para a página final do vídeo
             if url_atual != url_inicial and "/upload" not in url_atual:
-                upload_ok = True; break
+                logger.info(f"[PASSO 6] Redirecionado para {url_atual} — upload concluído!")
+                upload_ok = True
+                break
                 
+            # Estratégia 2: Detecta o badge "Published" via DOM após reload
             if "/$/uploads" in url_atual:
                 try:
-                    if page.locator('text=/^Published$/').count() > 0 or page.locator('text=/^Publicado$/').count() > 0:
-                        upload_ok = True; break
-                except: pass
-            
-            if ciclo > 2 and ciclo % 5 == 0:
-                pass
+                    # Regex de texto exato para o badge vermelho
+                    published_exact = page.locator('text=/^Published$/').count() + page.locator('text=/^Publicado$/').count()
+                    # Também tenta variantes com letra inicial maiúscula ou minúscula
+                    published_broad = page.locator(':text("Published"), :text("Publicado")').count()
+                    logger.info(f"[PASSO 6] Diagnóstico Published: exact={published_exact}, broad={published_broad}")
                     
-        salvar_screenshot(page, "06_upload_complete", tarefa_id)
-        browser.close()
+                    if published_exact > 0 and ciclo > 0:
+                        logger.info(f"[PASSO 6] Badge 'Published' detectado (exato: {published_exact}x) — upload concluído!")
+                        salvar_screenshot(page, "06_published_detected", tarefa_id)
+                        upload_ok = True
+                        break
+                    elif published_broad > 0 and ciclo > 0:
+                        logger.info(f"[PASSO 6] Badge 'Published' detectado (broad: {published_broad}x) — upload concluído!")
+                        salvar_screenshot(page, "06_published_detected", tarefa_id)
+                        upload_ok = True
+                        break
+                except Exception as e:
+                    logger.warning(f"[PASSO 6] Erro ao buscar badge Published: {e}")
+            
+            # Estratégia 3: API LBRY — mais confiável que o DOM, verifica a cada 2.5 min
+            if ciclo > 2 and ciclo % 5 == 0:
+                try:
+                    # Busca o channel_name do banco de dados já que tarefa não está no escopo
+                    conn_check = get_db_connection()
+                    cursor_check = conn_check.cursor(dictionary=True)
+                    cursor_check.execute("SELECT odysee_slug FROM mentoria_odysee_queue WHERE id = %s", (tarefa_id,))
+                    row_check = cursor_check.fetchone()
+                    cursor_check.execute("SELECT odysee_channel_name FROM languages WHERE id = %s", (os.getenv('MENTORIA_ODYSEE_LANGUAGE_ID', '10'),))
+                    lang_row = cursor_check.fetchone()
+                    row_check = cursor_check.fetchone()
+                    cursor_check.close()
+                    conn_check.close()
+                    
+                    if row_check:
+                        channel_name = lang_row['odysee_channel_name'].lstrip('@') if lang_row else ''
+                        video_slug = row_check['odysee_slug'] or slug
+                        lbry_url = f"lbry://@{channel_name}/{video_slug}"
+                        api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
+                        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
+                        res = requests.post(api_url, json=payload, timeout=15)
+                        logger.info(f"[PASSO 6] API LBRY check | URL: {lbry_url} | HTTP: {res.status_code}")
+                        if res.status_code == 200:
+                            data = res.json()
+                            result = data.get("result", {})
+                            entry = result.get(lbry_url, {})
+                            if entry and "error" not in entry:
+                                logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY — concluído!")
+                                salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
+                                upload_ok = True
+                                break
+                            else:
+                                logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Resposta: {str(entry)[:200]}")
+                except Exception as e:
+                    logger.warning(f"[PASSO 6] Erro ao checar API LBRY: {e}")
+                    
+        salvar_screenshot(page, "07_upload_complete", tarefa_id)
+        if upload_ok:
+            logger.info("[PASSO 6] Upload concluído com sucesso!")
+        else:
+            logger.warning("[PASSO 6] Timeout de 4h atingido. O upload pode ter sido concluído mesmo assim.")
+        
+        try:
+            browser.close()
+        except Exception as e:
+            logger.warning(f"[PASSO 6] Ignorando erro ao fechar browser: {e}")
+            
         return upload_ok
 
 def escanear_drive():
@@ -393,11 +605,29 @@ def escanear_drive():
         logger.error(f"Erro ao escanear Drive MENTORIA: {e}")
 
 def encurtar_url(url_longa):
-    try:
-        res = requests.post("https://clck.ru/--", data={'url': url_longa}, timeout=10)
-        if res.status_code == 200 and res.text.startswith('http'):
-            return res.text.strip()
-    except: pass
+    import requests
+    
+    api_url = "https://clck.ru/--"
+    
+    tentativas = 3
+    for t in range(tentativas):
+        try:
+            res = requests.post(api_url, data={'url': url_longa}, timeout=10)
+            if res.status_code == 200 and res.text.startswith('http'):
+                short_url = res.text.strip()
+                logger.info(f"URL encurtada com sucesso via clck.ru: {short_url}")
+                return short_url
+            else:
+                logger.warning(f"clck.ru falhou na tentativa {t+1}: {res.text[:200]}")
+        except Exception as e:
+            logger.warning(f"Erro de conexão com clck.ru na tentativa {t+1}: {e}")
+            
+        if t < tentativas - 1:
+            espera = 3
+            logger.info(f"Aguardando {espera} segundos antes da próxima tentativa...")
+            time.sleep(espera)
+            
+    logger.warning("clck.ru falhou 3 vezes. Usando URL canônica do Odysee.")
     return url_longa
 
 def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
@@ -494,14 +724,22 @@ def processar_fila():
             os.remove(temp_path)
 
 def cleanup_zombies():
+    """Ao iniciar, reverte tarefas 'processing' para 'pending'.
+    Isso evita que tarefas fiquem presas se o worker foi reiniciado no meio do processo."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("UPDATE mentoria_odysee_queue SET status='pending' WHERE status='processing'")
+        cursor.execute("UPDATE mentoria_odysee_queue SET status='pending', error_message='[RESTART] Worker reiniciado no meio do processo — retry automático' WHERE status='processing'")
+        affected = cursor.rowcount
         conn.commit()
         cursor.close()
         conn.close()
-    except: pass
+        if affected > 0:
+            logger.info(f"[STARTUP] {affected} tarefa(s) zombie revertida(s) para 'pending'.")
+        else:
+            logger.info("[STARTUP] Nenhuma tarefa zombie encontrada.")
+    except Exception as e:
+        logger.error(f"[STARTUP] Erro ao limpar tarefas zombie: {e}")
 
 if __name__ == "__main__":
     print("Iniciando Worker de Mentoria...", flush=True)
