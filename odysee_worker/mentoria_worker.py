@@ -217,7 +217,11 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             video_url = f"https://odysee.com/@{channel_name}/{slug}"
             logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
             page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
-            page.wait_for_timeout(4000)
+            try:
+                page.wait_for_selector('h1, .video-js, video', timeout=20000)
+            except:
+                pass
+            page.wait_for_timeout(8000)
             salvar_screenshot(page, "07_video_page", tarefa_id)
             
             share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
