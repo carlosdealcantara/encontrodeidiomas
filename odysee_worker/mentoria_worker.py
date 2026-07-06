@@ -221,21 +221,21 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             salvar_screenshot(page, "07_video_page", tarefa_id)
             
             share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
-            if share_btn.is_visible():
-                share_btn.click(timeout=15000)
-                page.wait_for_timeout(2000)
-                salvar_screenshot(page, "08_share_modal", tarefa_id)
-                
-                share_input = page.locator('input[value*="ody.sh"]').first
-                if not share_input.is_visible():
-                    share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-                
-                share_link = share_input.input_value(timeout=10000)
-                if share_link and "ody.sh" in share_link:
-                    logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
-                else:
-                    logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
-                    share_link = None
+            share_btn.wait_for(state="visible", timeout=15000)
+            share_btn.click(timeout=15000)
+            page.wait_for_timeout(2000)
+            salvar_screenshot(page, "08_share_modal", tarefa_id)
+            
+            share_input = page.locator('input[value*="ody.sh"]').first
+            if not share_input.is_visible():
+                share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+            
+            share_link = share_input.input_value(timeout=10000)
+            if share_link and "ody.sh" in share_link:
+                logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
+            else:
+                logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
+                share_link = None
         except Exception as e:
             logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
         finally:
@@ -624,21 +624,21 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 salvar_screenshot(page, "07_video_page", tarefa_id)
                 
                 share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
-                if share_btn.is_visible():
-                    share_btn.click(timeout=15000)
-                    page.wait_for_timeout(2000)
-                    salvar_screenshot(page, "08_share_modal", tarefa_id)
-                    
-                    share_input = page.locator('input[value*="ody.sh"]').first
-                    if not share_input.is_visible():
-                        share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-                    
-                    share_link = share_input.input_value(timeout=10000)
-                    if share_link and "ody.sh" in share_link:
-                        logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
-                    else:
-                        logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
-                        share_link = None
+                share_btn.wait_for(state="visible", timeout=15000)
+                share_btn.click(timeout=15000)
+                page.wait_for_timeout(2000)
+                salvar_screenshot(page, "08_share_modal", tarefa_id)
+                
+                share_input = page.locator('input[value*="ody.sh"]').first
+                if not share_input.is_visible():
+                    share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+                
+                share_link = share_input.input_value(timeout=10000)
+                if share_link and "ody.sh" in share_link:
+                    logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
+                else:
+                    logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
+                    share_link = None
             except Exception as e:
                 logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
 
