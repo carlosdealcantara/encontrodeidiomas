@@ -217,8 +217,16 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             raise Exception(f"Redirecionado inesperadamente para: {page.url}")
         
         logger.info("[PASSO 3] Input de arquivo...")
+        salvar_screenshot(page, "00_before_file_input", tarefa_id)
+        
+        # Odysee pode ter um botão de "Browse" ou a class '.file-selector' ou semelhante
         file_input = page.locator('input[type="file"]')
-        file_input.wait_for(state="attached", timeout=60000)
+        try:
+            file_input.wait_for(state="attached", timeout=60000)
+        except Exception as e:
+            salvar_screenshot(page, "00_error_file_input", tarefa_id)
+            raise e
+            
         file_input.set_input_files(file_path)
         salvar_screenshot(page, "01_after_file_input", tarefa_id)
         
