@@ -176,6 +176,75 @@ def salvar_screenshot(page, nome, tarefa_id):
     except Exception as e:
         logger.warning(f"[SCREENSHOT] Falhou ao salvar {nome}: {e}")
 
+
+
+def verificar_video_publicado(channel_name, slug):
+    try:
+        lbry_url = f"lbry://@{channel_name}/{slug}"
+        api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
+        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
+        res = requests.post(api_url, json=payload, timeout=15)
+        if res.status_code == 200:
+            data = res.json()
+            result = data.get("result", {})
+            entry = result.get(lbry_url, {})
+            if entry and "error" not in entry:
+                return True
+    except Exception as e:
+        logger.warning(f"Erro ao checar API LBRY para {slug}: {e}")
+    return False
+
+def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
+    share_link = None
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
+                '--disable-gpu', '--disable-blink-features=AutomationControlled'
+            ]
+        )
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            viewport={"width": 1920, "height": 1080}
+        )
+        page = context.new_page()
+        try:
+            page.goto("https://odysee.com", timeout=60000)
+            context.add_cookies([{"name": "auth_token", "value": auth_token, "domain": ".odysee.com", "path": "/"}])
+            page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
+            
+            video_url = f"https://odysee.com/@{channel_name}/{slug}"
+            logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+            page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+            page.wait_for_timeout(4000)
+            salvar_screenshot(page, "07_video_page", tarefa_id)
+            
+            share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
+            if share_btn.is_visible():
+                share_btn.click(timeout=15000)
+                page.wait_for_timeout(2000)
+                salvar_screenshot(page, "08_share_modal", tarefa_id)
+                
+                share_input = page.locator('input[value*="ody.sh"]').first
+                if not share_input.is_visible():
+                    share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+                
+                share_link = share_input.input_value(timeout=10000)
+                if share_link and "ody.sh" in share_link:
+                    logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
+                else:
+                    logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
+                    share_link = None
+        except Exception as e:
+            logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
+        finally:
+            try:
+                browser.close()
+            except:
+                pass
+    return share_link
+
 def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None, channel_name=None):
     logger.info("Iniciando publicação no Odysee via Playwright")
     
@@ -548,7 +617,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         share_link = None
         if upload_ok and channel_name and slug:
             try:
-                video_url = f"https://odysee.com/{channel_name}/{slug}"
+                video_url = f"https://odysee.com/@{channel_name.lstrip('@')}/{slug}"
                 logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
                 page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
                 page.wait_for_timeout(4000)
@@ -717,7 +786,15 @@ def processar_fila():
         channel_name = creds['odysee_channel_name']
         
         title = tarefa.get('titulo_final')
-        upload_ok, share_link = publicar_odysee_playwright(tarefa['id'], auth_token, title, temp_path, slug=tarefa.get('odysee_slug'), channel_name=channel_name)
+        clean_channel_name = channel_name.lstrip('@')
+        is_published = verificar_video_publicado(clean_channel_name, tarefa['odysee_slug'])
+        
+        if is_published:
+            logger.info(f"[{tarefa['id']}] Vídeo já publicado na LBRY. Pulando upload.")
+            upload_ok = True
+            share_link = capturar_share_link_playwright(tarefa['id'], auth_token, clean_channel_name, tarefa['odysee_slug'])
+        else:
+            upload_ok, share_link = publicar_odysee_playwright(tarefa['id'], auth_token, title, temp_path, slug=tarefa.get('odysee_slug'), channel_name=channel_name)
         
         if not upload_ok:
             raise Exception("Falha no processo de publicação (Timeout)")
