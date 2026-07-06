@@ -344,7 +344,7 @@ def escanear_drive():
     try:
         drive_service = init_drive_service()
         results = drive_service.files().list(
-            q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType contains 'video/' and name contains 'Mentorship Class' and name contains 'Recording'",
+            q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType contains 'video/' and (name contains 'Mentorship Class' or name contains 'Mentoria')",
             fields="files(id, name)"
         ).execute()
         arquivos = results.get('files', [])
