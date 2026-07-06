@@ -142,7 +142,7 @@ if (!empty($active)) {
                     <div style="color: var(--accent-blue); margin-bottom: 10px; font-size: 0.9rem;">
                         <?= htmlspecialchars($scr['titulo_final']) ?>
                     </div>
-                    <img src="data:image/png;base64,<?= $scr['last_screenshot'] ?>" alt="Screenshot do processo" style="width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    <img src="data:image/png;base64,<?= $scr['last_screenshot'] ?>" alt="Screenshot do processo" onclick="openScreenshotModal(this.src)" style="width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s;">
                 </div>
             <?php endforeach; ?>
             <p style="color: var(--text-dim); font-size: 0.85rem; text-align: center;">Atualize a página para ver o frame mais recente do container.</p>
@@ -165,4 +165,17 @@ function copiarWpp(elementId) {
     copyText.style.display = "none";
     alert("Mensagem do WhatsApp copiada para a área de transferência!");
 }
+
+function openScreenshotModal(src) {
+    document.getElementById('screenshotModalImg').src = src;
+    document.getElementById('screenshotModal').style.display = 'flex';
+}
+function closeScreenshotModal() {
+    document.getElementById('screenshotModal').style.display = 'none';
+}
 </script>
+
+<div id="screenshotModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;" onclick="closeScreenshotModal()">
+    <span style="position: absolute; top: 20px; right: 40px; color: white; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
+    <img id="screenshotModalImg" style="max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+</div>

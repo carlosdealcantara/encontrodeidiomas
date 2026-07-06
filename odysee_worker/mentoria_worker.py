@@ -194,7 +194,11 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 '--disable-infobars', '--window-size=1920,1080',
             ]
         )
-        context = browser.new_context(viewport={"width": 1920, "height": 1080}, locale="en-US")
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            viewport={"width": 1920, "height": 1080}, 
+            locale="en-US"
+        )
         page = context.new_page()
         page.set_default_timeout(14400000)
         page.set_default_navigation_timeout(14400000)
