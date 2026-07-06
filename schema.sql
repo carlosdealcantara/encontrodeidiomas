@@ -108,3 +108,20 @@ CREATE TABLE IF NOT EXISTS odysee_publish_queue (
     processed_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (language_id) REFERENCES languages(id)
 );
+
+CREATE TABLE IF NOT EXISTS mentoria_odysee_queue (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    drive_file_id VARCHAR(255) NOT NULL UNIQUE,
+    drive_file_name VARCHAR(500) NOT NULL,
+    titulo_final VARCHAR(700) DEFAULT NULL,
+    odysee_slug VARCHAR(100) DEFAULT NULL,
+    odysee_url VARCHAR(500) DEFAULT NULL,
+    whatsapp_message TEXT DEFAULT NULL,
+    status ENUM('pending', 'processing', 'done', 'error') DEFAULT 'pending',
+    error_message TEXT DEFAULT NULL,
+    retry_count TINYINT DEFAULT 0,
+    last_screenshot LONGTEXT DEFAULT NULL,
+    last_screenshot_time DATETIME DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL DEFAULT NULL
+);
