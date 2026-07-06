@@ -176,7 +176,7 @@ def salvar_screenshot(page, nome, tarefa_id):
     except Exception as e:
         logger.warning(f"[SCREENSHOT] Falhou ao salvar {nome}: {e}")
 
-def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None):
+def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None, channel_name=None):
     logger.info("Iniciando publicação no Odysee via Playwright")
     
     # Gera thumbnail inteligente antes de abrir o browser (independe de GPU)
@@ -544,12 +544,41 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         else:
             logger.warning("[PASSO 6] Timeout de 4h atingido. O upload pode ter sido concluído mesmo assim.")
         
+        # PASSO 7: Capturar o link ody.sh de compartilhamento
+        share_link = None
+        if upload_ok and channel_name and slug:
+            try:
+                video_url = f"https://odysee.com/{channel_name}/{slug}"
+                logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+                page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+                page.wait_for_timeout(4000)
+                salvar_screenshot(page, "07_video_page", tarefa_id)
+                
+                share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
+                if share_btn.is_visible():
+                    share_btn.click(timeout=15000)
+                    page.wait_for_timeout(2000)
+                    salvar_screenshot(page, "08_share_modal", tarefa_id)
+                    
+                    share_input = page.locator('input[value*="ody.sh"]').first
+                    if not share_input.is_visible():
+                        share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+                    
+                    share_link = share_input.input_value(timeout=10000)
+                    if share_link and "ody.sh" in share_link:
+                        logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
+                    else:
+                        logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
+                        share_link = None
+            except Exception as e:
+                logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
+
         try:
             browser.close()
         except Exception as e:
             logger.warning(f"[PASSO 6] Ignorando erro ao fechar browser: {e}")
             
-        return upload_ok
+        return upload_ok, share_link
 
 def escanear_drive():
     print("Escaneando Drive MENTORIA por novos vídeos...", flush=True)
@@ -688,13 +717,18 @@ def processar_fila():
         channel_name = creds['odysee_channel_name']
         
         title = tarefa.get('titulo_final')
-        upload_ok = publicar_odysee_playwright(tarefa['id'], auth_token, title, temp_path, slug=tarefa.get('odysee_slug'))
+        upload_ok, share_link = publicar_odysee_playwright(tarefa['id'], auth_token, title, temp_path, slug=tarefa.get('odysee_slug'), channel_name=channel_name)
         
         if not upload_ok:
             raise Exception("Falha no processo de publicação (Timeout)")
             
-        odysee_url = f"https://odysee.com/{channel_name}/{tarefa['odysee_slug']}"
-        url_curta = encurtar_url(odysee_url)
+        if share_link:
+            url_curta = share_link
+            logger.info(f"[SHARE] Usando link ody.sh: {url_curta}")
+        else:
+            odysee_url = f"https://odysee.com/{channel_name}/{tarefa['odysee_slug']}"
+            url_curta = encurtar_url(odysee_url)
+            logger.warning(f"[SHARE] Fallback para URL canônica encurtada: {url_curta}")
         
         mover_arquivos_mentoria(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
         

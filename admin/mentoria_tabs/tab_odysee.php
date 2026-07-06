@@ -25,7 +25,7 @@ if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
 $stmt = $conn->query("
     SELECT *
     FROM mentoria_odysee_queue
-    ORDER BY id DESC LIMIT 100
+    ORDER BY odysee_slug DESC LIMIT 100
 ");
 $queue = $stmt->fetchAll();
 
