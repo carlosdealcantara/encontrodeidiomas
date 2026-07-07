@@ -226,7 +226,10 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             
             share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
             share_btn.wait_for(state="visible", timeout=15000)
-            share_btn.click(timeout=15000)
+            try:
+                share_btn.click(timeout=15000, no_wait_after=True, force=True)
+            except:
+                share_btn.evaluate("el => el.click()")
             page.wait_for_timeout(2000)
             salvar_screenshot(page, "08_share_modal", tarefa_id)
             
@@ -632,7 +635,10 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 
                 share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
                 share_btn.wait_for(state="visible", timeout=15000)
-                share_btn.click(timeout=15000)
+                try:
+                    share_btn.click(timeout=15000, no_wait_after=True, force=True)
+                except:
+                    share_btn.evaluate("el => el.click()")
                 page.wait_for_timeout(2000)
                 salvar_screenshot(page, "08_share_modal", tarefa_id)
                 
