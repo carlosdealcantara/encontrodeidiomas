@@ -115,6 +115,9 @@ def baixar_video_drive(drive_service, file_id, file_name):
 
 def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, move_video=True):
     try:
+        # Re-inicializa a conexão para evitar [Errno 32] Broken pipe após longas horas de upload
+        drive_service = init_drive_service()
+        
         # 1. Move o vídeo para a pasta do idioma
         if move_video:
             results = drive_service.files().list(
@@ -134,8 +137,7 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, 
             else:
                 logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo mantido na raiz.")
         
-        # 2. Apaga o arquivo de Chat (.txt) correspondente - movendo para Geral/Transcrições
-        # O nome do vídeo original é parecido com "... - Recording" e do chat "... - Chat"
+        # 2. Apaga o arquivo de Chat (.txt) correspondente PERMANENTEMENTE
         base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
         chat_results = drive_service.files().list(
             q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='text/plain' and name contains '{base_name}'",
@@ -144,36 +146,9 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, 
         
         chats = chat_results.get('files', [])
         if chats:
-            # Encontrar a pasta "Geral"
-            geral_results = drive_service.files().list(
-                q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = 'Geral'",
-                fields="files(id, name)"
-            ).execute()
-            pastas_geral = geral_results.get('files', [])
-            
-            if pastas_geral:
-                id_geral = pastas_geral[0]['id']
-                
-                # Encontrar a pasta "Transcrições" dentro de "Geral"
-                transc_results = drive_service.files().list(
-                    q=f"'{id_geral}' in parents and mimeType='application/vnd.google-apps.folder' and name = 'Transcrições'",
-                    fields="files(id, name)"
-                ).execute()
-                pastas_transc = transc_results.get('files', [])
-                
-                if pastas_transc:
-                    id_transcricoes = pastas_transc[0]['id']
-                    for chat in chats:
-                        drive_service.files().update(
-                            fileId=chat['id'],
-                            addParents=id_transcricoes,
-                            removeParents=",".join(chat.get('parents', []))
-                        ).execute()
-                        logger.info(f"[DRIVE] Chat movido para Geral/Transcrições: {chat['name']}")
-                else:
-                    logger.warning("[DRIVE] Pasta 'Transcrições' não encontrada dentro de 'Geral'.")
-            else:
-                logger.warning("[DRIVE] Pasta 'Geral' não encontrada na raiz.")
+            for chat in chats:
+                drive_service.files().delete(fileId=chat['id']).execute()
+                logger.info(f"[DRIVE] Chat excluído permanentemente: {chat['name']}")
                 
     except Exception as e:
         logger.error(f"[DRIVE] Erro ao mover vídeo ou apagar chat: {e}")
