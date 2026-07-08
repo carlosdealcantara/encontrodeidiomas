@@ -115,55 +115,97 @@ def baixar_video_drive(drive_service, file_id, file_name):
 
 def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, move_video=True):
     """
-    Move o vídeo para a pasta do idioma e exclui o arquivo de chat.
-    Implementa retry automático para [Errno 32] Broken pipe, pois o socket TCP
-    do httplib2 expira durante uploads longos e não se recupera ao reutilizar o objeto.
+    Move o vídeo para a subpasta do idioma e move o chat para 'Chats' dentro da pasta do idioma.
+    Usa files().update() (mover) em vez de files().delete() porque a service account tem apenas
+    permissão de Editor nos arquivos criados pelo Google Meet — sem permissão de exclusão.
+    Implementa retry automático para [Errno 32] Broken pipe.
     """
+    import time as _time
+    
     for tentativa in range(2):
         try:
-            # Sempre cria um service novo para garantir socket fresco
             drive = init_drive_service()
             
+            # Busca a pasta do idioma uma vez (usada tanto para vídeo quanto para chat)
+            pasta_idioma_id = None
+            results = drive.files().list(
+                q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
+                fields="files(id, name)"
+            ).execute()
+            pastas = results.get('files', [])
+            if pastas:
+                pasta_idioma_id = pastas[0]['id']
+            else:
+                logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo e chat mantidos na raiz.")
+
             # 1. Move o vídeo para a pasta do idioma
-            if move_video:
-                results = drive.files().list(
-                    q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
-                    fields="files(id, name)"
-                ).execute()
-                pastas = results.get('files', [])
-                if pastas:
-                    pasta_id = pastas[0]['id']
+            if move_video and pasta_idioma_id:
+                try:
                     file_meta = drive.files().get(fileId=file_id, fields='parents').execute()
-                    drive.files().update(
-                        fileId=file_id,
-                        addParents=pasta_id,
-                        removeParents=",".join(file_meta.get('parents', []))
-                    ).execute()
-                    logger.info(f"[DRIVE] Vídeo movido para a pasta '{language_name}'")
-                else:
-                    logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo mantido na raiz.")
+                    current_parents = file_meta.get('parents', [])
+                    if pasta_idioma_id not in current_parents:
+                        drive.files().update(
+                            fileId=file_id,
+                            addParents=pasta_idioma_id,
+                            removeParents=",".join(current_parents)
+                        ).execute()
+                        logger.info(f"[DRIVE] Vídeo movido para a pasta '{language_name}'")
+                    else:
+                        logger.info(f"[DRIVE] Vídeo já está na pasta '{language_name}', nada a fazer.")
+                except Exception as e_vid:
+                    logger.error(f"[DRIVE] Erro ao mover vídeo: {e_vid}")
             
-            # 2. Exclui o arquivo de Chat (.txt) permanentemente
+            # 2. Move o arquivo de Chat (.txt) para 'Chats' dentro da pasta do idioma
+            # A service account não pode deletar arquivos criados pelo Google Meet (403),
+            # mas pode mover (Editor permission é suficiente para addParents/removeParents).
             base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
             chat_results = drive.files().list(
                 q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='text/plain' and name contains '{base_name}'",
                 fields="files(id, name, parents)"
             ).execute()
             
-            for chat in chat_results.get('files', []):
-                drive.files().delete(fileId=chat['id']).execute()
-                logger.info(f"[DRIVE] Chat excluído permanentemente: {chat['name']}")
+            chats = chat_results.get('files', [])
+            if chats and pasta_idioma_id:
+                # Busca ou cria subpasta 'Chats' dentro da pasta do idioma
+                chats_results = drive.files().list(
+                    q=f"'{pasta_idioma_id}' in parents and mimeType='application/vnd.google-apps.folder' and name = 'Chats'",
+                    fields="files(id, name)"
+                ).execute()
+                pasta_chats_id = None
+                if chats_results.get('files'):
+                    pasta_chats_id = chats_results['files'][0]['id']
+                else:
+                    # Cria a pasta 'Chats'
+                    nova_pasta = drive.files().create(
+                        body={'name': 'Chats', 'mimeType': 'application/vnd.google-apps.folder', 'parents': [pasta_idioma_id]},
+                        fields='id'
+                    ).execute()
+                    pasta_chats_id = nova_pasta['id']
+                    logger.info(f"[DRIVE] Pasta 'Chats' criada dentro de '{language_name}'")
+                
+                for chat in chats:
+                    try:
+                        chat_parents = chat.get('parents', [])
+                        drive.files().update(
+                            fileId=chat['id'],
+                            addParents=pasta_chats_id,
+                            removeParents=",".join(chat_parents)
+                        ).execute()
+                        logger.info(f"[DRIVE] Chat movido para '{language_name}/Chats': {chat['name']}")
+                    except Exception as e_chat:
+                        logger.error(f"[DRIVE] Erro ao mover chat '{chat['name']}': {e_chat}")
+            elif chats and not pasta_idioma_id:
+                logger.warning(f"[DRIVE] Chat encontrado mas pasta do idioma não existe. Chat mantido na raiz.")
             
-            return  # Sucesso — sai da função
+            return  # Sucesso
             
         except Exception as e:
             if tentativa == 0 and 'Broken pipe' in str(e):
                 logger.warning(f"[DRIVE] Broken pipe detectado, aguardando 5s e tentando novamente...")
-                import time as _time
                 _time.sleep(5)
             else:
-                logger.error(f"[DRIVE] Erro ao mover vídeo ou apagar chat (tentativa {tentativa+1}): {e}")
-                return  # Não retenta em outros erros
+                logger.error(f"[DRIVE] Erro geral na operação Drive (tentativa {tentativa+1}): {e}")
+                return
 
 
 SCREENSHOT_DIR = "/app/screenshots"
