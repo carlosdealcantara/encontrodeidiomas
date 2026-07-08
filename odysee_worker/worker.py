@@ -567,11 +567,14 @@ def escanear_drive():
             titulo_limpo = titulo_limpo.replace(' - Recording', '').replace('.mp4', '').strip()
             
             # Gera o slug de URL com apenas a data (YYYY_MM_DD)
-            date_match = _re.search(r'(\d{4})[/\-](\d{2})[/\-](\d{2})', file_name)
+            # Aceita: YYYY/MM/DD, YYYY-MM-DD e YYYY_MM_DD (nomes de arquivo com underscores)
+            date_match = _re.search(r'(\d{4})[/\-_](\d{2})[/\-_](\d{2})', file_name)
             if date_match:
                 slug = f"{date_match.group(1)}_{date_match.group(2)}_{date_match.group(3)}"
             else:
-                slug = titulo_limpo  # fallback
+                # Fallback: usa apenas os dígitos da data se encontrar padrão numérico
+                numbers = _re.findall(r'\d{4}', file_name)
+                slug = numbers[0] if numbers else 'upload'  # Último recurso seguro
             # Verifica se o idioma está configurado para publicar no Odysee
             has_odysee = bool(idioma_escolhido.get('odysee_auth_token')) and bool(idioma_escolhido.get('odysee_channel_name')) and bool(idioma_escolhido.get('odysee_auto_enabled'))
             
