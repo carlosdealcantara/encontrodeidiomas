@@ -114,44 +114,57 @@ def baixar_video_drive(drive_service, file_id, file_name):
     return temp_path
 
 def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, move_video=True):
-    try:
-        # Re-inicializa a conexão para evitar [Errno 32] Broken pipe após longas horas de upload
-        drive_service = init_drive_service()
-        
-        # 1. Move o vídeo para a pasta do idioma
-        if move_video:
-            results = drive_service.files().list(
-                q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
-                fields="files(id, name)"
-            ).execute()
-            pastas = results.get('files', [])
-            if pastas:
-                pasta_id = pastas[0]['id']
-                file = drive_service.files().get(fileId=file_id, fields='parents').execute()
-                drive_service.files().update(
-                    fileId=file_id,
-                    addParents=pasta_id,
-                    removeParents=",".join(file.get('parents', []))
+    """
+    Move o vídeo para a pasta do idioma e exclui o arquivo de chat.
+    Implementa retry automático para [Errno 32] Broken pipe, pois o socket TCP
+    do httplib2 expira durante uploads longos e não se recupera ao reutilizar o objeto.
+    """
+    for tentativa in range(2):
+        try:
+            # Sempre cria um service novo para garantir socket fresco
+            drive = init_drive_service()
+            
+            # 1. Move o vídeo para a pasta do idioma
+            if move_video:
+                results = drive.files().list(
+                    q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
+                    fields="files(id, name)"
                 ).execute()
-                logger.info(f"[DRIVE] Vídeo movido para a pasta '{language_name}'")
-            else:
-                logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo mantido na raiz.")
-        
-        # 2. Apaga o arquivo de Chat (.txt) correspondente PERMANENTEMENTE
-        base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
-        chat_results = drive_service.files().list(
-            q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='text/plain' and name contains '{base_name}'",
-            fields="files(id, name, parents)"
-        ).execute()
-        
-        chats = chat_results.get('files', [])
-        if chats:
-            for chat in chats:
-                drive_service.files().delete(fileId=chat['id']).execute()
+                pastas = results.get('files', [])
+                if pastas:
+                    pasta_id = pastas[0]['id']
+                    file_meta = drive.files().get(fileId=file_id, fields='parents').execute()
+                    drive.files().update(
+                        fileId=file_id,
+                        addParents=pasta_id,
+                        removeParents=",".join(file_meta.get('parents', []))
+                    ).execute()
+                    logger.info(f"[DRIVE] Vídeo movido para a pasta '{language_name}'")
+                else:
+                    logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo mantido na raiz.")
+            
+            # 2. Exclui o arquivo de Chat (.txt) permanentemente
+            base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
+            chat_results = drive.files().list(
+                q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='text/plain' and name contains '{base_name}'",
+                fields="files(id, name, parents)"
+            ).execute()
+            
+            for chat in chat_results.get('files', []):
+                drive.files().delete(fileId=chat['id']).execute()
                 logger.info(f"[DRIVE] Chat excluído permanentemente: {chat['name']}")
-                
-    except Exception as e:
-        logger.error(f"[DRIVE] Erro ao mover vídeo ou apagar chat: {e}")
+            
+            return  # Sucesso — sai da função
+            
+        except Exception as e:
+            if tentativa == 0 and 'Broken pipe' in str(e):
+                logger.warning(f"[DRIVE] Broken pipe detectado, aguardando 5s e tentando novamente...")
+                import time as _time
+                _time.sleep(5)
+            else:
+                logger.error(f"[DRIVE] Erro ao mover vídeo ou apagar chat (tentativa {tentativa+1}): {e}")
+                return  # Não retenta em outros erros
+
 
 SCREENSHOT_DIR = "/app/screenshots"
 
