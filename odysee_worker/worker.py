@@ -373,22 +373,32 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     logger.warning(f"[THUMBNAIL] Erro ao fazer upload da thumbnail: {e}. Continuando sem ela.")
 
             try:
-                # Aguarda até 5 minutos o botão "Próximo" sair do estado disabled
-                # (Odysee analisa o arquivo antes de liberar o botão — para vídeos grandes isso leva minutos)
-                page.wait_for_function(
-                    """
-                    () => {
-                        const pub = document.querySelector('button[aria-label="Publish"], button[aria-label="Publicação"]');
-                        if (pub && !pub.disabled) return true;
-                        const nxt = document.querySelector('button[aria-label="Next"], button[aria-label="Próximo"]');
-                        return nxt && !nxt.disabled;
-                    }
-                    """,
-                    timeout=300000  # 5 minutos para vídeos grandes
-                )
-                logger.info("[PASSO 4] Botão habilitado após análise do arquivo.")
+                # Aguarda até 5 minutos (300s) o botão sair do estado disabled
+                # Fazemos isso em um loop Python para poder atualizar o screenshot no painel
+                logger.info("[PASSO 4] Aguardando botão habilitar (pode demorar se o vídeo for grande)...")
+                for w in range(30):
+                    btn_pronto = page.evaluate(
+                        """
+                        () => {
+                            const pub = document.querySelector('button[aria-label="Publish"], button[aria-label="Publicação"]');
+                            if (pub && !pub.disabled) return true;
+                            const nxt = document.querySelector('button[aria-label="Next"], button[aria-label="Próximo"]');
+                            return nxt && !nxt.disabled;
+                        }
+                        """
+                    )
+                    if btn_pronto:
+                        logger.info("[PASSO 4] Botão habilitado após análise do arquivo.")
+                        break
+                    
+                    # Atualiza o screenshot a cada 20 segundos para não parecer travado
+                    if w > 0 and w % 2 == 0:
+                        salvar_screenshot(page, f"05_wizard_step_{step}_waiting", tarefa_id)
+                    
+                    page.wait_for_timeout(10000) # espera 10s
+                    
             except Exception as e:
-                logger.warning(f"[PASSO 4] Timeout aguardando botão ser habilitado: {e}")
+                logger.warning(f"[PASSO 4] Erro ao aguardar botão: {e}")
 
             # Atualiza referências após a espera
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
