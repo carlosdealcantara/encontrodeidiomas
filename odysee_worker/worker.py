@@ -465,25 +465,6 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         
         for ciclo in range(480):  # 480 x 30s = 4h
             page.wait_for_timeout(30000)
-            
-            # IMPORTANTE: Recarrega a página se o upload NÃO estiver em andamento.
-            # O React do Odysee não atualiza o badge "Published" no DOM sem reload,
-            # mas recarregar durante o upload cancela a transferência.
-            try:
-                is_uploading = page.locator(':text("Enviando"), :text("Sending"), :text("Uploading")').count() > 0
-            except:
-                is_uploading = False
-
-            if not is_uploading:
-                try:
-                    page.reload(wait_until='domcontentloaded', timeout=30000)
-                    page.wait_for_timeout(3000)  # Aguarda o React renderizar após o reload
-                except Exception as e:
-                    logger.warning(f"[PASSO 6] Erro ao recarregar página no ciclo {ciclo}: {e}")
-            else:
-                logger.info(f"[PASSO 6] Upload em andamento, skip reload para não interromper.")
-                page.wait_for_timeout(5000)
-            
             url_atual = page.url
             logger.info(f"[PASSO 6] Ciclo {ciclo}/480 | URL: {url_atual}")
             
@@ -497,30 +478,8 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 upload_ok = True
                 break
                 
-            # Estratégia 2: Detecta o badge "Published" via DOM após reload
-            if "/$/uploads" in url_atual:
-                try:
-                    # Regex de texto exato para o badge vermelho
-                    published_exact = page.locator('text=/^Published$/').count() + page.locator('text=/^Publicado$/').count()
-                    # Também tenta variantes com letra inicial maiúscula ou minúscula
-                    published_broad = page.locator(':text("Published"), :text("Publicado")').count()
-                    logger.info(f"[PASSO 6] Diagnóstico Published: exact={published_exact}, broad={published_broad}")
-                    
-                    if published_exact > 0 and ciclo > 0:
-                        logger.info(f"[PASSO 6] Badge 'Published' detectado (exato: {published_exact}x) — upload concluído!")
-                        salvar_screenshot(page, "06_published_detected", tarefa_id)
-                        upload_ok = True
-                        break
-                    elif published_broad > 0 and ciclo > 0:
-                        logger.info(f"[PASSO 6] Badge 'Published' detectado (broad: {published_broad}x) — upload concluído!")
-                        salvar_screenshot(page, "06_published_detected", tarefa_id)
-                        upload_ok = True
-                        break
-                except Exception as e:
-                    logger.warning(f"[PASSO 6] Erro ao buscar badge Published: {e}")
-            
-            # Estratégia 3: API LBRY — mais confiável que o DOM, verifica a cada 2.5 min
-            if ciclo > 2 and ciclo % 5 == 0:
+            # Estratégia 3: API LBRY — mais confiável que o DOM, verifica a cada 1.5 min
+            if ciclo > 1 and ciclo % 3 == 0:
                 try:
                     # Busca o channel_name do banco de dados já que tarefa não está no escopo
                     conn_check = get_db_connection()
