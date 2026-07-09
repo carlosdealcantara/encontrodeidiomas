@@ -224,12 +224,16 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             page.wait_for_timeout(8000)
             salvar_screenshot(page, "07_video_page", tarefa_id)
             
-            share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
-            share_btn.wait_for(state="visible", timeout=15000)
-            try:
-                share_btn.click(timeout=15000, no_wait_after=True, force=True)
-            except:
-                share_btn.evaluate("el => el.click()")
+            clicked = page.evaluate("""
+                () => {
+                    const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                    if (btn) { btn.click(); return true; }
+                    return false;
+                }
+            """)
+            if not clicked:
+                share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                share_btn.click(force=True, no_wait_after=True)
             page.wait_for_timeout(2000)
             salvar_screenshot(page, "08_share_modal", tarefa_id)
             
@@ -633,12 +637,16 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 page.wait_for_timeout(8000)
                 salvar_screenshot(page, "07_video_page", tarefa_id)
                 
-                share_btn = page.locator('button:has-text("Compartilhar"), button:has-text("Share")').first
-                share_btn.wait_for(state="visible", timeout=15000)
-                try:
-                    share_btn.click(timeout=15000, no_wait_after=True, force=True)
-                except:
-                    share_btn.evaluate("el => el.click()")
+                clicked = page.evaluate("""
+                    () => {
+                        const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                        if (btn) { btn.click(); return true; }
+                        return false;
+                    }
+                """)
+                if not clicked:
+                    share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                    share_btn.click(force=True, no_wait_after=True)
                 page.wait_for_timeout(2000)
                 salvar_screenshot(page, "08_share_modal", tarefa_id)
                 
