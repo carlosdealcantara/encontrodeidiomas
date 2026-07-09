@@ -8,6 +8,33 @@ $og_description = t('home.meta_description');
 $canonical      = SITE_URL . langUrl('index.php');
 $swiper_enabled = true;
 
+// --- Lógica de Próximos Encontros ---
+$all_meetings = getMeetings();
+$currentDayOfWeek = (int)date('N');
+$currentHour = (int)date('G');
+
+$upcoming_meetings = [];
+foreach ($all_meetings as $m) {
+    $evDay = (int)$m['day_of_week'];
+    $evHour = (int)$m['time_hour'];
+    
+    // Calcula quantos dias faltam (se já passou nesta semana, considera para a próxima)
+    $daysDiff = $evDay - $currentDayOfWeek;
+    if ($daysDiff < 0 || ($daysDiff === 0 && $evHour < $currentHour)) {
+        $daysDiff += 7;
+    }
+    $sortScore = ($daysDiff * 24) + $evHour;
+    $m['sort_score'] = $sortScore;
+    $upcoming_meetings[] = $m;
+}
+
+usort($upcoming_meetings, function($a, $b) {
+    return $a['sort_score'] <=> $b['sort_score'];
+});
+
+$next_meetings = array_slice($upcoming_meetings, 0, 3);
+// ------------------------------------
+
 $extra_head = '
 <link rel="stylesheet" href="/assets/css/home.css?v=<?= ASSET_VERSION ?>">
 <script type="application/ld+json">
@@ -46,6 +73,7 @@ $extra_head = '
 $page_scripts = <<<JS
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Carrossel Principal (Hero)
         new Swiper('.photo-swiper', {
             loop: true,
             slidesPerView: 1.1,
@@ -53,11 +81,29 @@ $page_scripts = <<<JS
             spaceBetween: 20,
             speed: 800,
             autoplay: { delay: 4000, disableOnInteraction: false },
-            pagination: { el: '.swiper-pagination', clickable: true },
-            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            pagination: { el: '.photo-swiper .swiper-pagination', clickable: true },
+            navigation: { nextEl: '.photo-swiper .swiper-button-next', prevEl: '.photo-swiper .swiper-button-prev' },
             breakpoints: {
                 768: { slidesPerView: 1.2 }
             }
+        });
+
+        // Mini Carrossel - Encontros Online (Sem autoplay, usuário arrasta)
+        new Swiper('.meetups-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 12,
+            loop: false,
+            pagination: { el: '.meetups-swiper .swiper-pagination', clickable: true }
+        });
+
+        // Mini Carrossel - Cidades Presenciais (Com autoplay suave)
+        new Swiper('.presencial-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 12,
+            loop: true,
+            speed: 700,
+            autoplay: { delay: 3500, disableOnInteraction: false },
+            pagination: { el: '.presencial-swiper .swiper-pagination', clickable: true }
         });
     });
 </script>
@@ -161,18 +207,110 @@ include 'includes/header.php';
                     <?= t('home.modalities.desc') ?>
                 </p>
                 <div class="modalidades-grid">
-                    <a href="<?= langUrl('online.php') ?>" class="mod-card mod-card-online">
-                        <div class="mod-icon"><i class="fas fa-laptop"></i></div>
-                        <h3><?= t('home.modalities.online_title') ?></h3>
-                        <p><?= t('home.modalities.online_text') ?></p>
-                        <span class="mod-card-link"><?= t('home.modalities.online_link') ?> <i class="fas fa-arrow-right"></i></span>
-                    </a>
-                    <a href="<?= langUrl('presencial.php') ?>" class="mod-card mod-card-presencial">
-                        <div class="mod-icon"><i class="fas fa-map-marked-alt"></i></div>
-                        <h3><?= t('home.modalities.presencial_title') ?></h3>
-                        <p><?= t('home.modalities.presencial_text') ?></p>
-                        <span class="mod-card-link"><?= t('home.modalities.presencial_link') ?> <i class="fas fa-arrow-right"></i></span>
-                    </a>
+                    
+                    <!-- WIDGET ONLINE -->
+                    <div class="mod-card mod-card-online">
+                        <div class="mod-card-header">
+                            <div class="mod-icon"><i class="fas fa-laptop"></i></div>
+                            <h3><?= t('home.modalities.online_title') ?></h3>
+                        </div>
+                        
+                        <?php if (!empty($next_meetings)): ?>
+                            <div class="swiper meetups-swiper">
+                                <div class="swiper-wrapper">
+                                    <?php foreach ($next_meetings as $ev): 
+                                        $evDay = (int)$ev['day_of_week'];
+                                        $evHour = (int)$ev['time_hour'];
+                                        $isToday = ($currentDayOfWeek === $evDay);
+                                        $isNow = $isToday && ($currentHour === $evHour);
+                                        $flagCode = $ev['flag_code'] ?? '';
+                                        $flagEmoji = $ev['flag_emoji'] ?? '';
+                                        $current_lang = t('meta.lang_code');
+                                        $langDisplayName = ($current_lang === 'en' && !empty($ev['language_name_en'])) ? $ev['language_name_en'] : ($ev['language_name'] ?? '');
+                                    ?>
+                                        <div class="swiper-slide">
+                                            <div class="home-meetup-slide">
+                                                <div class="hms-top">
+                                                    <?php if ($flagCode): ?>
+                                                        <img src="https://flagcdn.com/32x24/<?= htmlspecialchars($flagCode) ?>.png" class="hms-flag" alt="Bandeira">
+                                                    <?php elseif ($flagEmoji): ?>
+                                                        <span class="hms-emoji"><?= $flagEmoji ?></span>
+                                                    <?php endif; ?>
+                                                    <span class="hms-lang"><?= htmlspecialchars($langDisplayName) ?></span>
+                                                    <?php if ($isNow): ?>
+                                                        <span class="hms-live">AO VIVO</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="hms-time">
+                                                    <i class="far fa-clock"></i> <?= getDayName($evDay) ?> &middot; <?= formatHour($evHour) ?>
+                                                </div>
+                                                <div class="hms-host">
+                                                    <?php if (!empty($ev['host_name'])): ?>
+                                                        <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null); ?>
+                                                        <img src="<?= $hostPhotoUrl ?>" alt="Host" onerror="this.src='/assets/images/logo.png'">
+                                                        <span>Host: <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
+                                                    <?php else: ?>
+                                                        <div class="hms-no-host"></div>
+                                                        <span><strong>Conversação Livre</strong></span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="swiper-pagination"></div>
+                            </div>
+                        <?php else: ?>
+                            <p class="mod-card-text"><?= t('home.modalities.online_text') ?></p>
+                        <?php endif; ?>
+
+                        <div class="mod-card-footer">
+                            <a href="<?= langUrl('online.php') ?>" class="mod-card-link"><?= t('home.modalities.online_link') ?> <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- WIDGET PRESENCIAL -->
+                    <div class="mod-card mod-card-presencial">
+                        <div class="mod-card-header">
+                            <div class="mod-icon"><i class="fas fa-map-marked-alt"></i></div>
+                            <h3><?= t('home.modalities.presencial_title') ?></h3>
+                        </div>
+
+                        <div class="swiper presencial-swiper">
+                            <div class="swiper-wrapper">
+                                <!-- Brasília -->
+                                <div class="swiper-slide">
+                                    <div class="home-city-slide" style="background-image: url('/assets/images/encontrodeidiomas-20250407-0001.jpg');">
+                                        <div class="hcs-overlay">
+                                            <span class="hcs-city">Brasília</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- São Paulo -->
+                                <div class="swiper-slide">
+                                    <div class="home-city-slide" style="background-image: url('/assets/images/IMG_20250408_174649_714.jpg');">
+                                        <div class="hcs-overlay">
+                                            <span class="hcs-city">São Paulo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Belo Horizonte -->
+                                <div class="swiper-slide">
+                                    <div class="home-city-slide" style="background-image: url('/assets/images/encontrodeidiomas-20250408-0013.jpg'); background-position: center 30%;">
+                                        <div class="hcs-overlay">
+                                            <span class="hcs-city">Belo Horizonte</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-pagination"></div>
+                        </div>
+
+                        <div class="mod-card-footer">
+                            <a href="<?= langUrl('presencial.php') ?>" class="mod-card-link"><?= t('home.modalities.presencial_link') ?> <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>

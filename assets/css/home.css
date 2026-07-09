@@ -295,15 +295,16 @@ html {
 .mod-card {
     background: #fff;
     border-radius: 24px;
-    padding: 45px 35px;
+    padding: 35px 30px;
     box-shadow: 0 4px 25px rgba(0,0,0,0.06);
     border: 1px solid #eee;
     transition: transform 0.4s cubic-bezier(.175,.885,.32,1.275), box-shadow 0.3s;
     position: relative;
     overflow: hidden;
-    text-decoration: none;
     color: var(--text-color);
-    display: block;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 .mod-card::before {
     content: '';
@@ -314,27 +315,108 @@ html {
 .mod-card-online::before { background: linear-gradient(to right, var(--accent-blue), #3b82f6); }
 .mod-card-presencial::before { background: linear-gradient(to right, var(--accent-red), #f59e0b); }
 .mod-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
     box-shadow: 0 20px 50px rgba(0,0,0,0.12);
 }
-.mod-icon {
-    width: 70px; height: 70px;
-    border-radius: 20px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.8rem;
+.mod-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
     margin-bottom: 24px;
+}
+.mod-icon {
+    width: 50px; height: 50px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
 }
 .mod-card-online .mod-icon { background: rgba(0,38,84,0.08); color: var(--accent-blue); }
 .mod-card-presencial .mod-icon { background: rgba(227,29,28,0.08); color: var(--accent-red); }
-.mod-card h3 { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin-bottom: 12px; }
-.mod-card p { font-size: 0.95rem; color: #666; line-height: 1.7; margin-bottom: 24px; }
+.mod-card h3 { font-size: 1.4rem; font-weight: 800; color: var(--primary-color); margin: 0; }
+.mod-card-text { font-size: 0.95rem; color: #666; line-height: 1.7; flex-grow: 1; }
+
+.mod-card-footer {
+    margin-top: auto;
+    padding-top: 20px;
+}
 .mod-card-link {
     display: inline-flex; align-items: center; gap: 8px;
     font-weight: 700; font-size: 0.95rem; transition: gap 0.3s;
+    text-decoration: none;
 }
 .mod-card-online .mod-card-link { color: var(--accent-blue); }
 .mod-card-presencial .mod-card-link { color: var(--accent-red); }
-.mod-card:hover .mod-card-link { gap: 14px; }
+.mod-card-link:hover { gap: 14px; }
+
+/* Swipers dentro dos Cards */
+.meetups-swiper, .presencial-swiper {
+    width: 100%;
+    padding-bottom: 35px;
+    flex-grow: 1;
+}
+.meetups-swiper .swiper-pagination-bullet { background: var(--accent-blue); }
+.presencial-swiper .swiper-pagination-bullet { background: var(--accent-red); }
+.swiper-pagination { bottom: 0 !important; }
+
+/* Slide de Evento Online */
+.home-meetup-slide {
+    background: #fdfdfd;
+    border: 1px solid #f0f0f0;
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.hms-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.hms-flag { width: 24px; border-radius: 3px; }
+.hms-emoji { font-size: 1.1rem; }
+.hms-lang { font-weight: 700; color: var(--primary-color); font-size: 1.05rem; }
+.hms-live {
+    margin-left: auto;
+    background: #ef4444; color: #fff;
+    font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 10px;
+    animation: pulse-live 2s infinite;
+}
+@keyframes pulse-live { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+.hms-time {
+    font-size: 0.9rem; color: #666;
+    display: flex; align-items: center; gap: 6px;
+}
+.hms-host {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.85rem; color: #555;
+    padding-top: 8px; border-top: 1px solid #f0f0f0;
+}
+.hms-host img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.hms-no-host { width: 28px; height: 28px; border-radius: 50%; background: #eee; }
+
+/* Slide Presencial */
+.home-city-slide {
+    height: 180px;
+    border-radius: 16px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+.hcs-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 60%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    display: flex; align-items: flex-end; padding: 15px 20px;
+}
+.hcs-city {
+    color: #fff; font-size: 1.4rem; font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
 
 /* HOW IT WORKS */
 .how-section {
