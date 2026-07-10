@@ -334,6 +334,9 @@ if (isset($_GET['msg']) && !$msg) {
                             <?php if ($row['status'] === 'processing' || $row['status'] === 'pending' || $row['status'] === 'waiting_host'): ?>
                                 <button class="btn-sm btn-danger" onclick="if(confirm('Tem certeza? Isso marcará a tarefa como erro.')) location.href='odysee.php?cancel=<?= $row['id'] ?>'"><i class="fas fa-times"></i> Cancelar</button>
                             <?php endif; ?>
+                            <?php if ($row['status'] !== 'done'): ?>
+                                <button class="btn-sm" style="background-color: #8b5cf6;" onclick="manualResolve(<?= $row['id'] ?>)"><i class="fas fa-link"></i> Inserir Link</button>
+                            <?php endif; ?>
                             <?php if ($row['status'] === 'done'): ?>
                                 <button class="btn-sm" style="background-color: #25D366; border-color: #25D366; color: white;" onclick="location.href='odysee_manual_dispatch.php?id=<?= $row['id'] ?>'"><i class="fab fa-whatsapp"></i> Disparar Zap</button>
                             <?php endif; ?>
@@ -738,6 +741,37 @@ if (isset($_GET['msg']) && !$msg) {
         
         // Busca imediatamente ao carregar
         setTimeout(fetchDiagUpdate, 500);
+        
+        function manualResolve(id) {
+            const url = prompt("Insira o link original do Odysee (ex: https://odysee.com/@Canal/2026_07_06):");
+            if (!url) return;
+            if (!url.includes('odysee.com')) {
+                alert("A URL fornecida não parece ser uma URL válida do Odysee.");
+                return;
+            }
+            
+            document.body.style.cursor = 'wait';
+            
+            fetch('ajax/odysee_manual_resolve.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ queue_id: id, manual_url: url })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.body.style.cursor = 'default';
+                if (data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(e => {
+                document.body.style.cursor = 'default';
+                alert('Erro na requisição: ' + e);
+            });
+        }
     </script>
 </body>
 </html>
