@@ -193,12 +193,12 @@ $state = $status['connected'] ? 'connected' : 'disconnected';
 
                     <!-- Tabs -->
                     <div class="auth-tabs">
-                        <button class="auth-tab active" id="tabPairing" onclick="switchTab('pairing')">📱 Código por Número</button>
-                        <button class="auth-tab" id="tabQR" onclick="switchTab('qr')">📷 QR Code</button>
+                        <button class="auth-tab" id="tabPairing" onclick="switchTab('pairing')">📱 Código por Número</button>
+                        <button class="auth-tab active" id="tabQR" onclick="switchTab('qr')">📷 QR Code</button>
                     </div>
 
                     <!-- Painel: Pairing Code -->
-                    <div id="panel-pairing">
+                    <div id="panel-pairing" style="display:none;">
                         <p style="color:var(--text-dim); margin-bottom:16px;">Gere um código de 8 dígitos e digite no WhatsApp do celular. Resolve o novo sistema anti-automação do WhatsApp.</p>
 
                         <!-- Formulário -->
@@ -227,7 +227,7 @@ $state = $status['connected'] ? 'connected' : 'disconnected';
                     </div>
 
                     <!-- Painel: QR Code -->
-                    <div id="panel-qr" style="display:none;">
+                    <div id="panel-qr">
                         <p style="color:var(--text-dim); margin-bottom:20px;">Abra o WhatsApp no seu celular, vá em <strong>Aparelhos conectados → Conectar um aparelho</strong> e aponte a câmera para o QR Code abaixo.</p>
                         <div id="qr-area">
                             <div class="loader" id="qrLoader"></div>
