@@ -259,14 +259,16 @@ try {
         $memberJid = $input['member_jid'] ?? '';
         $currentStreak = isset($input['current_streak']) ? (int)$input['current_streak'] : null;
         $longestStreak = isset($input['longest_streak']) ? (int)$input['longest_streak'] : null;
+        $totalCompletions = isset($input['total_completions']) ? (int)$input['total_completions'] : null;
+        $lastCompleted = !empty($input['last_completed_date']) ? $input['last_completed_date'] : null;
 
-        if (empty($memberJid) || $currentStreak === null || $longestStreak === null) {
+        if (empty($memberJid) || $currentStreak === null || $longestStreak === null || $totalCompletions === null || $lastCompleted === null) {
             echo json_encode(['success' => false, 'error' => 'Parâmetros inválidos']);
             exit;
         }
 
-        $stmt = $conn->prepare("UPDATE mentoria_desafio_streaks SET current_streak = ?, longest_streak = ? WHERE member_jid = ?");
-        $stmt->execute([$currentStreak, $longestStreak, $memberJid]);
+        $stmt = $conn->prepare("UPDATE mentoria_desafio_streaks SET current_streak = ?, longest_streak = ?, total_completions = ?, last_completed_date = ? WHERE member_jid = ?");
+        $stmt->execute([$currentStreak, $longestStreak, $totalCompletions, $lastCompleted, $memberJid]);
 
         echo json_encode(['success' => true]);
     }

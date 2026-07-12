@@ -42,8 +42,14 @@
                         echo "<td style='padding: 15px; text-align: center; color: var(--accent-blue); font-weight: bold;'>
                                 <input type='number' class='streak-input' id='longest-{$s['member_jid']}' value='{$s['longest_streak']}' style='width: 60px; background: transparent; color: inherit; border: 1px solid rgba(255,255,255,0.2); text-align: center; border-radius: 4px;'>
                               </td>";
-                        echo "<td style='padding: 15px; text-align: center;'>" . $lastDate . "</td>";
-                        echo "<td style='padding: 15px; text-align: center;'>" . $s['total_completions'] . " dias</td>";
+                        $rawLastDate = $s['last_completed_date'] ? date('Y-m-d', strtotime($s['last_completed_date'])) : '';
+
+                        echo "<td style='padding: 15px; text-align: center;'>
+                                <input type='date' class='streak-input' id='lastdate-{$s['member_jid']}' value='{$rawLastDate}' style='background: transparent; color: inherit; border: 1px solid rgba(255,255,255,0.2); text-align: center; border-radius: 4px; padding: 2px;'>
+                              </td>";
+                        echo "<td style='padding: 15px; text-align: center;'>
+                                <input type='number' class='streak-input' id='total-{$s['member_jid']}' value='{$s['total_completions']}' style='width: 60px; background: transparent; color: inherit; border: 1px solid rgba(255,255,255,0.2); text-align: center; border-radius: 4px;'> dias
+                              </td>";
                         echo "<td style='padding: 15px; text-align: center;'>
                                 <button onclick=\"saveStreak('{$s['member_jid']}')\" class='btn-sm btn-primary' style='padding: 4px 8px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; background: var(--accent-blue); color: white;'><i class='fas fa-save'></i> Salvar</button>
                               </td>";
@@ -62,6 +68,8 @@
 function saveStreak(jid) {
     const current = document.getElementById('current-' + jid).value;
     const longest = document.getElementById('longest-' + jid).value;
+    const total = document.getElementById('total-' + jid).value;
+    const lastDate = document.getElementById('lastdate-' + jid).value;
     
     const btn = document.querySelector(`#row-${jid.replace('@', '\\@')} button`);
     const originalText = btn.innerHTML;
@@ -75,7 +83,9 @@ function saveStreak(jid) {
             action: 'edit_streak',
             member_jid: jid,
             current_streak: current,
-            longest_streak: longest
+            longest_streak: longest,
+            total_completions: total,
+            last_completed_date: lastDate
         })
     })
     .then(res => res.json())
