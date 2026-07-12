@@ -251,6 +251,24 @@ try {
         echo $httpCode === 200
             ? json_encode(['success' => true])
             : json_encode(['success' => false, 'error' => "Node: $httpCode — $res"]);
+
+    // ────────────────────────────────────────────────────
+    // ACTION: edit_streak
+    // ────────────────────────────────────────────────────
+    } elseif ($action === 'edit_streak') {
+        $memberJid = $input['member_jid'] ?? '';
+        $currentStreak = isset($input['current_streak']) ? (int)$input['current_streak'] : null;
+        $longestStreak = isset($input['longest_streak']) ? (int)$input['longest_streak'] : null;
+
+        if (empty($memberJid) || $currentStreak === null || $longestStreak === null) {
+            echo json_encode(['success' => false, 'error' => 'Parâmetros inválidos']);
+            exit;
+        }
+
+        $stmt = $conn->prepare("UPDATE mentoria_desafio_streaks SET current_streak = ?, longest_streak = ? WHERE member_jid = ?");
+        $stmt->execute([$currentStreak, $longestStreak, $memberJid]);
+
+        echo json_encode(['success' => true]);
     }
 
 } catch (Exception $e) {

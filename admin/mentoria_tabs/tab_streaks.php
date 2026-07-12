@@ -14,6 +14,7 @@
                 <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Recorde</th>
                 <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Último Envio</th>
                 <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Total Completado</th>
+                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -32,12 +33,20 @@
                         
                         $isHot = $s['current_streak'] >= 3 ? '🔥' : '';
                         
-                        echo "<tr style='border-bottom: 1px solid rgba(255,255,255,0.05);'>";
+                        echo "<tr style='border-bottom: 1px solid rgba(255,255,255,0.05);' id='row-{$s['member_jid']}'>";
                         echo "<td style='padding: 15px;'><strong>" . htmlspecialchars($name) . "</strong><br><span style='font-size: 0.85rem; color: var(--text-dim);'>+$phone</span></td>";
-                        echo "<td style='padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; color: " . ($s['current_streak'] > 0 ? 'var(--success)' : 'var(--text-dim)') . ";'>" . $s['current_streak'] . " $isHot</td>";
-                        echo "<td style='padding: 15px; text-align: center; color: var(--accent-blue); font-weight: bold;'>" . $s['longest_streak'] . "</td>";
+                        echo "<td style='padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; color: " . ($s['current_streak'] > 0 ? 'var(--success)' : 'var(--text-dim)') . ";'>
+                                <input type='number' class='streak-input' id='current-{$s['member_jid']}' value='{$s['current_streak']}' style='width: 60px; background: transparent; color: inherit; border: 1px solid rgba(255,255,255,0.2); text-align: center; border-radius: 4px;'>
+                                $isHot
+                              </td>";
+                        echo "<td style='padding: 15px; text-align: center; color: var(--accent-blue); font-weight: bold;'>
+                                <input type='number' class='streak-input' id='longest-{$s['member_jid']}' value='{$s['longest_streak']}' style='width: 60px; background: transparent; color: inherit; border: 1px solid rgba(255,255,255,0.2); text-align: center; border-radius: 4px;'>
+                              </td>";
                         echo "<td style='padding: 15px; text-align: center;'>" . $lastDate . "</td>";
                         echo "<td style='padding: 15px; text-align: center;'>" . $s['total_completions'] . " dias</td>";
+                        echo "<td style='padding: 15px; text-align: center;'>
+                                <button onclick=\"saveStreak('{$s['member_jid']}')\" class='btn-sm btn-primary' style='padding: 4px 8px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; background: var(--accent-blue); color: white;'><i class='fas fa-save'></i> Salvar</button>
+                              </td>";
                         echo "</tr>";
                     }
                 }
@@ -48,3 +57,47 @@
         </tbody>
     </table>
 </div>
+
+<script>
+function saveStreak(jid) {
+    const current = document.getElementById('current-' + jid).value;
+    const longest = document.getElementById('longest-' + jid).value;
+    
+    const btn = document.querySelector(`#row-${jid.replace('@', '\\@')} button`);
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    fetch('mentoria_score_edit_api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'edit_streak',
+            member_jid: jid,
+            current_streak: current,
+            longest_streak: longest
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            btn.innerHTML = '<i class="fas fa-check"></i> OK';
+            btn.style.background = 'var(--success)';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = 'var(--accent-blue)';
+                btn.disabled = false;
+            }, 2000);
+        } else {
+            alert('Erro ao salvar: ' + data.error);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        alert('Erro de conexão');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+</script>
