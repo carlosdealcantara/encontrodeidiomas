@@ -178,5 +178,15 @@ foreach ($alunos as $aluno) {
     }
 }
 
-echo "<h3>Varredura de Cobrança (Telegram) concluída! {$sucessos} notificações enviadas hoje.</h3>";
+if ($sucessos === 0 && isset($_GET['force'])) {
+    $msgTelegram = "🧪 *TESTE DE CONEXÃO DO SISTEMA*\n─────────────────────────────\n✅ A integração com o Telegram está funcionando perfeitamente!\n\nℹ️ Nenhuma cobrança real atendeu aos critérios para envio (nenhum aluno com vencimento para os dias configurados). Fique tranquilo, quando for o dia exato, os avisos chegarão aqui com os dados do aluno.";
+    $res = sendTelegramMsg($msgTelegram, $telegramToken, $telegramChatId);
+    if (isset($res['ok']) && $res['ok']) {
+        echo "<p style='color:green; font-weight:bold;'>✅ Teste de Conexão bem-sucedido! Verifique seu Telegram.</p>";
+    } else {
+        echo "<p style='color:red;'>❌ Ocorreu um erro ao enviar o teste de conexão. Resposta: " . json_encode($res) . "</p>";
+    }
+}
+
+echo "<h3>Varredura de Cobrança (Telegram) concluída! {$sucessos} notificações reais enviadas hoje.</h3>";
 ?>
