@@ -18,18 +18,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 
 $conn = connectDB();
 
-// Função para buscar configs isolada
-function getSetting($chave, $default = '') {
-    global $conn;
-    try {
-        $stmt = $conn->prepare("SELECT valor FROM system_settings WHERE chave = ? LIMIT 1");
-        $stmt->execute([$chave]);
-        $row = $stmt->fetch();
-        return $row ? $row['valor'] : $default;
-    } catch (Exception $e) {
-        return $default;
-    }
-}
+// A função getSetting já está no config.php
 
 // Verifica se o relay do Telegram está ativo no sistema
 try {
