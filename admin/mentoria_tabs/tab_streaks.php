@@ -6,6 +6,13 @@
 </div>
 
 <div class="form-card" style="padding: 0; overflow: hidden;">
+    <style>
+        .streak-input {
+            font-size: 1.1rem !important;
+            font-weight: bold !important;
+            padding: 4px 8px !important;
+        }
+    </style>
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="background: rgba(0,0,0,0.2);">
