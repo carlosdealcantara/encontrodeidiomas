@@ -111,6 +111,19 @@ function getSetting(string $key, $default = ''): string {
     return $settings[$key] ?? $default;
 }
 
+function updateSetting(string $key, string $value): void {
+    try {
+        $conn = connectDB();
+        $stmt = $conn->prepare(
+            "INSERT INTO settings (setting_key, setting_value) VALUES (:k, :v1)
+             ON DUPLICATE KEY UPDATE setting_value = :v2"
+        );
+        $stmt->execute([':k' => $key, ':v1' => $value, ':v2' => $value]);
+    } catch (Exception $e) {
+        error_log("updateSetting error for key '$key': " . $e->getMessage());
+    }
+}
+
 function getMeetings(): array {
     try {
         $conn = connectDB();
