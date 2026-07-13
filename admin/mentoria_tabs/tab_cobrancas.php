@@ -22,10 +22,16 @@
         <div class="card" style="background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
                 <strong style="font-size: 1.05rem;"><?= htmlspecialchars($msg['cenario']) ?></strong>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" name="msgs[<?= $msg['id'] ?>][ativo]" <?= $msg['ativo'] ? 'checked' : '' ?> style="accent-color: var(--success); width: 18px; height: 18px;">
-                    <span style="font-size: 0.9rem; color: var(--text-dim);">Ativado</span>
-                </label>
+                <div style="display: flex; gap: 15px;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px;">
+                        <input type="checkbox" name="msgs[<?= $msg['id'] ?>][ativo]" <?= $msg['ativo'] ? 'checked' : '' ?> style="accent-color: var(--success); width: 16px; height: 16px;">
+                        <span style="font-size: 0.85rem; color: var(--text-dim);"><i class="fab fa-whatsapp"></i> Ativo WhatsApp</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px;">
+                        <input type="checkbox" name="msgs[<?= $msg['id'] ?>][ativo_telegram]" <?= (isset($msg['ativo_telegram']) ? $msg['ativo_telegram'] : 1) ? 'checked' : '' ?> style="accent-color: var(--accent-blue); width: 16px; height: 16px;">
+                        <span style="font-size: 0.85rem; color: var(--text-dim);"><i class="fab fa-telegram"></i> Ativo Telegram</span>
+                    </label>
+                </div>
             </div>
             
             <div style="margin-bottom: 15px;">

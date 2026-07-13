@@ -30,13 +30,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_cobranca'])) {
     if (isset($_POST['pix_footer'])) {
         updateSetting('mentoria_pix_footer', $_POST['pix_footer']);
     }
+    
+    // Assegura que a coluna ativo_telegram existe
+    try {
+        $conn->exec("ALTER TABLE mentoria_mensagens ADD COLUMN ativo_telegram TINYINT(1) DEFAULT 1");
+    } catch (Exception $e) {}
+
     if (isset($_POST['msgs']) && is_array($_POST['msgs'])) {
-        $stmtUpdateMsg = $conn->prepare("UPDATE mentoria_mensagens SET dias_antes = ?, texto = ?, ativo = ? WHERE id = ?");
+        $stmtUpdateMsg = $conn->prepare("UPDATE mentoria_mensagens SET dias_antes = ?, texto = ?, ativo = ?, ativo_telegram = ? WHERE id = ?");
         foreach ($_POST['msgs'] as $msg_id => $data) {
             $dias = (int)$data['dias'];
             $texto = $data['texto'];
             $ativo = isset($data['ativo']) ? 1 : 0;
-            $stmtUpdateMsg->execute([$dias, $texto, $ativo, $msg_id]);
+            $ativo_telegram = isset($data['ativo_telegram']) ? 1 : 0;
+            $stmtUpdateMsg->execute([$dias, $texto, $ativo, $ativo_telegram, $msg_id]);
         }
     }
     $msg = "Mensagens de faturamento salvas com sucesso!";
@@ -315,6 +322,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             <button class="main-tab-btn <?= $active_tab == 'streaks' ? 'active' : '' ?>" onclick="switchMainTab('streaks')"><i class="fas fa-fire"></i> Streaks Desafio</button>
             <button class="main-tab-btn <?= $active_tab == 'score_editor' ? 'active' : '' ?>" onclick="switchMainTab('score_editor')"><i class="fas fa-trophy"></i> Ranking</button>
             <button class="main-tab-btn <?= $active_tab == 'odysee' ? 'active' : '' ?>" onclick="switchMainTab('odysee')"><i class="fas fa-video"></i> Odysee</button>
+            <button class="main-tab-btn <?= $active_tab == 'telegram_cobranca' ? 'active' : '' ?>" onclick="switchMainTab('telegram_cobranca')"><i class="fab fa-telegram"></i> Avisos Telegram</button>
         </div>
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
@@ -343,6 +351,10 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_odysee" class="main-tab-content <?= $active_tab == 'odysee' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_odysee.php'; ?>
+        </div>
+
+        <div id="tab_telegram_cobranca" class="main-tab-content <?= $active_tab == 'telegram_cobranca' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_telegram_cobranca.php'; ?>
         </div>
 
     </main>

@@ -106,6 +106,7 @@ if ($horaAtual === 21) {
 if ($horaAtual === 8) {
     echo "<h3>Rotina de Faturamento Mensalidades (08:00 BRT)</h3><ul>";
     rodarSubCron('mentoria_cobranca_cron.php', $baseUrl, $token_secreto);
+    rodarSubCron('../bot_telegram/mentoria_telegram_cron.php', $baseUrl, $token_secreto);
     echo "</ul>";
 }
 
