@@ -13,11 +13,17 @@ $msg = null;
 
 // Lidar com o salvamento das flags
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_flags'])) {
+    $odysee_modo = $_POST['wpp_odysee_modo'] ?? '0';
+    if (!in_array($odysee_modo, ['0', 'hosts', 'full', '1'])) {
+        $odysee_modo = '0';
+    }
+    if ($odysee_modo === '1') $odysee_modo = 'full';
+
     $flags = [
         'wpp_meetups_hourly_ativo' => isset($_POST['wpp_meetups_hourly_ativo']) ? '1' : '0',
         'wpp_meetups_daily_ativo'  => isset($_POST['wpp_meetups_daily_ativo']) ? '1' : '0',
         'wpp_mentoria_ativo'       => isset($_POST['wpp_mentoria_ativo']) ? '1' : '0',
-        'wpp_odysee_ativo'         => isset($_POST['wpp_odysee_ativo']) ? '1' : '0'
+        'wpp_odysee_ativo'         => $odysee_modo
     ];
 
     try {
@@ -37,12 +43,15 @@ $meetups_daily  = getSystemSetting($conn, 'wpp_meetups_daily_ativo', '0');
 $mentoria_ativo = getSystemSetting($conn, 'wpp_mentoria_ativo', '1');
 $odysee_ativo   = getSystemSetting($conn, 'wpp_odysee_ativo', '0');
 
+// Normalize legacy '1'
+if ($odysee_ativo === '1') $odysee_ativo = 'full';
+
 // Buscar status do bot
 $bot_status = statusWhatsApp();
 $is_connected = $bot_status['connected'] ?? false;
 
 // Determinar estado de contenção global
-$modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0' || $odysee_ativo === '0');
+$modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0' || $odysee_ativo === '0' || $odysee_ativo === 'hosts');
 
 ?>
 <!DOCTYPE html>
@@ -94,6 +103,37 @@ $modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0' || $o
         .toggle-row:last-child { border-bottom: none; }
         .toggle-info h3 { margin-bottom: 5px; }
         .toggle-info p { color: var(--text-dim); font-size: 0.9rem; }
+        
+        .radio-group { display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; }
+        .radio-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s; }
+        .radio-option:hover { background: rgba(255,255,255,0.05); }
+        .radio-option input[type="radio"] { cursor: pointer; width: 18px; height: 18px; accent-color: var(--success); }
+        .radio-option.danger-opt input[type="radio"] { accent-color: var(--accent-red); }
+        
+        #btn-revelar-danger {
+            background: rgba(227, 29, 28, 0.1);
+            color: var(--accent-red);
+            border: 1px dashed var(--accent-red);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 5px;
+        }
+        #btn-revelar-danger:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+        .danger-zone {
+            display: none;
+            border-top: 1px solid rgba(227, 29, 28, 0.3);
+            padding-top: 10px;
+            margin-top: 5px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -131,7 +171,7 @@ $modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0' || $o
             </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <form method="POST" onsubmit="return confirmarSalvar(event)">
             <div class="card">
                 <h3><i class="fas fa-cogs"></i> Controle de Automações</h4>
                 <p style="color: var(--text-dim); margin-bottom: 20px; margin-top: 5px;">
@@ -164,16 +204,34 @@ $modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0' || $o
                     </div>
                 </div>
 
-                <div class="toggle-row">
+                <div class="toggle-row" style="align-items: flex-start;">
                     <div class="toggle-info">
                         <h3>Disparos de Vídeos do Odysee</h3>
-                        <p>🔴 <strong>ALTO RISCO:</strong> Dispara mensagens do mesmo vídeo para vários grupos correspondentes ao idioma.</p>
+                        <p>Controle hierárquico para o envio das gravações semanais.</p>
                     </div>
-                    <div>
-                        <label class="switch">
-                            <input type="checkbox" name="wpp_odysee_ativo" <?= $odysee_ativo === '1' ? 'checked' : '' ?>>
-                            <span class="slider"></span>
-                        </label>
+                    <div style="min-width: 300px;">
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="wpp_odysee_modo" value="0" <?= $odysee_ativo === '0' ? 'checked' : '' ?>>
+                                <span>⚪ <strong>Desligado</strong><br><small style="color:var(--text-dim)">Não envia para ninguém.</small></span>
+                            </label>
+                            
+                            <label class="radio-option">
+                                <input type="radio" name="wpp_odysee_modo" value="hosts" <?= $odysee_ativo === 'hosts' ? 'checked' : '' ?>>
+                                <span>🟡 <strong>Apenas Hosts</strong> <span style="color:var(--success); font-size:0.8em;">(Seguro)</span><br><small style="color:var(--text-dim)">Envia uma vez para o grupo interno dos hosts repassarem.</small></span>
+                            </label>
+
+                            <div id="btn-revelar-danger" <?= $odysee_ativo === 'full' ? 'style="display:none;"' : '' ?> onclick="revelarDanger()">
+                                ⚠️ Mostrar opção de alto risco
+                            </div>
+
+                            <div class="danger-zone" id="danger-zone" <?= $odysee_ativo === 'full' ? 'style="display:block;"' : '' ?>>
+                                <label class="radio-option danger-opt">
+                                    <input type="radio" name="wpp_odysee_modo" value="full" <?= $odysee_ativo === 'full' ? 'checked' : '' ?>>
+                                    <span style="color:var(--accent-red)">🔴 <strong>DISPARO TOTAL</strong><br><small style="color:var(--text-dim)">Envia para todos os grupos do idioma simultaneamente. <strong>(Risco de Ban)</strong></small></span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -204,5 +262,30 @@ $modo_contencao_ativo = ($meetups_hourly === '0' || $meetups_daily === '0' || $o
             </p>
         </div>
     </main>
+
+    <script>
+        function revelarDanger() {
+            document.getElementById('danger-zone').style.display = 'block';
+            document.getElementById('btn-revelar-danger').style.display = 'none';
+        }
+
+        function confirmarSalvar(e) {
+            const modos = document.getElementsByName('wpp_odysee_modo');
+            let isFull = false;
+            for(let i=0; i<modos.length; i++){
+                if(modos[i].checked && modos[i].value === 'full'){
+                    isFull = true;
+                    break;
+                }
+            }
+            if(isFull) {
+                if(!confirm('⚠️ ATENÇÃO EXTREMA!\n\nVocê selecionou o DISPARO TOTAL para o Odysee.\nIsso vai enviar mensagens em massa e pode resultar no BANIMENTO IMEDIATO do número do bot se ele for muito novo.\n\nTem certeza absoluta que deseja ativar o disparo em massa?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
 </body>
 </html>

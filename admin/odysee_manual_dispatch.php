@@ -83,8 +83,11 @@ if (empty($tarefa['odysee_url'])) {
 // Processo de disparo real
 if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
     // MODO DE CONTENÇÃO: verifica flag no banco
-    if (getSystemSetting($conn, 'wpp_odysee_ativo', '0') !== '1') {
-        $error = "⛔ Modo de Contenção Ativo. O disparo do Odysee está desligado temporariamente para evitar banimento. Ative-o no painel de Modo Contenção.";
+    $odysee_modo = getSystemSetting($conn, 'wpp_odysee_ativo', '0');
+    if ($odysee_modo === '1') $odysee_modo = 'full';
+
+    if ($odysee_modo === '0') {
+        $error = "⛔ Modo de Contenção Ativo. O disparo do Odysee está desligado temporariamente para evitar banimento. Ajuste no painel de Modo Contenção.";
     } else {
         try {
         // 1. Template
@@ -131,12 +134,16 @@ if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
         // O Baileys vai automaticamente ler as tags OpenGraph da URL original e baixar a thumbnail oficial do vídeo.
         
         // 3. Grupos Alvo
-        $stmtG = $conn->prepare("
-            SELECT group_id FROM meetup_whatsapp_groups 
-            WHERE ativo = 1 AND (categoria = 'multi_idioma' OR (categoria = 'especifico' AND language_id = ?))
-        ");
-        $stmtG->execute([$tarefa['language_id']]);
-        $grupos = $stmtG->fetchAll(PDO::FETCH_COLUMN);
+        if ($odysee_modo === 'hosts') {
+            $grupos = ['120363164732845564@g.us'];
+        } else {
+            $stmtG = $conn->prepare("
+                SELECT group_id FROM meetup_whatsapp_groups 
+                WHERE ativo = 1 AND (categoria = 'multi_idioma' OR (categoria = 'especifico' AND language_id = ?))
+            ");
+            $stmtG->execute([$tarefa['language_id']]);
+            $grupos = $stmtG->fetchAll(PDO::FETCH_COLUMN);
+        }
         
         $enviados = 0;
         foreach ($grupos as $gid) {
@@ -199,7 +206,18 @@ if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
 <body>
     <div class="card">
         <h2>Confirmar Disparo Manual</h2>
-        <p>Você está prestes a disparar a mensagem do <strong><?= htmlspecialchars($tarefa['language_name']) ?></strong> para os grupos de WhatsApp.</p>
+        <?php
+            $modo_atual = getSystemSetting($conn, 'wpp_odysee_ativo', '0');
+            if ($modo_atual === '1') $modo_atual = 'full';
+            
+            if ($modo_atual === 'hosts'):
+        ?>
+            <p style="color: #f59e0b;"><i class="fas fa-shield-alt"></i> <strong>Modo Apenas Hosts:</strong> Você está prestes a enviar o vídeo do <strong><?= htmlspecialchars($tarefa['language_name']) ?></strong> <u>apenas para o grupo interno dos Hosts</u>.</p>
+        <?php elseif ($modo_atual === 'full'): ?>
+            <p style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> <strong>Modo Disparo Total:</strong> Você está prestes a disparar a mensagem do <strong><?= htmlspecialchars($tarefa['language_name']) ?></strong> para TODOS os grupos deste idioma da comunidade.</p>
+        <?php else: ?>
+            <p>O envio está desligado no modo de contenção.</p>
+        <?php endif; ?>
         
         <?php if ($error): ?>
             <div style="background: #ef4444; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><?= htmlspecialchars($error) ?></div>
