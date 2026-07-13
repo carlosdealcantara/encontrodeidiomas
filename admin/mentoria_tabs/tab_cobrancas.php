@@ -25,11 +25,11 @@
                 <div style="display: flex; gap: 15px;">
                     <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px;">
                         <input type="checkbox" name="msgs[<?= $msg['id'] ?>][ativo]" <?= $msg['ativo'] ? 'checked' : '' ?> style="accent-color: var(--success); width: 16px; height: 16px;">
-                        <span style="font-size: 0.85rem; color: var(--text-dim);"><i class="fab fa-whatsapp"></i> Ativo WhatsApp</span>
+                        <span style="font-size: 0.85rem; color: var(--text-dim);"><i class="fab fa-whatsapp"></i> WhatsApp</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px;">
                         <input type="checkbox" name="msgs[<?= $msg['id'] ?>][ativo_telegram]" <?= (isset($msg['ativo_telegram']) ? $msg['ativo_telegram'] : 1) ? 'checked' : '' ?> style="accent-color: var(--accent-blue); width: 16px; height: 16px;">
-                        <span style="font-size: 0.85rem; color: var(--text-dim);"><i class="fab fa-telegram"></i> Ativo Telegram</span>
+                        <span style="font-size: 0.85rem; color: var(--text-dim);"><i class="fab fa-telegram"></i> Telegram</span>
                     </label>
                 </div>
             </div>
