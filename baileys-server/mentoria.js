@@ -286,17 +286,17 @@ async function handleMessages({ messages, type }) {
                         
                         // Se atingiu milestone, envia o relatório
                         if (data.is_milestone) {
-                            let msTemplate = config.templates?.streak_milestone || `🎉 *MILESTONE REACHED!* 🏆\nCongratulations @{name}! You just hit a *{streak}-day streak*! 🔥\n\n📊 *Your Challenge Stats:*\n• Current Streak: {streak} days\n• Personal Record: {longest_streak} days\n• Total Days Completed: {total_completions} days\n\nKeep building the habit! 🚀`;
+                            let msTemplate = config.templates?.streak_milestone || `🎉 *MILESTONE REACHED!* 🏆\nCongratulations {name}! You just hit a *{streak}-day streak*! 🔥\n\n📊 *Your Challenge Stats:*\n• Current Streak: {streak} days\n• Personal Record: {longest_streak} days\n• Total Days Completed: {total_completions} days\n\nKeep building the habit! 🚀`;
                             
                             let milestoneMsg = msTemplate
-                                .replace('@{name}', `@${nameOnly}`)
+                                .replace('@{name}', nameOnly)
                                 .replace('{name}', nameOnly)
                                 .replace(/{streak}/g, data.streak)
                                 .replace('{longest_streak}', data.longest_streak)
                                 .replace('{total_completions}', data.total_completions);
                                 
                             setTimeout(async () => {
-                                await sock.sendMessage(groupJid, { text: milestoneMsg, mentions: [senderJid] });
+                                await sock.sendMessage(groupJid, { text: milestoneMsg });
                             }, 2000);
                         }
                     }
