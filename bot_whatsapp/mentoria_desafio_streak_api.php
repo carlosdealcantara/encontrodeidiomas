@@ -51,7 +51,9 @@ try {
             echo json_encode([
                 'success' => true, 
                 'already_computed' => true,
-                'streak' => $streakData['current_streak']
+                'streak' => $streakData['current_streak'],
+                'longest_streak' => $streakData['longest_streak'],
+                'total_completions' => $streakData['total_completions']
             ]);
             exit;
         }
@@ -101,6 +103,8 @@ try {
         'success' => true,
         'already_computed' => false,
         'streak' => $currentStreak,
+        'longest_streak' => $longestStreak,
+        'total_completions' => $totalCompletions,
         'is_milestone' => $isMilestone
     ]);
 
