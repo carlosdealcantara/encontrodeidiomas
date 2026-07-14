@@ -512,18 +512,10 @@ async function processQueue() {
                     msgPayload.mentions = item.mentions;
                 }
                 
-                if (item.linkPreview) {
-                    msgPayload.contextInfo = {
-                        matchedText: item.linkPreview.url || '',
-                        title: item.linkPreview.title || 'Encontro de Idiomas',
-                        description: item.linkPreview.body || 'Acesse agora'
-                    };
-                    if (item.linkPreview.thumbnailBase64) {
-                        msgPayload.contextInfo.jpegThumbnail = Buffer.from(item.linkPreview.thumbnailBase64, 'base64');
-                    }
-                }
+                // Injeção manual de linkPreview desativada para dar lugar ao generateHighQualityLinkPreview nativo
+                // if (item.linkPreview) { ... }
                 
-                await sock.sendMessage(jid, msgPayload);
+                await sock.sendMessage(jid, msgPayload, { generateHighQualityLinkPreview: true });
                 
                 const duration = ((Date.now() - startTime) / 1000).toFixed(2);
                 addLog(jobId, 'success', `[SUCESSO] Mensagem entregue. Tempo: ${duration}s.`);
