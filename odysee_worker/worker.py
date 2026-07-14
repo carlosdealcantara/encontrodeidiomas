@@ -754,11 +754,30 @@ def processar_fila():
             if row and row['setting_value']:
                 template = row['setting_value']
                 
-            cursor_wpp.execute("""
-                SELECT group_id FROM meetup_whatsapp_groups 
-                WHERE ativo = 1 AND (categoria = 'multi_idioma' OR (categoria = 'especifico' AND language_id = %s))
-            """, (tarefa['language_id'],))
-            grupos_alvo = [r['group_id'] for r in cursor_wpp.fetchall()]
+            # Verifica o Modo de Contenção do Odysee
+            cursor_wpp.execute("SELECT valor FROM system_settings WHERE chave = 'wpp_odysee_ativo'")
+            row_modo = cursor_wpp.fetchone()
+            odysee_modo = '0'
+            if row_modo and row_modo['valor']:
+                odysee_modo = row_modo['valor']
+                
+            if odysee_modo == '1':
+                odysee_modo = 'full'
+                
+            if odysee_modo == '0':
+                logger.info("[WHATSAPP] Modo de contenção ativado (0). Disparo cancelado.")
+                grupos_alvo = []
+            elif odysee_modo == 'hosts':
+                logger.info("[WHATSAPP] Modo Apenas Hosts ativado. Disparando apenas para os hosts.")
+                grupos_alvo = ['120363164732845564@g.us']
+            else:
+                logger.warning("[WHATSAPP] MODO DISPARO TOTAL ATIVADO. Enviando para todos os grupos!")
+                cursor_wpp.execute("""
+                    SELECT group_id FROM meetup_whatsapp_groups 
+                    WHERE ativo = 1 AND (categoria = 'multi_idioma' OR (categoria = 'especifico' AND language_id = %s))
+                """, (tarefa['language_id'],))
+                grupos_alvo = [r['group_id'] for r in cursor_wpp.fetchall()]
+                
             cursor_wpp.close()
             conn_wpp.close()
         except Exception as e:
