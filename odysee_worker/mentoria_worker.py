@@ -750,19 +750,43 @@ def encurtar_url(url_longa):
     return url_longa
 
 def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
-    mensagem = f"🎓 *Mentorship Class:* {titulo}\n\n🔗 {url_curta}"
-    
+    # --- Busca o template editável do banco (settings table) ---
+    template = "🎓 *{titulo}*\n\n🔗 {url}"
+    try:
+        conn_t = get_db_connection()
+        cursor_t = conn_t.cursor(dictionary=True)
+        cursor_t.execute("SELECT setting_value FROM settings WHERE setting_key = 'mentoria_odysee_wpp_template' LIMIT 1")
+        row = cursor_t.fetchone()
+        if row and row['setting_value']:
+            template = row['setting_value']
+        cursor_t.close()
+        conn_t.close()
+    except Exception as e:
+        logger.warning(f"[WHATSAPP] Não foi possível ler template do banco, usando padrão: {e}")
+
+    mensagem = template.replace('{titulo}', titulo).replace('{url}', url_curta)
+
+    # --- Busca o JID do Our Classes direto do Baileys (fonte de verdade única) ---
     grupos_alvo = []
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT group_id FROM meetup_whatsapp_groups WHERE ativo = 1 AND categoria = 'mentoria'")
-        grupos_alvo = [r['group_id'] for r in cursor.fetchall()]
-        cursor.close()
-        conn.close()
+        resp = requests.get(
+            "http://host.docker.internal:3000/mentoria-config",
+            headers={"apikey": "SenhaMeetups2026"},
+            timeout=5
+        )
+        if resp.status_code == 200:
+            conf = resp.json()
+            jid = conf.get("groups", {}).get("our_classes", {}).get("jid")
+            if jid:
+                grupos_alvo = [jid]
+                logger.info(f"[WHATSAPP] Grupo alvo Our Classes: {jid}")
+            else:
+                logger.warning("[WHATSAPP] our_classes.jid não encontrado no mentoria-config")
+        else:
+            logger.warning(f"[WHATSAPP] Baileys retornou HTTP {resp.status_code} ao buscar mentoria-config")
     except Exception as e:
-        logger.error(f"Erro ao buscar grupos de mentoria: {e}")
-        
+        logger.error(f"[WHATSAPP] Erro ao buscar mentoria-config do Baileys: {e}")
+
     link_preview_data = {
         "title": titulo,
         "body": "Disponível agora no Odysee (Não-listado)",
@@ -770,7 +794,7 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
     }
     if thumbnail_b64:
         link_preview_data["thumbnailBase64"] = thumbnail_b64
-        
+
     for grupo_id in grupos_alvo:
         try:
             requests.post("http://host.docker.internal:3000/send", json={
@@ -782,8 +806,10 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
             logger.info(f"[WHATSAPP] Notificação enviada para {grupo_id}")
         except Exception as e:
             logger.warning(f"[WHATSAPP] Erro ao notificar {grupo_id}: {e}")
-            
+
     return mensagem
+
+
 
 def processar_fila():
     escanear_drive()

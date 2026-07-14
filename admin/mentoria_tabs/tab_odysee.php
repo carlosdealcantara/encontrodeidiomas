@@ -1,9 +1,39 @@
+<?php
+// Salva template da mensagem WhatsApp do pipeline Odysee
+if (isset($_POST['save_odysee_wpp_template'])) {
+    updateSetting('mentoria_odysee_wpp_template', $_POST['odysee_wpp_template'] ?? '');
+    echo "<script>window.location.href='mentoria.php?tab=odysee&msg=Template+salvo+com+sucesso!';</script>";
+    exit;
+}
+$odysee_wpp_template = getSetting('mentoria_odysee_wpp_template', "🎓 *{titulo}*\n\n🔗 {url}");
+?>
+
+<div class="card" style="background: var(--card-bg); border-radius: 16px; padding: 25px; margin-bottom: 25px; border: 1px solid rgba(56,189,248,0.2);">
+    <h3 style="color: var(--accent-blue); margin-bottom: 6px;"><i class="fa-brands fa-whatsapp"></i> Mensagem WhatsApp — Pipeline Odysee</h3>
+    <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 18px;">
+        Texto enviado ao grupo <strong>Our Classes</strong> após cada publicação no Odysee.<br>
+        Variáveis disponíveis: <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{titulo}</code> — título do vídeo &nbsp;|&nbsp;
+        <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{url}</code> — link do Odysee
+    </p>
+    <form method="POST">
+        <input type="hidden" name="tab" value="odysee">
+        <textarea name="odysee_wpp_template" rows="4" style="width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: 'Outfit', sans-serif; font-size: 0.95rem; resize: vertical;"><?= htmlspecialchars($odysee_wpp_template) ?></textarea>
+        <div style="margin-top: 12px; display: flex; align-items: center; gap: 15px;">
+            <button type="submit" name="save_odysee_wpp_template" style="background: var(--accent-blue); color: #0f172a; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-save"></i> Salvar Template
+            </button>
+            <span style="color: var(--text-dim); font-size: 0.85rem;">💡 A alteração reflete na próxima publicação processada pelo worker.</span>
+        </div>
+    </form>
+</div>
+
 <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
     <div>
         <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 5px;">Odysee Pipeline (Mentoria)</h2>
         <p style="color: var(--text-dim);">Fila de vídeos da mentoria sendo publicados como "Não-listados" e enviados para o grupo Our Meetups.</p>
     </div>
 </div>
+
 
 <?php
 // Ações rápidas
