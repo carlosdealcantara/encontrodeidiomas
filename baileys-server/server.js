@@ -514,22 +514,12 @@ async function processQueue() {
                 
                 if (item.linkPreview) {
                     msgPayload.contextInfo = {
-                        externalAdReply: {
-                            title: item.linkPreview.title || 'Encontro de Idiomas',
-                            body: item.linkPreview.body || 'Acesse agora',
-                            sourceUrl: item.linkPreview.url || '',
-                            mediaType: 1,
-                            renderLargerThumbnail: true,
-                            showAdAttribution: false
-                        }
+                        matchedText: item.linkPreview.url || '',
+                        title: item.linkPreview.title || 'Encontro de Idiomas',
+                        description: item.linkPreview.body || 'Acesse agora'
                     };
-                    if (item.linkPreview.thumbnailUrl) {
-                        msgPayload.contextInfo.externalAdReply.thumbnailUrl = item.linkPreview.thumbnailUrl;
-                    }
                     if (item.linkPreview.thumbnailBase64) {
-                        const buffer = Buffer.from(item.linkPreview.thumbnailBase64, 'base64');
-                        msgPayload.contextInfo.externalAdReply.thumbnail = buffer;
-                        msgPayload.contextInfo.externalAdReply.jpegThumbnail = buffer;
+                        msgPayload.contextInfo.jpegThumbnail = Buffer.from(item.linkPreview.thumbnailBase64, 'base64');
                     }
                 }
                 
