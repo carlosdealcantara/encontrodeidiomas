@@ -787,13 +787,8 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
     except Exception as e:
         logger.error(f"[WHATSAPP] Erro ao buscar mentoria-config do Baileys: {e}")
 
-    link_preview_data = {
-        "title": titulo,
-        "body": "Disponível agora no Odysee (Não-listado)",
-        "url": url_curta
-    }
-    if thumbnail_b64:
-        link_preview_data["thumbnailBase64"] = thumbnail_b64
+    # link_preview_data temporariamente desativado para testes de disparo limpo
+    link_preview_data = None
 
     for grupo_id in grupos_alvo:
         try:
