@@ -865,8 +865,8 @@ def processar_fila():
                 import base64
                 img = cv2.imread(thumb_path)
                 if img is not None:
-                    img = cv2.resize(img, (854, 480), interpolation=cv2.INTER_AREA)
-                    result, encimg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), 75])
+                    img = cv2.resize(img, (256, 144), interpolation=cv2.INTER_AREA)
+                    result, encimg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
                     if result: thumbnail_b64 = base64.b64encode(encimg).decode('utf-8')
             except: pass
             
