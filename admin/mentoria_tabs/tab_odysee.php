@@ -139,7 +139,7 @@ if (!empty($active)) {
                                 <?php endif; ?>
                             </td>
                             <td style="padding: 12px;">
-                                <?php if($item['status'] == 'error'): ?>
+                                <?php if(in_array($item['status'], ['error', 'done'])): ?>
                                     <a href="mentoria.php?tab=odysee&retry=<?= $item['id'] ?>" style="color: var(--accent-blue); text-decoration: none; margin-right: 10px;" title="Tentar Novamente">
                                         <i class="fa-solid fa-rotate-right"></i>
                                     </a>
