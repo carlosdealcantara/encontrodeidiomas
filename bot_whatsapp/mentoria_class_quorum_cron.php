@@ -47,16 +47,23 @@ foreach ($schedules as $s) {
         $stmtCount->execute([$s['id'], $hoje]);
         $attendees = $stmtCount->fetchColumn();
         
-        if ($attendees == 0) {
+        $sessionType = $s['session_type'] ?? 'teacher_class';
+        $minQuorum = ($sessionType === 'student_practice') ? 2 : 1;
+        
+        if ($attendees < $minQuorum) {
             $config = getMentoriaConfig();
-            $tpl = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+            $tplKey = ($sessionType === 'student_practice') ? 'practice_cancel' : 'class_cancel';
+            $defaultTpl = ($sessionType === 'student_practice') 
+                ? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't get enough confirmations for the {horario} practice session today. Registrations are now closed and the session is cancelled. See you next time! 👋"
+                : "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
+            $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
             $msg = str_replace('{horario}', $classTime->format('H:i'), $tpl);
             
             enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_cancel', ?, ?)")->execute([$hoje, $s['id']]);
-            echo "Aula " . $s['start_time'] . " cancelada por falta de quórum.\n";
+            echo "Sessão " . $s['start_time'] . " cancelada por falta de quórum (< $minQuorum).\n";
         } else {
-            echo "Aula " . $s['start_time'] . " confirmada com $attendees presentes.\n";
+            echo "Sessão " . $s['start_time'] . " confirmada com $attendees presentes.\n";
         }
     }
 }

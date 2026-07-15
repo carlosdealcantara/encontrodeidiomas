@@ -39,6 +39,7 @@
             <tr>
                 <th>Dia da Semana</th>
                 <th>Horário (BRT)</th>
+                <th>Tipo</th>
                 <th>Link da Class</th>
                 <th>Status</th>
                 <th>Ações</th>
@@ -55,6 +56,13 @@
                 <tr>
                     <td><strong><?php echo $days[$s['day_of_week']]; ?></strong></td>
                     <td><?php echo date('H:i', strtotime($s['start_time'])); ?></td>
+                    <td>
+                        <?php if (($s['session_type'] ?? 'teacher_class') === 'student_practice'): ?>
+                            <span style="background: rgba(139, 92, 246, 0.2); color: #c4b5fd; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">🗣️ Prática</span>
+                        <?php else: ?>
+                            <span style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">👨‍🏫 Aula</span>
+                        <?php endif; ?>
+                    </td>
                     <td><span style="color: var(--text-dim);">🔗</span> <a href="<?php echo htmlspecialchars($s['meet_link']); ?>" target="_blank" style="color: var(--accent-blue); font-family: monospace; font-size: 1.15rem; letter-spacing: 1px;"><?php echo htmlspecialchars($meet_code); ?></a></td>
                     <td>
                         <?php if ($s['is_active']): ?>
@@ -109,6 +117,14 @@
             </div>
             
             <div class="form-group" style="margin-top: 15px;">
+                <label>Tipo de Sessão</label>
+                <select name="session_type" id="session_type" required class="input-modern" style="width:100%; padding: 10px; margin-top:5px; background:var(--input-bg); border:1px solid rgba(255,255,255,0.1); color:var(--white);">
+                    <option value="teacher_class">👨‍🏫 Aula com Professor</option>
+                    <option value="student_practice">🗣️ Prática entre Alunos</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
                 <label>Horário de Início (BRT)</label>
                 <input type="time" name="start_time" id="start_time" required class="input-modern" style="width:100%; padding: 10px; margin-top:5px; background:var(--input-bg); border:1px solid rgba(255,255,255,0.1); color:var(--white);">
             </div>
@@ -133,6 +149,7 @@
         document.getElementById('formId').value = '';
         document.getElementById('day_of_week').value = '1';
         document.getElementById('start_time').value = '';
+        document.getElementById('session_type').value = 'teacher_class';
         document.getElementById('meet_link').value = '';
         document.getElementById('scheduleModal').classList.add('active');
     }
@@ -143,6 +160,7 @@
         document.getElementById('formId').value = schedule.id;
         document.getElementById('day_of_week').value = schedule.day_of_week;
         document.getElementById('start_time').value = schedule.start_time.substring(0, 5);
+        document.getElementById('session_type').value = schedule.session_type || 'teacher_class';
         document.getElementById('meet_link').value = schedule.meet_link;
         document.getElementById('scheduleModal').classList.add('active');
     }

@@ -48,17 +48,24 @@ foreach ($schedules as $s) {
         $stmtCount->execute([$s['id'], $hoje]);
         $attendees = $stmtCount->fetchColumn();
         
-        if ($attendees > 0) {
+        $sessionType = $s['session_type'] ?? 'teacher_class';
+        $minQuorum = ($sessionType === 'student_practice') ? 2 : 1;
+
+        if ($attendees >= $minQuorum) {
             // Remove o https:// caso exista no banco
             $cleanLink = str_replace(['https://', 'http://'], '', $s['meet_link']);
             
             $config = getMentoriaConfig();
-            $tpl = $config['templates']['class_kickoff'] ?? "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+            $tplKey = ($sessionType === 'student_practice') ? 'practice_kickoff' : 'class_kickoff';
+            $defaultTpl = ($sessionType === 'student_practice') 
+                ? "🎉 *The Practice Session is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great conversation! 🗣️"
+                : "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+            $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
             $msg = str_replace('{link}', $cleanLink, $tpl);
             
             enviarWhatsApp($s['group_jid'], $msg, 'class_kickoff');
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_kickoff', ?, ?)")->execute([$hoje, $s['id']]);
-            echo "Aula " . $s['start_time'] . " iniciada!\n";
+            echo "Sessão " . $s['start_time'] . " iniciada!\n";
         }
     }
 }

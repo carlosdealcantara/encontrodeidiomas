@@ -26,26 +26,45 @@ try {
     
     // Busca todas as aulas ativas de hoje para este grupo
     $diaSemana = date('N'); // 1 = Segunda, 7 = Domingo
-    $stmt = $conn->prepare("SELECT id, start_time FROM class_schedule WHERE group_jid = ? AND day_of_week = ? AND is_active = 1 ORDER BY start_time ASC");
+    $stmt = $conn->prepare("SELECT id, start_time, session_type FROM class_schedule WHERE group_jid = ? AND day_of_week = ? AND is_active = 1 ORDER BY start_time ASC");
     $stmt->execute([$groupJid, $diaSemana]);
     $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $schedule = null;
     $nowObj = new DateTime();
     $startTimeObj = null;
-    $maxUnattendObj = null;
 
-    // Encontra a próxima aula válida (limite máximo para interagir é 14 min APÓS o início)
-    foreach ($schedules as $s) {
-        $stObj = new DateTime($hoje . ' ' . $s['start_time']);
-        $maxUObj = clone $stObj;
-        $maxUObj->modify('+14 minutes');
+    if (isset($input['schedule_id'])) {
+        $requestedId = (int)$input['schedule_id'];
+        foreach ($schedules as $s) {
+            if ($s['id'] == $requestedId) {
+                $schedule = $s;
+                $startTimeObj = new DateTime($hoje . ' ' . $s['start_time']);
+                break;
+            }
+        }
+    } elseif (isset($input['schedule_position'])) {
+        $pos = (int)$input['schedule_position'];
+        if ($pos >= 1 && $pos <= count($schedules)) {
+            $schedule = $schedules[$pos - 1];
+            $startTimeObj = new DateTime($hoje . ' ' . $schedule['start_time']);
+        }
+    } else {
+        if (count($schedules) > 1 && in_array($action, ['attend', 'unattend'])) {
+            die(json_encode(['success' => false, 'reason' => 'multiple_sessions_require_id', 'schedules_count' => count($schedules)]));
+        }
         
-        if ($nowObj <= $maxUObj) {
-            $schedule = $s;
-            $startTimeObj = $stObj;
-            $maxUnattendObj = $maxUObj;
-            break;
+        // Encontra a próxima aula válida (limite máximo para interagir é 14 min APÓS o início)
+        foreach ($schedules as $s) {
+            $stObj = new DateTime($hoje . ' ' . $s['start_time']);
+            $maxUObj = clone $stObj;
+            $maxUObj->modify('+14 minutes');
+            
+            if ($nowObj <= $maxUObj) {
+                $schedule = $s;
+                $startTimeObj = $stObj;
+                break;
+            }
         }
     }
     
@@ -65,6 +84,26 @@ try {
     $stmtList->execute([$scheduleId, $hoje]);
     $currentAttendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
     $currentCount = count($currentAttendees);
+
+    // Constrói o daily_summary (resumo de todos os eventos do dia)
+    function buildDailySummary($conn, $schedules, $hoje) {
+        $dailySummary = [];
+        $position = 1;
+        $stmtList = $conn->prepare("SELECT member_name FROM class_attendances WHERE schedule_id = ? AND aula_date = ? ORDER BY id ASC");
+        foreach ($schedules as $s) {
+            $stmtList->execute([$s['id'], $hoje]);
+            $atts = $stmtList->fetchAll(PDO::FETCH_COLUMN);
+            $dailySummary[] = [
+                'schedule_id' => $s['id'],
+                'position' => $position,
+                'session_type' => $s['session_type'],
+                'start_time' => $s['start_time'],
+                'attendees' => $atts
+            ];
+            $position++;
+        }
+        return $dailySummary;
+    }
 
     $dateEn = date('l, F jS', strtotime($hoje));
     $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' (UTC-3)';
@@ -96,6 +135,7 @@ try {
         echo json_encode([
             'success' => true, 
             'attendees' => $attendees,
+            'daily_summary' => buildDailySummary($conn, $schedules, $hoje),
             'class_date' => $hoje,
             'class_time' => $schedule['start_time'],
             'class_date_en' => $dateEn,
@@ -121,6 +161,7 @@ try {
         echo json_encode([
             'success' => true, 
             'attendees' => $attendees,
+            'daily_summary' => buildDailySummary($conn, $schedules, $hoje),
             'cancelled_now' => $cancelledNow,
             'class_date' => $hoje,
             'class_time' => $schedule['start_time'],
@@ -133,11 +174,13 @@ try {
         echo json_encode([
             'success' => true, 
             'attendees' => $currentAttendees,
+            'daily_summary' => buildDailySummary($conn, $schedules, $hoje),
             'class_date' => $hoje,
             'class_time' => $schedule['start_time'],
             'class_date_en' => $dateEn,
             'class_time_en' => $timeEn,
-            'deadline_passed' => $isPastDeadline
+            'deadline_passed' => $isPastDeadline,
+            'schedules_count' => count($schedules) // Útil para o bot saber se precisa listar opções
         ]);
         
     } else {

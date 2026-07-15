@@ -308,36 +308,72 @@ async function handleMessages({ messages, type }) {
             
         // Check for commands (e.g. !attend in Our Classes)
         if (text.startsWith('!attend')) {
+            const parts = text.split(' ');
+            let schedulePosition = null;
+            if (parts.length > 1) {
+                schedulePosition = parseInt(parts[1]);
+            }
+
             // If it's the Our Classes group, log the booking
             const ourClassesGroup = config.groups?.our_classes?.jid;
             if (groupJid === ourClassesGroup) {
                 try {
+                    const reqBody = {
+                        action: 'attend',
+                        group_jid: groupJid,
+                        member_jid: senderJid,
+                        member_name: senderName
+                    };
+                    if (schedulePosition && !isNaN(schedulePosition)) {
+                        reqBody.schedule_position = schedulePosition;
+                    }
+
                     const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'attend',
-                            group_jid: groupJid,
-                            member_jid: senderJid,
-                            member_name: senderName
-                        })
+                        body: JSON.stringify(reqBody)
                     });
                     const data = await res.json();
                     
-                    let dStr = data.class_date_en || data.class_date;
-                    let tParts = (data.class_time || "00:00").split(':');
-                    let h = parseInt(tParts[0]);
-                    let ampm = "AM";
-                    if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
-                    if (h === 0) h = 12;
-                    let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
-                    let tStr = `${h}${mStr} ${ampm}`;
+                    if (!data.success && data.reason === 'multiple_sessions_require_id') {
+                        await sock.sendMessage(groupJid, { 
+                            text: `It looks like we have multiple sessions today! Please reply with \`!attend 1\` for the first session or \`!attend 2\` for the second.`,
+                            mentions: [senderJid]
+                        });
+                        return;
+                    }
                     
-                    let listText = `📅 ${dStr}\n⏰ Starting at ${tStr}\n\n*Confirmed Attendees:*\n`;
-                    if (data.attendees && data.attendees.length > 0) {
-                        data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
-                    } else {
-                        listText += "No one yet.";
+                    let dStr = data.class_date_en || data.class_date;
+                    let listText = `📅 ${dStr}\n`;
+                    
+                    if (data.daily_summary) {
+                        data.daily_summary.forEach(summary => {
+                            let typeStr = summary.session_type === 'student_practice' ? '🗣️ Practice Session' : '👨‍🏫 Teacher Class';
+                            let tParts = summary.start_time.split(':');
+                            let h = parseInt(tParts[0]);
+                            let ampm = "AM";
+                            if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
+                            if (h === 0) h = 12;
+                            let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
+                            let tStr = `${h}${mStr} ${ampm}`;
+                            
+                            listText += `\n*${summary.position}. ${typeStr} at ${tStr}*\n`;
+                            
+                            if (summary.attendees && summary.attendees.length > 0) {
+                                summary.attendees.forEach((name, i) => listText += `  ${i+1}. ${name}\n`);
+                            } else {
+                                listText += "  No one yet.\n";
+                            }
+                            
+                            if (summary.session_type === 'student_practice') {
+                                let count = summary.attendees ? summary.attendees.length : 0;
+                                if (count === 0) {
+                                    listText += `  _⚠️ Needs 2 more students to happen._\n`;
+                                } else if (count === 1) {
+                                    listText += `  _⚠️ Needs 1 more student to happen._\n`;
+                                }
+                            }
+                        });
                     }
 
                     if (data.success) {
@@ -369,34 +405,71 @@ async function handleMessages({ messages, type }) {
                 }
             }
         } else if (text.startsWith('!unattend')) {
+            const parts = text.split(' ');
+            let schedulePosition = null;
+            if (parts.length > 1) {
+                schedulePosition = parseInt(parts[1]);
+            }
+            
             const ourClassesGroup = config.groups?.our_classes?.jid;
             if (groupJid === ourClassesGroup) {
                 try {
+                    const reqBody = {
+                        action: 'unattend',
+                        group_jid: groupJid,
+                        member_jid: senderJid
+                    };
+                    if (schedulePosition && !isNaN(schedulePosition)) {
+                        reqBody.schedule_position = schedulePosition;
+                    }
+                    
                     const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'unattend',
-                            group_jid: groupJid,
-                            member_jid: senderJid
-                        })
+                        body: JSON.stringify(reqBody)
                     });
                     const data = await res.json();
+                    
+                    if (!data.success && data.reason === 'multiple_sessions_require_id') {
+                        await sock.sendMessage(groupJid, { 
+                            text: `It looks like we have multiple sessions today! Please reply with \`!unattend 1\` for the first session or \`!unattend 2\` for the second.`,
+                            mentions: [senderJid]
+                        });
+                        return;
+                    }
+                    
                     if (data.success) {
                         let dStr = data.class_date_en || data.class_date;
-                        let tParts = (data.class_time || "00:00").split(':');
-                        let h = parseInt(tParts[0]);
-                        let ampm = "AM";
-                        if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
-                        if (h === 0) h = 12;
-                        let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
-                        let tStr = `${h}${mStr} ${ampm}`;
+                        let listText = `📅 ${dStr}\n`;
                         
-                        let listText = `📅 ${dStr}\n⏰ Starting at ${tStr}\n\n*Confirmed Attendees:*\n`;
-                        if (data.attendees && data.attendees.length > 0) {
-                            data.attendees.forEach((name, i) => listText += `${i+1}. ${name}\n`);
-                        } else {
-                            listText += "No one yet.";
+                        if (data.daily_summary) {
+                            data.daily_summary.forEach(summary => {
+                                let typeStr = summary.session_type === 'student_practice' ? '🗣️ Practice Session' : '👨‍🏫 Teacher Class';
+                                let tParts = summary.start_time.split(':');
+                                let h = parseInt(tParts[0]);
+                                let ampm = "AM";
+                                if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
+                                if (h === 0) h = 12;
+                                let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
+                                let tStr = `${h}${mStr} ${ampm}`;
+                                
+                                listText += `\n*${summary.position}. ${typeStr} at ${tStr}*\n`;
+                                
+                                if (summary.attendees && summary.attendees.length > 0) {
+                                    summary.attendees.forEach((name, i) => listText += `  ${i+1}. ${name}\n`);
+                                } else {
+                                    listText += "  No one yet.\n";
+                                }
+                                
+                                if (summary.session_type === 'student_practice') {
+                                    let count = summary.attendees ? summary.attendees.length : 0;
+                                    if (count === 0) {
+                                        listText += `  _⚠️ Needs 2 more students to happen._\n`;
+                                    } else if (count === 1) {
+                                        listText += `  _⚠️ Needs 1 more student to happen._\n`;
+                                    }
+                                }
+                            });
                         }
 
                         // Reação de lixeira 🗑️
@@ -437,13 +510,36 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     if (data.success) {
                         let dStr = data.class_date_en || data.class_date;
-                        let tStr = data.class_time_en || (data.class_time?.substring(0,5) + ' BRT');
                         
                         let attendeesList = "";
-                        if (data.attendees && data.attendees.length > 0) {
-                            data.attendees.forEach((name, i) => attendeesList += `${i+1}. ${name}\n`);
-                        } else {
-                            attendeesList += "No one yet.";
+                        if (data.daily_summary) {
+                            data.daily_summary.forEach(summary => {
+                                let typeStr = summary.session_type === 'student_practice' ? '🗣️ Practice Session' : '👨‍🏫 Teacher Class';
+                                let tParts = summary.start_time.split(':');
+                                let h = parseInt(tParts[0]);
+                                let ampm = "AM";
+                                if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
+                                if (h === 0) h = 12;
+                                let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
+                                let tStr = `${h}${mStr} ${ampm}`;
+                                
+                                attendeesList += `\n*${summary.position}. ${typeStr} at ${tStr}*\n`;
+                                
+                                if (summary.attendees && summary.attendees.length > 0) {
+                                    summary.attendees.forEach((name, i) => attendeesList += `  ${i+1}. ${name}\n`);
+                                } else {
+                                    attendeesList += "  No one yet.\n";
+                                }
+                                
+                                if (summary.session_type === 'student_practice') {
+                                    let count = summary.attendees ? summary.attendees.length : 0;
+                                    if (count === 0) {
+                                        attendeesList += `  _⚠️ Needs 2 more students to happen._\n`;
+                                    } else if (count === 1) {
+                                        attendeesList += `  _⚠️ Needs 1 more student to happen._\n`;
+                                    }
+                                }
+                            });
                         }
                         
                         // Calcula deadline (1 hora antes)
@@ -457,8 +553,9 @@ async function handleMessages({ messages, type }) {
                         let hStr = h.toString().padStart(2, '0');
                         let deadlineInfo = `${hStr}:${dparts[1]} ${ampm} (UTC-3)`;
                         
-                        let msg = config.templates?.class_status || `📋 *Class Status — {class_info}*\n\n*Confirmed Attendees:*\n{attendees}\n\nDeadline to confirm: {deadline_info}`;
-                        msg = msg.replace('{class_info}', `${dStr} at ${tStr}`)
+                        let msg = config.templates?.class_status || `📋 *Class Status*\n📅 {class_date}\n\n*Confirmed Attendees:*\n{attendees}`;
+                        msg = msg.replace('{class_info}', `${dStr}`)
+                                 .replace('{class_date}', `${dStr}`)
                                  .replace('{attendees}', attendeesList.trim())
                                  .replace('{deadline_info}', deadlineInfo);
 

@@ -144,6 +144,26 @@
                 <p class="help-text">Disparada no momento exato da aula. Use <code>{link}</code> para o URL da sala. A tolerância é de 15 minutos.</p>
             </div>
 
+            <h4 style="margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-users"></i> Templates para Prática entre Alunos</h4>
+
+            <div class="form-group">
+                <label>Aviso Matinal da Prática</label>
+                <textarea name="tpl_practice_aviso"><?= htmlspecialchars($tpl_practice_aviso) ?></textarea>
+                <p class="help-text">Aviso da sessão de prática sem professor. Use <code>{horario}</code> e <code>{deadline}</code>.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Aviso de Prática Cancelada (Falta de Quórum)</label>
+                <textarea name="tpl_practice_cancel"><?= htmlspecialchars($tpl_practice_cancel) ?></textarea>
+                <p class="help-text">Enviada 1 hora antes se houver menos de 2 alunos confirmados. Use <code>{horario}</code>.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Kick-off da Prática (Link do Google Meet)</label>
+                <textarea name="tpl_practice_kickoff"><?= htmlspecialchars($tpl_practice_kickoff) ?></textarea>
+                <p class="help-text">Disparada no momento da sessão de prática. Use <code>{link}</code>.</p>
+            </div>
+
             <h4 style="margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-search"></i> Comando de Consulta</h4>
 
             <div class="form-group">

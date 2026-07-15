@@ -91,6 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'class_aviso' => trim($_POST['tpl_class_aviso'] ?? ''),
             'class_cancel' => trim($_POST['tpl_class_cancel'] ?? ''),
             'class_kickoff' => trim($_POST['tpl_class_kickoff'] ?? ''),
+            'practice_aviso' => trim($_POST['tpl_practice_aviso'] ?? ''),
+            'practice_cancel' => trim($_POST['tpl_practice_cancel'] ?? ''),
+            'practice_kickoff' => trim($_POST['tpl_practice_kickoff'] ?? ''),
             'attend_confirm' => trim($_POST['tpl_attend_confirm'] ?? ''),
             'attend_late_good' => trim($_POST['tpl_attend_late_good'] ?? ''),
             'attend_late_bad' => trim($_POST['tpl_attend_late_bad'] ?? ''),
@@ -129,6 +132,10 @@ $tpl_ranking_dedicados = $config['templates']['ranking_dedicados'] ?? "⭐ *STUD
 $tpl_class_aviso = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nWe have a session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
 $tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
 $tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+
+$tpl_practice_aviso = $config['templates']['practice_aviso'] ?? "📅 *Practice Session Today!*\n\nWe have a students-only session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
+$tpl_practice_cancel = $config['templates']['practice_cancel'] ?? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't get enough confirmations for the {horario} practice session today. Registrations are now closed and the session is cancelled. See you next time! 👋";
+$tpl_practice_kickoff = $config['templates']['practice_kickoff'] ?? "🎉 *The Practice Session is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great conversation! 🗣️";
 
 $tpl_attend_confirm = $config['templates']['attend_confirm'] ?? "✅ Registration confirmed for @{name}!{listText}";
 $tpl_attend_late_good = $config['templates']['attend_late_good'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}";
@@ -191,19 +198,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_schedule'])) {
         $day_of_week = (int)$_POST['day_of_week'];
         $start_time = $_POST['start_time'];
         $meet_link = trim($_POST['meet_link']);
+        $session_type = $_POST['session_type'] ?? 'teacher_class';
         $group_jid = $config['groups']['our_classes']['jid'] ?? '';
         
         if (empty($group_jid)) {
             $error = "Por favor, configure primeiro o grupo Our Classes na aba de Mensagens.";
         } else {
             if ($action === 'add') {
-                $stmt = $conn->prepare("INSERT INTO class_schedule (group_jid, day_of_week, start_time, meet_link) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$group_jid, $day_of_week, $start_time, $meet_link]);
+                $stmt = $conn->prepare("INSERT INTO class_schedule (group_jid, day_of_week, start_time, meet_link, session_type) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$group_jid, $day_of_week, $start_time, $meet_link, $session_type]);
                 $msg = "Horário adicionado com sucesso!";
             } else {
                 $id = (int)$_POST['id'];
-                $stmt = $conn->prepare("UPDATE class_schedule SET day_of_week=?, start_time=?, meet_link=? WHERE id=?");
-                $stmt->execute([$day_of_week, $start_time, $meet_link, $id]);
+                $stmt = $conn->prepare("UPDATE class_schedule SET day_of_week=?, start_time=?, meet_link=?, session_type=? WHERE id=?");
+                $stmt->execute([$day_of_week, $start_time, $meet_link, $session_type, $id]);
                 $msg = "Horário atualizado com sucesso!";
             }
         }

@@ -31,25 +31,18 @@ $limiteObj = new DateTime();
 $limiteObj->modify('+1 hour');
 $limiteStr = $limiteObj->format('H:i:s');
 
-// Busca o PRÓXIMO horário válido do dia na agenda
-$stmt = $conn->prepare("SELECT * FROM class_schedule WHERE day_of_week = ? AND is_active = 1 AND start_time >= ? ORDER BY start_time ASC LIMIT 1");
+// Busca todos os horários válidos do dia na agenda
+$stmt = $conn->prepare("SELECT * FROM class_schedule WHERE day_of_week = ? AND is_active = 1 AND start_time >= ? ORDER BY start_time ASC");
 $stmt->execute([$diaSemana, $limiteStr]);
-$schedule = $stmt->fetch(PDO::FETCH_ASSOC);
+$schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if (!$schedule) {
-    die("ℹ️ Nenhum encontro agendado para hoje (dia da semana: $diaSemana). Nenhuma mensagem enviada.");
+if (empty($schedules)) {
+    die("ℹ️ Nenhum encontro agendado para hoje (dia da semana: $diaSemana) a partir de agora. Nenhuma mensagem enviada.");
 }
-
-$startTime = $schedule['start_time'];
 
 // Atualiza o JID na tabela para manter consistência
 $conn->prepare("UPDATE class_schedule SET group_jid = ? WHERE day_of_week = ? AND is_active = 1")
      ->execute([$groupJid, $diaSemana]);
-
-// Calcula deadline (1 hora antes)
-$startTimeObj = new DateTime($hoje . ' ' . $startTime);
-$deadlineObj = clone $startTimeObj;
-$deadlineObj->modify('-1 hour');
 
 // Função para formatar a hora estilo "1 PM" ou "1:30 PM"
 function formatTime($dtObj) {
@@ -64,29 +57,46 @@ function formatTime($dtObj) {
 
 $dateEn = date('l, F jS'); // Ex: Friday, June 13th
 
-$tpl = $config['templates']['class_aviso'] ?? "📅 {date}\n\nWe have a session scheduled for {horario}.\nIf you want to participate, please reply with !attend.\n\n⏳ Deadline to confirm your attendance: {deadline}.";
+foreach ($schedules as $index => $schedule) {
+    $startTime = $schedule['start_time'];
+    $sessionType = $schedule['session_type'] ?? 'teacher_class';
+    $position = $index + 1;
 
-$msg = str_replace(
-    ['{date}', '{horario}', '{deadline}'], 
-    [$dateEn, formatTime($startTimeObj), formatTime($deadlineObj)], 
-    $tpl
-);
+    $startTimeObj = new DateTime($hoje . ' ' . $startTime);
+    $deadlineObj = clone $startTimeObj;
+    $deadlineObj->modify('-1 hour');
 
-echo "📋 JID usado: $groupJid\n";
-echo "🕐 Horário do encontro: " . $startTimeObj->format('h:i A') . "\n";
-echo "⏳ Deadline: " . $deadlineObj->format('h:i A') . "\n\n";
+    $tplKey = ($sessionType === 'student_practice') ? 'practice_aviso' : 'class_aviso';
+    $defaultTpl = "📅 {date}\n\nWe have a session scheduled for {horario}.\nIf you want to participate, please reply with !attend.\n\n⏳ Deadline to confirm your attendance: {deadline}.";
+    $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
 
-// Trava anti-duplicidade
-$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_aviso' AND data_execucao = ? AND membro_jid = ?");
-$check->execute([$hoje, $schedule['id']]);
-if ($check->rowCount() > 0 && !isset($_GET['force'])) {
-    die("✅ Aviso para a aula {$schedule['id']} já foi enviado hoje! Use &force=1 na URL para forçar um reenvio.");
-}
+    $msg = str_replace(
+        ['{date}', '{horario}', '{deadline}'], 
+        [$dateEn, formatTime($startTimeObj), formatTime($deadlineObj)], 
+        $tpl
+    );
+    
+    // Se há mais de 1 sessão, avise qual comando usar
+    if (count($schedules) > 1) {
+        $msg = str_replace('!attend', '!attend ' . $position, $msg);
+    }
 
-$res = enviarWhatsApp($groupJid, $msg, 'class_aviso');
-if ($res['success']) {
-    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
-    echo "✅ Aviso enfileirado! (jobId: " . ($res['data']['jobId'] ?? 'n/a') . ")";
-} else {
-    echo "❌ Erro ao enviar: " . json_encode($res);
+    echo "📋 Enviando aviso para sessão $position (ID: {$schedule['id']}) - Tipo: $sessionType\n";
+    echo "🕐 Horário: " . $startTimeObj->format('h:i A') . "\n";
+    
+    // Trava anti-duplicidade
+    $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_aviso' AND data_execucao = ? AND membro_jid = ?");
+    $check->execute([$hoje, $schedule['id']]);
+    if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+        echo "✅ Aviso já enviado hoje. Ignorando...\n\n";
+        continue;
+    }
+
+    $res = enviarWhatsApp($groupJid, $msg, 'class_aviso');
+    if ($res['success']) {
+        $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
+        echo "✅ Aviso enfileirado! (jobId: " . ($res['data']['jobId'] ?? 'n/a') . ")\n\n";
+    } else {
+        echo "❌ Erro ao enviar: " . json_encode($res) . "\n\n";
+    }
 }
