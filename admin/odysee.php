@@ -419,6 +419,7 @@ if (isset($_GET['msg']) && !$msg) {
                         <code>{idioma}</code> = Nome do idioma (ex: Inglês)<br>
                         <code>{titulo}</code> = Título do encontro gravado (ex: O que você faria se ganhasse na loteria?)<br>
                         <code>{link}</code> = Link encurtado oficial da postagem no Odysee<br>
+                        <code>{link_canonico}</code> = Link original do Odysee (que gera a imagem da thumbnail pelo WhatsApp)<br>
                     </div>
                     
                     <div style="text-align: right;">

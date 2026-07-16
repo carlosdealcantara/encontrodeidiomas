@@ -789,9 +789,7 @@ def processar_fila():
             bandeira = tarefa.get('flag_emoji', '')
             if not bandeira:
                 bandeira = ''
-                
-            mensagem = template.replace('{titulo}', title_msg).replace('{link}', url_curta).replace('{idioma}', idioma_nome).replace('{bandeira}', bandeira)
-            
+            mensagem = template.replace('{titulo}', title_msg).replace('{link}', url_curta).replace('{link_canonico}', odysee_url).replace('{idioma}', idioma_nome).replace('{bandeira}', bandeira)
             link_preview_data = {
                 "title": title_msg,
                 "body": "Disponível agora no Odysee",

@@ -101,9 +101,12 @@ if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
         $idioma = $tarefa['language_name'];
         $bandeira = $tarefa['flag_emoji'] ?: '';
         
+        $channelName = str_starts_with($tarefa['odysee_channel_name'], '@') ? $tarefa['odysee_channel_name'] : '@' . $tarefa['odysee_channel_name'];
+        $link_canonico = "https://odysee.com/{$channelName}/{$tarefa['odysee_slug']}";
+        
         $mensagem = str_replace(
-            ['{titulo}', '{link}', '{idioma}', '{bandeira}'],
-            [$titulo, $link, $idioma, $bandeira],
+            ['{titulo}', '{link}', '{idioma}', '{bandeira}', '{link_canonico}'],
+            [$titulo, $link, $idioma, $bandeira, $link_canonico],
             $template
         );
         
