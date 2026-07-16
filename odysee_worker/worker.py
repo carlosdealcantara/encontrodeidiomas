@@ -813,16 +813,17 @@ def processar_fila():
                 except Exception as e:
                     logger.warning(f"[WHATSAPP] Falhou ao enviar mensagem para {grupo_id}: {e}")
             
-            # Notifica os hosts via webhook integrado para garantir o mesmo padrão do portal
-            try:
-                webhook_url = "https://dev.encontrodeidiomas.com.br/ajax/webhook_odysee_success.php"
-                res_webhook = requests.post(webhook_url, json={
-                    "apikey": "SenhaMeetups2026",
-                    "lang_id": tarefa.get('language_id')
-                }, timeout=15)
-                logger.info(f"[WHATSAPP] Webhook de notificação dos hosts acionado: {res_webhook.status_code}")
-            except Exception as e:
-                logger.warning(f"[WHATSAPP] Falhou ao acionar webhook de notificação dos hosts: {e}")
+        # Notifica os hosts via webhook integrado para garantir o mesmo padrão do portal
+        # Dispara independente do modo de contenção (grupos_alvo vazio ou não), pois é uma notificação interna
+        try:
+            webhook_url = "https://dev.encontrodeidiomas.com.br/ajax/webhook_odysee_success.php"
+            res_webhook = requests.post(webhook_url, json={
+                "apikey": "SenhaMeetups2026",
+                "lang_id": tarefa.get('language_id')
+            }, timeout=15)
+            logger.info(f"[WHATSAPP] Webhook de notificação dos hosts acionado: {res_webhook.status_code}")
+        except Exception as e:
+            logger.warning(f"[WHATSAPP] Falhou ao acionar webhook de notificação dos hosts: {e}")
             
     except Exception as e:
         erro_str = str(e).lower()
