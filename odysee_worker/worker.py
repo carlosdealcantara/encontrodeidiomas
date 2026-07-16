@@ -802,8 +802,8 @@ def processar_fila():
                 
             for grupo_id in grupos_alvo:
                 try:
-                    # Usa host.docker.internal para o container acessar o localhost do host onde roda o Baileys
-                    requests.post("http://host.docker.internal:3000/send", json={
+                    # Usa 127.0.0.1 já que o container usa --network host
+                    requests.post("http://127.0.0.1:3000/send", json={
                         "to": grupo_id,
                         "message": mensagem,
                         "source": "odysee_pipeline",
