@@ -149,7 +149,7 @@
             <div class="form-group">
                 <label>Aviso Matinal da Prática</label>
                 <textarea name="tpl_practice_aviso"><?= htmlspecialchars($tpl_practice_aviso) ?></textarea>
-                <p class="help-text">Aviso da sessão de prática sem professor. Use <code>{horario}</code> e <code>{deadline}</code>.</p>
+                <p class="help-text">Aviso da sessão de prática sem professor. Use <code>{date}</code>, <code>{horario}</code> e <code>{deadline}</code>.</p>
             </div>
 
             <div class="form-group" style="margin-top: 20px;">
@@ -162,6 +162,14 @@
                 <label>Kick-off da Prática (Link do Google Meet)</label>
                 <textarea name="tpl_practice_kickoff"><?= htmlspecialchars($tpl_practice_kickoff) ?></textarea>
                 <p class="help-text">Disparada no momento da sessão de prática. Use <code>{link}</code>.</p>
+            </div>
+
+            <h4 style="margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-check-double"></i> Confirmação de Presença (!attend)</h4>
+
+            <div class="form-group">
+                <label>Cabeçalho da Lista Unificada (pós-!attend)</label>
+                <textarea name="tpl_daily_summary_header" rows="6"><?= htmlspecialchars($tpl_daily_summary_header) ?></textarea>
+                <p class="help-text">Mensagem enviada após qualquer !attend ou !unattend. Use <code>{name}</code> (quem confirmou), <code>{date}</code> (data de hoje) e <code>{sessionsBlock}</code> (lista dinâmica de todos os eventos do dia com as presenças). O bloco de sessões é gerado automaticamente e diferencia visualmente a aula da prática.</p>
             </div>
 
             <h4 style="margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-search"></i> Comando de Consulta</h4>

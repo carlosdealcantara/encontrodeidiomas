@@ -432,7 +432,7 @@ async function handleMessages({ messages, type }) {
                     
                     if (!data.success && data.reason === 'multiple_sessions_require_id') {
                         await sock.sendMessage(groupJid, { 
-                            text: `It looks like we have multiple sessions today! Please reply with \`!unattend 1\` for the first session or \`!unattend 2\` for the second.`,
+                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n👨‍🏫 *!unattend 1* — Teacher Class\n🗣️ *!unattend 2* — Students Practice\n\nWhich one are you leaving?`,
                             mentions: [senderJid]
                         });
                         return;
@@ -440,54 +440,23 @@ async function handleMessages({ messages, type }) {
                     
                     if (data.success) {
                         let dStr = data.class_date_en || data.class_date;
-                        let listText = `📅 ${dStr}\n`;
-                        
-                        if (data.daily_summary) {
-                            data.daily_summary.forEach(summary => {
-                                let typeStr = summary.session_type === 'student_practice' ? '🗣️ Practice Session' : '👨‍🏫 Teacher Class';
-                                let tParts = summary.start_time.split(':');
-                                let h = parseInt(tParts[0]);
-                                let ampm = "AM";
-                                if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
-                                if (h === 0) h = 12;
-                                let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
-                                let tStr = `${h}${mStr} ${ampm}`;
-                                
-                                listText += `\n*${summary.position}. ${typeStr} at ${tStr}*\n`;
-                                
-                                if (summary.attendees && summary.attendees.length > 0) {
-                                    summary.attendees.forEach((name, i) => listText += `  ${i+1}. ${name}\n`);
-                                } else {
-                                    listText += "  No one yet.\n";
-                                }
-                                
-                                if (summary.session_type === 'student_practice') {
-                                    let count = summary.attendees ? summary.attendees.length : 0;
-                                    if (count === 0) {
-                                        listText += `  _⚠️ Needs 2 more students to happen._\n`;
-                                    } else if (count === 1) {
-                                        listText += `  _⚠️ Needs 1 more student to happen._\n`;
-                                    }
-                                }
-                            });
-                        }
+                        let sessionsBlock = buildSessionsBlock(data.daily_summary);
 
-                        // Reação de lixeira 🗑️
                         await sock.sendMessage(groupJid, { react: { text: '🗑️', key: msg.key } });
 
-                        let msgTxt = config.templates?.unattend_confirm || `{listText}`;
-                        msgTxt = msgTxt.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
+                        let tpl = config.templates?.daily_summary_header || `🗑️ Attendance cancelled for @{name}.\n\n📅 *Today's Schedule — {date}*\n{sessionsBlock}`;
+                        let msgTxt = tpl
+                            .replace('✅ Attendance confirmed for', '🗑️ Attendance cancelled for')
+                            .replace('{name}', senderJid.split('@')[0])
+                            .replace('{date}', dStr)
+                            .replace('{sessionsBlock}', sessionsBlock)
+                            .replace('{listText}', sessionsBlock);
 
-                        await sock.sendMessage(groupJid, { 
-                            text: msgTxt
-                        });
+                        await sock.sendMessage(groupJid, { text: msgTxt, mentions: [senderJid] });
                         
-                        // O Cancelamento Extremo (caiu para 0 depois do prazo)
                         if (data.cancelled_now) {
-                            let msgCancel = config.templates?.unattend_cancelled_now || `🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.`;
-                            await sock.sendMessage(groupJid, { 
-                                text: msgCancel
-                            });
+                            let msgCancel = config.templates?.unattend_cancelled_now || `🚨 *SESSION CANCELLED*\n\nSince there are no more students confirmed, today's session is now cancelled.`;
+                            await sock.sendMessage(groupJid, { text: msgCancel });
                         }
                     } else {
                         await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error cancelling registration.'}` });
@@ -510,54 +479,15 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     if (data.success) {
                         let dStr = data.class_date_en || data.class_date;
+                        let sessionsBlock = buildSessionsBlock(data.daily_summary);
                         
-                        let attendeesList = "";
-                        if (data.daily_summary) {
-                            data.daily_summary.forEach(summary => {
-                                let typeStr = summary.session_type === 'student_practice' ? '🗣️ Practice Session' : '👨‍🏫 Teacher Class';
-                                let tParts = summary.start_time.split(':');
-                                let h = parseInt(tParts[0]);
-                                let ampm = "AM";
-                                if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
-                                if (h === 0) h = 12;
-                                let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
-                                let tStr = `${h}${mStr} ${ampm}`;
-                                
-                                attendeesList += `\n*${summary.position}. ${typeStr} at ${tStr}*\n`;
-                                
-                                if (summary.attendees && summary.attendees.length > 0) {
-                                    summary.attendees.forEach((name, i) => attendeesList += `  ${i+1}. ${name}\n`);
-                                } else {
-                                    attendeesList += "  No one yet.\n";
-                                }
-                                
-                                if (summary.session_type === 'student_practice') {
-                                    let count = summary.attendees ? summary.attendees.length : 0;
-                                    if (count === 0) {
-                                        attendeesList += `  _⚠️ Needs 2 more students to happen._\n`;
-                                    } else if (count === 1) {
-                                        attendeesList += `  _⚠️ Needs 1 more student to happen._\n`;
-                                    }
-                                }
-                            });
-                        }
-                        
-                        // Calcula deadline (1 hora antes)
-                        let dparts = (data.class_time || "00:00").split(':');
-                        let h = parseInt(dparts[0]);
-                        let ampm = "AM";
-                        h = h - 1; // 1 hora antes
-                        if (h < 0) h = 23;
-                        if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
-                        if (h === 0) h = 12;
-                        let hStr = h.toString().padStart(2, '0');
-                        let deadlineInfo = `${hStr}:${dparts[1]} ${ampm} (UTC-3)`;
-                        
-                        let msg = config.templates?.class_status || `📋 *Class Status*\n📅 {class_date}\n\n*Confirmed Attendees:*\n{attendees}`;
-                        msg = msg.replace('{class_info}', `${dStr}`)
-                                 .replace('{class_date}', `${dStr}`)
-                                 .replace('{attendees}', attendeesList.trim())
-                                 .replace('{deadline_info}', deadlineInfo);
+                        let msg = config.templates?.class_status || `📋 *Today's Schedule — {date}*\n{attendees}`;
+                        msg = msg
+                            .replace('{class_info}', dStr)
+                            .replace('{class_date}', dStr)
+                            .replace('{date}', dStr)
+                            .replace('{attendees}', sessionsBlock.trim())
+                            .replace('{deadline_info}', '');
 
                         await sock.sendMessage(groupJid, { text: msg });
                     } else {

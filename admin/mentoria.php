@@ -94,6 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'practice_aviso' => trim($_POST['tpl_practice_aviso'] ?? ''),
             'practice_cancel' => trim($_POST['tpl_practice_cancel'] ?? ''),
             'practice_kickoff' => trim($_POST['tpl_practice_kickoff'] ?? ''),
+            'daily_summary_header' => trim($_POST['tpl_daily_summary_header'] ?? ''),
             'attend_confirm' => trim($_POST['tpl_attend_confirm'] ?? ''),
             'attend_late_good' => trim($_POST['tpl_attend_late_good'] ?? ''),
             'attend_late_bad' => trim($_POST['tpl_attend_late_bad'] ?? ''),
@@ -129,15 +130,44 @@ $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Remi
 $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
 $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
 $tpl_ranking_dedicados = $config['templates']['ranking_dedicados'] ?? "⭐ *STUDENT OF THE DAY*\n📅 {date}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{student_of_the_day}\n\n─────────────────────\n*Other participants:*\n{other_participants}\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📖 *Legend:*\n{legend}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
-$tpl_class_aviso = $config['templates']['class_aviso'] ?? "📅 *Class Today!*\n\nWe have a session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
-$tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
-$tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+$tpl_class_aviso = $config['templates']['class_aviso'] ?? "👨‍🏫 *Teacher Class — {date}*
 
-$tpl_practice_aviso = $config['templates']['practice_aviso'] ?? "📅 *Practice Session Today!*\n\nWe have a students-only session scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ You must confirm your attendance before *{deadline}*.";
-$tpl_practice_cancel = $config['templates']['practice_cancel'] ?? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't get enough confirmations for the {horario} practice session today. Registrations are now closed and the session is cancelled. See you next time! 👋";
-$tpl_practice_kickoff = $config['templates']['practice_kickoff'] ?? "🎉 *The Practice Session is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great conversation! 🗣️";
+We have a class with the teacher scheduled for *{horario}*.
+If you want to participate, please reply with `!attend`.
 
-$tpl_attend_confirm = $config['templates']['attend_confirm'] ?? "✅ Registration confirmed for @{name}!{listText}";
+⏳ Deadline to confirm: *{deadline}*.";
+$tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*
+
+Unfortunately, we didn't get any confirmations for the {horario} class today. See you next time! 👋";
+$tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "👨‍🏫 *Teacher Class is starting NOW!*
+
+Join the room here: {link}
+
+Have a great session! 💪";
+
+$tpl_practice_aviso = $config['templates']['practice_aviso'] ?? "🗣️ *Students Practice — {date}*
+
+A students-only conversation session is scheduled for *{horario}*.
+_No teacher — just you practicing together!_
+
+If you want to join, reply with `!attend`.
+
+⏳ Deadline to confirm: *{deadline}*. _(Minimum 2 students required)_";
+$tpl_practice_cancel = $config['templates']['practice_cancel'] ?? "❌ *Practice Session Cancelled*
+
+Unfortunately, we didn't reach the minimum of 2 students for the {horario} practice session today. See you next time! 👋";
+$tpl_practice_kickoff = $config['templates']['practice_kickoff'] ?? "🗣️ *Practice Session is starting NOW!*
+
+Join the room here: {link}
+
+Have a great conversation! 🚀";
+
+$tpl_daily_summary_header = $config['templates']['daily_summary_header'] ?? "✅ Attendance confirmed for @{name}!
+
+📅 *Today’s Schedule — {date}*
+{sessionsBlock}";
+
+$tpl_attend_confirm = $tpl_daily_summary_header;
 $tpl_attend_late_good = $config['templates']['attend_late_good'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}";
 $tpl_attend_late_bad = $config['templates']['attend_late_bad'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n❌ *Bad news:* The class was already cancelled due to lack of attendees.";
 $tpl_unattend_confirm = $config['templates']['unattend_confirm'] ?? "🗑️ Registration cancelled for @{name}.{listText}";
