@@ -279,18 +279,18 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     
                     if (data.success && !data.already_computed) {
-                        const nameOnly = senderJid.split('@')[0];
+                        const nameToUse = (senderName && senderName !== 'Desconhecido') ? senderName.split(' ')[0] : senderJid.split('@')[0];
                         
                         // Reagir à mensagem original em vez de enviar texto
                         await sock.sendMessage(groupJid, { react: { text: '✅', key: msg.key } });
                         
                         // Se atingiu milestone, envia o relatório
                         if (data.is_milestone) {
-                            let msTemplate = config.templates?.streak_milestone || `🎉 *MILESTONE REACHED!* 🏆\nCongratulations {name}! You just hit a *{streak}-day streak*! 🔥\n\n📊 *Your Challenge Stats:*\n• Current Streak: {streak} days\n• Personal Record: {longest_streak} days\n• Total Days Completed: {total_completions} days\n\nKeep building the habit! 🚀`;
+                            // Ignoramos o template antigo da config para forçar o novo design detalhado
+                            let msTemplate = `🎉 *MILESTONE REACHED!* 🏆\nCongratulations {name}! You just hit a *{streak}-day streak*! 🔥\n\n📊 *Your Challenge Stats:*\n• Current Streak: {streak} days\n• Personal Record: {longest_streak} days\n• Total Days Completed: {total_completions} days\n\nKeep building the habit! 🚀`;
                             
                             let milestoneMsg = msTemplate
-                                .replace('@{name}', nameOnly)
-                                .replace('{name}', nameOnly)
+                                .replace('{name}', nameToUse)
                                 .replace(/{streak}/g, data.streak)
                                 .replace('{longest_streak}', data.longest_streak)
                                 .replace('{total_completions}', data.total_completions);
