@@ -147,3 +147,16 @@ function getSystemSetting(PDO $conn, string $chave, string $default = ''): strin
         return $default; // Falha silenciosa — nunca quebra o cron
     }
 }
+
+/**
+ * Formata um objeto DateTime para o estilo AM/PM em inglês (ex: "1 PM" ou "1:30 PM").
+ */
+function formatTime12h(DateTime $dtObj): string {
+    $h = (int)$dtObj->format('g');
+    $m = $dtObj->format('i');
+    $ampm = $dtObj->format('A');
+    if ($m === '00') {
+        return "$h $ampm";
+    }
+    return "$h:$m $ampm";
+}

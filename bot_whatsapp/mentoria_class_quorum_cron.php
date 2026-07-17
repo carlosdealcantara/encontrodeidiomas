@@ -57,7 +57,7 @@ foreach ($schedules as $s) {
                 ? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't get enough confirmations for the {horario} practice session today. Registrations are now closed and the session is cancelled. See you next time! 👋"
                 : "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
             $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
-            $msg = str_replace('{horario}', $classTime->format('H:i'), $tpl);
+            $msg = str_replace('{horario}', formatTime12h($classTime), $tpl);
             
             enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_cancel', ?, ?)")->execute([$hoje, $s['id']]);

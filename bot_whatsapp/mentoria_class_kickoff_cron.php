@@ -62,6 +62,7 @@ foreach ($schedules as $s) {
                 : "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
             $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
             $msg = str_replace('{link}', $cleanLink, $tpl);
+            $msg = str_replace('{horario}', formatTime12h($classTime), $msg);
             
             enviarWhatsApp($s['group_jid'], $msg, 'class_kickoff');
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_kickoff', ?, ?)")->execute([$hoje, $s['id']]);
