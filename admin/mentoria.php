@@ -3,6 +3,11 @@ session_start();
 require_once '../config.php';
 require_once '../includes/whatsapp_helper.php';
 
+// Prevenir cache agressivo da Hostinger/LiteSpeed
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
     exit;
