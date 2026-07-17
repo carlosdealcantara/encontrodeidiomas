@@ -69,7 +69,7 @@ function rodarSubCron($arquivo, $baseUrl, $token_secreto) {
 // =========================================================================
 echo "<h2>>>> Crons Horários <<<</h2><ul>";
 rodarSubCron('ei_meetups_hourly.php', $baseUrl, $token_secreto);
-rodarSubCron('../bot_telegram/ei_telegram_cron.php', $baseUrl, $token_secreto);
+rodarSubCron('ei_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
 rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
 echo "</ul>";
@@ -106,7 +106,7 @@ if ($horaAtual === 21) {
 if ($horaAtual === 8) {
     echo "<h3>Rotina de Faturamento Mensalidades (08:00 BRT)</h3><ul>";
     rodarSubCron('mentoria_cobranca_cron.php', $baseUrl, $token_secreto);
-    rodarSubCron('../bot_telegram/mentoria_telegram_cron.php', $baseUrl, $token_secreto);
+    rodarSubCron('mentoria_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
     echo "</ul>";
 }
 
