@@ -20,7 +20,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 }
 
 $hoje = new DateTime();
-$horaAtual = (int)$hoje->format('H');
+$horaAtual = isset($_GET['mock_hora']) ? (int)$_GET['mock_hora'] : (int)$hoje->format('H');
 
 echo "<h1>MASTER CRON: Rodando na hora {$horaAtual}:00</h1><hr>";
 
