@@ -34,8 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dia_vencimento = (int)($_POST['dia_vencimento'] ?? 1);
     $proximo_vencimento = $_POST['proximo_vencimento'] ?? date('Y-m-d');
     
-    // Tratamento da data de início (pode ser null)
+    // Tratamento das datas (podem ser null)
     $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
+    $data_nascimento = !empty($_POST['data_nascimento']) ? $_POST['data_nascimento'] : null;
     
     $grupo_atual = $_POST['grupo_atual'] ?? 'Our Meetups';
     $observacoes = $_POST['observacoes'] ?? '';
@@ -50,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 nome = :nome, telefone = :telefone, status_aluno = :status_aluno, 
                 valor_mensalidade = :valor_mensalidade, total_investido = :total_investido,
                 dia_vencimento = :dia_vencimento, proximo_vencimento = :proximo_vencimento, 
-                data_inicio = :data_inicio, grupo_atual = :grupo_atual, 
+                data_inicio = :data_inicio, data_nascimento = :data_nascimento, grupo_atual = :grupo_atual, 
                 observacoes = :observacoes 
                 WHERE id = :id";
         $stmt = $conn->prepare($sql);
@@ -58,21 +59,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno,
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'dia_vencimento' => $dia_vencimento, 'proximo_vencimento' => $proximo_vencimento, 
-            'data_inicio' => $data_inicio, 'grupo_atual' => $grupo_atual,
+            'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
             'observacoes' => $observacoes, 'id' => $id
         ]);
         header('Location: mentoria.php?msg=Aluno atualizado com sucesso');
         exit;
     } else {
         // INSERT
-        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, valor_mensalidade, total_investido, dia_vencimento, proximo_vencimento, data_inicio, grupo_atual, observacoes) 
-                VALUES (:nome, :telefone, :status_aluno, :valor_mensalidade, :total_investido, :dia_vencimento, :proximo_vencimento, :data_inicio, :grupo_atual, :observacoes)";
+        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, valor_mensalidade, total_investido, dia_vencimento, proximo_vencimento, data_inicio, data_nascimento, grupo_atual, observacoes) 
+                VALUES (:nome, :telefone, :status_aluno, :valor_mensalidade, :total_investido, :dia_vencimento, :proximo_vencimento, :data_inicio, :data_nascimento, :grupo_atual, :observacoes)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno,
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'dia_vencimento' => $dia_vencimento, 'proximo_vencimento' => $proximo_vencimento, 
-            'data_inicio' => $data_inicio, 'grupo_atual' => $grupo_atual,
+            'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
             'observacoes' => $observacoes
         ]);
         header('Location: mentoria.php?msg=Novo aluno cadastrado com sucesso');
@@ -195,6 +196,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label>Data de Início (Para estatísticas)</label>
                         <input type="date" name="data_inicio" value="<?= htmlspecialchars($aluno['data_inicio'] ?? '') ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Data de Nascimento</label>
+                        <input type="date" name="data_nascimento" value="<?= htmlspecialchars($aluno['data_nascimento'] ?? '') ?>">
+                        <div class="obs-hint">Usada pelo bot para enviar parabéns no aniversário. 🎂</div>
                     </div>
 
                     <div class="form-group">

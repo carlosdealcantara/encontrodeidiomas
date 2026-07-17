@@ -76,6 +76,11 @@
                 <textarea name="tpl_ranking_dedicados" style="min-height: 250px;"><?= htmlspecialchars($tpl_ranking_dedicados) ?></textarea>
                 <p class="help-text">Ranking Unificado. Variáveis: <code>{date}</code>, <code>{student_of_the_day}</code>, <code>{other_participants}</code>, <code>{legend}</code>, <code>{word_slingers_list}</code> e <code>{emoji_gang_list}</code>.</p>
             </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Felicitações de Aniversário (À meia-noite)</label>
+                <textarea name="tpl_birthday" rows="6"><?= htmlspecialchars($tpl_birthday) ?></textarea>
+                <p class="help-text">Mensagem enviada no aniversário. Use <code>{nome}</code> para o nome da pessoa e <code>@{numero}</code> para marcar.</p>
+            </div>
         </div>
     </div>
 

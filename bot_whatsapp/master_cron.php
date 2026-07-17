@@ -85,6 +85,7 @@ if ($horaAtual === 0) {
     rodarSubCron('mentoria_class_aviso_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_pontuacao_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_desafio_kick_cron.php', $baseUrl, $token_secreto);
+    rodarSubCron('mentoria_aniversario_cron.php', $baseUrl, $token_secreto);
     echo "</ul>";
 }
 

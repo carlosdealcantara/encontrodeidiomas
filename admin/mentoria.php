@@ -94,6 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
         ],
         'templates' => [
             'welcome' => trim($_POST['tpl_welcome']),
+            'birthday' => trim($_POST['tpl_birthday'] ?? ''),
             'lembrete_aula' => trim($_POST['tpl_lembrete']),
             'aviso_desafio' => trim($_POST['tpl_aviso_desafio']),
             'kick_desafio' => trim($_POST['tpl_kick_desafio']),
@@ -137,6 +138,7 @@ $jid_vocabulary   = $config['groups']['vocabulary']['jid']    ?? '';
 $jid_games        = $config['groups']['games']['jid']         ?? '';
 
 $tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
+$tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome}!* 🎉\n\nToday is a special day — one of our amazing Mentorship members is celebrating their birthday! 🥳\n\nWe hope this new year of life brings you lots of growth, joy, and of course... fluency! 🌟\n\nDrop a 🎂 or send a birthday message to make {nome}'s day even more special! 💬 @{numero}";
 $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
 $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
 $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
