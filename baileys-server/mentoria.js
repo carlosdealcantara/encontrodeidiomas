@@ -306,6 +306,55 @@ async function handleMessages({ messages, type }) {
             }
         }
             
+        // Helper: builds the unified sessions block for the confirmation message
+        function formatSessionTime(startTime) {
+            let tParts = startTime.split(':');
+            let h = parseInt(tParts[0]);
+            let ampm = 'AM';
+            if (h >= 12) { ampm = 'PM'; if (h > 12) h -= 12; }
+            if (h === 0) h = 12;
+            let mStr = tParts[1] === '00' ? '' : ':' + tParts[1];
+            return `${h}${mStr} ${ampm}`;
+        }
+
+        function buildSessionsBlock(dailySummary) {
+            if (!dailySummary || dailySummary.length === 0) return '';
+            let block = '';
+            dailySummary.forEach(summary => {
+                let isPractice = summary.session_type === 'student_practice';
+                let tStr = formatSessionTime(summary.start_time);
+                
+                if (isPractice) {
+                    block += `\n━━━━━━━━━━━━━━━━━━`;
+                    block += `\n🗣️ *Students Practice — ${tStr}*`;
+                    block += `\n_Students only — no teacher_`;
+                } else {
+                    block += `\n━━━━━━━━━━━━━━━━━━`;
+                    block += `\n👨‍🏫 *Teacher Class — ${tStr}*`;
+                }
+                block += `\n`;
+
+                let count = summary.attendees ? summary.attendees.length : 0;
+                if (count > 0) {
+                    summary.attendees.forEach((name, i) => block += `  ${i+1}. ${name}\n`);
+                } else {
+                    block += `  _No one yet._\n`;
+                }
+
+                if (isPractice) {
+                    if (count === 0) {
+                        block += `  _⚠️ 2 students needed — be the first!_\n`;
+                    } else if (count === 1) {
+                        block += `  _⚠️ 1 more student needed to confirm this session._\n`;
+                    } else {
+                        block += `  _✅ Quorum reached! Session is confirmed._\n`;
+                    }
+                }
+            });
+            block += `\n━━━━━━━━━━━━━━━━━━`;
+            return block;
+        }
+
         // Check for commands (e.g. !attend in Our Classes)
         if (text.startsWith('!attend')) {
             const parts = text.split(' ');
@@ -337,66 +386,37 @@ async function handleMessages({ messages, type }) {
                     
                     if (!data.success && data.reason === 'multiple_sessions_require_id') {
                         await sock.sendMessage(groupJid, { 
-                            text: `It looks like we have multiple sessions today! Please reply with \`!attend 1\` for the first session or \`!attend 2\` for the second.`,
+                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n👨‍🏫 *!attend 1* — Teacher Class\n🗣️ *!attend 2* — Students Practice\n\nWhich one are you joining?`,
                             mentions: [senderJid]
                         });
                         return;
                     }
-                    
+
                     let dStr = data.class_date_en || data.class_date;
-                    let listText = `📅 ${dStr}\n`;
-                    
-                    if (data.daily_summary) {
-                        data.daily_summary.forEach(summary => {
-                            let typeStr = summary.session_type === 'student_practice' ? '🗣️ Practice Session' : '👨‍🏫 Teacher Class';
-                            let tParts = summary.start_time.split(':');
-                            let h = parseInt(tParts[0]);
-                            let ampm = "AM";
-                            if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
-                            if (h === 0) h = 12;
-                            let mStr = tParts[1] === "00" ? "" : ":" + tParts[1];
-                            let tStr = `${h}${mStr} ${ampm}`;
-                            
-                            listText += `\n*${summary.position}. ${typeStr} at ${tStr}*\n`;
-                            
-                            if (summary.attendees && summary.attendees.length > 0) {
-                                summary.attendees.forEach((name, i) => listText += `  ${i+1}. ${name}\n`);
-                            } else {
-                                listText += "  No one yet.\n";
-                            }
-                            
-                            if (summary.session_type === 'student_practice') {
-                                let count = summary.attendees ? summary.attendees.length : 0;
-                                if (count === 0) {
-                                    listText += `  _⚠️ Needs 2 more students to happen._\n`;
-                                } else if (count === 1) {
-                                    listText += `  _⚠️ Needs 1 more student to happen._\n`;
-                                }
-                            }
-                        });
-                    }
+                    let sessionsBlock = buildSessionsBlock(data.daily_summary);
 
                     if (data.success) {
-                        // Reação ✅ na mensagem do usuário
                         await sock.sendMessage(groupJid, { react: { text: '✅', key: msg.key } });
                         
-                        let msgTxt = config.templates?.attend_confirm || `{listText}`;
-                        msgTxt = msgTxt.replace('{name}', senderJid.split('@')[0]).replace('{listText}', listText);
+                        let tpl = config.templates?.daily_summary_header || `✅ Attendance confirmed for @{name}!\n\n📅 *Today's Schedule — {date}*\n{sessionsBlock}`;
+                        let msgTxt = tpl
+                            .replace('{name}', senderJid.split('@')[0])
+                            .replace('{date}', dStr)
+                            .replace('{sessionsBlock}', sessionsBlock)
+                            .replace('{listText}', sessionsBlock);
                         
-                        await sock.sendMessage(groupJid, { 
-                            text: msgTxt
-                        });
+                        await sock.sendMessage(groupJid, { text: msgTxt, mentions: [senderJid] });
                     } else if (data.reason === 'deadline_passed') {
                         let msgTxt = data.class_confirmed 
-                            ? (config.templates?.attend_late_good || `⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!\n\n{listText}`)
-                            : (config.templates?.attend_late_bad || `⏰ The deadline to confirm attendance has passed, @{name}.\n\n❌ *Bad news:* The class was already cancelled due to lack of attendees.`);
+                            ? (config.templates?.attend_late_good || `⏰ The deadline has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!\n{sessionsBlock}`)
+                            : (config.templates?.attend_late_bad || `⏰ The deadline has passed, @{name}.\n\n❌ *Bad news:* The session was already cancelled due to lack of attendees.`);
                         
-                        msgTxt = msgTxt.replace('{name}', senderJid.split('@')[0]).replace('{listText}', data.class_confirmed ? listText : '');
+                        msgTxt = msgTxt
+                            .replace('{name}', senderJid.split('@')[0])
+                            .replace('{sessionsBlock}', sessionsBlock)
+                            .replace('{listText}', sessionsBlock);
                         
-                        await sock.sendMessage(groupJid, { 
-                            text: msgTxt,
-                            mentions: [senderJid]
-                        });
+                        await sock.sendMessage(groupJid, { text: msgTxt, mentions: [senderJid] });
                     } else {
                         await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error confirming registration.'}` });
                     }
@@ -442,11 +462,11 @@ async function handleMessages({ messages, type }) {
                         let dStr = data.class_date_en || data.class_date;
                         let sessionsBlock = buildSessionsBlock(data.daily_summary);
 
-                        await sock.sendMessage(groupJid, { react: { text: '🗑️', key: msg.key } });
+                        await sock.sendMessage(groupJid, { react: { text: '❎', key: msg.key } });
 
-                        let tpl = config.templates?.daily_summary_header || `🗑️ Attendance cancelled for @{name}.\n\n📅 *Today's Schedule — {date}*\n{sessionsBlock}`;
+                        let tpl = config.templates?.daily_summary_header || `❎ Attendance cancelled for @{name}.\n\n📅 *Today's Schedule — {date}*\n{sessionsBlock}`;
                         let msgTxt = tpl
-                            .replace('✅ Attendance confirmed for', '🗑️ Attendance cancelled for')
+                            .replace('✅ Attendance confirmed for', '❎ Attendance cancelled for')
                             .replace('{name}', senderJid.split('@')[0])
                             .replace('{date}', dStr)
                             .replace('{sessionsBlock}', sessionsBlock)
@@ -461,7 +481,9 @@ async function handleMessages({ messages, type }) {
                     } else {
                         await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error cancelling registration.'}` });
                     }
-                } catch (err) {}
+                } catch (err) {
+                    console.error("!unattend error:", err);
+                }
             }
         } else if (text.startsWith('!list')) {
             const ourClassesGroup = config.groups?.our_classes?.jid;
@@ -493,7 +515,9 @@ async function handleMessages({ messages, type }) {
                     } else {
                         await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error fetching status.'}` });
                     }
-                } catch (err) {}
+                } catch (err) {
+                    console.error("!list error:", err);
+                }
             }
         } else if (text.startsWith('!streaks')) {
             const desafioGroup = config.groups?.desafio?.jid;
