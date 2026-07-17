@@ -59,12 +59,19 @@ try {
                     Quando ativado, os avisos programados de cobrança (3 dias, 1 dia e 0 dia) serão enviados para o seu bot do Telegram, mesmo se estiverem inativos no painel principal.
                 </p>
             </div>
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(0,0,0,0.2); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                <span style="font-weight: 600; font-size: 1.1rem; color: <?= $telegramAtivo ? 'var(--success)' : 'var(--text-dim)' ?>;">
-                    <?= $telegramAtivo ? 'ATIVADO' : 'DESATIVADO' ?>
-                </span>
-                <input type="checkbox" name="telegram_cobranca_ativo" <?= $telegramAtivo ? 'checked' : '' ?> style="accent-color: var(--success); width: 22px; height: 22px;">
-            </label>
+            <div style="display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.2); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <span style="font-weight: 600; font-size: 1.05rem; color: white;">
+                        Ativar Relay do Telegram
+                    </span>
+                    <input type="checkbox" name="telegram_cobranca_ativo" <?= $telegramAtivo ? 'checked' : '' ?> style="accent-color: var(--success); width: 22px; height: 22px; cursor: pointer;">
+                </label>
+                <?php if ($telegramAtivo): ?>
+                    <span style="background: rgba(34, 197, 94, 0.2); color: var(--success); padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold;">LIGADO</span>
+                <?php else: ?>
+                    <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold;">DESLIGADO</span>
+                <?php endif; ?>
+            </div>
         </div>
         
         <div style="display: flex; gap: 15px; margin-top: 20px;">
