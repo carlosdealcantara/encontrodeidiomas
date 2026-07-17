@@ -49,6 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_cobranca'])) {
     $msg = "Mensagens de faturamento salvas com sucesso!";
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_telegram_relay'])) {
+    $novoEstado = isset($_POST['telegram_cobranca_ativo']) ? 1 : 0;
+    updateSetting('telegram_cobranca_ativo', (string)$novoEstado);
+    $msg = "Configurações do Telegram Relay salvas com sucesso!";
+}
+
 $stmt = $conn->query("SELECT * FROM mentoria_alunos ORDER BY CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, proximo_vencimento ASC");
 $alunos = $stmt->fetchAll();
 

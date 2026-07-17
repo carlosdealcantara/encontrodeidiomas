@@ -11,25 +11,6 @@
 // Carrega estado atual
 $telegramAtivo = (int)getSetting('telegram_cobranca_ativo', '0');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_telegram_relay'])) {
-    $novoEstado = isset($_POST['telegram_cobranca_ativo']) ? 1 : 0;
-    try {
-        $stmtCheck = $conn->prepare("SELECT chave FROM system_settings WHERE chave = 'telegram_cobranca_ativo'");
-        $stmtCheck->execute();
-        if ($stmtCheck->rowCount() > 0) {
-            $stmtUpd = $conn->prepare("UPDATE system_settings SET valor = ? WHERE chave = 'telegram_cobranca_ativo'");
-            $stmtUpd->execute([$novoEstado]);
-        } else {
-            $stmtIns = $conn->prepare("INSERT INTO system_settings (chave, valor) VALUES ('telegram_cobranca_ativo', ?)");
-            $stmtIns->execute([$novoEstado]);
-        }
-        $telegramAtivo = $novoEstado;
-        $msg = "Configurações do Telegram Relay salvas com sucesso!";
-    } catch (Exception $e) {
-        $error = "Erro ao salvar: " . $e->getMessage();
-    }
-}
-
 // Busca histórico
 $historico = [];
 try {
