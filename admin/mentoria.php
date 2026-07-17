@@ -67,6 +67,7 @@ $alunos = $stmt->fetchAll();
 $stmtMsgs = $conn->query("SELECT * FROM mentoria_mensagens ORDER BY dias_antes DESC");
 $mensagens_cobranca = $stmtMsgs->fetchAll();
 $pix_footer_atual = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
+$ltv_vitalicios = getSetting('ltv_vitalicios', '5000');
 
 // --- LOGIC: MENSAGENS (Automações do Clube) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
@@ -121,6 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     
     $res = sendBaileysRequest('/mentoria-config', $newConfig, 'POST');
     if ($res['success']) {
+        // Salva settings de regras de negócio no banco (não vão pro config.json do Baileys)
+        updateSetting('ltv_vitalicios', trim($_POST['ltv_vitalicios'] ?? '5000'));
         $msg = "Configurações e mensagens salvas com sucesso no servidor Baileys!";
     } else {
         $error = "Erro ao salvar no Node.js: " . ($res['error'] ?? 'Desconhecido');

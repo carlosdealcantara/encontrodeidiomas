@@ -16,6 +16,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 $conn = connectDB();
 $aluno = null;
 $msg = '';
+$ltv_vitalicios = (float)getSetting('ltv_vitalicios', '5000');
 
 // Se for Edição, busca os dados
 if (isset($_GET['id'])) {
@@ -170,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group">
                         <label>Telefone WhatsApp (Com DDD)</label>
-                        <input type="text" name="telefone" required value="<?= htmlspecialchars($aluno['telefone'] ?? '') ?>" placeholder="Ex: 11999998888">
+                        <input type="text" name="telefone" required value="<?= htmlspecialchars($aluno['telefone'] ?? '') ?>" placeholder="Brasil: 11999998888 | Internacional: 818030606423">
                     </div>
 
                     <div class="form-group">
@@ -190,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label>Total Já Investido / LTV (R$)</label>
                         <input type="text" name="total_investido" value="<?= htmlspecialchars($aluno['total_investido'] ?? '0.00') ?>">
-                        <div class="obs-hint">Ao bater R$ 3.000, vira Vitalício.</div>
+                        <div class="obs-hint">Ao bater R$ <?= number_format($ltv_vitalicios, 0, ',', '.') ?>, vira Vitalício.</div>
                     </div>
                     
                     <div class="form-group">

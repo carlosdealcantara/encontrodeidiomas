@@ -10,6 +10,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id = (int)$_POST['id'];
     $conn = connectDB();
+    $ltv_vitalicios = (float)getSetting('ltv_vitalicios', '5000');
     
     // Pega os dados atuais do aluno (incluindo telefone!)
     $stmt = $conn->prepare("SELECT * FROM mentoria_alunos WHERE id = :id");
@@ -26,12 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         // Incrementa o valor total investido
         $novoTotal = (float)$aluno['total_investido'] + (float)$aluno['valor_mensalidade'];
         
-        // Checa se virou Vitalício (R$ 5.000,00)
+        // Checa se virou Vitalício
         $novoStatusAluno = $aluno['status_aluno'];
         $mensagemExtra = "";
-        if ($novoStatusAluno !== 'Vitalício' && $novoTotal >= 5000.00) {
+        if ($novoStatusAluno !== 'Vitalício' && $novoTotal >= $ltv_vitalicios) {
             $novoStatusAluno = 'Vitalício';
-            $mensagemExtra = " 🏆 PARABÉNS! O aluno atingiu R$ 5.000 e virou VITALÍCIO!";
+            $mensagemExtra = " 🏆 PARABÉNS! O aluno atingiu R$ " . number_format($ltv_vitalicios, 0, ',', '.') . " e virou VITALÍCIO!";
         }
         
         // Renova: Joga a data pra frente, soma o LTV, deixa como PAGO e checa vitalício

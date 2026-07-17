@@ -55,6 +55,11 @@
                 <input type="text" name="admin_jid" value="<?= htmlspecialchars($admin_jid) ?>" required>
                 <p class="help-text">Este número é excluído do ranking e do sistema de expulsão do desafio.</p>
             </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>💎 LTV para Vitalício (R$)</label>
+                <input type="number" name="ltv_vitalicios" value="<?= htmlspecialchars($ltv_vitalicios) ?>" min="0" step="100" style="max-width: 200px;">
+                <p class="help-text">Quando o total investido (LTV) do aluno atingir este valor, ele é automaticamente promovido a <strong>Vitalício</strong>. Alterar aqui atualiza também o hint no cadastro de alunos.</p>
+            </div>
         </div>
     </div>
 
