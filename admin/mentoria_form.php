@@ -32,8 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status_aluno = $_POST['status_aluno'] ?? 'Ativo';
     $valor_mensalidade = str_replace(',', '.', $_POST['valor_mensalidade'] ?? '0');
     $total_investido = str_replace(',', '.', $_POST['total_investido'] ?? '0');
-    $dia_vencimento = (int)($_POST['dia_vencimento'] ?? 1);
-    $proximo_vencimento = $_POST['proximo_vencimento'] ?? date('Y-m-d');
+    $dia_vencimento = !empty($_POST['dia_vencimento']) ? (int)$_POST['dia_vencimento'] : 1;
+    $proximo_vencimento = !empty($_POST['proximo_vencimento']) ? $_POST['proximo_vencimento'] : date('Y-m-d');
     
     // Tratamento das datas (podem ser null)
     $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
@@ -194,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="grupo_valor_mensalidade">
                         <label>Valor da Mensalidade (R$)</label>
                         <input type="text" name="valor_mensalidade" value="<?= htmlspecialchars($aluno['valor_mensalidade'] ?? '0.00') ?>">
                     </div>
@@ -216,14 +216,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="obs-hint">Usada pelo bot para enviar parabéns no aniversário. 🎂</div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="grupo_proximo_vencimento">
                         <label>Data Exata do Próximo Vencimento</label>
-                        <input type="date" name="proximo_vencimento" required value="<?= htmlspecialchars($aluno['proximo_vencimento'] ?? date('Y-m-d')) ?>">
+                        <input type="date" name="proximo_vencimento" id="proximo_vencimento" value="<?= htmlspecialchars($aluno['proximo_vencimento'] ?? date('Y-m-d')) ?>">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group" id="grupo_dia_vencimento">
                         <label>Dia Fixo de Vencimento (1 a 31)</label>
-                        <input type="number" name="dia_vencimento" min="1" max="31" required value="<?= htmlspecialchars($aluno['dia_vencimento'] ?? '') ?>">
+                        <input type="number" name="dia_vencimento" id="dia_vencimento" min="1" max="31" value="<?= htmlspecialchars($aluno['dia_vencimento'] ?? '') ?>">
                     </div>
 
                     <div class="form-group full">
@@ -239,5 +239,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </main>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const statusSelect = document.querySelector("select[name='status_aluno']");
+        const proximoVencimento = document.getElementById("grupo_proximo_vencimento");
+        const diaVencimento = document.getElementById("grupo_dia_vencimento");
+        const valorMensalidade = document.getElementById("grupo_valor_mensalidade");
+        
+        const inputProx = document.getElementById("proximo_vencimento");
+        const inputDia = document.getElementById("dia_vencimento");
+
+        function toggleFields() {
+            if (statusSelect.value === 'Vitalício') {
+                proximoVencimento.style.display = 'none';
+                diaVencimento.style.display = 'none';
+                valorMensalidade.style.display = 'none';
+                inputProx.removeAttribute("required");
+                inputDia.removeAttribute("required");
+            } else {
+                proximoVencimento.style.display = 'block';
+                diaVencimento.style.display = 'block';
+                valorMensalidade.style.display = 'block';
+                inputProx.setAttribute("required", "required");
+                inputDia.setAttribute("required", "required");
+            }
+        }
+        
+        statusSelect.addEventListener("change", toggleFields);
+        toggleFields();
+    });
+    </script>
 </body>
 </html>
