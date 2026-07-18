@@ -104,6 +104,7 @@ try {
                         'music'          => 0,
                         'games'          => 0,
                         'vocab'          => 0,
+                        'manual_pts'     => [],
                     ];
                 }
                 if ($groupJid === $jidPronun)   $students[$memberJid]['pronun']  += (int)($stats['audios_sent']  ?? 0);
@@ -133,8 +134,54 @@ try {
                     'jid' => $jid, 'name' => $att['member_name'],
                     'class_attended' => true,
                     'pronun' => 0, 'desafio' => 0, 'music' => 0, 'games' => 0, 'vocab' => 0,
+                    'manual_pts' => [],
                 ];
             }
+        }
+
+        // Busca pontos manuais
+        $stmtPts = $conn->prepare("
+            SELECT member_jid, member_name, group_key, SUM(points) as group_pts
+            FROM mentoria_dedicated_pts
+            WHERE date = ?
+            GROUP BY member_jid, group_key
+        ");
+        $stmtPts->execute([$hoje]);
+        $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($manualPoints as $row) {
+            $jid = $row['member_jid'];
+            $cleanMJid = preg_replace('/:\d+@/', '@', $jid);
+            if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+            
+            $mName = $row['member_name'] ?: 'Unknown';
+            if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
+
+            if (!isset($students[$jid])) {
+                if ($mName === 'Unknown') {
+                    $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? LIMIT 1");
+                    $phoneOnly = preg_replace('/\D/', '', explode('@', $jid)[0]);
+                    $stmtName->execute([$phoneOnly]);
+                    $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+                    if ($rowName) $mName = $rowName['nome'];
+                }
+                
+                $students[$jid] = [
+                    'jid'            => $jid,
+                    'name'           => $mName,
+                    'class_attended' => in_array($jid, $attendeeJids),
+                    'pronun'         => 0,
+                    'desafio'        => 0,
+                    'music'          => 0,
+                    'games'          => 0,
+                    'vocab'          => 0,
+                    'manual_pts'     => [],
+                ];
+            }
+            if (!isset($students[$jid]['manual_pts'])) {
+                $students[$jid]['manual_pts'] = [];
+            }
+            $students[$jid]['manual_pts'][$row['group_key']] = (int)$row['group_pts'];
         }
 
         // Calcula totais do Social e transforma em array

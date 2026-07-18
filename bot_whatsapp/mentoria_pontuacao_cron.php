@@ -134,7 +134,48 @@ if (!empty($config['groups'])) {
 }
 
 // -----------------------------------------------------
-// 1. DEDICAÇÃO (Student of the Day - DB Manual Points)
+// 1. DEDICAÇÃO: Base Desafio (5 pts garantidos)
+// -----------------------------------------------------
+
+$stmtStreak = $conn->prepare("SELECT member_jid, member_name FROM mentoria_desafio_streaks WHERE last_completed_date = ?");
+$stmtStreak->execute([$ontem]);
+$streakCompleters = $stmtStreak->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($streakCompleters as $completer) {
+    $mJid = $completer['member_jid'];
+    $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
+    
+    // Ignora admin
+    if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+    
+    $mName = $completer['member_name'] ?? 'Unknown';
+    if ($mName === 'Unknown' || empty(trim($mName))) {
+        $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+        $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
+        $stmtName->execute([$phoneOnly]);
+        $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+        if ($rowName) $mName = $rowName['nome'];
+    }
+
+    if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
+
+    if (!isset($memberStats[$mJid])) {
+        $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
+    }
+    
+    // Adiciona 5 pontos base e o emoji
+    $memberStats[$mJid]['total_pts'] += 5;
+    if (!in_array('📚', $memberStats[$mJid]['emojis'])) {
+        $memberStats[$mJid]['emojis'][] = '📚';
+    }
+    
+    if ($memberStats[$mJid]['name'] === 'Unknown' && $mName !== 'Unknown' && trim($mName) !== '') {
+        $memberStats[$mJid]['name'] = $mName;
+    }
+}
+
+// -----------------------------------------------------
+// 2. DEDICAÇÃO: Pontos Manuais (!1 a !5)
 // -----------------------------------------------------
 
 $stmtPts = $conn->prepare("

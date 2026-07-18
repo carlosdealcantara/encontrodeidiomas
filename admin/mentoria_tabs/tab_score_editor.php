@@ -227,9 +227,21 @@
                         <span class="rp-slider"></span></label></td>`;
             cols.forEach(c => {
                 const v = s[c.key] ?? 0;
-                rowTotal += v * c.pts;
-                cells += `<td><input type="number" min="0" class="rp-num${v === 0 ? ' rp-zero' : ''}" id="act_${c.key}_${safe}"
-                               value="${v}" onchange="rpEditAct('${s.jid}','${c.key}',this.value,this)"></td>`;
+                const mPts = s.manual_pts?.[c.key] || 0;
+                
+                let catPts = 0;
+                if (c.key === 'desafio' && v > 0) catPts += 5;
+                catPts += mPts;
+                rowTotal += catPts;
+
+                let manualBadge = mPts > 0 ? `<div style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 3px;">+${mPts} pts ext</div>` : '';
+
+                cells += `<td>
+                            <input type="number" min="0" class="rp-num${v === 0 ? ' rp-zero' : ''}" id="act_${c.key}_${safe}"
+                               value="${v}" onchange="rpEditAct('${s.jid}','${c.key}',this.value,this)">
+                            ${manualBadge}
+                            <input type="hidden" id="mpts_${c.key}_${safe}" value="${mPts}">
+                          </td>`;
             });
             cells += `<td class="rp-total-cell" id="total_act_${safe}">${rowTotal}</td>`;
             rows += `<tr>${cells}</tr>`;
@@ -307,11 +319,17 @@
     function recalcAct(jidSafe) {
         let total = 0;
         if (document.getElementById('att_' + jidSafe).checked) total += 20;
-        const ptsMap = { 'pronun': 5, 'desafio': 5, 'music': 4, 'games': 2, 'vocab': 1 };
-        for (const [key, pts] of Object.entries(ptsMap)) {
+        const cols = ['pronun', 'desafio', 'music', 'games', 'vocab'];
+        cols.forEach(key => {
             const el = document.getElementById(`act_${key}_${jidSafe}`);
-            if (el) total += (parseInt(el.value) || 0) * pts;
-        }
+            const mPtsEl = document.getElementById(`mpts_${key}_${jidSafe}`);
+            if (el) {
+                const v = parseInt(el.value) || 0;
+                const mPts = parseInt(mPtsEl ? mPtsEl.value : 0) || 0;
+                if (key === 'desafio' && v > 0) total += 5;
+                total += mPts;
+            }
+        });
         document.getElementById('total_act_' + jidSafe).innerText = total;
     }
 
