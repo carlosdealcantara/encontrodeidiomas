@@ -65,12 +65,12 @@ $memberStats = [];
 $rankingMsgs = [];
 $rankingReacts = [];
 
-$SCORING_RULES = [
-    'pronunciation' => [ ['field' => 'audios_sent', 'pts' => 5, 'emoji' => '🗣️'] ],
-    'desafio'       => [ ['field' => 'images_sent', 'pts' => 5, 'emoji' => '📚'] ],
-    'music'         => [ ['field' => 'images_sent', 'pts' => 4, 'emoji' => '🎶'] ],
-    'games'         => [ ['field' => 'images_sent', 'pts' => 2, 'emoji' => '🧩'] ],
-    'vocabulary'    => [ ['field' => 'images_sent', 'pts' => 1, 'emoji' => '📒'] ]
+$GROUP_EMOJIS = [
+    'pronunciation' => '🗣️',
+    'desafio'       => '📚',
+    'music'         => '🎶',
+    'games'         => '🧩',
+    'vocabulary'    => '📒'
 ];
 
 if (!empty($config['groups'])) {
@@ -127,73 +127,49 @@ if (!empty($config['groups'])) {
                 }
                 $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
 
-                // Track Dedication Points (Only for groups in SCORING_RULES)
-                if (isset($SCORING_RULES[$groupKey])) {
-                    if (!isset($memberStats[$memberJid])) {
-                        $memberStats[$memberJid] = ['name' => $nome, 'total_pts' => 0, 'emojis' => []];
-                    }
-                    
-                    foreach ($SCORING_RULES[$groupKey] as $rule) {
-                        $field = $rule['field'];
-                        if (!empty($data[$field]) && $data[$field] > 0) {
-                            $memberStats[$memberJid]['total_pts'] += $rule['pts'];
-                            $memberStats[$memberJid]['emojis'][] = $rule['emoji'];
-                        }
-                    }
-                }
+                // Dedication points are now fetched separately from mentoria_dedicated_pts
             }
         }
     }
 }
 
-// === ESCUDO DO DESAFIO (Para quando o bot estava cego mas o streak foi computado) ===
-$desafioGroupKey = 'desafio';
-if (isset($SCORING_RULES[$desafioGroupKey])) {
-    $rule = $SCORING_RULES[$desafioGroupKey][0];
-    
-    // Check all streaks for last_completed_date = $ontem
-    $stmtStreak = $conn->prepare("SELECT member_jid, member_name FROM mentoria_desafio_streaks WHERE last_completed_date = ?");
-    $stmtStreak->execute([$ontem]);
-    $streakCompleters = $stmtStreak->fetchAll(PDO::FETCH_ASSOC);
-    
-    foreach ($streakCompleters as $completer) {
-        $mJid = $completer['member_jid'];
-        $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
-        
-        // Verifica admin
-        $isAdmin = false;
-        if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) $isAdmin = true;
-        // Se a pessoa foi admin de QUALQUER grupo, ela será ignorada se precisarmos. Mas o admin do desafio seria ideal.
-        // O cron já rodou sobre o grupo desafio, então se estivéssemos preocupados com admin, teríamos que checar.
-        // Mas o Ei Staff não computa streak de qualquer forma.
-        if ($isAdmin) continue;
-        
-        $mName = $completer['member_name'] ?? 'Unknown';
-        if ($mName === 'Unknown' || empty(trim($mName))) {
-            $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-            $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]); // Extrai só o número para bater com telefone
-            $stmtName->execute([$phoneOnly]);
-            $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-            if ($rowName) $mName = $rowName['nome'];
-        }
+// -----------------------------------------------------
+// 1. DEDICAÇÃO (Student of the Day - DB Manual Points)
+// -----------------------------------------------------
 
-        // Ignora contas da Staff / Testes (devido a limitações de @lid)
-        if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
+$stmtPts = $conn->prepare("
+    SELECT member_jid, member_name, group_key, SUM(points) as group_pts
+    FROM mentoria_dedicated_pts
+    WHERE date = ?
+    GROUP BY member_jid, group_key
+");
+$stmtPts->execute([$ontem]);
+$manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
 
-        if (!isset($memberStats[$mJid])) {
-            $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
-        }
-        
-        // Add if not already present
-        if (!in_array($rule['emoji'], $memberStats[$mJid]['emojis'])) {
-            $memberStats[$mJid]['total_pts'] += $rule['pts'];
-            $memberStats[$mJid]['emojis'][] = $rule['emoji'];
-        }
-        
-        // Update name if Unknown
-        if ($memberStats[$mJid]['name'] === 'Unknown' && $mName !== 'Unknown' && trim($mName) !== '') {
-            $memberStats[$mJid]['name'] = $mName;
-        }
+foreach ($manualPoints as $row) {
+    $mJid = $row['member_jid'];
+    $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
+    if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+
+    $mName = $row['member_name'] ?: 'Unknown';
+    if ($mName === 'Unknown') {
+        $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+        $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
+        $stmtName->execute([$phoneOnly]);
+        $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+        if ($rowName) $mName = $rowName['nome'];
+    }
+
+    if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
+
+    if (!isset($memberStats[$mJid])) {
+        $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
+    }
+    
+    $memberStats[$mJid]['total_pts'] += (int)$row['group_pts'];
+    $emoji = $GROUP_EMOJIS[$row['group_key']] ?? '⭐';
+    if (!in_array($emoji, $memberStats[$mJid]['emojis'])) {
+        $memberStats[$mJid]['emojis'][] = $emoji;
     }
 }
 
