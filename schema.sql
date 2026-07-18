@@ -57,7 +57,6 @@ CREATE TABLE IF NOT EXISTS mentoria_alunos (
     status_aluno ENUM('Ativo', 'Inativo', 'Vitalício') DEFAULT 'Ativo',
     valor_mensalidade DECIMAL(10,2) DEFAULT 0.00,
     total_investido DECIMAL(10,2) DEFAULT 0.00,
-    dia_vencimento INT NOT NULL,
     proximo_vencimento DATE NOT NULL,
     status_pagamento ENUM('Pendente', 'Pago', 'Suspenso', 'Isento') DEFAULT 'Pendente',
     grupo_atual VARCHAR(100) DEFAULT 'Our Meetups',
