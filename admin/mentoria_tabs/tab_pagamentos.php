@@ -131,12 +131,18 @@
                 </td>
                 <td>
                     <div class="actions">
+                        <?php if ($aluno['status_aluno'] !== 'Vitalício'): ?>
                         <form action="mentoria_renovar.php" method="POST" style="display:inline;">
                             <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
                             <button type="submit" class="action-btn btn-renew" title="Registrar Pagamento" onclick="return confirm('Registrar pagamento de <?= htmlspecialchars($aluno['nome']) ?>?');">
                                 <i class="fas fa-check-circle"></i>
                             </button>
                         </form>
+                        <?php else: ?>
+                        <span class="action-btn" style="background:transparent; color:var(--text-dim); cursor:default;" title="Aluno Vitalício não requer renovação">
+                            <i class="fas fa-gem"></i>
+                        </span>
+                        <?php endif; ?>
                         <a href="mentoria_form.php?id=<?= $aluno['id'] ?>" class="action-btn btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
                     </div>
                 </td>

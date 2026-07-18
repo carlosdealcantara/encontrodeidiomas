@@ -163,6 +163,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
                 <?php endif; ?>
 
+                <?php if ($msg): ?>
+                    <div class="msg-box <?= strpos($msg, 'Erro') !== false ? 'error' : '' ?>"><?= htmlspecialchars($msg) ?></div>
+                <?php endif; ?>
+                
+                <?php if ($aluno && $aluno['status_aluno'] === 'Vitalício'): ?>
+                    <div class="msg-box" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success); color: var(--text-main); margin-bottom: 20px;">
+                        <i class="fas fa-gem" style="color: var(--success); margin-right: 8px;"></i>
+                        <strong>Aluno Vitalício</strong>: O sistema não cobrará este aluno. O Status Financeiro recomendado é "Isento".
+                    </div>
+                <?php endif; ?>
+
                 <div class="form-grid">
                     <div class="form-group full">
                         <label>Nome Completo do Aluno</label>

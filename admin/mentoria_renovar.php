@@ -35,9 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             $mensagemExtra = " 🏆 PARABÉNS! O aluno atingiu R$ " . number_format($ltv_vitalicios, 0, ',', '.') . " e virou VITALÍCIO!";
         }
         
-        // Renova: Joga a data pra frente, soma o LTV, deixa como PAGO e checa vitalício
-        $stmtUpdate = $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = :data, status_pagamento = 'Pago', total_investido = :total, status_aluno = :status_aluno WHERE id = :id");
-        $stmtUpdate->execute(['data' => $novaData, 'total' => $novoTotal, 'status_aluno' => $novoStatusAluno, 'id' => $id]);
+        $statusPagamento = ($novoStatusAluno === 'Vitalício') ? 'Isento' : 'Pago';
+        
+        // Renova: Joga a data pra frente, soma o LTV, atualiza status financeiro
+        $stmtUpdate = $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = :data, status_pagamento = :status_pagamento, total_investido = :total, status_aluno = :status_aluno WHERE id = :id");
+        $stmtUpdate->execute(['data' => $novaData, 'status_pagamento' => $statusPagamento, 'total' => $novoTotal, 'status_aluno' => $novoStatusAluno, 'id' => $id]);
         
         // ==========================================
         // DISPARO IMEDIATO DE MENSAGEM DE AGRADECIMENTO
