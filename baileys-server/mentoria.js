@@ -217,27 +217,31 @@ async function handleMessages({ messages, type }) {
                             (innerDoc && (innerDoc.mimetype || '').startsWith('image/')) ||
                             realMsg?.videoMessage);
 
-        const text = realMsg?.conversation || realMsg?.extendedTextMessage?.text ||
+        let text = realMsg?.conversation || realMsg?.extendedTextMessage?.text ||
                      realMsg?.imageMessage?.caption ||
                      innerDoc?.caption || '';
+        
+        // Remove WhatsApp formatting at start/end (e.g. `!attend`, *!attend*) so commands still work
+        text = text.replace(/^[*_~`]+|[*_~`]+$/g, '').trim();
 
-        // === ACTIVITY LOGGING (students only, no commands, no duplicates) ===
+        const cleanSenderJid = senderJid.replace(/:\d+@/, '@');
+
         // Determine if sender is a group admin
         let isGroupAdmin = false;
         try {
             const now = Date.now();
             if (!groupAdminsCache[groupJid] || (now - groupAdminsCacheTime[groupJid] > 3600000)) { // 1 hour cache
                 const metadata = await sock.groupMetadata(groupJid);
-                const admins = metadata.participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin').map(p => p.id);
+                const admins = metadata.participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin').map(p => p.id.replace(/:\d+@/, '@'));
                 groupAdminsCache[groupJid] = new Set(admins);
                 groupAdminsCacheTime[groupJid] = now;
             }
-            isGroupAdmin = groupAdminsCache[groupJid].has(senderJid);
+            isGroupAdmin = groupAdminsCache[groupJid].has(cleanSenderJid);
         } catch (e) {
             console.error('Error fetching group admins:', e);
         }
 
-        const isAdmin = msg.key.fromMe || excludedJids.has(senderJid) || isGroupAdmin;
+        const isAdmin = msg.key.fromMe || excludedJids.has(cleanSenderJid) || isGroupAdmin;
         const msgId = msg.key.id;
 
         if (!isAdmin && !processedMessageIds.has(msgId)) {
@@ -262,6 +266,67 @@ async function handleMessages({ messages, type }) {
                 const desafioGrp = config.groups?.desafio?.jid;
                 if (groupJid === desafioGrp) {
                     console.log('[DESAFIO-MISS]', senderName, '| tipos msg:', msgTypes.join(','));
+                }
+            }
+        }
+
+        // === ADMIN SCORING COMMANDS (!1 to !5) ===
+        if (isAdmin && msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+            const cmdMatch = text.match(/^\s*!\s*([1-5])\s*$/);
+            if (cmdMatch) {
+                console.log(`[SCORING] Admin ${senderName} issued command ${text}`);
+                const level = parseInt(cmdMatch[1]);
+                const pointsMap = { 1: 1, 2: 5, 3: 10, 4: 20, 5: 25 };
+                const points = pointsMap[level];
+                
+                const quotedParticipant = msg.message.extendedTextMessage.contextInfo.participant;
+                const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+                
+                if (quotedParticipant && quotedParticipant !== botJid && quotedParticipant !== senderJid) {
+                    try {
+                        let groupKey = 'unknown';
+                        for (const [key, gData] of Object.entries(config.groups || {})) {
+                            if (gData.jid === groupJid) {
+                                groupKey = key;
+                                break;
+                            }
+                        }
+                        
+                        const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/mentoria_award_api.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                group_jid: groupJid,
+                                group_key: groupKey,
+                                member_jid: quotedParticipant,
+                                points: points,
+                                level: level
+                            })
+                        });
+                        const data = await res.json();
+                        
+                        if (data.success) {
+                            const emojis = { 1: '✅', 2: '👍', 3: '🔥', 4: '🤯', 5: '🚀' };
+                            const reactEmoji = emojis[level] || '✅';
+                            
+                            // React to the student's message
+                            await sock.sendMessage(groupJid, { react: { text: reactEmoji, key: { remoteJid: groupJid, fromMe: false, id: msg.message.extendedTextMessage.contextInfo.stanzaId, participant: quotedParticipant } } });
+                            
+                            // Send reply message in English
+                            const msgs = {
+                                1: `✅ Check-in validated! (+${points} pt)`,
+                                2: `👍 Good job! Keep it up! (+${points} pts)`,
+                                3: `🔥 Great work! This is the way. (+${points} pts)`,
+                                4: `🤯 Awesome! That's a hardcore effort! (+${points} pts)`,
+                                5: `🚀 Unbelievable! Absolutely stellar work! (+${points} pts)`
+                            };
+                            const replyMsg = msgs[level];
+                            
+                            await sock.sendMessage(groupJid, { text: replyMsg, mentions: [quotedParticipant] });
+                        }
+                    } catch (err) {
+                        console.error('Error awarding points:', err);
+                    }
                 }
             }
         }
