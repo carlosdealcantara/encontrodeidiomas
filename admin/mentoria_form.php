@@ -172,6 +172,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <strong>Aluno Vitalício</strong>: O sistema não cobrará este aluno. O Status Financeiro recomendado é "Isento".
                     </div>
                 <?php endif; ?>
+                
+                <?php if ($aluno && $aluno['status_aluno'] === 'Comunidade'): ?>
+                    <div class="msg-box" style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--accent-blue); color: var(--text-main); margin-bottom: 20px;">
+                        <i class="fas fa-users" style="color: var(--accent-blue); margin-right: 8px;"></i>
+                        <strong>Aluno da Comunidade</strong>: Acesso apenas à comunidade (e-book, ex-alunos). Não haverá cobrança.
+                    </div>
+                <?php endif; ?>
 
                 <div class="form-grid">
                     <div class="form-group full">
@@ -189,6 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <select name="status_aluno" required>
                             <option value="Ativo" <?= ($aluno['status_aluno']??'') === 'Ativo' ? 'selected' : '' ?>>Ativo</option>
                             <option value="Inativo" <?= ($aluno['status_aluno']??'') === 'Inativo' ? 'selected' : '' ?>>Inativo</option>
+                            <option value="Comunidade" <?= ($aluno['status_aluno']??'') === 'Comunidade' ? 'selected' : '' ?>>Comunidade</option>
                             <option value="Vitalício" <?= ($aluno['status_aluno']??'') === 'Vitalício' ? 'selected' : '' ?>>Vitalício</option>
                         </select>
                     </div>
@@ -243,7 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const inputProx = document.getElementById("proximo_vencimento");
 
         function toggleFields() {
-            if (statusSelect.value === 'Vitalício') {
+            if (statusSelect.value === 'Vitalício' || statusSelect.value === 'Comunidade') {
                 proximoVencimento.style.display = 'none';
                 valorMensalidade.style.display = 'none';
                 inputProx.removeAttribute("required");

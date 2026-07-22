@@ -14,6 +14,7 @@
     <div class="filter-group" style="display: flex; gap: 5px; background: var(--sidebar-bg); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
         <button class="filter-btn active" data-status="Ativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Ativos</button>
         <button class="filter-btn" data-status="Inativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Inativos</button>
+        <button class="filter-btn" data-status="Comunidade" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Comunidade</button>
         <button class="filter-btn" data-status="Vitalício" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Vitalícios</button>
         <button class="filter-btn" data-status="all" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Todos</button>
     </div>
@@ -42,6 +43,7 @@
     .badge-isento { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
     .badge-ativo { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); }
     .badge-inativo { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
+    .badge-comunidade { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
     .badge-vitalicio { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
     .actions { display: flex; gap: 10px; }
     .action-btn { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; background: transparent; }
@@ -107,6 +109,7 @@
                         <?php 
                             $badgeStClass = 'badge-inativo';
                             if($aluno['status_aluno'] === 'Ativo') $badgeStClass = 'badge-ativo';
+                            if($aluno['status_aluno'] === 'Comunidade') $badgeStClass = 'badge-comunidade';
                             if($aluno['status_aluno'] === 'Vitalício') $badgeStClass = 'badge-vitalicio';
                         ?>
                         <span class="badge <?= $badgeStClass ?>"><?= htmlspecialchars($aluno['status_aluno']) ?></span>
@@ -131,7 +134,7 @@
                 </td>
                 <td>
                     <div class="actions">
-                        <?php if ($aluno['status_aluno'] !== 'Vitalício'): ?>
+                        <?php if ($aluno['status_aluno'] !== 'Vitalício' && $aluno['status_aluno'] !== 'Comunidade'): ?>
                         <form action="mentoria_renovar.php" method="POST" style="display:inline;">
                             <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
                             <button type="submit" class="action-btn btn-renew" title="Registrar Pagamento" onclick="return confirm('Registrar pagamento de <?= htmlspecialchars($aluno['nome']) ?>?');">

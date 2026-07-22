@@ -46,7 +46,7 @@ if (!$loungeJid) {
 $stmt = $conn->query("
     SELECT id, nome, telefone, data_nascimento 
     FROM mentoria_alunos 
-    WHERE status_aluno IN ('Ativo', 'Vitalício') 
+    WHERE status_aluno IN ('Ativo', 'Vitalício', 'Comunidade') 
     AND data_nascimento IS NOT NULL 
     AND DAY(data_nascimento) = DAY(CURRENT_DATE) 
     AND MONTH(data_nascimento) = MONTH(CURRENT_DATE)

@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS mentoria_alunos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     telefone VARCHAR(50) NOT NULL,
-    status_aluno ENUM('Ativo', 'Inativo', 'Vitalício') DEFAULT 'Ativo',
+    status_aluno ENUM('Ativo', 'Inativo', 'Vitalício', 'Comunidade') DEFAULT 'Ativo',
     valor_mensalidade DECIMAL(10,2) DEFAULT 0.00,
     total_investido DECIMAL(10,2) DEFAULT 0.00,
     proximo_vencimento DATE NOT NULL,
