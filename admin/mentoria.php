@@ -147,9 +147,9 @@ $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome
 $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
 $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
 $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
-$tpl_ranking_student   = $config['templates']['ranking_student'] ?? '';
-$tpl_ranking_messenger = $config['templates']['ranking_messenger'] ?? '';
-$tpl_ranking_reactor   = $config['templates']['ranking_reactor'] ?? '';
+$tpl_ranking_student   = $config['templates']['ranking_student'] ?? "📅 {date}\n\n⭐ *STUDENT OF THE DAY*\n\n{student_of_the_day}\n\n*Other students:*\n{other_students}\n\n📖 *Legend:*\n{legend}";
+$tpl_ranking_messenger = $config['templates']['ranking_messenger'] ?? "📅 {date}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{top_messenger_list}";
+$tpl_ranking_reactor   = $config['templates']['ranking_reactor'] ?? "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
 $tpl_class_aviso = $config['templates']['class_aviso'] ?? "👨‍🏫 *Teacher Class — {date}*
 
 We have a class with the teacher scheduled for *{horario}*.

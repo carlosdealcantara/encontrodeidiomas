@@ -382,11 +382,27 @@ foreach ($allJids as $jid) {
 // -----------------------------------------------------
 $enDate = date('F jS, Y', strtotime($ontem));
 
-$msg1 = "📅 {$enDate}\n\n⭐ *STUDENT OF THE DAY*\n\n{$studentOfTheDayStr}\n\n*Other students:*\n{$othersStr}\n\n📖 *Legend:*\n{$legendStr}";
+$tpl1 = !empty($config['templates']['ranking_student']) ? $config['templates']['ranking_student'] : "📅 {date}\n\n⭐ *STUDENT OF THE DAY*\n\n{student_of_the_day}\n\n*Other students:*\n{other_students}\n\n📖 *Legend:*\n{legend}";
+$tpl2 = !empty($config['templates']['ranking_messenger']) ? $config['templates']['ranking_messenger'] : "📅 {date}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{top_messenger_list}";
+$tpl3 = !empty($config['templates']['ranking_reactor']) ? $config['templates']['ranking_reactor'] : "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
 
-$msg2 = "📅 {$enDate}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{$wordSlingersList}";
+$msg1 = str_replace(
+    ['{date}', '{student_of_the_day}', '{other_students}', '{legend}'],
+    [$enDate, $studentOfTheDayStr, $othersStr, $legendStr],
+    $tpl1
+);
 
-$msg3 = "📅 {$enDate}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{$emojiGangList}";
+$msg2 = str_replace(
+    ['{date}', '{top_messenger_list}'],
+    [$enDate, $wordSlingersList],
+    $tpl2
+);
+
+$msg3 = str_replace(
+    ['{date}', '{top_reactor_list}'],
+    [$enDate, $emojiGangList],
+    $tpl3
+);
 
 // Disparo simples (sem mentions de @numero)
 $result1 = enviarWhatsApp($targetGroup, $msg1, 'mentoria_ranking_student');
