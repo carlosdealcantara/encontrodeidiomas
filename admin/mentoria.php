@@ -99,8 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'lembrete_aula' => trim($_POST['tpl_lembrete']),
             'aviso_desafio' => trim($_POST['tpl_aviso_desafio']),
             'kick_desafio' => trim($_POST['tpl_kick_desafio']),
-            'ranking_social' => trim($_POST['tpl_ranking_social']),
-            'ranking_dedicados' => trim($_POST['tpl_ranking_dedicados']),
+            'ranking_social' => trim($_POST['tpl_ranking_social'] ?? ''),
+            'ranking_student' => trim($_POST['tpl_ranking_student'] ?? ''),
+            'ranking_messenger' => trim($_POST['tpl_ranking_messenger'] ?? ''),
+            'ranking_reactor' => trim($_POST['tpl_ranking_reactor'] ?? ''),
             'class_aviso' => trim($_POST['tpl_class_aviso'] ?? ''),
             'class_cancel' => trim($_POST['tpl_class_cancel'] ?? ''),
             'class_kickoff' => trim($_POST['tpl_class_kickoff'] ?? ''),
@@ -145,7 +147,9 @@ $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome
 $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
 $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
 $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
-$tpl_ranking_dedicados = $config['templates']['ranking_dedicados'] ?? "⭐ *STUDENT OF THE DAY*\n📅 {date}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{student_of_the_day}\n\n─────────────────────\n*Other participants:*\n{other_participants}\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📖 *Legend:*\n{legend}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
+$tpl_ranking_student   = $config['templates']['ranking_student'] ?? '';
+$tpl_ranking_messenger = $config['templates']['ranking_messenger'] ?? '';
+$tpl_ranking_reactor   = $config['templates']['ranking_reactor'] ?? '';
 $tpl_class_aviso = $config['templates']['class_aviso'] ?? "👨‍🏫 *Teacher Class — {date}*
 
 We have a class with the teacher scheduled for *{horario}*.

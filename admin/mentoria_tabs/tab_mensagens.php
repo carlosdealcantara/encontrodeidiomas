@@ -77,9 +77,19 @@
                 <p class="help-text">Use <code>{name}</code> para o nome ou <code>@{name}</code> para marcar a pessoa.</p>
             </div>
             <div class="form-group" style="margin-top: 20px;">
-                <label>Ranking Diário (Student of the Day + Social)</label>
-                <textarea name="tpl_ranking_dedicados" style="min-height: 250px;"><?= htmlspecialchars($tpl_ranking_dedicados) ?></textarea>
-                <p class="help-text">Ranking Unificado. Variáveis: <code>{date}</code>, <code>{student_of_the_day}</code>, <code>{other_participants}</code>, <code>{legend}</code>, <code>{word_slingers_list}</code> e <code>{emoji_gang_list}</code>.</p>
+                <label>⭐ Ranking Diário — Student of the Day</label>
+                <textarea name="tpl_ranking_student" style="min-height: 180px;"><?= htmlspecialchars($tpl_ranking_student ?? '') ?></textarea>
+                <p class="help-text">Enviada à meia-noite com o ranking de dedicação. Variáveis: <code>{date}</code>, <code>{student_of_the_day}</code>, <code>{other_students}</code>, <code>{legend}</code>.</p>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>💬 Ranking Diário — Top Messenger</label>
+                <textarea name="tpl_ranking_messenger" style="min-height: 140px;"><?= htmlspecialchars($tpl_ranking_messenger ?? '') ?></textarea>
+                <p class="help-text">Segunda mensagem enviada logo depois. Variáveis: <code>{date}</code>, <code>{top_messenger_list}</code>.</p>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>❤️ Ranking Diário — Top Reactor</label>
+                <textarea name="tpl_ranking_reactor" style="min-height: 140px;"><?= htmlspecialchars($tpl_ranking_reactor ?? '') ?></textarea>
+                <p class="help-text">Terceira mensagem enviada logo depois. Variáveis: <code>{date}</code>, <code>{top_reactor_list}</code>.</p>
             </div>
             <div class="form-group" style="margin-top: 20px;">
                 <label>Felicitações de Aniversário (À meia-noite)</label>
