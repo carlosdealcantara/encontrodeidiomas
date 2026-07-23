@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
 let sock = null;
 let dataDir = '';
@@ -138,6 +139,11 @@ async function processQueue() {
                 data[date][groupJid][senderJid].messages += 1; // Soma também nas mensagens globais (Word Slingers)
             }
             
+            // Auto-correção: se antes gravou Desconhecido e agora veio o nome real, atualiza
+            if (data[date][groupJid][senderJid].name === 'Desconhecido' && senderName && senderName !== 'Desconhecido') {
+                data[date][groupJid][senderJid].name = senderName;
+            }
+            
             data[date][groupJid][senderJid].last_message_at = new Date().toISOString();
         }
         
@@ -266,6 +272,53 @@ async function handleMessages({ messages, type }) {
                 const desafioGrp = config.groups?.desafio?.jid;
                 if (groupJid === desafioGrp) {
                     console.log('[DESAFIO-MISS]', senderName, '| tipos msg:', msgTypes.join(','));
+                }
+            }
+        }
+
+        // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO ===
+        if (isAdmin && !processedMessageIds.has(msgId) && (realMsg?.audioMessage || realMsg?.pttMessage)) {
+            processedMessageIds.add(msgId); // Mark as processed to prevent duplicate processing
+            const theLoungeJid = config.groups?.the_lounge?.jid;
+            
+            if (groupJid === theLoungeJid) {
+                console.log(`[PÍLULAS] Áudio do Admin detectado no The Lounge. Baixando...`);
+                try {
+                    const buffer = await downloadMediaMessage(
+                        msg, 
+                        'buffer', 
+                        { }, 
+                        { logger: sock.logger, reuploadRequest: sock.updateMediaMessage }
+                    );
+                    const fileName = `pilula_${Date.now()}.ogg`;
+                    const audiosDir = path.join(dataDir, 'audios_pilulas');
+                    if (!fs.existsSync(audiosDir)) {
+                        fs.mkdirSync(audiosDir, { recursive: true });
+                    }
+                    const filePath = path.join(audiosDir, fileName);
+                    fs.writeFileSync(filePath, buffer);
+                    console.log(`[PÍLULAS] Áudio salvo em: ${filePath}`);
+
+                    // Chamar a API PHP para cadastrar o rascunho
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/api_pilulas_webhook.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            apikey: 'SenhaMeetups2026',
+                            action: 'new_audio',
+                            audio_path: `baileys-server/data/audios_pilulas/${fileName}` // Caminho relativo para o PHP
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        console.log(`[PÍLULAS] Rascunho criado com sucesso no banco (ID: ${data.id})`);
+                        // Optional: avisar no grupo? Talvez não, admin já sabe.
+                    } else {
+                        console.error(`[PÍLULAS] Erro retornado pela API PHP:`, data);
+                    }
+                } catch (err) {
+                    console.error('[PÍLULAS] Erro ao processar áudio do Admin:', err);
                 }
             }
         }
