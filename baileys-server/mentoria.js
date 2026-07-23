@@ -277,11 +277,11 @@ async function handleMessages({ messages, type }) {
         }
 
         // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO VIA COMANDO ===
-        if (isAdmin && !processedMessageIds.has(msgId) && text.trim().toLowerCase() === '!pilula') {
+        if (isAdmin && !processedMessageIds.has(msgId) && text.trim().toLowerCase() === '!pill') {
             const quotedAudio = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.audioMessage || msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.pttMessage;
             if (quotedAudio) {
                 processedMessageIds.add(msgId);
-                console.log(`[PÍLULAS] Comando !pilula detectado. Baixando áudio...`);
+                console.log(`[PÍLULAS] Comando !pill detectado. Baixando áudio...`);
                 try {
                     // Create a fake WAMessage to pass to downloadMediaMessage
                     const fakeMsg = {
