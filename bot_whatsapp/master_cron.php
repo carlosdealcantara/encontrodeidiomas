@@ -111,5 +111,33 @@ if ($horaAtual === 8) {
     echo "</ul>";
 }
 
+// =========================================================================
+// 3. ROTINAS PERIÓDICAS (Semanal, Mensal, Anual)
+// =========================================================================
+
+// Ranking Semanal: toda SEGUNDA-FEIRA às 09:00
+$diaSemana = (int)(new DateTime())->format('N'); // 1=Seg, 7=Dom
+if ($horaAtual === 9 && $diaSemana === 1) {
+    echo "<h3>Ranking Semanal (Segunda 09:00)</h3><ul>";
+    rodarSubCron('mentoria_ranking_periodico_cron.php?period=weekly', $baseUrl, $token_secreto);
+    echo "</ul>";
+}
+
+// Ranking Mensal: no 1º dia de cada mês às 09:00
+$diaDoMes = (int)(new DateTime())->format('j');
+if ($horaAtual === 9 && $diaDoMes === 1) {
+    echo "<h3>Ranking Mensal (Dia 1 às 09:00)</h3><ul>";
+    rodarSubCron('mentoria_ranking_periodico_cron.php?period=monthly', $baseUrl, $token_secreto);
+    echo "</ul>";
+}
+
+// Ranking Anual: 1º de Janeiro às 10:00
+$mesAtual = (int)(new DateTime())->format('n'); // 1=Jan
+if ($horaAtual === 10 && $diaDoMes === 1 && $mesAtual === 1) {
+    echo "<h3>Ranking Anual (1º Jan às 10:00)</h3><ul>";
+    rodarSubCron('mentoria_ranking_periodico_cron.php?period=yearly', $baseUrl, $token_secreto);
+    echo "</ul>";
+}
+
 echo "<hr><h1>MASTER CRON FINALIZADO</h1>";
 ?>
