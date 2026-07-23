@@ -31,6 +31,21 @@ $conn->exec("
     )
 ");
 
+$conn->exec("
+    CREATE TABLE IF NOT EXISTS mentoria_daily_scores (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        member_jid VARCHAR(100) NOT NULL,
+        member_name VARCHAR(255) NOT NULL,
+        score_date DATE NOT NULL,
+        dedication_pts INT DEFAULT 0,
+        social_msgs INT DEFAULT 0,
+        social_reacts INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_member_date (member_jid, score_date),
+        INDEX idx_score_date (score_date)
+    )
+");
+
 try {
     $conn->exec("ALTER TABLE mentoria_desafio_streaks ADD COLUMN member_name VARCHAR(255) NULL");
 } catch (Exception $e) {}
@@ -296,7 +311,7 @@ $i = 0;
 foreach ($top5Msgs as $jid => $data) {
     $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
     $nomeStr = trim($data['name']) ?: 'Unknown';
-    $msgList .= $rankStr . " *{$nomeStr}* — {$data['score']} msgs\n";
+    $msgList .= $rankStr . " *{$nomeStr}* — {$data['score']} messages\n";
     $i++;
 }
 
@@ -305,7 +320,7 @@ $i = 0;
 foreach ($top5Reacts as $jid => $data) {
     $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
     $nomeStr = trim($data['name']) ?: 'Unknown';
-    $reactList .= $rankStr . " *{$nomeStr}* — {$data['score']} reacts\n";
+    $reactList .= $rankStr . " *{$nomeStr}* — {$data['score']} reactions\n";
     $i++;
 }
 
@@ -313,26 +328,66 @@ $wordSlingersList = $msgList ?: "No messages yesterday.\n";
 $emojiGangList = $reactList ?: "No reactions yesterday.\n";
 
 // -----------------------------------------------------
-// 3. MONTAGEM FINAL DA MENSAGEM
+// 3. SALVAR PONTOS DO DIA NO BANCO
 // -----------------------------------------------------
-// Tenta pegar o template novo (ranking_dedicados)
-$template = !empty($config['templates']['ranking_dedicados']) ? $config['templates']['ranking_dedicados'] : "⭐ *STUDENT OF THE DAY*\n📅 {date}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{student_of_the_day}\n\n─────────────────────\n*Other participants:*\n{other_participants}\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📖 *Legend:*\n{legend}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ *Here are the Word Slingers of the day:*\n{word_slingers_list}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔥 *And the Emoji Gang:*\n{emoji_gang_list}";
+foreach ($memberStats as $jid => $data) {
+    $msgs   = $rankingMsgs[$jid]['score']   ?? 0;
+    $reacts = $rankingReacts[$jid]['score'] ?? 0;
+    
+    $stmtSave = $conn->prepare("
+        INSERT INTO mentoria_daily_scores (member_jid, member_name, score_date, dedication_pts, social_msgs, social_reacts)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            member_name    = VALUES(member_name),
+            dedication_pts = VALUES(dedication_pts),
+            social_msgs    = VALUES(social_msgs),
+            social_reacts  = VALUES(social_reacts)
+    ");
+    $stmtSave->execute([$jid, $data['name'], $ontem, $data['total_pts'], $msgs, $reacts]);
+}
 
+// Para garantir que quem não pontuou em dedicação mas pontuou em social também seja salvo:
+$allJids = array_unique(array_merge(array_keys($rankingMsgs), array_keys($rankingReacts)));
+foreach ($allJids as $jid) {
+    if (isset($memberStats[$jid])) continue; // já salvo acima
+    
+    $msgs   = $rankingMsgs[$jid]['score']   ?? 0;
+    $reacts = $rankingReacts[$jid]['score'] ?? 0;
+    $name   = $rankingMsgs[$jid]['name'] ?? $rankingReacts[$jid]['name'] ?? 'Unknown';
+    
+    $stmtSave = $conn->prepare("
+        INSERT INTO mentoria_daily_scores (member_jid, member_name, score_date, dedication_pts, social_msgs, social_reacts)
+        VALUES (?, ?, ?, 0, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            member_name    = VALUES(member_name),
+            social_msgs    = VALUES(social_msgs),
+            social_reacts  = VALUES(social_reacts)
+    ");
+    $stmtSave->execute([$jid, $name, $ontem, $msgs, $reacts]);
+}
+
+// -----------------------------------------------------
+// 4. MONTAGEM FINAL DAS MENSAGENS
+// -----------------------------------------------------
 $enDate = date('F jS, Y', strtotime($ontem));
 
-$message = str_replace(
-    ['{date}', '{student_of_the_day}', '{other_participants}', '{legend}', '{word_slingers_list}', '{emoji_gang_list}'],
-    [$enDate, $studentOfTheDayStr, $othersStr, $legendStr, $wordSlingersList, $emojiGangList],
-    $template
-);
+$msg1 = "📅 {$enDate}\n\n⭐ *STUDENT OF THE DAY*\n\n{$studentOfTheDayStr}\n\n*Other students:*\n{$othersStr}\n\n📖 *Legend:*\n{$legendStr}";
+
+$msg2 = "📅 {$enDate}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{$wordSlingersList}";
+
+$msg3 = "📅 {$enDate}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{$emojiGangList}";
 
 // Disparo simples (sem mentions de @numero)
-$result = enviarWhatsApp($targetGroup, $message, 'mentoria_ranking');
+$result1 = enviarWhatsApp($targetGroup, $msg1, 'mentoria_ranking_student');
+sleep(1);
+$result2 = enviarWhatsApp($targetGroup, $msg2, 'mentoria_ranking_messenger');
+sleep(1);
+$result3 = enviarWhatsApp($targetGroup, $msg3, 'mentoria_ranking_reactor');
 
-if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
+if ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300) {
     $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_unificado', ?, ?)")
          ->execute([$ontem, json_encode(['stats' => $memberStats])]);
-    echo "✅ Ranking Unificado enviado!";
+    echo "✅ Rankings enviados com sucesso (em 3 mensagens separadas)!";
 } else {
-    echo "❌ Erro ao enviar ranking: HTTP " . $result['httpCode'];
+    echo "❌ Erro ao enviar ranking: HTTP " . $result1['httpCode'];
 }
