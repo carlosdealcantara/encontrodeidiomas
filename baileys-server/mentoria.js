@@ -276,16 +276,20 @@ async function handleMessages({ messages, type }) {
             }
         }
 
-        // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO ===
-        if (isAdmin && !processedMessageIds.has(msgId) && (realMsg?.audioMessage || realMsg?.pttMessage)) {
-            processedMessageIds.add(msgId); // Mark as processed to prevent duplicate processing
-            const theLoungeJid = config.groups?.the_lounge?.jid;
-            
-            if (groupJid === theLoungeJid) {
-                console.log(`[PÍLULAS] Áudio do Admin detectado no The Lounge. Baixando...`);
+        // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO VIA COMANDO ===
+        if (isAdmin && !processedMessageIds.has(msgId) && text.trim().toLowerCase() === '!pilula') {
+            const quotedAudio = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.audioMessage || msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.pttMessage;
+            if (quotedAudio) {
+                processedMessageIds.add(msgId);
+                console.log(`[PÍLULAS] Comando !pilula detectado. Baixando áudio...`);
                 try {
+                    // Create a fake WAMessage to pass to downloadMediaMessage
+                    const fakeMsg = {
+                        key: msg.key,
+                        message: msg.message.extendedTextMessage.contextInfo.quotedMessage
+                    };
                     const buffer = await downloadMediaMessage(
-                        msg, 
+                        fakeMsg, 
                         'buffer', 
                         { }, 
                         { logger: sock.logger, reuploadRequest: sock.updateMediaMessage }
@@ -313,12 +317,14 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     if (data.success) {
                         console.log(`[PÍLULAS] Rascunho criado com sucesso no banco (ID: ${data.id})`);
-                        // Optional: avisar no grupo? Talvez não, admin já sabe.
+                        await sock.sendMessage(groupJid, { text: `✅ Pílula capturada e salva como rascunho no painel admin! (ID: ${data.id})` }, { quoted: msg });
                     } else {
                         console.error(`[PÍLULAS] Erro retornado pela API PHP:`, data);
+                        await sock.sendMessage(groupJid, { text: `❌ Falha ao salvar no painel admin.` }, { quoted: msg });
                     }
                 } catch (err) {
                     console.error('[PÍLULAS] Erro ao processar áudio do Admin:', err);
+                    await sock.sendMessage(groupJid, { text: `❌ Erro interno ao tentar baixar o áudio.` }, { quoted: msg });
                 }
             }
         }
