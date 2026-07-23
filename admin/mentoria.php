@@ -381,6 +381,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             <button class="main-tab-btn <?= $active_tab == 'score_editor' ? 'active' : '' ?>" onclick="switchMainTab('score_editor')"><i class="fas fa-trophy"></i> Ranking</button>
             <button class="main-tab-btn <?= $active_tab == 'odysee' ? 'active' : '' ?>" onclick="switchMainTab('odysee')"><i class="fas fa-video"></i> Odysee</button>
             <button class="main-tab-btn <?= $active_tab == 'telegram_cobranca' ? 'active' : '' ?>" onclick="switchMainTab('telegram_cobranca')"><i class="fab fa-telegram"></i> Avisos Telegram</button>
+            <button class="main-tab-btn <?= $active_tab == 'pilulas' ? 'active' : '' ?>" onclick="switchMainTab('pilulas')"><i class="fas fa-pills"></i> Pílulas de Inglês</button>
         </div>
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
@@ -413,6 +414,10 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_telegram_cobranca" class="main-tab-content <?= $active_tab == 'telegram_cobranca' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_telegram_cobranca.php'; ?>
+        </div>
+
+        <div id="tab_pilulas" class="main-tab-content <?= $active_tab == 'pilulas' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_pilulas.php'; ?>
         </div>
 
     </main>
