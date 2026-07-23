@@ -124,6 +124,24 @@ try {
             ]));
         }
 
+        if ($memberName === 'Desconhecido') {
+            // Tenta achar o nome em class_attendances anteriores
+            $stmtName = $conn->prepare("SELECT member_name FROM class_attendances WHERE member_jid = ? AND member_name != 'Desconhecido' AND member_name IS NOT NULL ORDER BY id DESC LIMIT 1");
+            $stmtName->execute([$memberJid]);
+            $knownName = $stmtName->fetchColumn();
+            
+            if (!$knownName) {
+                // Tenta no mentoria_desafio_streaks
+                $stmtName2 = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE member_jid = ? AND member_name != 'Desconhecido' AND member_name IS NOT NULL AND member_name != '' LIMIT 1");
+                $stmtName2->execute([$memberJid]);
+                $knownName = $stmtName2->fetchColumn();
+            }
+            
+            if ($knownName) {
+                $memberName = $knownName;
+            }
+        }
+
         // Salva a presença
         $insert = $conn->prepare("INSERT IGNORE INTO class_attendances (schedule_id, member_jid, member_name, aula_date) VALUES (?, ?, ?, ?)");
         $insert->execute([$scheduleId, $memberJid, $memberName, $hoje]);
