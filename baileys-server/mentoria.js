@@ -278,15 +278,22 @@ async function handleMessages({ messages, type }) {
 
         // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO VIA COMANDO ===
         if (isAdmin && !processedMessageIds.has(msgId) && text.trim().toLowerCase() === '!pill') {
-            const quotedAudio = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.audioMessage || msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.pttMessage;
+            const rawQuoted = realMsg?.extendedTextMessage?.contextInfo?.quotedMessage;
+            const unwrappedQuoted = rawQuoted?.ephemeralMessage?.message || rawQuoted?.viewOnceMessage?.message || rawQuoted;
+            
+            const quotedAudio = unwrappedQuoted?.audioMessage || unwrappedQuoted?.pttMessage;
+            
             if (quotedAudio) {
                 processedMessageIds.add(msgId);
                 console.log(`[PÍLULAS] Comando !pill detectado. Baixando áudio...`);
                 try {
+                    // React with a pill emoji to give immediate feedback
+                    await sock.sendMessage(groupJid, { react: { text: '💊', key: msg.key } });
+
                     // Create a fake WAMessage to pass to downloadMediaMessage
                     const fakeMsg = {
                         key: msg.key,
-                        message: msg.message.extendedTextMessage.contextInfo.quotedMessage
+                        message: unwrappedQuoted
                     };
                     const buffer = await downloadMediaMessage(
                         fakeMsg, 
