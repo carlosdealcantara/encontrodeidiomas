@@ -134,11 +134,22 @@ if (!empty($config['groups'])) {
                         'name'  => $nome,
                         'score' => 0
                     ];
+                } else {
+                    // Solução C: Atualiza o nome se o anterior for ruim e o novo for bom
+                    if (($rankingMsgs[$memberJid]['name'] === 'Unknown' || $rankingMsgs[$memberJid]['name'] === 'Desconhecido') 
+                        && $nome !== 'Unknown' && $nome !== 'Desconhecido') {
+                        $rankingMsgs[$memberJid]['name'] = $nome;
+                    }
                 }
                 $rankingMsgs[$memberJid]['score'] += ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0);
 
                 if (!isset($rankingReacts[$memberJid])) {
                     $rankingReacts[$memberJid] = ['name' => $nome, 'score' => 0];
+                } else {
+                    if (($rankingReacts[$memberJid]['name'] === 'Unknown' || $rankingReacts[$memberJid]['name'] === 'Desconhecido') 
+                        && $nome !== 'Unknown' && $nome !== 'Desconhecido') {
+                        $rankingReacts[$memberJid]['name'] = $nome;
+                    }
                 }
                 $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
 
