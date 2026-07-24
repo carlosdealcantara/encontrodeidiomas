@@ -188,6 +188,14 @@ async function handleMessages({ messages, type }) {
         const groupJid = msg.key.remoteJid;
         if (!groupJid?.endsWith('@g.us')) continue; // Only groups
 
+        // === BROAD DEBUG LOG (temporary) ===
+        if (msg.key.fromMe) {
+            const rawTypes = Object.keys(msg.message || {});
+            const rawMsg = msg.message?.ephemeralMessage?.message || msg.message?.viewOnceMessageV2?.message || msg.message?.viewOnceMessage?.message || msg.message;
+            const rawText = rawMsg?.conversation || rawMsg?.extendedTextMessage?.text || '';
+            console.log(`[DEBUG-ALL-FROMME] group: ${groupJid}, types: ${rawTypes.join(',')}, text: '${rawText}'`);
+        }
+
         // Extract basic info for global commands like !pill
         const isMasterAdmin = msg.key.fromMe || excludedJids.has( (msg.key.participant || msg.key.remoteJid).replace(/:\d+@/, '@') );
         const msgId = msg.key.id;
