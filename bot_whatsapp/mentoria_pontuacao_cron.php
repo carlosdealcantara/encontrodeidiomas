@@ -240,8 +240,14 @@ foreach ($manualPoints as $row) {
     }
 }
 
-// Aula / Attendance (20 pts)
-$stmt = $conn->prepare("SELECT member_jid, member_name FROM class_attendances WHERE aula_date = ?");
+// Aula / Attendance (20 pts ou 2 pts simbólicos se cancelado por falta de quórum)
+$stmt = $conn->prepare("
+    SELECT a.member_jid, a.member_name, s.session_type,
+           (SELECT COUNT(*) FROM class_attendances WHERE schedule_id = a.schedule_id AND aula_date = a.aula_date) as quorum
+    FROM class_attendances a
+    LEFT JOIN class_schedule s ON a.schedule_id = s.id
+    WHERE a.aula_date = ?
+");
 $stmt->execute([$ontem]);
 $attendees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -251,9 +257,15 @@ foreach ($attendees as $att) {
     if (!isset($memberStats[$mJid])) {
         $memberStats[$mJid] = ['name' => $att['member_name'], 'total_pts' => 0, 'emojis' => []];
     }
-    // Adiciona no início do array para o 🖥️ aparecer primeiro
-    $memberStats[$mJid]['total_pts'] += 20;
-    array_unshift($memberStats[$mJid]['emojis'], '🖥️');
+    
+    // Verifica se foi uma sessão de prática que não atingiu o quórum (cancelada)
+    if ($att['session_type'] === 'student_practice' && $att['quorum'] < 2) {
+        $memberStats[$mJid]['total_pts'] += 2;
+        array_unshift($memberStats[$mJid]['emojis'], '👏'); // Ponto simbólico pelo esforço
+    } else {
+        $memberStats[$mJid]['total_pts'] += 20;
+        array_unshift($memberStats[$mJid]['emojis'], '🖥️');
+    }
 }
 
 // -----------------------------------------------------
