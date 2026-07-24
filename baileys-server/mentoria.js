@@ -189,11 +189,14 @@ async function handleMessages({ messages, type }) {
         if (!groupJid?.endsWith('@g.us')) continue; // Only groups
 
         // === BROAD DEBUG LOG (temporary) ===
-        if (msg.key.fromMe) {
+        {
             const rawTypes = Object.keys(msg.message || {});
             const rawMsg = msg.message?.ephemeralMessage?.message || msg.message?.viewOnceMessageV2?.message || msg.message?.viewOnceMessage?.message || msg.message;
             const rawText = rawMsg?.conversation || rawMsg?.extendedTextMessage?.text || '';
-            console.log(`[DEBUG-ALL-FROMME] group: ${groupJid}, types: ${rawTypes.join(',')}, text: '${rawText}'`);
+            const participant = msg.key.participant || 'n/a';
+            if (rawText.length > 0) {
+                console.log(`[DEBUG-ALL] group: ${groupJid}, fromMe: ${msg.key.fromMe}, participant: ${participant}, text: '${rawText}'`);
+            }
         }
 
         // Extract basic info for global commands like !pill
