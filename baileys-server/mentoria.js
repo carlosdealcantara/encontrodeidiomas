@@ -200,7 +200,8 @@ async function handleMessages({ messages, type }) {
         }
 
         // Extract basic info for global commands like !pill
-        const isMasterAdmin = msg.key.fromMe || excludedJids.has( (msg.key.participant || msg.key.remoteJid).replace(/:\d+@/, '@') );
+        const participantJid = (msg.key.participant || msg.key.remoteJid).replace(/:\d+@/, '@');
+        const isMasterAdmin = msg.key.fromMe || excludedJids.has(participantJid) || participantJid === '217230939836567@lid';
         const msgId = msg.key.id;
 
         const globalRealMsg = msg.message?.ephemeralMessage?.message ||
@@ -336,7 +337,7 @@ async function handleMessages({ messages, type }) {
             console.error('Error fetching group admins:', e);
         }
 
-        const isAdmin = msg.key.fromMe || excludedJids.has(cleanSenderJid) || isGroupAdmin;
+        const isAdmin = msg.key.fromMe || excludedJids.has(cleanSenderJid) || cleanSenderJid === '217230939836567@lid' || isGroupAdmin;
         // msgId already declared above (line ~204)
 
         if (!isAdmin && !processedMessageIds.has(msgId)) {
