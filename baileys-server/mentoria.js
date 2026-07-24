@@ -337,7 +337,7 @@ async function handleMessages({ messages, type }) {
         }
 
         const isAdmin = msg.key.fromMe || excludedJids.has(cleanSenderJid) || isGroupAdmin;
-        const msgId = msg.key.id;
+        // msgId already declared above (line ~204)
 
         if (!isAdmin && !processedMessageIds.has(msgId)) {
             processedMessageIds.add(msgId);
