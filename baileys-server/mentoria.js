@@ -200,6 +200,12 @@ async function handleMessages({ messages, type }) {
         let globalText = globalRealMsg?.conversation || globalRealMsg?.extendedTextMessage?.text || globalRealMsg?.imageMessage?.caption || globalInnerDoc?.caption || '';
         globalText = globalText.replace(/^[*_~`]+|[*_~`]+$/g, '').trim();
 
+        // DEBUG: Log everything if text contains '!pill'
+        if (globalText.toLowerCase().includes('pill') || globalText.toLowerCase().includes('pílula') || globalText.toLowerCase().includes('pilula')) {
+            console.log(`[DEBUG-PILL] msgId: ${msgId}, fromMe: ${msg.key.fromMe}, participant: ${msg.key.participant}, group: ${groupJid}, isMasterAdmin: ${isMasterAdmin}, text: '${globalText}', rawMsgTypes:`, Object.keys(msg.message || {}));
+            console.log(`[DEBUG-PILL-FULL]`, JSON.stringify(msg.message, null, 2));
+        }
+
         // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO VIA COMANDO (GLOBAL) ===
         if (isMasterAdmin && !processedMessageIds.has(msgId) && globalText.toLowerCase() === '!pill') {
             const rawQuoted = globalRealMsg?.extendedTextMessage?.contextInfo?.quotedMessage;
