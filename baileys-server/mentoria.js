@@ -188,6 +188,78 @@ async function handleMessages({ messages, type }) {
         const groupJid = msg.key.remoteJid;
         if (!groupJid?.endsWith('@g.us')) continue; // Only groups
 
+        // Extract basic info for global commands like !pill
+        const isMasterAdmin = msg.key.fromMe || excludedJids.has( (msg.key.participant || msg.key.remoteJid).replace(/:\d+@/, '@') );
+        const msgId = msg.key.id;
+
+        const globalRealMsg = msg.message?.ephemeralMessage?.message ||
+                        msg.message?.viewOnceMessageV2?.message ||
+                        msg.message?.viewOnceMessage?.message ||
+                        msg.message;
+        const globalInnerDoc = globalRealMsg?.documentWithCaptionMessage?.message?.documentMessage || globalRealMsg?.documentMessage;
+        let globalText = globalRealMsg?.conversation || globalRealMsg?.extendedTextMessage?.text || globalRealMsg?.imageMessage?.caption || globalInnerDoc?.caption || '';
+        globalText = globalText.replace(/^[*_~`]+|[*_~`]+$/g, '').trim();
+
+        // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO VIA COMANDO (GLOBAL) ===
+        if (isMasterAdmin && !processedMessageIds.has(msgId) && globalText.toLowerCase() === '!pill') {
+            const rawQuoted = globalRealMsg?.extendedTextMessage?.contextInfo?.quotedMessage;
+            const unwrappedQuoted = rawQuoted?.ephemeralMessage?.message || rawQuoted?.viewOnceMessage?.message || rawQuoted;
+            
+            const quotedAudio = unwrappedQuoted?.audioMessage || unwrappedQuoted?.pttMessage;
+            
+            if (quotedAudio) {
+                processedMessageIds.add(msgId);
+                console.log(`[PÍLULAS] Comando !pill detectado no grupo ${groupJid}. Baixando áudio...`);
+                try {
+                    // React with a pill emoji to give immediate feedback
+                    await sock.sendMessage(groupJid, { react: { text: '💊', key: msg.key } });
+
+                    // Create a fake WAMessage to pass to downloadMediaMessage
+                    const fakeMsg = {
+                        key: msg.key,
+                        message: unwrappedQuoted
+                    };
+                    const buffer = await downloadMediaMessage(
+                        fakeMsg, 
+                        'buffer', 
+                        { }, 
+                        { logger: sock.logger, reuploadRequest: sock.updateMediaMessage }
+                    );
+                    const fileName = `pilula_${Date.now()}.ogg`;
+                    const audiosDir = path.join(dataDir, 'audios_pilulas');
+                    if (!fs.existsSync(audiosDir)) {
+                        fs.mkdirSync(audiosDir, { recursive: true });
+                    }
+                    const filePath = path.join(audiosDir, fileName);
+                    fs.writeFileSync(filePath, buffer);
+                    console.log(`[PÍLULAS] Áudio salvo em: ${filePath}`);
+
+                    // Chamar a API PHP para cadastrar o rascunho
+                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/api_pilulas_webhook.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            apikey: 'SenhaMeetups2026',
+                            action: 'new_audio',
+                            audio_path: `baileys-server/data/audios_pilulas/${fileName}` // Caminho relativo para o PHP
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        console.log(`[PÍLULAS] Rascunho criado com sucesso no banco (ID: ${data.id})`);
+                        await sock.sendMessage(groupJid, { text: `✅ Pílula capturada e salva como rascunho no painel admin! (ID: ${data.id})` }, { quoted: msg });
+                    } else {
+                        console.error(`[PÍLULAS] Erro retornado pela API PHP:`, data);
+                        await sock.sendMessage(groupJid, { text: `❌ Falha ao salvar no painel admin.` }, { quoted: msg });
+                    }
+                } catch (err) {
+                    console.error('[PÍLULAS] Erro ao processar áudio do Admin:', err);
+                    await sock.sendMessage(groupJid, { text: `❌ Erro interno ao tentar baixar o áudio.` }, { quoted: msg });
+                }
+            }
+        }
+
         // Check if group is one of the configured ones, ignore others
         const allowedGroups = Object.values(config.groups || {}).map(g => g.jid);
         if (!allowedGroups.includes(groupJid)) continue;
@@ -276,65 +348,7 @@ async function handleMessages({ messages, type }) {
             }
         }
 
-        // === PÍLULAS DE INGLÊS: CAPTURA DE ÁUDIO VIA COMANDO ===
-        if (isAdmin && !processedMessageIds.has(msgId) && text.trim().toLowerCase() === '!pill') {
-            const rawQuoted = realMsg?.extendedTextMessage?.contextInfo?.quotedMessage;
-            const unwrappedQuoted = rawQuoted?.ephemeralMessage?.message || rawQuoted?.viewOnceMessage?.message || rawQuoted;
-            
-            const quotedAudio = unwrappedQuoted?.audioMessage || unwrappedQuoted?.pttMessage;
-            
-            if (quotedAudio) {
-                processedMessageIds.add(msgId);
-                console.log(`[PÍLULAS] Comando !pill detectado. Baixando áudio...`);
-                try {
-                    // React with a pill emoji to give immediate feedback
-                    await sock.sendMessage(groupJid, { react: { text: '💊', key: msg.key } });
-
-                    // Create a fake WAMessage to pass to downloadMediaMessage
-                    const fakeMsg = {
-                        key: msg.key,
-                        message: unwrappedQuoted
-                    };
-                    const buffer = await downloadMediaMessage(
-                        fakeMsg, 
-                        'buffer', 
-                        { }, 
-                        { logger: sock.logger, reuploadRequest: sock.updateMediaMessage }
-                    );
-                    const fileName = `pilula_${Date.now()}.ogg`;
-                    const audiosDir = path.join(dataDir, 'audios_pilulas');
-                    if (!fs.existsSync(audiosDir)) {
-                        fs.mkdirSync(audiosDir, { recursive: true });
-                    }
-                    const filePath = path.join(audiosDir, fileName);
-                    fs.writeFileSync(filePath, buffer);
-                    console.log(`[PÍLULAS] Áudio salvo em: ${filePath}`);
-
-                    // Chamar a API PHP para cadastrar o rascunho
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/api_pilulas_webhook.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            apikey: 'SenhaMeetups2026',
-                            action: 'new_audio',
-                            audio_path: `baileys-server/data/audios_pilulas/${fileName}` // Caminho relativo para o PHP
-                        })
-                    });
-                    
-                    const data = await res.json();
-                    if (data.success) {
-                        console.log(`[PÍLULAS] Rascunho criado com sucesso no banco (ID: ${data.id})`);
-                        await sock.sendMessage(groupJid, { text: `✅ Pílula capturada e salva como rascunho no painel admin! (ID: ${data.id})` }, { quoted: msg });
-                    } else {
-                        console.error(`[PÍLULAS] Erro retornado pela API PHP:`, data);
-                        await sock.sendMessage(groupJid, { text: `❌ Falha ao salvar no painel admin.` }, { quoted: msg });
-                    }
-                } catch (err) {
-                    console.error('[PÍLULAS] Erro ao processar áudio do Admin:', err);
-                    await sock.sendMessage(groupJid, { text: `❌ Erro interno ao tentar baixar o áudio.` }, { quoted: msg });
-                }
-            }
-        }
+        // (Pill command logic was moved to the top of handleMessages to be global)
 
         // === ADMIN SCORING COMMANDS (!1 to !5) ===
         if (isAdmin && msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
