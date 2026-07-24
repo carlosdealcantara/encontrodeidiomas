@@ -261,7 +261,7 @@ foreach ($attendees as $att) {
     
     // Verifica se foi uma sessão de prática que não atingiu o quórum (cancelada)
     if ($att['session_type'] === 'student_practice' && $att['quorum'] < 2) {
-        $memberStats[$mJid]['total_pts'] += 2;
+        $memberStats[$mJid]['total_pts'] += 5;
         array_unshift($memberStats[$mJid]['emojis'], '👏'); // Ponto simbólico pelo esforço
     } else {
         $memberStats[$mJid]['total_pts'] += 20;
@@ -313,7 +313,7 @@ if (!empty($memberStats)) {
 $othersStr = $othersStr ?: "No other participants yesterday.";
 
 // Legenda — editável no painel admin (The Lounge > Legenda do Ranking)
-$defaultLegend = "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (2 pts)\n📒 New word! (1 pt)";
+$defaultLegend = "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (5 pts)\n📒 New word! (1 pt)";
 $legendStr = !empty($mentoriaConfig['templates']['ranking_legend']) ? $mentoriaConfig['templates']['ranking_legend'] : $defaultLegend;
 
 
