@@ -18,6 +18,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 }
 
 $conn = connectDB();
+$mentoriaConfig = getMentoriaConfig();
 
 $conn->exec("
     CREATE TABLE IF NOT EXISTS mentoria_auto_logs (
@@ -311,14 +312,9 @@ if (!empty($memberStats)) {
 
 $othersStr = $othersStr ?: "No other participants yesterday.";
 
-// Nova legenda
-$legendStr = "🖥️ Attended Class (20 pts)
-🗣️ Reading out loud (5 pts)
-📚 Challenge (5 pts)
-🎶 Music Lab (4 pts)
-🧩 Games (2 pts)
-👏 Effort (2 pts)
-📒 New word! (1 pt)";
+// Legenda — editável no painel admin (The Lounge > Legenda do Ranking)
+$defaultLegend = "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (2 pts)\n📒 New word! (1 pt)";
+$legendStr = !empty($mentoriaConfig['templates']['ranking_legend']) ? $mentoriaConfig['templates']['ranking_legend'] : $defaultLegend;
 
 
 // -----------------------------------------------------

@@ -82,6 +82,11 @@
                 <p class="help-text">Enviada à meia-noite com o ranking de dedicação. Variáveis: <code>{date}</code>, <code>{student_of_the_day}</code>, <code>{other_students}</code>, <code>{legend}</code>.</p>
             </div>
             <div class="form-group" style="margin-top: 20px;">
+                <label>📖 Legenda do Ranking <span style="font-size:0.8rem; color: var(--text-dim);">(substitui <code>{legend}</code> na mensagem acima)</span></label>
+                <textarea name="tpl_ranking_legend" style="min-height: 160px;"><?= htmlspecialchars($tpl_ranking_legend ?? '') ?></textarea>
+                <p class="help-text">Uma linha por item. Exemplo: <code>🖥️ Attended Class (20 pts)</code>. Você pode adicionar, remover ou renomear qualquer linha aqui.</p>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
                 <label>💬 Ranking Diário — Top Messenger</label>
                 <textarea name="tpl_ranking_messenger" style="min-height: 140px;"><?= htmlspecialchars($tpl_ranking_messenger ?? '') ?></textarea>
                 <p class="help-text">Segunda mensagem enviada logo depois. Variáveis: <code>{date}</code>, <code>{top_messenger_list}</code>.</p>
