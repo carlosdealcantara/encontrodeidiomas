@@ -278,6 +278,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_schedule'])) {
         $msg = "Horário removido com sucesso.";
     }
 }
+
+// --- LOGIC: PILULAS ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_pilula']) && $_POST['action_pilula'] === 'save') {
+    $pilula_id = (int)$_POST['pilula_id'];
+    $titulo = trim($_POST['titulo']);
+    $texto_corpo = trim($_POST['texto_corpo']);
+    $enquete_pergunta = trim($_POST['enquete_pergunta']);
+    
+    $enquete_opcoes_raw = trim($_POST['enquete_opcoes']);
+    $enquete_opcoes_json = null;
+    if (!empty($enquete_opcoes_raw)) {
+        $opcoes = array_map('trim', explode(',', $enquete_opcoes_raw));
+        $opcoes = array_filter($opcoes);
+        if (!empty($opcoes)) {
+            $enquete_opcoes_json = json_encode(array_values($opcoes), JSON_UNESCAPED_UNICODE);
+        }
+    }
+    
+    $ativo = isset($_POST['ativo']) && $_POST['ativo'] == '1' ? 1 : 0;
+    
+    $stmt = $conn->prepare("UPDATE pilulas_conteudo SET titulo=?, texto_corpo=?, enquete_pergunta=?, enquete_opcoes=?, ativo=? WHERE id=?");
+    $stmt->execute([$titulo, $texto_corpo, $enquete_pergunta, $enquete_opcoes_json, $ativo, $pilula_id]);
+    
+    $msg = "Pílula salva com sucesso!";
+}
+
 $schedules = [];
 try {
     $schedules = $conn->query("SELECT * FROM class_schedule ORDER BY day_of_week ASC, start_time ASC")->fetchAll(PDO::FETCH_ASSOC);
