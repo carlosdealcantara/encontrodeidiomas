@@ -25,7 +25,7 @@ define('SITE_NAME',  getenv('SITE_NAME')  ?: 'Encontro de Idiomas');
 define('ADMIN_EMAIL',getenv('ADMIN_EMAIL')?: '');
 define('ADMIN_USER', getenv('ADMIN_USER') ?: 'admin');
 define('ADMIN_PASS', getenv('ADMIN_PASS') ?: 'encontro2023');
-define('SITE_URL',   'https://' . ($_SERVER['HTTP_HOST'] ?? 'encontrodeidiomas.com.br'));
+define('SITE_URL',   'https://' . ($_SERVER['HTTP_HOST'] ?? 'viaei.com'));
 
 function connectDB(): PDO {
     static $conn = null;
@@ -186,7 +186,7 @@ function getHostPhotoUrl(?string $fileName): string {
         // Fallback dinâmico entre domínios (Dev <-> Prod)
         $currentHost = $_SERVER['HTTP_HOST'] ?? '';
         $prodDomain    = 'viaei.com';
-        $devDomain     = 'dev.encontrodeidiomas.com.br';
+        $devDomain     = 'dev.viaei.com';
         $isProduction  = ($currentHost === $prodDomain || $currentHost === 'www.' . $prodDomain);
         
         if ($isProduction) {

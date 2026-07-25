@@ -89,7 +89,7 @@ try {
         if (defined('SITE_URL')) {
             $webhook_url = SITE_URL . "/ajax/webhook_odysee_success.php";
         } else {
-            $webhook_url = "https://dev.encontrodeidiomas.com.br/ajax/webhook_odysee_success.php";
+            $webhook_url = "https://dev.viaei.com/ajax/webhook_odysee_success.php";
         }
         
         $chWH = curl_init($webhook_url);

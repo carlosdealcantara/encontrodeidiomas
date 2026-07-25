@@ -253,7 +253,7 @@ async function handleMessages({ messages, type }) {
                     console.log(`[PÍLULAS] Áudio salvo em: ${filePath}`);
 
                     // Chamar a API PHP para cadastrar o rascunho
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/api_pilulas_webhook.php', {
+                    const res = await fetch('https://dev.viaei.com/bot_whatsapp/api_pilulas_webhook.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -390,7 +390,7 @@ async function handleMessages({ messages, type }) {
                             }
                         }
                         
-                        const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/mentoria_award_api.php', {
+                        const res = await fetch('https://dev.viaei.com/bot_whatsapp/mentoria_award_api.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -434,7 +434,7 @@ async function handleMessages({ messages, type }) {
             const desafioGroup = config.groups?.desafio?.jid;
             if (groupJid === desafioGroup) {
                 try {
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/mentoria_desafio_streak_api.php', {
+                    const res = await fetch('https://dev.viaei.com/bot_whatsapp/mentoria_desafio_streak_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ member_jid: senderJid, member_name: senderName })
@@ -540,7 +540,7 @@ async function handleMessages({ messages, type }) {
                         reqBody.schedule_position = schedulePosition;
                     }
 
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
+                    const res = await fetch('https://dev.viaei.com/bot_whatsapp/class_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(reqBody)
@@ -606,7 +606,7 @@ async function handleMessages({ messages, type }) {
                         reqBody.schedule_position = schedulePosition;
                     }
                     
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
+                    const res = await fetch('https://dev.viaei.com/bot_whatsapp/class_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(reqBody)
@@ -652,7 +652,7 @@ async function handleMessages({ messages, type }) {
             const ourClassesGroup = config.groups?.our_classes?.jid;
             if (groupJid === ourClassesGroup) {
                 try {
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/class_api.php', {
+                    const res = await fetch('https://dev.viaei.com/bot_whatsapp/class_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -686,7 +686,7 @@ async function handleMessages({ messages, type }) {
             const desafioGroup = config.groups?.desafio?.jid;
             if (groupJid === desafioGroup) {
                 try {
-                    const res = await fetch('https://dev.encontrodeidiomas.com.br/bot_whatsapp/mentoria_desafio_streak_list_api.php');
+                    const res = await fetch('https://dev.viaei.com/bot_whatsapp/mentoria_desafio_streak_list_api.php');
                     const data = await res.json();
                     if (data.success) {
                         let allTimeList = '';

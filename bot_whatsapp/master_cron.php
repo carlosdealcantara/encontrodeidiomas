@@ -28,10 +28,10 @@ echo "<h1>MASTER CRON: Rodando na hora {$horaAtual}:00</h1><hr>";
 $baseUrl = SITE_URL . '/bot_whatsapp/';
 // Força HTTPs para ambiente online caso SITE_URL não pegue direito na CLI
 if ($is_cli) {
-    $baseUrl = "https://encontrodeidiomas.com.br/bot_whatsapp/";
-    // Opcionalmente, pode-se injetar o prefixo dev. se estiver rodando o dev
-    if (strpos(__DIR__, 'dev.') !== false || strpos(__DIR__, 'dev_') !== false) {
-        $baseUrl = "https://dev.encontrodeidiomas.com.br/bot_whatsapp/";
+    $baseUrl = "https://viaei.com/bot_whatsapp/";
+    // Detecta ambiente dev pelo path (Hostinger: dev.viaei.com -> /dev/)
+    if (strpos(__DIR__, '/dev') !== false || strpos(__DIR__, 'dev.') !== false) {
+        $baseUrl = "https://dev.viaei.com/bot_whatsapp/";
     }
 }
 
