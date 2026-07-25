@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Condominial | Síndico Profissional</title>
+    <title>GovCondominial | Gilvaney Ferreira de Oliveira - Síndico Profissional</title>
+    <meta name="description" content="Gestão Profissional, Manutenção e Transparência. Síndico com vasta experiência e dezenas de condomínios administrados.">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" id="navbar">
         <div class="container nav-content">
             <div class="logo">
-                <img src="logo.png" alt="GovCondominial Logo" style="height: 60px;">
+                <img src="logo.png" alt="GovCondominial Logo" style="height: 50px;">
             </div>
             <ul class="nav-links">
                 <li><a href="#inicio">Início</a></li>
-                <li><a href="#diferenciais">Diferenciais</a></li>
-                <li><a href="#servicos">Serviços</a></li>
+                <li><a href="#perfil">O Síndico</a></li>
+                <li><a href="#diferenciais">Serviços</a></li>
+                <li><a href="#midia">Na Prática</a></li>
                 <li><a href="#contato" class="btn-primary">Fale com o Síndico</a></li>
             </ul>
         </div>
@@ -27,69 +29,156 @@
 
     <!-- Hero Section -->
     <header id="inicio" class="hero">
-        <!-- A imagem de fundo (homem de terno) será colocada via CSS -->
+        <div class="hero-overlay"></div>
         <div class="container hero-content">
-            <h1>Gestão Profissional e Transparente para o seu Condomínio</h1>
-            <p>Tranquilidade para os moradores, valorização do patrimônio e eficiência na resolução de problemas.</p>
-            <a href="#contato" class="btn-primary btn-large">Solicite uma Proposta</a>
+            <h1 class="reveal fade-in-up">Gestão Profissional e Transparente para o seu Condomínio</h1>
+            <p class="reveal fade-in-up delay-1">Tranquilidade para os moradores, valorização do patrimônio e eficiência na resolução rápida de problemas. A governança que seu lar merece.</p>
+            <div class="hero-buttons reveal fade-in-up delay-2">
+                <a href="#contato" class="btn-primary btn-large"><i class="fab fa-whatsapp"></i> Solicite uma Proposta</a>
+                <a href="#perfil" class="btn-outline btn-large">Conheça o Síndico</a>
+            </div>
         </div>
     </header>
 
-    <!-- Seção Diferenciais (Usar a foto da assembleia) -->
-    <section id="diferenciais" class="section">
+    <!-- Numbers Bar -->
+    <section class="numbers-bar">
+        <div class="container numbers-grid">
+            <div class="number-item reveal fade-in-up">
+                <h3 class="counter" data-target="15">0</h3>
+                <p>Anos de Experiência</p>
+            </div>
+            <div class="number-item reveal fade-in-up delay-1">
+                <h3 class="counter" data-target="40">0</h3>
+                <p>Condomínios Administrados</p>
+            </div>
+            <div class="number-item reveal fade-in-up delay-2">
+                <h3 class="counter" data-target="200">0</h3>
+                <p>Assembleias Realizadas</p>
+            </div>
+            <div class="number-item reveal fade-in-up delay-3">
+                <h3><i class="fas fa-infinity" style="font-size: 2.5rem; color: var(--primary-green);"></i></h3>
+                <p>Reeleições por Bom Trabalho</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Perfil do Síndico -->
+    <section id="perfil" class="section bg-light overflow-hidden">
         <div class="container">
-            <div class="split-content">
-                <div class="text-content">
-                    <h2 class="section-title">Presença e Proximidade</h2>
-                    <p>Não somos um síndico que fica apenas no escritório. Acreditamos na presença constante, dialogando com os moradores e acompanhando de perto o dia a dia do condomínio.</p>
-                    <ul class="check-list">
-                        <li><i class="fas fa-check-circle"></i> Resolução rápida de crises (ex: falta de água)</li>
-                        <li><i class="fas fa-check-circle"></i> Assembleias dinâmicas e produtivas</li>
-                        <li><i class="fas fa-check-circle"></i> Comunicação transparente e direta</li>
+            <div class="split-content align-center">
+                <div class="profile-image-container reveal fade-in-left">
+                    <img src="gilvaney.jpg" alt="Gilvaney Ferreira de Oliveira" class="profile-img">
+                    <div class="badge">Síndico Profissional</div>
+                </div>
+                <div class="text-content reveal fade-in-right">
+                    <h2 class="section-title">Gilvaney Ferreira de Oliveira</h2>
+                    <h4 class="subtitle">Especialista em Administração Condominial</h4>
+                    <p>Com uma vasta experiência em administração de condomínios e dezenas de condomínios sob sua gestão, Gilvaney se consolidou como uma referência no mercado.</p>
+                    <p>Seu trabalho é pautado pela presença constante, transparência absoluta e pulso firme na resolução de problemas, o que se reflete em inúmeras reeleições por excelente gestão.</p>
+                    <ul class="tags-list">
+                        <li><i class="fas fa-check"></i> Gestão Financeira</li>
+                        <li><i class="fas fa-check"></i> Manutenção</li>
+                        <li><i class="fas fa-check"></i> Conformidade Legal</li>
+                        <li><i class="fas fa-check"></i> Gestão de Crises</li>
                     </ul>
                 </div>
-                <div class="image-content">
-                    <img src="assembleia.jpg" alt="Assembleia Condominial" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- Seção Serviços -->
-    <section id="servicos" class="section bg-light">
+    <!-- Diferenciais -->
+    <section id="diferenciais" class="section bg-dark text-light">
         <div class="container text-center">
-            <h2 class="section-title">Nossos Serviços</h2>
-            <div class="services-grid">
-                <div class="service-card">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Gestão Financeira</h3>
-                    <p>Transparência total nas contas, redução de inadimplência e otimização de recursos.</p>
-                </div>
-                <div class="service-card">
+            <h2 class="section-title text-white">Por que escolher a GovCondominial?</h2>
+            <div class="services-grid mt-5">
+                <div class="service-card dark-card reveal fade-in-up">
                     <i class="fas fa-tools"></i>
-                    <h3>Manutenção Preventiva</h3>
-                    <p>Acompanhamento rigoroso para evitar problemas estruturais e gastos emergenciais.</p>
+                    <h3>Resolução Rápida</h3>
+                    <p>Gestão de crises, como falta de água, com eficiência e mínimo impacto na vida dos moradores.</p>
                 </div>
-                <div class="service-card">
-                    <i class="fas fa-gavel"></i>
-                    <h3>Gestão de Conflitos</h3>
-                    <p>Mediação profissional e imparcial para garantir a harmonia entre os moradores.</p>
+                <div class="service-card dark-card reveal fade-in-up delay-1">
+                    <i class="fas fa-comments"></i>
+                    <h3>Comunicação Direta</h3>
+                    <p>Assembleias dinâmicas e moradores sempre informados sobre as ações tomadas no dia a dia.</p>
+                </div>
+                <div class="service-card dark-card reveal fade-in-up delay-2">
+                    <i class="fas fa-chart-pie"></i>
+                    <h3>Transparência Total</h3>
+                    <p>Prestação de contas rigorosa e clara, redução de inadimplência e otimização de custos.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Rodapé / CTA -->
-    <footer id="contato" class="footer">
+    <!-- Antes e Depois -->
+    <section class="section overflow-hidden">
+        <div class="container">
+            <h2 class="section-title text-center" style="display:block;">Resultados Reais na Prática</h2>
+            <p class="text-center mb-5" style="max-width: 600px; margin: 0 auto 50px auto;">Acompanhamento rigoroso e dedicação que se reflete na valorização do seu patrimônio. Revitalização do piso e conservação estrutural.</p>
+            <div class="before-after-grid">
+                <div class="image-box reveal fade-in-left">
+                    <span class="label label-red">ANTES</span>
+                    <img src="antes.jpg" alt="Piso Antes">
+                </div>
+                <div class="image-box reveal fade-in-right">
+                    <span class="label label-green">DEPOIS</span>
+                    <img src="depois.jpg" alt="Piso Depois">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vídeos / Mídia -->
+    <section id="midia" class="section bg-light">
+        <div class="container">
+            <h2 class="section-title text-center" style="display:block;">Autoridade em Ação</h2>
+            <p class="text-center mb-5" style="max-width: 600px; margin: 0 auto 50px auto;">Acompanhe nosso trabalho na prática e nos meios de comunicação.</p>
+            
+            <div class="media-grid">
+                <div class="video-card reveal fade-in-up">
+                    <div class="video-header">
+                        <h3>Gestão de Crises</h3>
+                        <p>A água acabou, e agora? Ação e prevenção rápida.</p>
+                    </div>
+                    <div class="video-wrapper">
+                        <!-- Removido o max width forçado e adicionado w-100% via CSS para responsivo do iframe -->
+                        <iframe src="https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2FGovCondominial%2Fvideos%2F343272839573775%2F&show_text=false&t=0" width="100%" height="476" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                    </div>
+                </div>
+                
+                <div class="video-card reveal fade-in-up delay-1">
+                    <div class="video-header">
+                        <h3>Entrevista à Rádio</h3>
+                        <p>Dicas e expertise de um Síndico Profissional no ar.</p>
+                    </div>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.facebook.com/plugins/video.php?height=420&href=https%3A%2F%2Fwww.facebook.com%2FGovCondominial%2Fvideos%2F682336391971317%2F&show_text=false&t=0" width="100%" height="420" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section id="contato" class="cta-section text-center">
+        <div class="container">
+            <div class="cta-profile reveal fade-in-up">
+                <img src="gilvaney.jpg" alt="Gilvaney">
+            </div>
+            <h2 class="reveal fade-in-up delay-1">Pronto para transformar seu condomínio?</h2>
+            <p class="reveal fade-in-up delay-2 mb-4">Fale diretamente comigo e agende uma visita sem compromisso.</p>
+            <div class="reveal fade-in-up delay-3">
+                <a href="https://wa.me/5561998198855" target="_blank" class="btn-whatsapp pulse">
+                    <i class="fab fa-whatsapp"></i> Falar com o Síndico (61) 99819-8855
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
         <div class="container text-center">
-            <h2>Pronto para transformar seu condomínio?</h2>
-            <p>Entre em contato hoje mesmo e agende uma visita sem compromisso.</p>
-            <a href="https://wa.me/5561998198855" target="_blank" class="btn-whatsapp">
-                <i class="fab fa-whatsapp"></i> (61) 99819-8855
-            </a>
-            <p class="website-link">
-                <a href="https://govcondominial.com.br" target="_blank"><i class="fas fa-link"></i> govcondominial.com.br</a>
-            </p>
+            <p><a href="https://govcondominial.com.br" target="_blank" class="text-white"><i class="fas fa-link"></i> govcondominial.com.br</a></p>
+            <p class="mt-2 text-muted" style="font-size: 0.9rem;">&copy; 2026 GovCondominial. Todos os direitos reservados.</p>
         </div>
     </footer>
 
