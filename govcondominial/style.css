@@ -1,0 +1,273 @@
+/* Variáveis de Cores baseadas na Logo */
+:root {
+    --primary-blue: #00569c; /* Azul escuro da logo */
+    --primary-green: #79bc43; /* Verde folha da logo */
+    --text-dark: #333333;
+    --text-light: #666666;
+    --bg-light: #f8f9fa;
+    --white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+}
+
+body {
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--white);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+}
+
+.logo h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--primary-green);
+}
+
+/* Botões */
+.btn-primary {
+    background-color: var(--primary-green);
+    color: var(--white) !important;
+    padding: 10px 24px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #639b36;
+    transform: translateY(-2px);
+}
+
+.btn-large {
+    padding: 15px 32px;
+    font-size: 1.1rem;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.btn-whatsapp {
+    display: inline-block;
+    background-color: #25D366;
+    color: white;
+    text-decoration: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 20px 0;
+    transition: transform 0.2s;
+}
+.btn-whatsapp:hover {
+    transform: scale(1.05);
+}
+
+/* Hero Section */
+.hero {
+    margin-top: 80px;
+    background: linear-gradient(rgba(0, 86, 156, 0.8), rgba(0, 86, 156, 0.8)), 
+                url('hero.jpg') center/cover;
+    color: var(--white);
+    padding: 120px 20px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Seções Gerais */
+.section {
+    padding: 80px 0;
+}
+
+.bg-light {
+    background-color: var(--bg-light);
+}
+
+.section-title {
+    font-size: 2.2rem;
+    color: var(--primary-blue);
+    margin-bottom: 40px;
+    position: relative;
+    display: inline-block;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background-color: var(--primary-green);
+    border-radius: 2px;
+}
+
+.text-center .section-title::after {
+    left: 50%;
+}
+.split-content .section-title::after {
+    left: 0;
+    transform: none;
+}
+
+/* Split Content */
+.split-content {
+    display: flex;
+    gap: 50px;
+    align-items: center;
+}
+
+.text-content, .image-content {
+    flex: 1;
+}
+
+.check-list {
+    list-style: none;
+    margin-top: 20px;
+}
+
+.check-list li {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.check-list i {
+    color: var(--primary-green);
+    font-size: 1.2rem;
+}
+
+/* Image Placeholder */
+.placeholder-box {
+    background-color: #e9ecef;
+    height: 350px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #adb5bd;
+    border: 2px dashed #ced4da;
+}
+.placeholder-box i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+/* Services */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.service-card {
+    background: var(--white);
+    padding: 40px 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+    border-bottom: 4px solid transparent;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    border-bottom-color: var(--primary-green);
+}
+
+.service-card i {
+    font-size: 3rem;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    padding: 60px 0;
+}
+
+.website-link a {
+    color: var(--white);
+    text-decoration: none;
+    margin-top: 20px;
+    display: inline-block;
+    opacity: 0.8;
+}
+.website-link a:hover {
+    opacity: 1;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none; /* Em um projeto real, faríamos um menu hambúrguer aqui */
+    }
+    .hero h1 {
+        font-size: 2rem;
+    }
+    .split-content {
+        flex-direction: column;
+    }
+}
