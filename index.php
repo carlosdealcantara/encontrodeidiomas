@@ -36,7 +36,7 @@ $next_meetings = array_slice($upcoming_meetings, 0, 3);
 // ------------------------------------
 
 $extra_head = '
-<link rel="stylesheet" href="/assets/css/home.css?v=<?= ASSET_VERSION ?>">
+<link rel="stylesheet" href="/assets/css/home.css?v=' . ASSET_VERSION . '">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
