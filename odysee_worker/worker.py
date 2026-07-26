@@ -104,6 +104,8 @@ def baixar_video_drive(drive_service, file_id, file_name):
     logger.info(f"Baixando vídeo: {file_id}")
     request = drive_service.files().get_media(fileId=file_id)
     safe_name = file_name.replace("/", "-").replace("\\", "-")
+    if not safe_name.lower().endswith('.mp4'):
+        safe_name += '.mp4'
     temp_path = f"/tmp/{safe_name}"
     with open(temp_path, "wb") as f:
         downloader = MediaIoBaseDownload(f, request)
