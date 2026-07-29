@@ -39,10 +39,12 @@ $titleDateStr = '';
 $periodTitle = '';
 
 if ($period === 'weekly') {
-    // Ultimos 7 dias
-    $start = (new DateTime())->modify('-7 days');
+    // Sempre pega da última segunda-feira até o último domingo
+    $start = new DateTime('last week monday');
+    $end = new DateTime('last week sunday');
     $startDate = $start->format('Y-m-d');
-    $titleDateStr = $start->format('F jS') . ' – ' . date('F jS, Y', strtotime($endDate));
+    $endDate = $end->format('Y-m-d');
+    $titleDateStr = $start->format('F jS') . ' – ' . $end->format('F jS, Y');
     $periodTitle = 'WEEKLY';
 } elseif ($period === 'monthly') {
     // Mês atual ou mês passado se rodar dia 1
