@@ -39,9 +39,8 @@ if ($is_cli) {
  * Função helper para rodar um cron interno usando cURL.
  */
 function rodarSubCron($arquivo, $baseUrl, $token_secreto) {
-    $url = $baseUrl . escapeshellarg($arquivo) . "?token=" . urlencode($token_secreto);
-    // Remove as aspas do escapeshellarg se houver, pois url precisa ser limpa
-    $url = $baseUrl . $arquivo . "?token=" . urlencode($token_secreto);
+    $separador = (strpos($arquivo, '?') !== false) ? '&' : '?';
+    $url = $baseUrl . $arquivo . $separador . "token=" . urlencode($token_secreto);
     
     echo "<li>Disparando: <strong>$arquivo</strong> ... ";
     
