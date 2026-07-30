@@ -153,24 +153,58 @@ if (!empty($topReacts)) {
 }
 
 // -----------------------------------------------------
-// 3. MONTAGEM DAS MENSAGENS
+// 3. MONTAGEM DA MENSAGEM ÚNICA
 // -----------------------------------------------------
 
-$msg1 = "📅 {$titleDateStr}\n\n⭐ *STUDENT OF THE {$periodTitle}*\n\n{$studentStr}";
-$msg2 = "📅 {$titleDateStr}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages?_\n\n{$msgList}";
-$msg3 = "📅 {$titleDateStr}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions?_\n\n{$reactList}";
+// Cabeçalhos visuais distintos por período
+if ($period === 'weekly') {
+    $bannerIcon = "🗓️";
+    $periodLabel = "RANKING SEMANAL";
+    $studentLabel = "🌟 *STUDENT OF THE WEEK*";
+    $msgsLabel    = "💬 *WORD SLINGERS DA SEMANA*";
+    $reactsLabel  = "❤️ *EMOJI GANG DA SEMANA*";
+} elseif ($period === 'monthly') {
+    $bannerIcon = "🗃️";
+    $periodLabel = "RANKING MENSAL";
+    $studentLabel = "🌟 *STUDENT OF THE MONTH*";
+    $msgsLabel    = "💬 *WORD SLINGERS DO MÊS*";
+    $reactsLabel  = "❤️ *EMOJI GANG DO MÊS*";
+} else {
+    $bannerIcon = "🏅";
+    $periodLabel = "RANKING ANUAL";
+    $studentLabel = "🌟 *STUDENT OF THE YEAR*";
+    $msgsLabel    = "💬 *WORD SLINGERS DO ANO*";
+    $reactsLabel  = "❤️ *EMOJI GANG DO ANO*";
+}
 
-// Disparo
-$result1 = enviarWhatsApp($targetGroup, $msg1, 'mentoria_ranking_student_' . $period);
-sleep(1);
-$result2 = enviarWhatsApp($targetGroup, $msg2, 'mentoria_ranking_messenger_' . $period);
-sleep(1);
-$result3 = enviarWhatsApp($targetGroup, $msg3, 'mentoria_ranking_reactor_' . $period);
+$sep = "━━━━━━━━━━━━━━━━━━━━━━";
+
+$msg = "{$bannerIcon}{$bannerIcon}{$bannerIcon} *{$periodLabel}* {$bannerIcon}{$bannerIcon}{$bannerIcon}\n";
+$msg .= "📅 _{$titleDateStr}_\n";
+$msg .= "{$sep}\n\n";
+
+$msg .= "{$studentLabel}\n";
+$msg .= $studentStr . "\n";
+
+$msg .= "{$sep}\n\n";
+$msg .= "{$msgsLabel}\n";
+$msg .= "_Who sent the most messages?_\n";
+$msg .= $msgList . "\n";
+
+$msg .= "{$sep}\n\n";
+$msg .= "{$reactsLabel}\n";
+$msg .= "_Who gave the most reactions?_\n";
+$msg .= $reactList;
+$msg .= "{$sep}";
+
+// Disparo único
+$result1 = enviarWhatsApp($targetGroup, $msg, 'mentoria_ranking_' . $period);
 
 if ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300) {
     $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES (?, ?, ?)")
          ->execute([$logType, $endDate, json_encode(['period' => $period])]);
-    echo "✅ Ranking {$periodTitle} enviado com sucesso (em 3 mensagens)!";
+    echo "✅ Ranking {$periodTitle} enviado com sucesso (mensagem única)!";
 } else {
     echo "❌ Erro ao enviar ranking: HTTP " . $result1['httpCode'];
 }
+
