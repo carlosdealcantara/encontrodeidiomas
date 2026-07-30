@@ -74,16 +74,25 @@ try {
     
     $scheduleId = $schedule['id'];
     
-    // Verifica prazo de marcação (1 hora antes)
-    $deadlineObj = clone $startTimeObj;
-    $deadlineObj->modify('-1 hour');
-    $isPastDeadline = ($nowObj > $deadlineObj);
-
     // Pega a lista ATUAL de confirmados ANTES da ação
     $stmtList = $conn->prepare("SELECT member_name FROM class_attendances WHERE schedule_id = ? AND aula_date = ? ORDER BY id ASC");
     $stmtList->execute([$scheduleId, $hoje]);
     $currentAttendees = $stmtList->fetchAll(PDO::FETCH_COLUMN);
     $currentCount = count($currentAttendees);
+
+    // Verifica se a aula/encontro já está confirmada pelo quórum
+    $isClassConfirmed = false;
+    if ($schedule['session_type'] === 'practice') {
+        $isClassConfirmed = ($currentCount >= 2);
+    } else {
+        $isClassConfirmed = ($currentCount >= 1);
+    }
+
+    // Verifica prazos de marcação
+    $deadlineObj = clone $startTimeObj;
+    $deadlineObj->modify('-1 hour');
+    $isPast1HourDeadline = ($nowObj > $deadlineObj);
+    $isPastStartTime = ($nowObj > $startTimeObj);
 
     // Constrói o daily_summary (resumo de todos os eventos do dia)
     function buildDailySummary($conn, $schedules, $hoje) {
@@ -110,12 +119,26 @@ try {
 
     if ($action === 'attend') {
         
-        if ($isPastDeadline) {
+        $attendanceBlocked = false;
+        
+        if ($isClassConfirmed) {
+            // Se já está confirmada, bloqueia apenas se passou do horário de início
+            if ($isPastStartTime) {
+                $attendanceBlocked = true;
+            }
+        } else {
+            // Se não está confirmada, bloqueia no prazo original (1 hora antes)
+            if ($isPast1HourDeadline) {
+                $attendanceBlocked = true;
+            }
+        }
+
+        if ($attendanceBlocked) {
             // Recusa a marcação mas informa o status atual
             die(json_encode([
                 'success' => false, 
                 'reason' => 'deadline_passed',
-                'class_confirmed' => ($currentCount > 0),
+                'class_confirmed' => $isClassConfirmed,
                 'attendees' => $currentAttendees,
                 'class_date' => $hoje,
                 'class_time' => $schedule['start_time'],
@@ -171,8 +194,8 @@ try {
         $newCount = count($attendees);
         
         $cancelledNow = false;
-        // Se já passou do prazo (1h antes), e a turma caiu pra zero, a aula é ativamente cancelada AGORA
-        if ($isPastDeadline && $currentCount > 0 && $newCount === 0) {
+        // Se já passou do prazo original (1h antes), e a turma caiu pra zero, a aula é ativamente cancelada AGORA
+        if ($isPast1HourDeadline && $currentCount > 0 && $newCount === 0) {
             $cancelledNow = true;
         }
 
@@ -189,6 +212,8 @@ try {
         
     } elseif ($action === 'list' || $action === 'status') {
         
+        $attendanceBlocked = ($isClassConfirmed ? $isPastStartTime : $isPast1HourDeadline);
+        
         echo json_encode([
             'success' => true, 
             'attendees' => $currentAttendees,
@@ -197,7 +222,7 @@ try {
             'class_time' => $schedule['start_time'],
             'class_date_en' => $dateEn,
             'class_time_en' => $timeEn,
-            'deadline_passed' => $isPastDeadline,
+            'deadline_passed' => $attendanceBlocked,
             'schedules_count' => count($schedules) // Útil para o bot saber se precisa listar opções
         ]);
         

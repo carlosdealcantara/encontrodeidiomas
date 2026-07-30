@@ -219,15 +219,24 @@
             const safe = s.jid.replace(/[@.]/g, '_');
             let cells = `<td>${s.name}</td>`;
             
-            let rowTotal = s.class_attended ? 20 : 0;
+            let aulaManualPts = s.manual_pts?.['our_classes'] || 0;
+            let rowTotal = (s.class_attended ? 20 : 0) + aulaManualPts;
+            
+            let aulaBadge = aulaManualPts > 0 ? `<div style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 3px;">+${aulaManualPts} pts ext</div>` : '';
             
             cells += `<td><label class="rp-toggle">
                         <input type="checkbox" id="att_${safe}" ${s.class_attended ? 'checked' : ''}
                                onchange="rpToggleAtt('${s.jid}', this.checked)">
-                        <span class="rp-slider"></span></label></td>`;
+                        <span class="rp-slider"></span></label>
+                        ${aulaBadge}
+                      </td>`;
+            
+            let mappedManualPtsKeys = ['our_classes'];
+            
             cols.forEach(c => {
                 const v = s[c.key] ?? 0;
                 const mPts = s.manual_pts?.[c.key] || 0;
+                mappedManualPtsKeys.push(c.key);
                 
                 let catPts = 0;
                 if (c.key === 'desafio' && v > 0) catPts += 5;
@@ -243,7 +252,18 @@
                             <input type="hidden" id="mpts_${c.key}_${safe}" value="${mPts}">
                           </td>`;
             });
-            cells += `<td class="rp-total-cell" id="total_act_${safe}">${rowTotal}</td>`;
+            
+            // Soma pontos extras de outros grupos que não têm coluna específica
+            let otherManualPts = 0;
+            for (let k in s.manual_pts) {
+                if (!mappedManualPtsKeys.includes(k)) {
+                    otherManualPts += s.manual_pts[k];
+                }
+            }
+            rowTotal += otherManualPts;
+            let otherBadge = otherManualPts > 0 ? `<div style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 3px;">+${otherManualPts} pts ext</div>` : '';
+            
+            cells += `<td class="rp-total-cell" id="total_act_${safe}">${rowTotal}${otherBadge}</td>`;
             rows += `<tr>${cells}</tr>`;
         });
 
