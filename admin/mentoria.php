@@ -119,7 +119,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'class_status' => trim($_POST['tpl_class_status'] ?? ''),
             'streak_confirm' => trim($_POST['tpl_streak_confirm'] ?? ''),
             'streak_milestone' => trim($_POST['tpl_streak_milestone'] ?? ''),
-            'streak_leaderboard' => trim($_POST['tpl_streak_leaderboard'] ?? '')
+            'streak_leaderboard' => trim($_POST['tpl_streak_leaderboard'] ?? ''),
+            'ranking_weekly'     => trim($_POST['tpl_ranking_weekly']     ?? ''),
+            'ranking_monthly'    => trim($_POST['tpl_ranking_monthly']    ?? ''),
+            'ranking_yearly'     => trim($_POST['tpl_ranking_yearly']     ?? '')
         ]
     ];
     
@@ -151,7 +154,12 @@ $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has 
 $tpl_ranking_student   = $config['templates']['ranking_student'] ?? "📅 {date}\n\n⭐ *STUDENT OF THE DAY*\n\n{student_of_the_day}\n\n*Other students:*\n{other_students}\n\n📖 *Legend:*\n{legend}";
 $tpl_ranking_legend    = $config['templates']['ranking_legend'] ?? "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (5 pts)\n📒 New word! (1 pt)";
 $tpl_ranking_messenger = $config['templates']['ranking_messenger'] ?? "📅 {date}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{top_messenger_list}";
-$tpl_ranking_reactor   = $config['templates']['ranking_reactor'] ?? "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
+$tpl_ranking_reactor   = $config['templates']['ranking_reactor']   ?? "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
+
+$_sep = '━━━━━━━━━━━━━━━━━━━━━━';
+$tpl_ranking_weekly  = $config['templates']['ranking_weekly']  ?? "🗓️🗓️🗓️ *RANKING SEMANAL* 🗓️🗓️🗓️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE WEEK*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DA SEMANA*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DA SEMANA*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n✨ *A new week has just begun!*\n_Keep showing up, keep practicing, keep standing out. Next week's podium is still up for grabs — will it be yours?_ 💪";
+$tpl_ranking_monthly = $config['templates']['ranking_monthly'] ?? "🗃️🗃️🗃️ *RANKING MENSAL* 🗃️🗃️🗃️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE MONTH*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO MÊS*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO MÊS*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌙 *A new month begins!*\n_Can you beat your score from last month? Push yourself a little further — every message, every reaction, every class gets you closer to the top. Go for it!_ 🏆";
+$tpl_ranking_yearly  = $config['templates']['ranking_yearly']  ?? "🏅🏅🏅 *RANKING ANUAL* 🏅🏅🏅\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE YEAR*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO ANO*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO ANO*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌅 *The year has turned. The journey continues.*\n_The English you learn, nobody can take from you. In this new year, may every new word be one more step towards your growth — and greater fluency for those who are already there. Happy New Year! 🎉_";
 $tpl_class_aviso = $config['templates']['class_aviso'] ?? "👨‍🏫 *Teacher Class — {date}*
 
 We have a class with the teacher scheduled for *{horario}*.

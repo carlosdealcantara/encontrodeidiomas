@@ -153,49 +153,28 @@ if (!empty($topReacts)) {
 }
 
 // -----------------------------------------------------
-// 3. MONTAGEM DA MENSAGEM ÚNICA
+// 3. MONTAGEM DA MENSAGEM VIA TEMPLATE
 // -----------------------------------------------------
-
-// Cabeçalhos visuais distintos por período
-if ($period === 'weekly') {
-    $bannerIcon = "🗓️";
-    $periodLabel = "RANKING SEMANAL";
-    $studentLabel = "🌟 *STUDENT OF THE WEEK*";
-    $msgsLabel    = "💬 *WORD SLINGERS DA SEMANA*";
-    $reactsLabel  = "❤️ *EMOJI GANG DA SEMANA*";
-} elseif ($period === 'monthly') {
-    $bannerIcon = "🗃️";
-    $periodLabel = "RANKING MENSAL";
-    $studentLabel = "🌟 *STUDENT OF THE MONTH*";
-    $msgsLabel    = "💬 *WORD SLINGERS DO MÊS*";
-    $reactsLabel  = "❤️ *EMOJI GANG DO MÊS*";
-} else {
-    $bannerIcon = "🏅";
-    $periodLabel = "RANKING ANUAL";
-    $studentLabel = "🌟 *STUDENT OF THE YEAR*";
-    $msgsLabel    = "💬 *WORD SLINGERS DO ANO*";
-    $reactsLabel  = "❤️ *EMOJI GANG DO ANO*";
-}
 
 $sep = "━━━━━━━━━━━━━━━━━━━━━━";
 
-$msg = "{$bannerIcon}{$bannerIcon}{$bannerIcon} *{$periodLabel}* {$bannerIcon}{$bannerIcon}{$bannerIcon}\n";
-$msg .= "📅 _{$titleDateStr}_\n";
-$msg .= "{$sep}\n\n";
+// Defaults
+$defaults = [
+    'weekly'  => "🗓️🗓️🗓️ *RANKING SEMANAL* 🗓️🗓️🗓️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE WEEK*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DA SEMANA*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DA SEMANA*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n✨ *A new week has just begun!*\n_Keep showing up, keep practicing, keep standing out. Next week's podium is still up for grabs — will it be yours?_ 💪",
+    'monthly' => "🗃️🗃️🗃️ *RANKING MENSAL* 🗃️🗃️🗃️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE MONTH*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO MÊS*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO MÊS*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌙 *A new month begins!*\n_Can you beat your score from last month? Push yourself a little further — every message, every reaction, every class gets you closer to the top. Go for it!_ 🏆",
+    'yearly'  => "🏅🏅🏅 *RANKING ANUAL* 🏅🏅🏅\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE YEAR*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO ANO*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO ANO*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌅 *The year has turned. The journey continues.*\n_The English you learn, nobody can take from you. In this new year, may every new word be one more step towards your growth — and greater fluency for those who are already there. Happy New Year! 🎉_",
+];
 
-$msg .= "{$studentLabel}\n";
-$msg .= $studentStr . "\n";
+$templateKey = "ranking_{$period}";
+$template = !empty($config['templates'][$templateKey])
+    ? $config['templates'][$templateKey]
+    : ($defaults[$period] ?? $defaults['weekly']);
 
-$msg .= "{$sep}\n\n";
-$msg .= "{$msgsLabel}\n";
-$msg .= "_Who sent the most messages?_\n";
-$msg .= $msgList . "\n";
-
-$msg .= "{$sep}\n\n";
-$msg .= "{$reactsLabel}\n";
-$msg .= "_Who gave the most reactions?_\n";
-$msg .= $reactList;
-$msg .= "{$sep}";
+$msg = str_replace(
+    ['{period_date}', '{sep}', '{students}', '{messages}', '{reactions}'],
+    [$titleDateStr, $sep, rtrim($studentStr), rtrim($msgList), rtrim($reactList)],
+    $template
+);
 
 // Disparo único
 $result1 = enviarWhatsApp($targetGroup, $msg, 'mentoria_ranking_' . $period);

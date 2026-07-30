@@ -101,6 +101,25 @@
                 <textarea name="tpl_birthday" rows="6"><?= htmlspecialchars($tpl_birthday) ?></textarea>
                 <p class="help-text">Mensagem enviada no aniversário. Use <code>{nome}</code> para o nome da pessoa e <code>@{numero}</code> para marcar.</p>
             </div>
+
+            <h4 style="margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">🏆 Rankings Periódicos</h4>
+            <p style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.9rem;">Variáveis disponíveis: <code>{period_date}</code> (ex: July 21–27), <code>{sep}</code> (linha separadora), <code>{students}</code>, <code>{messages}</code>, <code>{reactions}</code>.</p>
+
+            <div class="form-group">
+                <label>🗓️ Ranking Semanal — Mensagem Completa</label>
+                <textarea name="tpl_ranking_weekly" style="min-height: 250px;"><?= htmlspecialchars($tpl_ranking_weekly ?? '') ?></textarea>
+                <p class="help-text">Enviada toda segunda-feira às 09h. Deve conter a mensagem inteira (cabeçalho, rankings e encerramento motivacional).</p>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>🗃️ Ranking Mensal — Mensagem Completa</label>
+                <textarea name="tpl_ranking_monthly" style="min-height: 250px;"><?= htmlspecialchars($tpl_ranking_monthly ?? '') ?></textarea>
+                <p class="help-text">Enviada no dia 1º de cada mês às 09h, com o balanço do mês anterior.</p>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>🏅 Ranking Anual — Mensagem Completa</label>
+                <textarea name="tpl_ranking_yearly" style="min-height: 250px;"><?= htmlspecialchars($tpl_ranking_yearly ?? '') ?></textarea>
+                <p class="help-text">Enviada no dia 1º de Janeiro às 10h. Use um tom de retrospectiva e Feliz Ano Novo!</p>
+            </div>
         </div>
     </div>
 
