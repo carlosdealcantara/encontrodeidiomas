@@ -200,10 +200,10 @@ ul {
 
 .hero-image {
     width: 100%;
+    height: auto;
     border-radius: 20px;
     box-shadow: var(--shadow-lg);
-    object-fit: cover;
-    aspect-ratio: 4/3;
+    display: block;
 }
 
 .floating-card {
