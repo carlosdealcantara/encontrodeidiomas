@@ -19,10 +19,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
-// CRÍTICO: forçar fuso de Brasília para que os horários de disparo sejam calculados
-// em BRT (UTC-3) e não em UTC (que é o padrão do servidor da Hostinger)
-date_default_timezone_set('America/Sao_Paulo');
-$hoje = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
+$hoje = new DateTime();
 $horaAtual = isset($_GET['mock_hora']) ? (int)$_GET['mock_hora'] : (int)$hoje->format('H');
 
 echo "<h1>MASTER CRON: Rodando na hora {$horaAtual}:00</h1><hr>";
@@ -118,7 +115,7 @@ if ($horaAtual === 8) {
 // =========================================================================
 
 // Ranking Semanal: toda SEGUNDA-FEIRA às 09:00
-$diaSemana = (int)(new DateTime('now', new DateTimeZone('America/Sao_Paulo')))->format('N'); // 1=Seg, 7=Dom
+$diaSemana = (int)(new DateTime())->format('N'); // 1=Seg, 7=Dom
 if ($horaAtual === 9 && $diaSemana === 1) {
     echo "<h3>Ranking Semanal (Segunda 09:00)</h3><ul>";
     rodarSubCron('mentoria_ranking_periodico_cron.php?period=weekly', $baseUrl, $token_secreto);
@@ -126,7 +123,7 @@ if ($horaAtual === 9 && $diaSemana === 1) {
 }
 
 // Ranking Mensal: no 1º dia de cada mês às 09:00
-$diaDoMes = (int)(new DateTime('now', new DateTimeZone('America/Sao_Paulo')))->format('j');
+$diaDoMes = (int)(new DateTime())->format('j');
 if ($horaAtual === 9 && $diaDoMes === 1) {
     echo "<h3>Ranking Mensal (Dia 1 às 09:00)</h3><ul>";
     rodarSubCron('mentoria_ranking_periodico_cron.php?period=monthly', $baseUrl, $token_secreto);
@@ -134,7 +131,7 @@ if ($horaAtual === 9 && $diaDoMes === 1) {
 }
 
 // Ranking Anual: 1º de Janeiro às 10:00
-$mesAtual = (int)(new DateTime('now', new DateTimeZone('America/Sao_Paulo')))->format('n'); // 1=Jan
+$mesAtual = (int)(new DateTime())->format('n'); // 1=Jan
 if ($horaAtual === 10 && $diaDoMes === 1 && $mesAtual === 1) {
     echo "<h3>Ranking Anual (1º Jan às 10:00)</h3><ul>";
     rodarSubCron('mentoria_ranking_periodico_cron.php?period=yearly', $baseUrl, $token_secreto);
