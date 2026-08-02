@@ -106,29 +106,40 @@ foreach ($meetings as $m) {
                 }
                 
                 if ($podeEnviar) {
-                    // Verifica anti-duplicidade
-                    $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND meeting_id = ? AND template_id = ? AND data_disparo = ?");
-                    $stmtCheck->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
-                    
-                    if ($stmtCheck->rowCount() === 0 || isset($_GET['force'])) {
-                        // Envia para o motor unificado do Baileys
+                    // ============================================================
+                    // ANTI-DUPLICIDADE ATÔMICA via INSERT IGNORE
+                    // A inserção no log ocorre ANTES do envio.
+                    // Se dois crons rodarem simultaneamente, apenas o que inserir
+                    // primeiro (com a UNIQUE KEY) vai prosseguir com o envio.
+                    // ============================================================
+                    if (isset($_GET['force'])) {
+                        // Modo force: apaga o log existente para re-enviar
+                        $stmtDel = $conn->prepare("DELETE FROM meetup_whatsapp_logs WHERE grupo_id = ? AND meeting_id = ? AND template_id = ? AND data_disparo = ?");
+                        $stmtDel->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
+                    }
+
+                    $stmtLog = $conn->prepare("INSERT IGNORE INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, ?, ?, ?)");
+                    $stmtLog->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
+                    $logId = $conn->lastInsertId();
+
+                    if ($logId == 0) {
+                        // Nenhuma linha inserida = UNIQUE KEY já existe = já foi enviado
+                        echo "<p>⏭️ Pulando Grupo '{$g['nome']}': [{$t['cenario']}] já enviada hoje para o Meetup de {$m['language_name']}.</p>";
+                    } else {
+                        // Inserção bem-sucedida: este processo "ganhou" o direito de enviar
                         $result = enviarWhatsApp($g['group_id'], $textoFinal, 'meetup_cron');
                         $httpcode = $result['httpCode'];
                         $response = json_encode($result);
-                        
-                        // Só loga no banco se a API respondeu OK
+
                         if ($httpcode >= 200 && $httpcode < 300) {
-                            $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, ?, ?, ?)");
-                            $stmtLog->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
-                            
                             echo "<p>✅ [{$t['cenario']}] enviada para o Grupo '{$g['nome']}' (Idioma: {$m['language_name']}). (Status API: {$httpcode})</p>";
                             $sucessos++;
                         } else {
+                            // Falhou: reverte o log para que o próximo cron possa tentar
+                            $conn->exec("DELETE FROM meetup_whatsapp_logs WHERE id = $logId");
                             echo "<p style='color:red;'>❌ Erro ao enviar [{$t['cenario']}] para '{$g['nome']}'. HTTP: {$httpcode} | Resposta: " . htmlspecialchars($response) . "</p>";
                             sleep(5);
                         }
-                    } else {
-                        echo "<p>⏭️ Pulando Grupo '{$g['nome']}': [{$t['cenario']}] já enviada hoje para o Meetup de {$m['language_name']}.</p>";
                     }
                 }
             }
