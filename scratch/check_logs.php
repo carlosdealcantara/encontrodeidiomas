@@ -1,6 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
 $conn = connectDB();
-$stmtMeetings = $conn->prepare("SELECT id, language_id, time_hour FROM meetings WHERE active = 1 AND day_of_week = 4");
-$stmtMeetings->execute();
-print_r($stmtMeetings->fetchAll());
+// Verifica quantos grupos existem e suas categorias
+$stmt = $conn->query("SELECT id, nome, categoria, language_id, ativo FROM meetup_whatsapp_groups WHERE ativo = 1");
+print_r($stmt->fetchAll());
