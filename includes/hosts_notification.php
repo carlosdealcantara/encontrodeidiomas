@@ -3,6 +3,39 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/includes/whatsapp_helper.php';
 
 function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = "atualizou dados") {
+    // ============================================================
+    // RATE-LIMIT: evita disparos duplicados em sequência rápida.
+    // Múltiplos gatilhos (worker, reshorten, manual_resolve, portal)
+    // podem chamar esta função em segundos de diferença.
+    // Só envia se a última notificação para ESTE idioma foi há mais
+    // de 5 minutos. Usa a tabela settings como mutex leve.
+    // ============================================================
+    $rateKey = 'hosts_notif_last_' . (int)$lang_id;
+    $RATE_LIMIT_SECONDS = 300; // 5 minutos
+
+    try {
+        $stmtRate = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = ?");
+        $stmtRate->execute([$rateKey]);
+        $lastSentRow = $stmtRate->fetch(PDO::FETCH_ASSOC);
+        $lastSent = $lastSentRow ? (int)$lastSentRow['setting_value'] : 0;
+
+        if ((time() - $lastSent) < $RATE_LIMIT_SECONDS) {
+            // Menos de 5 minutos desde o último envio — ignora silenciosamente
+            error_log("[hosts_notification] Rate-limit ativo para lang_id={$lang_id}. Última notif há " . (time() - $lastSent) . "s. Pulando.");
+            return;
+        }
+
+        // Atualiza o timestamp ANTES de enviar (previne race condition)
+        $stmtUpd = $conn->prepare(
+            "INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)"
+        );
+        $stmtUpd->execute([$rateKey, (string)time()]);
+    } catch (Exception $e) {
+        // Falha silenciosa: se a tabela settings falhar, envia mesmo assim
+        error_log("[hosts_notification] Erro no rate-limit: " . $e->getMessage());
+    }
+
     // Busca dados do idioma
     $stmtLang = $conn->prepare("SELECT name, flag_emoji FROM languages WHERE id = ?");
     $stmtLang->execute([$lang_id]);
@@ -38,12 +71,12 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
         $replays_list .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
     }
     
-    $default_template = "*Replays!* https://encontrodeidiomas.com.br\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
+    $default_template = "*Replays!* viaei.com\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
     $template = getSetting('weekly_summary_template', $default_template);
     $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
 
-    // Usa SITE_URL para o link do portal, exceto se estiver vazio, usa dev fallback
-    $portal_url = defined('SITE_URL') ? SITE_URL . "/portal_hosts/" : "https://dev.encontrodeidiomas.com.br/portal_hosts/";
+    // URL do portal sempre em viaei.com (domínio atual)
+    $portal_url = "https://viaei.com/portal_hosts/";
 
     enviarWhatsApp('120363164732845564@g.us',
         "🔄 *Mensagem Semanal Atualizada!*\nO idioma {$lang_emoji} *{$lang_nome}* {$acao_desc} desta semana.\n\n🔗 *Acesse o Portal dos Hosts:* {$portal_url}\n\nPrévia da mensagem final:\n\n" . $full_text,
