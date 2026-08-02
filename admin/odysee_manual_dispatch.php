@@ -171,7 +171,7 @@ if (isset($_GET['confirm']) && $_GET['confirm'] == 1) {
         }
         
         // 4. Webhook Hosts
-        $wh = curl_init('https://dev.encontrodeidiomas.com.br/ajax/webhook_odysee_success.php');
+        $wh = curl_init(SITE_URL . '/ajax/webhook_odysee_success.php');
         curl_setopt($wh, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($wh, CURLOPT_TIMEOUT, 10);
         curl_setopt($wh, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
