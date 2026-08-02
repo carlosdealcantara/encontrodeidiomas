@@ -1,6 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
 $conn = connectDB();
-// Verifica quantos grupos existem e suas categorias
-$stmt = $conn->query("SELECT id, nome, categoria, language_id, ativo FROM meetup_whatsapp_groups WHERE ativo = 1");
+// Verifica se já existe UNIQUE KEY na tabela meetup_whatsapp_logs
+$stmt = $conn->query("SHOW INDEX FROM meetup_whatsapp_logs WHERE Key_name != 'PRIMARY'");
 print_r($stmt->fetchAll());
