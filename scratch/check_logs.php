@@ -1,5 +1,5 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
 $conn = connectDB();
-$stmt = $conn->query("SELECT * FROM meetup_whatsapp_logs WHERE data_disparo = '2026-08-01' ORDER BY id DESC LIMIT 20");
+$stmt = $conn->query("SELECT * FROM meetup_whatsapp_logs ORDER BY id DESC LIMIT 50");
 print_r($stmt->fetchAll());
