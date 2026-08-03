@@ -66,11 +66,20 @@ try {
 
         $activity = fetchBaileysActivity($hoje);
 
-        // Presença na aula
-        $stmt = $conn->prepare("SELECT member_jid, member_name FROM class_attendances WHERE aula_date = ?");
+        // Presença na aula: conta quantas sessões cada aluno confirmou
+        $stmt = $conn->prepare("
+            SELECT member_jid, member_name, COUNT(*) as session_count
+            FROM class_attendances
+            WHERE aula_date = ?
+            GROUP BY member_jid
+        ");
         $stmt->execute([$hoje]);
         $attendeesRaw = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $attendeeJids = array_column($attendeesRaw, 'member_jid');
+        // Map jid -> count
+        $attendeeCount = [];
+        foreach ($attendeesRaw as $row) {
+            $attendeeCount[$row['member_jid']] = (int)$row['session_count'];
+        }
 
         $students = [];  // seção Atividades
         $socialMap = []; // seção Social (por membro → por grupo)
@@ -96,15 +105,15 @@ try {
                 // --- Seção ATIVIDADES ---
                 if (!isset($students[$memberJid])) {
                     $students[$memberJid] = [
-                        'jid'            => $memberJid,
-                        'name'           => $name,
-                        'class_attended' => in_array($memberJid, $attendeeJids),
-                        'pronun'         => 0,
-                        'desafio'        => 0,
-                        'music'          => 0,
-                        'games'          => 0,
-                        'vocab'          => 0,
-                        'manual_pts'     => [],
+                        'jid'               => $memberJid,
+                        'name'              => $name,
+                        'class_count'       => $attendeeCount[$memberJid] ?? 0,
+                        'pronun'            => 0,
+                        'desafio'           => 0,
+                        'music'             => 0,
+                        'games'             => 0,
+                        'vocab'             => 0,
+                        'manual_pts'        => [],
                     ];
                 }
                 if ($groupJid === $jidPronun)   $students[$memberJid]['pronun']  += (int)($stats['audios_sent']  ?? 0);
@@ -167,15 +176,15 @@ try {
                 }
                 
                 $students[$jid] = [
-                    'jid'            => $jid,
-                    'name'           => $mName,
-                    'class_attended' => in_array($jid, $attendeeJids),
-                    'pronun'         => 0,
-                    'desafio'        => 0,
-                    'music'          => 0,
-                    'games'          => 0,
-                    'vocab'          => 0,
-                    'manual_pts'     => [],
+                    'jid'          => $jid,
+                    'name'         => $mName,
+                    'class_count'  => $attendeeCount[$jid] ?? 0,
+                    'pronun'       => 0,
+                    'desafio'      => 0,
+                    'music'        => 0,
+                    'games'        => 0,
+                    'vocab'        => 0,
+                    'manual_pts'   => [],
                 ];
             }
             if (!isset($students[$jid]['manual_pts'])) {
@@ -210,7 +219,63 @@ try {
         ]);
 
     // ────────────────────────────────────────────────────
-    // ACTION: toggle_attendance
+    // ACTION: set_attendance_count
+    // Ajusta a quantidade de sessões confirmadas de um aluno
+    // ────────────────────────────────────────────────────
+    } elseif ($action === 'set_attendance_count') {
+        $memberJid    = $input['member_jid'] ?? '';
+        $desiredCount = max(0, (int)($input['count'] ?? 0));
+
+        if (empty($memberJid)) {
+            echo json_encode(['success' => false, 'error' => 'member_jid required']);
+            exit;
+        }
+
+        // Conta quantas linhas existem hoje
+        $stmtCount = $conn->prepare("SELECT COUNT(*) FROM class_attendances WHERE member_jid = ? AND aula_date = ?");
+        $stmtCount->execute([$memberJid, $hoje]);
+        $current = (int)$stmtCount->fetchColumn();
+
+        if ($desiredCount > $current) {
+            // Precisa adicionar linhas
+            // Busca um schedule_id válido para hoje
+            $diaSemana = date('N');
+            $stmtSched = $conn->prepare("SELECT id FROM class_schedule WHERE day_of_week = ? AND is_active = 1");
+            $stmtSched->execute([$diaSemana]);
+            $schedules = $stmtSched->fetchAll(PDO::FETCH_COLUMN);
+
+            // Pega o nome do aluno
+            $activity = fetchBaileysActivity($hoje);
+            $name = 'Student';
+            foreach ($activity as $members) {
+                if (isset($members[$memberJid]['name'])) { $name = $members[$memberJid]['name']; break; }
+            }
+
+            $toAdd = $desiredCount - $current;
+            $schedIdx = 0;
+            for ($i = 0; $i < $toAdd; $i++) {
+                // Usa schedule IDs disponíveis em rotação, ou o mesmo se houver apenas 1
+                $scheduleId = $schedules[$schedIdx % count($schedules)] ?? null;
+                if (!$scheduleId) break;
+                // Usa INSERT (não IGNORE) para permitir múltiplas linhas por aluno
+                $ins = $conn->prepare("INSERT INTO class_attendances (schedule_id, member_jid, member_name, aula_date) VALUES (?, ?, ?, ?)");
+                $ins->execute([$scheduleId, $memberJid, $name, $hoje]);
+                $schedIdx++;
+            }
+        } elseif ($desiredCount < $current) {
+            // Precisa remover o excesso (remove as mais recentes)
+            $toRemove = $current - $desiredCount;
+            $del = $conn->prepare("DELETE FROM class_attendances WHERE member_jid = ? AND aula_date = ? ORDER BY id DESC LIMIT $toRemove");
+            $del->execute([$memberJid, $hoje]);
+        }
+        // Confirma o total final
+        $stmtFinal = $conn->prepare("SELECT COUNT(*) FROM class_attendances WHERE member_jid = ? AND aula_date = ?");
+        $stmtFinal->execute([$memberJid, $hoje]);
+        $finalCount = (int)$stmtFinal->fetchColumn();
+        echo json_encode(['success' => true, 'count' => $finalCount, 'pts' => $finalCount * 20]);
+
+    // ────────────────────────────────────────────────────
+    // ACTION: toggle_attendance  (mantido por compatibilidade legada)
     // ────────────────────────────────────────────────────
     } elseif ($action === 'toggle_attendance') {
         $memberJid = $input['member_jid'] ?? '';
@@ -226,10 +291,7 @@ try {
                 $activity = fetchBaileysActivity($hoje);
                 $name = 'Student';
                 foreach ($activity as $members) {
-                    if (isset($members[$memberJid]['name'])) {
-                        $name = $members[$memberJid]['name'];
-                        break;
-                    }
+                    if (isset($members[$memberJid]['name'])) { $name = $members[$memberJid]['name']; break; }
                 }
                 $ins = $conn->prepare("INSERT IGNORE INTO class_attendances (schedule_id, member_jid, member_name, aula_date) VALUES (?, ?, ?, ?)");
                 $ins->execute([$scheduleId, $memberJid, $name, $hoje]);

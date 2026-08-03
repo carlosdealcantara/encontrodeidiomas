@@ -210,7 +210,7 @@
         ];
 
         let th = `<th>Aluno</th>
-                  <th>🖥️ Aula<span class="rp-pts">20 pts</span></th>`;
+                  <th>🖥️ Aula<span class="rp-pts">20 pts/sessão</span></th>`;
         cols.forEach(c => { th += `<th>${c.label}<span class="rp-pts">${c.pts} pts</span></th>`; });
         th += '<th class="rp-total-head">Total<span class="rp-pts">pts</span></th>';
 
@@ -219,17 +219,20 @@
             const safe = s.jid.replace(/[@.]/g, '_');
             let cells = `<td>${s.name}</td>`;
             
+            const classCount = s.class_count ?? 0;
             let aulaManualPts = s.manual_pts?.['our_classes'] || 0;
-            let rowTotal = (s.class_attended ? 20 : 0) + aulaManualPts;
+            let rowTotal = (classCount * 20) + aulaManualPts;
             
             let aulaBadge = aulaManualPts > 0 ? `<div style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 3px;">+${aulaManualPts} pts ext</div>` : '';
+            let aulaPtsLabel = classCount > 0 ? `<div style="font-size:0.72rem;color:#38bdf8;margin-top:3px;">${classCount}× = ${classCount*20} pts</div>` : '';
             
-            cells += `<td><label class="rp-toggle">
-                        <input type="checkbox" id="att_${safe}" ${s.class_attended ? 'checked' : ''}
-                               onchange="rpToggleAtt('${s.jid}', this.checked)">
-                        <span class="rp-slider"></span></label>
-                        ${aulaBadge}
+            cells += `<td>
+                        <input type="number" min="0" max="5" class="rp-num${classCount === 0 ? ' rp-zero' : ''}"
+                               id="cls_${safe}" value="${classCount}"
+                               onchange="rpSetClassCount('${s.jid}', this)" style="width:58px;">
+                        ${aulaPtsLabel}${aulaBadge}
                       </td>`;
+
             
             let mappedManualPtsKeys = ['our_classes'];
             
@@ -338,7 +341,9 @@
     // ── DYNAMIC RECALCULATION ───────────────────────────
     function recalcAct(jidSafe) {
         let total = 0;
-        if (document.getElementById('att_' + jidSafe).checked) total += 20;
+        const clsEl = document.getElementById('cls_' + jidSafe);
+        const classCount = clsEl ? (parseInt(clsEl.value) || 0) : 0;
+        total += classCount * 20;
         const cols = ['pronun', 'desafio', 'music', 'games', 'vocab'];
         cols.forEach(key => {
             const el = document.getElementById(`act_${key}_${jidSafe}`);
@@ -377,7 +382,31 @@
     }
 
     // ── API helpers ────────────────────────────────────
+    window.rpSetClassCount = function(jid, el) {
+        const safe = jid.replace(/[@.]/g, '_');
+        const count = Math.max(0, parseInt(el.value) || 0);
+        el.value = count;
+        el.classList.toggle('rp-zero', count === 0);
+
+        // Atualiza label de pts abaixo do input
+        let labelEl = el.nextElementSibling;
+        if (labelEl && labelEl.tagName === 'DIV') {
+            labelEl.textContent = count > 0 ? `${count}× = ${count * 20} pts` : '';
+            labelEl.style.display = count > 0 ? '' : 'none';
+        }
+
+        fetch('mentoria_score_edit_api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'set_attendance_count', member_jid: jid, count })
+        }).then(r => r.json()).then(d => {
+            if (!d.success) alert('Erro ao salvar: ' + d.error);
+        });
+        recalcAct(safe);
+    };
+
     window.rpToggleAtt = function(jid, attended) {
+        // Legado: mantido para compatibilidade mas o novo painel usa rpSetClassCount
         const safe = jid.replace(/[@.]/g, '_');
         _post({ action: 'toggle_attendance', member_jid: jid, attended });
         recalcAct(safe);
