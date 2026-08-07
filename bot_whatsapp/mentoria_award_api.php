@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!$data || !isset($data['group_jid']) || !isset($data['member_jid']) || !isset($data['points']) || !isset($data['level'])) {
+if (!$data || !isset($data['group_jid']) || !isset($data['member_jid']) || !isset($data['points'])) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid payload']);
     exit;
@@ -20,7 +20,6 @@ $groupKey = $data['group_key'] ?? 'unknown';
 $memberJid = $data['member_jid'];
 $memberName = $data['member_name'] ?? 'Unknown';
 $points = (int)$data['points'];
-$level = (int)$data['level'];
 // Date in BRT
 $hoje = (new DateTime('now', new DateTimeZone('America/Sao_Paulo')))->format('Y-m-d');
 

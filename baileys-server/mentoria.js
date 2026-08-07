@@ -368,14 +368,13 @@ async function handleMessages({ messages, type }) {
 
         // (Pill command logic was moved to the top of handleMessages to be global)
 
-        // === ADMIN SCORING COMMANDS (!1 to !5) ===
+        // === ADMIN SCORING COMMANDS (!number) ===
         if (isAdmin && msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
-            const cmdMatch = text.match(/^\s*!\s*([1-5])\s*$/);
+            const cmdMatch = text.match(/^\s*!\s*(\d+)\s*$/);
             if (cmdMatch) {
                 console.log(`[SCORING] Admin ${senderName} issued command ${text}`);
-                const level = parseInt(cmdMatch[1]);
-                const pointsMap = { 1: 1, 2: 5, 3: 10, 4: 20, 5: 25 };
-                const points = pointsMap[level];
+                const points = parseInt(cmdMatch[1], 10);
+                if (points <= 0) return; // Ignore !0 or negative
                 
                 const quotedParticipant = msg.message.extendedTextMessage.contextInfo.participant;
                 const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
@@ -397,29 +396,33 @@ async function handleMessages({ messages, type }) {
                                 group_jid: groupJid,
                                 group_key: groupKey,
                                 member_jid: quotedParticipant,
-                                points: points,
-                                level: level
+                                points: points
                             })
                         });
                         const data = await res.json();
                         
                         if (data.success) {
-                            const emojis = { 1: '✅', 2: '👍', 3: '🔥', 4: '🤯', 5: '🚀' };
-                            const reactEmoji = emojis[level] || '✅';
+                            let reactEmoji = '✅';
+                            let replyMsg = `✅ Check-in validated! (+${points} pt${points !== 1 ? 's' : ''})`;
+                            
+                            if (points >= 20) {
+                                reactEmoji = '🚀';
+                                replyMsg = `🚀 Unbelievable! Absolutely stellar work! (+${points} pts)`;
+                            } else if (points >= 15) {
+                                reactEmoji = '🤯';
+                                replyMsg = `🤯 Awesome! That's a hardcore effort! (+${points} pts)`;
+                            } else if (points >= 10) {
+                                reactEmoji = '🔥';
+                                replyMsg = `🔥 Great work! This is the way. (+${points} pts)`;
+                            } else if (points >= 5) {
+                                reactEmoji = '👍';
+                                replyMsg = `👍 Good job! Keep it up! (+${points} pts)`;
+                            }
                             
                             // React to the student's message
                             await sock.sendMessage(groupJid, { react: { text: reactEmoji, key: { remoteJid: groupJid, fromMe: false, id: msg.message.extendedTextMessage.contextInfo.stanzaId, participant: quotedParticipant } } });
                             
                             // Send reply message in English
-                            const msgs = {
-                                1: `✅ Check-in validated! (+${points} pt)`,
-                                2: `👍 Good job! Keep it up! (+${points} pts)`,
-                                3: `🔥 Great work! This is the way. (+${points} pts)`,
-                                4: `🤯 Awesome! That's a hardcore effort! (+${points} pts)`,
-                                5: `🚀 Unbelievable! Absolutely stellar work! (+${points} pts)`
-                            };
-                            const replyMsg = msgs[level];
-                            
                             await sock.sendMessage(groupJid, { text: replyMsg, mentions: [quotedParticipant] });
                         }
                     } catch (err) {
