@@ -402,21 +402,21 @@ async function handleMessages({ messages, type }) {
                         const data = await res.json();
                         
                         if (data.success) {
-                            let reactEmoji = '✅';
-                            let replyMsg = `✅ Check-in validated! (+${points} pt${points !== 1 ? 's' : ''})`;
+                            let reactEmoji = '🙌';
+                            let replyMsg = `🙌 Way to go! Good effort. (+${points} pt${points !== 1 ? 's' : ''})`;
                             
                             if (points >= 20) {
                                 reactEmoji = '🚀';
-                                replyMsg = `🚀 Unbelievable! Absolutely stellar work! (+${points} pts)`;
+                                replyMsg = `🚀 Stellar! Taking it to the next level! (+${points} pts)`;
                             } else if (points >= 15) {
-                                reactEmoji = '🤯';
-                                replyMsg = `🤯 Awesome! That's a hardcore effort! (+${points} pts)`;
+                                reactEmoji = '⚡';
+                                replyMsg = `⚡ Outstanding! Pure energy! (+${points} pts)`;
                             } else if (points >= 10) {
                                 reactEmoji = '🔥';
-                                replyMsg = `🔥 Great work! This is the way. (+${points} pts)`;
+                                replyMsg = `🔥 Awesome work! You're on fire! (+${points} pts)`;
                             } else if (points >= 5) {
-                                reactEmoji = '👍';
-                                replyMsg = `👍 Good job! Keep it up! (+${points} pts)`;
+                                reactEmoji = '🎉';
+                                replyMsg = `🎉 Great job! Keep it going! (+${points} pts)`;
                             }
                             
                             // React to the student's message
