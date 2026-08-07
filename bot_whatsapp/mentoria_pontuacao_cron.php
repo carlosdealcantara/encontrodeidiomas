@@ -259,14 +259,10 @@ foreach ($attendees as $att) {
         $memberStats[$mJid] = ['name' => $att['member_name'], 'total_pts' => 0, 'emojis' => []];
     }
     
-    // Verifica se foi uma sessão de prática que não atingiu o quórum (cancelada)
-    if ($att['session_type'] === 'student_practice' && $att['quorum'] < 2) {
-        $memberStats[$mJid]['total_pts'] += 5;
-        array_unshift($memberStats[$mJid]['emojis'], '👏'); // Ponto simbólico pelo esforço
-    } else {
-        $memberStats[$mJid]['total_pts'] += 20;
-        array_unshift($memberStats[$mJid]['emojis'], '🖥️');
-    }
+    // As confirmações que chegaram até aqui são de aulas que realmente aconteceram
+    // (aulas canceladas têm as confirmações deletadas no cron de quórum)
+    $memberStats[$mJid]['total_pts'] += 20;
+    array_unshift($memberStats[$mJid]['emojis'], '🖥️');
 }
 
 // -----------------------------------------------------

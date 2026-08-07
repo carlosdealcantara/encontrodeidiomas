@@ -61,7 +61,11 @@ foreach ($schedules as $s) {
             
             enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_cancel', ?, ?)")->execute([$hoje, $s['id']]);
-            echo "Sessão " . $s['start_time'] . " cancelada por falta de quórum (< $minQuorum).\n";
+            
+            // Deleta as confirmações de presença para que não contabilize pontos na aula cancelada
+            $conn->prepare("DELETE FROM class_attendances WHERE schedule_id = ? AND aula_date = ?")->execute([$s['id'], $hoje]);
+            
+            echo "Sessão " . $s['start_time'] . " cancelada por falta de quórum (< $minQuorum). Presenças removidas.\n";
         } else {
             echo "Sessão " . $s['start_time'] . " confirmada com $attendees presentes.\n";
         }
