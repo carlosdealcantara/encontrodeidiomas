@@ -448,7 +448,7 @@ async function handleMessages({ messages, type }) {
                         const nameToUse = (senderName && senderName !== 'Desconhecido') ? senderName.split(' ')[0] : senderJid.split('@')[0];
                         
                         // Reagir à mensagem original em vez de enviar texto
-                        await sock.sendMessage(groupJid, { react: { text: '✅', key: msg.key } });
+                        await sock.sendMessage(groupJid, { react: { text: '🎉', key: msg.key } });
                         
                         // Se atingiu milestone, envia o relatório
                         if (data.is_milestone) {
