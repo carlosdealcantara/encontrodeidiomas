@@ -20,6 +20,7 @@ $groupKey = $data['group_key'] ?? 'unknown';
 $memberJid = $data['member_jid'];
 $memberName = $data['member_name'] ?? 'Unknown';
 $points = (int)$data['points'];
+$level = 1; // Default fallback for DB since it's no longer used or passed
 // Date in BRT
 $hoje = (new DateTime('now', new DateTimeZone('America/Sao_Paulo')))->format('Y-m-d');
 

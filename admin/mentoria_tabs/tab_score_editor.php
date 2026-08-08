@@ -235,7 +235,6 @@
 
             
             let mappedManualPtsKeys = ['our_classes'];
-            
             cols.forEach(c => {
                 const v = s[c.key] ?? 0;
                 const mPts = s.manual_pts?.[c.key] || 0;
@@ -248,12 +247,24 @@
 
                 let manualBadge = mPts > 0 ? `<div style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 3px;">+${mPts} pts ext</div>` : '';
 
-                cells += `<td>
-                            <input type="number" min="0" class="rp-num${v === 0 ? ' rp-zero' : ''}" id="act_${c.key}_${safe}"
-                               value="${v}" onchange="rpEditAct('${s.jid}','${c.key}',this.value,this)">
-                            ${manualBadge}
-                            <input type="hidden" id="mpts_${c.key}_${safe}" value="${mPts}">
-                          </td>`;
+                if (c.key === 'desafio') {
+                    cells += `<td>
+                                <label class="rp-toggle">
+                                    <input type="checkbox" id="act_${c.key}_${safe}" ${v > 0 ? 'checked' : ''}
+                                           onchange="rpEditAct('${s.jid}','${c.key}', this.checked ? 1 : 0, this)">
+                                    <span class="rp-slider"></span>
+                                </label>
+                                ${manualBadge}
+                                <input type="hidden" id="mpts_${c.key}_${safe}" value="${mPts}">
+                              </td>`;
+                } else {
+                    cells += `<td>
+                                <input type="number" min="0" class="rp-num${v === 0 ? ' rp-zero' : ''}" id="act_${c.key}_${safe}"
+                                   value="${v}" onchange="rpEditAct('${s.jid}','${c.key}',this.value,this)">
+                                ${manualBadge}
+                                <input type="hidden" id="mpts_${c.key}_${safe}" value="${mPts}">
+                              </td>`;
+                }
             });
             
             // Soma pontos extras de outros grupos que não têm coluna específica
@@ -349,7 +360,7 @@
             const el = document.getElementById(`act_${key}_${jidSafe}`);
             const mPtsEl = document.getElementById(`mpts_${key}_${jidSafe}`);
             if (el) {
-                const v = parseInt(el.value) || 0;
+                const v = el.type === 'checkbox' ? (el.checked ? 1 : 0) : (parseInt(el.value) || 0);
                 const mPts = parseInt(mPtsEl ? mPtsEl.value : 0) || 0;
                 if (key === 'desafio' && v > 0) total += 5;
                 total += mPts;
@@ -415,7 +426,9 @@
     window.rpEditAct = function(jid, type, value, el) {
         const safe = jid.replace(/[@.]/g, '_');
         const v = parseInt(value) || 0;
-        el.classList.toggle('rp-zero', v === 0);
+        if (el.type !== 'checkbox') {
+            el.classList.toggle('rp-zero', v === 0);
+        }
         _post({ action: 'edit_activity', member_jid: jid, type, value: v });
         recalcAct(safe);
     };
