@@ -302,6 +302,13 @@ async function handleMessages({ messages, type }) {
                         msg.message?.viewOnceMessage?.message ||
                         msg.message;
 
+        if (!realMsg) continue;
+        
+        // Prevent premature deduplication of empty/stub messages
+        const msgTypes = Object.keys(realMsg);
+        const hasContent = msgTypes.some(t => t !== 'senderKeyDistributionMessage' && t !== 'messageContextInfo');
+        if (!hasContent) continue;
+
         // Imagem pode chegar em vários formatos conforme versão do WhatsApp / dispositivo:
         // 1. imageMessage        — foto clássica
         // 2. documentMessage     — arquivo enviado; quando mimeType começa com 'image/' é uma foto salva como doc
