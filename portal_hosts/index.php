@@ -8,7 +8,7 @@ $semana_atual = date('o-\WW'); // Ex: "2026-W24" — reseta automaticamente toda
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['password'])) {
     if ($_POST['password'] === $senha_correta) {
-        $_SESSION['hosts_logged_in'] = true;
+        $_SESSION['hosts_auth_v2'] = true;
         header('Location: index.php');
         exit;
     } else {
@@ -22,7 +22,7 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-$logged_in = $_SESSION['hosts_logged_in'] ?? false;
+$logged_in = $_SESSION['hosts_auth_v2'] ?? false;
 
 // --- Salvar replay (PRG pattern) ---
 if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_replay') {
