@@ -138,5 +138,12 @@ if ($horaAtual === 10 && $diaDoMes === 1 && $mesAtual === 1) {
     echo "</ul>";
 }
 
+// Relatório Semanal do Odysee Worker: toda SEGUNDA-FEIRA às 10:00
+if ($horaAtual === 10 && $diaSemana === 1) {
+    echo "<h3>Relatório do Worker (Segunda 10:00)</h3><ul>";
+    rodarSubCron('odysee_worker_report.php', $baseUrl, 'worker_report_k8pZ1');
+    echo "</ul>";
+}
+
 echo "<hr><h1>MASTER CRON FINALIZADO</h1>";
 ?>
