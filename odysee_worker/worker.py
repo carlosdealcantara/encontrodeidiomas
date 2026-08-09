@@ -868,5 +868,13 @@ if __name__ == "__main__":
         except Exception as e:
             logger.error(f"Erro no loop principal: {e}")
             print(f"Erro no loop principal: {e}", flush=True)
+            
+        # Atualiza o arquivo de heartbeat (fail-safe)
+        try:
+            with open('/tmp/worker_heartbeat.txt', 'w') as f:
+                f.write(str(time.time()))
+        except Exception as hb_e:
+            logger.error(f"Erro ao escrever heartbeat: {hb_e}")
+            
         print("Dormindo por 60s...", flush=True)
         time.sleep(60)

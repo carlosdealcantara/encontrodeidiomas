@@ -20,4 +20,8 @@ RUN playwright install chromium
 
 COPY . .
 
+# Healthcheck: falha se o arquivo de heartbeat não foi modificado nos últimos 15 minutos
+HEALTHCHECK --interval=5m --timeout=10s --start-period=60s --retries=3 \
+  CMD find /tmp/worker_heartbeat.txt -mmin -15 | grep -q . || exit 1
+
 CMD ["python", "-u", "worker.py"]
