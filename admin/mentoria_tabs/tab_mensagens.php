@@ -40,6 +40,7 @@
     <button class="sub-tab-btn" onclick="openSubTab('sub_music')">🎶 Music Lab</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_vocabulary')">📒 New word!</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_games')">🧩 Games</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_homework')">📝 Homework</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_testes')"><i class="fas fa-vial"></i> Testes Manuais</button>
 </div>
 
@@ -274,6 +275,19 @@
                 <label>Mapeamento de Grupo (JID)</label>
                 <?= renderGroupSelect('jid_games', $jid_games, $available_groups) ?>
                 <p class="help-text">Selecione o grupo "Games" do WhatsApp. <strong>Imagens</strong> enviadas aqui serão contabilizadas no ranking.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB TAB HOMEWORK -->
+    <div id="sub_homework" class="sub-tab-pane">
+        <div class="form-card">
+            <h3 class="section-title">📝 Homework</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de tarefa de casa. O bot rastreará as atividades (mensagens, imagens, áudios) enviadas pelos alunos e o admin poderá atribuir pontos extras com o comando <code>!N</code> respondendo a uma mensagem do aluno.</p>
+            <div class="form-group">
+                <label>Mapeamento de Grupo (JID)</label>
+                <?= renderGroupSelect('jid_homework', $jid_homework, $available_groups) ?>
+                <p class="help-text">Selecione o grupo de Homework do WhatsApp. Atividades enviadas aqui serão contabilizadas no ranking e você poderá usar <code>!N</code> para atribuir pontos.</p>
             </div>
         </div>
     </div>

@@ -91,7 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'pronunciation' => ['jid' => trim($_POST['jid_pronunciation'] ?? ''), 'automations' => ['ranking']],
             'music'         => ['jid' => trim($_POST['jid_music'] ?? ''),        'automations' => ['ranking']],
             'vocabulary'    => ['jid' => trim($_POST['jid_vocabulary'] ?? ''),   'automations' => ['ranking']],
-            'games'         => ['jid' => trim($_POST['jid_games'] ?? ''),        'automations' => ['ranking']]
+            'games'         => ['jid' => trim($_POST['jid_games'] ?? ''),        'automations' => ['ranking']],
+            'homework'      => ['jid' => trim($_POST['jid_homework'] ?? ''),     'automations' => ['ranking']]
         ],
         'templates' => [
             'welcome' => trim($_POST['tpl_welcome']),
@@ -145,6 +146,7 @@ $jid_pronunciation= $config['groups']['pronunciation']['jid'] ?? '';
 $jid_music        = $config['groups']['music']['jid']         ?? '';
 $jid_vocabulary   = $config['groups']['vocabulary']['jid']    ?? '';
 $jid_games        = $config['groups']['games']['jid']         ?? '';
+$jid_homework     = $config['groups']['homework']['jid']      ?? '';
 
 $tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
 $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome}!* 🎉\n\nToday is a special day — one of our amazing Mentorship members is celebrating their birthday! 🥳\n\nWe hope this new year of life brings you lots of growth, joy, and of course... fluency! 🌟\n\nDrop a 🎂 or send a birthday message to make {nome}'s day even more special! 💬 @{numero}";

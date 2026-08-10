@@ -35,6 +35,7 @@ const GROUP_LABELS = [
     'music'         => 'Music Lab',
     'vocabulary'    => 'Vocab.',
     'games'         => 'Games',
+    'homework'      => 'Homework',
 ];
 
 try {
