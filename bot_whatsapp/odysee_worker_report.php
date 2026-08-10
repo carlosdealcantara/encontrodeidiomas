@@ -26,6 +26,16 @@ $conn = connectDB();
 // JID do admin que receberá o relatório
 $adminJid = '556192666148@s.whatsapp.net';
 
+// Verifica se já rodou hoje (evita loop do master_cron que roda a cada 5 minutos)
+$hoje = date('Y-m-d');
+$logFile = __DIR__ . '/../scratch/last_worker_report.txt';
+if (file_exists($logFile)) {
+    $lastRun = trim(file_get_contents($logFile));
+    if ($lastRun === $hoje && !isset($_GET['force'])) {
+        echo "⏭️ Relatório já enviado hoje. Pulando.";
+        exit;
+    }
+}
 // Intervalo de consulta
 $dias = isset($_GET['dias']) ? (int)$_GET['dias'] : 7;
 $desde = date('Y-m-d H:i:s', strtotime("-{$dias} days"));
@@ -77,6 +87,7 @@ if ($total === 0) {
 $result = enviarWhatsApp($adminJid, $mensagem, 'worker_report_semanal');
 
 if ($result['httpCode'] >= 200 && $result['httpCode'] < 300) {
+    file_put_contents($logFile, $hoje);
     echo "✅ Relatório enviado com sucesso para o admin. ({$total} reinícios nos últimos {$dias} dias)";
 } else {
     http_response_code(500);
