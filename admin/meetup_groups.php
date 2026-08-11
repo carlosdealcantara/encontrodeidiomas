@@ -13,25 +13,35 @@ $conn = connectDB();
 $msg = null;
 $api_error = null;
 
-// Sincronizar Grupos
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
-    $res = sendBaileysRequest('/groups', null, 'GET');
-    if ($res['success'] && is_array($res['data'])) {
-        $cache_file = __DIR__ . '/groups_cache.json';
-        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
-        $msg = "Lista de grupos sincronizada com sucesso do WhatsApp! (" . count($res['data']) . " grupos encontrados)";
-    } else {
-        $api_error = "Erro ao buscar grupos da API: " . ($res['error'] ?? 'Desconhecido');
-    }
-}
-
-// Verificar Presença do Bot
+// Verificar Presença do Bot e Atualizar Cache
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['check_bot_presence'])) {
     $res = sendBaileysRequest('/groups', null, 'GET');
     if ($res['success'] && is_array($res['data'])) {
-        // Atualiza cache por conveniência
+        // Atualiza cache de forma inteligente (MESCLANDO, não sobrescrevendo)
         $cache_file = __DIR__ . '/groups_cache.json';
-        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
+        $existing_cache = [];
+        if (file_exists($cache_file)) {
+            $content = preg_replace('/^[\xef\xbb\xbf]+/', '', file_get_contents($cache_file));
+            $decoded = json_decode($content, true);
+            if (is_array($decoded)) {
+                // Indexar por ID para fácil mesclagem
+                foreach ($decoded as $item) {
+                    if (isset($item['id'])) {
+                        $existing_cache[$item['id']] = $item;
+                    }
+                }
+            }
+        }
+        
+        // Adiciona os novos que vieram da API
+        foreach ($res['data'] as $new_item) {
+            if (isset($new_item['id'])) {
+                $existing_cache[$new_item['id']] = $new_item; // Sobrescreve ou adiciona
+            }
+        }
+        
+        // Salva a lista combinada (não perde os grupos antigos da interface de lote)
+        file_put_contents($cache_file, json_encode(array_values($existing_cache), JSON_UNESCAPED_UNICODE));
         
         $api_group_ids = array_column($res['data'], 'id');
         
@@ -278,11 +288,8 @@ foreach ($groups as $g) {
             </div>
             <div style="display: flex; gap: 10px;">
                 <form method="POST" style="margin: 0;">
-                    <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco para ver se o bot está nos grupos" onclick="return confirm('Isso vai verificar se o bot atual está em todos esses grupos. Continuar?')">
-                        🤖 Verificar Presença do Bot
-                    </button>
-                    <button type="submit" name="sync_groups" class="btn btn-secondary">
-                        <i class="fas fa-sync-alt"></i> Sincronizar Grupos (API)
+                    <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco e atualiza a visualização sem perder histórico" onclick="return confirm('Isso vai atualizar o status dos grupos. Continuar?')">
+                        🤖 Verificar Presença do Bot e Atualizar Cache
                     </button>
                 </form>
                 <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-list"></i> Carregar Grupos (Cache)</a>
