@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
     } else {
         try {
             // Obter grupos a serem afetados
-            $sql_grupos = "SELECT group_id FROM meetup_whatsapp_groups WHERE ativo = 1";
+            $sql_grupos = "SELECT group_id FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1";
             $params = [];
             
             if ($categoria === 'multi_idioma') {

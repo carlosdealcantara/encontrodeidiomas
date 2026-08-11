@@ -25,6 +25,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
     }
 }
 
+// Verificar Presença do Bot
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['check_bot_presence'])) {
+    $res = sendBaileysRequest('/groups', null, 'GET');
+    if ($res['success'] && is_array($res['data'])) {
+        // Atualiza cache por conveniência
+        $cache_file = __DIR__ . '/groups_cache.json';
+        file_put_contents($cache_file, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
+        
+        $api_group_ids = array_column($res['data'], 'id');
+        
+        $presentes = 0;
+        $ausentes = 0;
+        
+        try {
+            // Todos começam como ausentes por padrão nesta verificação, e vamos ativar apenas os que vieram da API
+            $conn->exec("UPDATE meetup_whatsapp_groups SET bot_presente = 0");
+            
+            if (!empty($api_group_ids)) {
+                $placeholders = implode(',', array_fill(0, count($api_group_ids), '?'));
+                $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET bot_presente = 1 WHERE group_id IN ($placeholders)");
+                $stmt->execute($api_group_ids);
+                $presentes = $stmt->rowCount();
+            }
+            
+            // Re-contar ausentes reais (grupos no banco mas que a API não retornou)
+            $ausentes = $conn->query("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE bot_presente = 0")->fetchColumn();
+            
+            $msg = "Presença do bot verificada! {$presentes} grupos confirmados ✅ | {$ausentes} grupos sem o bot ⚠️";
+        } catch (PDOException $e) {
+            $api_error = "Erro ao atualizar presença: " . $e->getMessage();
+        }
+    } else {
+        $api_error = "Erro ao buscar grupos da API para verificação: " . ($res['error'] ?? 'Desconhecido');
+    }
+}
+
+// Bot Entrou Manualmente (Ação Inline)
+if (isset($_GET['bot_entered'])) {
+    try {
+        $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET bot_presente = 1 WHERE id = ?");
+        $stmt->execute([(int)$_GET['bot_entered']]);
+        header('Location: meetup_groups.php?msg=Status+do+grupo+atualizado+para+Bot+Presente%21');
+        exit;
+    } catch (PDOException $e) {
+        $api_error = "Erro ao atualizar grupo: " . $e->getMessage();
+    }
+}
+
+
 // Lógica de Importação em Lote (Batch Import)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
     $selected_groups = $_POST['selected_groups'] ?? [];
@@ -229,11 +278,14 @@ foreach ($groups as $g) {
             </div>
             <div style="display: flex; gap: 10px;">
                 <form method="POST" style="margin: 0;">
+                    <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco para ver se o bot está nos grupos" onclick="return confirm('Isso vai verificar se o bot atual está em todos esses grupos. Continuar?')">
+                        🤖 Verificar Presença do Bot
+                    </button>
                     <button type="submit" name="sync_groups" class="btn btn-secondary">
                         <i class="fas fa-sync-alt"></i> Sincronizar Grupos (API)
                     </button>
                 </form>
-                <a href="?fetch_api=1" class="btn btn-primary"><i class="fas fa-list"></i> Carregar Grupos (Cache)</a>
+                <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-list"></i> Carregar Grupos (Cache)</a>
             </div>
         </header>
 
@@ -381,7 +433,8 @@ foreach ($groups as $g) {
                     <th>Nome do Grupo</th>
                     <th>ID (WhatsApp)</th>
                     <th>Categoria / Idioma</th>
-                    <th>Status</th>
+                    <th>Status do Sistema</th>
+                    <th>Presença do Bot</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -400,6 +453,15 @@ foreach ($groups as $g) {
                         <?php endif; ?>
                     </td>
                     <td><?= $g['ativo'] ? '<span style="color:var(--success);">Ativo</span>' : '<span style="color:var(--text-dim);">Inativo</span>' ?></td>
+                    <td>
+                        <?php if ($g['bot_presente']): ?>
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fas fa-check-circle"></i> Presente</span>
+                        <?php else: ?>
+                            <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fas fa-exclamation-triangle"></i> Ausente</span>
+                            <br>
+                            <a href="?bot_entered=<?= $g['id'] ?>" class="btn" style="background: transparent; border: 1px solid var(--success); color: var(--success); padding: 2px 6px; font-size: 0.75rem; margin-top: 5px;" onclick="return confirm('Confirmar que você já colocou o bot neste grupo no WhatsApp?')">✓ Bot Entrou</a>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem;" 
                             onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= $g['language_id'] ?>', <?= $g['ativo'] ?>)">

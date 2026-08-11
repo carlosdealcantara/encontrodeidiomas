@@ -63,7 +63,7 @@ if(count($meetings) === 0) {
 }
 
 // 3. Pega grupos ativos
-$stmtGroups = $conn->query("SELECT * FROM meetup_whatsapp_groups WHERE ativo = 1");
+$stmtGroups = $conn->query("SELECT * FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1");
 $groups = $stmtGroups->fetchAll();
 
 $sucessos = 0;

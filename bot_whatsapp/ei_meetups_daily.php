@@ -75,7 +75,7 @@ $listaFormatadaGlobal = implode("\n", $listaGlobalEncontros);
 
 // 4. Pega grupos ativos
 echo "Buscando grupos ativos...<br>";
-$stmtGroups = $conn->query("SELECT * FROM meetup_whatsapp_groups WHERE ativo = 1");
+$stmtGroups = $conn->query("SELECT * FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1");
 $groups = $stmtGroups->fetchAll();
 echo "Total de grupos ativos: " . count($groups) . ". Iniciando loop de disparos...<hr>";
 

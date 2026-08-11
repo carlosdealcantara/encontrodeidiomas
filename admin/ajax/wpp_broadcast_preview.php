@@ -21,18 +21,18 @@ $conn = connectDB();
 try {
     if ($categoria === 'todos') {
         // Todos os grupos ativos (multi ou específicos)
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1");
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1");
         $stmt->execute();
     } elseif ($categoria === 'multi_idioma') {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND categoria = 'multi_idioma'");
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1 AND categoria = 'multi_idioma'");
         $stmt->execute();
     } elseif ($categoria === 'especifico') {
         if ($language_id) {
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND categoria = 'especifico' AND language_id = ?");
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1 AND categoria = 'especifico' AND language_id = ?");
             $stmt->execute([$language_id]);
         } else {
             // Se específico mas sem idioma, mostra o total de específicos
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND categoria = 'especifico'");
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1 AND categoria = 'especifico'");
             $stmt->execute();
         }
     } else {
