@@ -314,7 +314,20 @@ unset($g);
                         🔄 Sincronizar com Celular
                     </button>
                 </form>
-                <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-cog"></i> Configurar Novos Grupos</a>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                    <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-cog"></i> Configurar Novos Grupos</a>
+                    <?php
+                        $cache_file_check = __DIR__ . '/groups_cache.json';
+                        if (file_exists($cache_file_check)) {
+                            $cacheAge = time() - filemtime($cache_file_check);
+                            $cacheTime = date('d/m H:i', filemtime($cache_file_check));
+                            $cacheColor = $cacheAge > 3600 ? '#f59e0b' : '#94a3b8';
+                            echo "<small style='color:{$cacheColor}; font-size:0.75rem;'>📡 Última sync: {$cacheTime}" . ($cacheAge > 3600 ? ' ⚠️' : '') . "</small>";
+                        } else {
+                            echo "<small style='color:#ef4444; font-size:0.75rem;'>⚠️ Nenhuma sync realizada ainda</small>";
+                        }
+                    ?>
+                </div>
             </div>
         </header>
 
@@ -327,6 +340,15 @@ unset($g);
 
         <!-- Importação em Lote -->
         <?php if (isset($_GET['fetch_api']) && !$api_error): ?>
+            <?php
+                $cache_file_check2 = __DIR__ . '/groups_cache.json';
+                $cacheAgeCheck = file_exists($cache_file_check2) ? (time() - filemtime($cache_file_check2)) : PHP_INT_MAX;
+            ?>
+            <?php if ($cacheAgeCheck > 3600): ?>
+            <div class="alert error" style="margin-bottom:15px;">
+                ⚠️ <strong>Atenção:</strong> O último sync foi há mais de 1 hora. Se você entrou em novos grupos recentemente, clique primeiro em <strong>"Sincronizar com Celular"</strong> para garantir que todos apareçam aqui.
+            </div>
+            <?php endif; ?>
             <div class="form-card">
                 <h3><i class="fab fa-whatsapp"></i> Importar Grupos da API (Lote)</h3>
                 <p style="color: var(--text-dim); margin-top: 5px; margin-bottom: 20px;">Selecione os grupos abaixo e defina a categoria/idioma padrão para eles.</p>
