@@ -74,15 +74,14 @@ foreach ($meetings as $m) {
     foreach ($templates as $t) {
         $minutosAntes = (int)$t['minutos_antes'];
         
-        // Calcula a hora em que esta mensagem DEVERIA ser enviada
-        // Vamos arredondar para horas cheias para simplificar o cron de hora em hora
-        // Se minutosAntes = 120 (2 horas), horaEnvio = horaEncontro - 2
-        $horasAntes = round($minutosAntes / 60);
-        $horaAlvo = $horaEncontro - $horasAntes;
+        $minutosAtual = (int)$hoje->format('i');
+        $totalMinAtual = $horaAtualReal * 60 + $minutosAtual;
+        $totalMinAlvo = $horaEncontro * 60 - $minutosAntes;
         
-        // Se a hora alvo bate com a hora atual (com uma tolerância se o cron rodar +- minutos)
-        // Como é cron de hora em hora (ou 15m), verificamos se a hora bate
-        if ($horaAtualReal === (int)$horaAlvo) {
+        // Janela de tolerância de +- 15 minutos (para cron de 15 em 15 ou pequenas variações)
+        $dentro_janela = abs($totalMinAtual - $totalMinAlvo) <= 15;
+        
+        if ($dentro_janela) {
             
             // Prepara a mensagem
             $textoFinal = $t['template_texto'];
@@ -94,6 +93,7 @@ foreach ($meetings as $m) {
             $linkLimpo = str_replace(['https://', 'http://'], '', $m['meet_link'] ?? '');
             $textoFinal = str_replace('{MEET_LINK}', $linkLimpo ?: 'Link não definido', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', $m['instagram_link'] ?: 'Sem link', $textoFinal);
+            $textoFinal = str_replace('{HOST_LINK}', 'https://viaei.com/equipe/', $textoFinal);
             
             // Filtra os grupos que devem receber ESTA mensagem DESTE idioma
             foreach ($groups as $g) {
@@ -106,11 +106,20 @@ foreach ($meetings as $m) {
                 }
                 
                 if ($podeEnviar) {
+                    $frequencia = $t['frequencia'] ?? 'diario';
+                    $semanaIso = (int)$hoje->format('W');
+
+                    if ($frequencia === 'semanal') {
+                        $stmtCheckSemana = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND template_id = ? AND semana_iso = ?");
+                        $stmtCheckSemana->execute([$g['id'], $t['id'], $semanaIso]);
+                        if ($stmtCheckSemana->rowCount() > 0 && !isset($_GET['force'])) {
+                            echo "<p>⏭️ Pulando Grupo '{$g['nome']}': [{$t['cenario']}] já enviada esta semana (Semana $semanaIso).</p>";
+                            continue;
+                        }
+                    }
+
                     // ============================================================
                     // ANTI-DUPLICIDADE ATÔMICA via INSERT IGNORE
-                    // A inserção no log ocorre ANTES do envio.
-                    // Se dois crons rodarem simultaneamente, apenas o que inserir
-                    // primeiro (com a UNIQUE KEY) vai prosseguir com o envio.
                     // ============================================================
                     if (isset($_GET['force'])) {
                         // Modo force: apaga o log existente para re-enviar
@@ -118,9 +127,20 @@ foreach ($meetings as $m) {
                         $stmtDel->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
                     }
 
-                    $stmtLog = $conn->prepare("INSERT IGNORE INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, ?, ?, ?)");
-                    $stmtLog->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
-                    $logId = $conn->lastInsertId();
+                    try {
+                        $stmtLog = $conn->prepare("INSERT IGNORE INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo, semana_iso) VALUES (?, ?, ?, ?, ?)");
+                        $stmtLog->execute([$g['id'], $m['id'], $t['id'], $dataDisparo, $semanaIso]);
+                        $logId = $conn->lastInsertId();
+                    } catch (PDOException $e) {
+                        // Fallback seguro caso a migração v5 ainda não tenha adicionado a coluna semana_iso
+                        if (strpos($e->getMessage(), "Unknown column 'semana_iso'") !== false) {
+                            $stmtLogFallback = $conn->prepare("INSERT IGNORE INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, ?, ?, ?)");
+                            $stmtLogFallback->execute([$g['id'], $m['id'], $t['id'], $dataDisparo]);
+                            $logId = $conn->lastInsertId();
+                        } else {
+                            throw $e;
+                        }
+                    }
 
                     if ($logId == 0) {
                         // Nenhuma linha inserida = UNIQUE KEY já existe = já foi enviado

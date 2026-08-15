@@ -15,14 +15,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $minutos = (int)$_POST['minutos_antes'];
         $texto = trim($_POST['template_texto']);
         $ativo = isset($_POST['ativo']) ? 1 : 0;
+        $frequencia = $_POST['frequencia'] ?? 'diario';
         
         try {
-            if (!empty($_POST['id'])) {
-                $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ? WHERE id = ?");
-                $stmt->execute([$cenario, $minutos, $texto, $ativo, $_POST['id']]);
-            } else {
-                $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$cenario, $minutos, $texto, $ativo]);
+            try {
+                if (!empty($_POST['id'])) {
+                    $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ?, frequencia = ? WHERE id = ?");
+                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $_POST['id']]);
+                } else {
+                    $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo, frequencia) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia]);
+                }
+            } catch (PDOException $e) {
+                // Fallback caso a coluna frequencia ainda não tenha sido criada via migração V5
+                if (strpos($e->getMessage(), "Unknown column 'frequencia'") !== false) {
+                    if (!empty($_POST['id'])) {
+                        $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ? WHERE id = ?");
+                        $stmt->execute([$cenario, $minutos, $texto, $ativo, $_POST['id']]);
+                    } else {
+                        $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo) VALUES (?, ?, ?, ?)");
+                        $stmt->execute([$cenario, $minutos, $texto, $ativo]);
+                    }
+                } else {
+                    throw $e;
+                }
             }
             header('Location: meetup_templates.php?msg=Template salvo com sucesso!');
             exit;
@@ -52,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $textoFinal = str_replace('{SAUDACAO}', 'Hello!', $textoFinal);
             $textoFinal = str_replace('{MEET_LINK}', 'https://meet.google.com/abc-defg-hij', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', 'https://instagram.com/ingles.meetup', $textoFinal);
+            $textoFinal = str_replace('{HOST_LINK}', 'https://viaei.com/equipe/', $textoFinal);
             
             // Mock Data para Resumo Diário
             $mockLista = "🇺🇸 English\n🇩🇪 Deutsch";
@@ -168,13 +185,22 @@ try {
                             <option value="Hora Exata">Hora Exata</option>
                             <option value="Resumo do Dia">Resumo do Dia</option>
                             <option value="Lembrete">Lembrete (Ex: 15 min antes)</option>
+                            <option value="Convite para Host">Convite para Host</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Frequência do Disparo</label>
+                        <select name="frequencia" id="frequencia" class="form-control" required>
+                            <option value="diario">Diário (Pode disparar todos os dias)</option>
+                            <option value="semanal">Semanal (Máximo 1 vez por semana por grupo/idioma)</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Minutos de Antecedência (0 = Na hora exata)</label>
                         <input type="number" name="minutos_antes" id="minutos_antes" required value="0">
-                        <small style="color: var(--text-dim);">Use 120 para 2 horas antes, 60 para 1 hora antes, etc.</small>
+                        <small style="color: var(--text-dim);">Use 120 para 2 horas antes, 60 para 1 hora antes, 30 para meia hora antes, etc.</small>
                     </div>
                     
                     <div class="form-group">
@@ -188,6 +214,7 @@ try {
                             <span class="var-chip" onclick="insertVar('{SAUDACAO}')">{SAUDACAO}</span>
                             <span class="var-chip" onclick="insertVar('{MEET_LINK}')">{MEET_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{INSTAGRAM_LINK}')">{INSTAGRAM_LINK}</span>
+                            <span class="var-chip" onclick="insertVar('{HOST_LINK}')">{HOST_LINK}</span>
                         </div>
                     </div>
                     
@@ -230,7 +257,7 @@ try {
                                 </div>
                             </div>
                             <div style="display:flex; gap: 5px;">
-                                <button class="btn btn-secondary" style="padding: 5px 10px;" onclick="editTemplate(<?= $t['id'] ?>, '<?= addslashes($t['cenario']) ?>', <?= $t['minutos_antes'] ?>, `<?= addslashes($t['template_texto']) ?>`, <?= $t['ativo'] ?>)"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px;" onclick="editTemplate(<?= $t['id'] ?>, '<?= addslashes($t['cenario']) ?>', '<?= $t['frequencia'] ?? 'diario' ?>', <?= $t['minutos_antes'] ?>, `<?= addslashes($t['template_texto']) ?>`, <?= $t['ativo'] ?>)"><i class="fas fa-edit"></i></button>
                                 <a href="?delete=<?= $t['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--accent-red);" onclick="return confirm('Excluir?')"><i class="fas fa-trash"></i></a>
                             </div>
                         </div>
@@ -251,10 +278,11 @@ try {
             txt.selectionEnd = start + variable.length;
         }
         
-        function editTemplate(id, cenario, minutos, texto, ativo) {
+        function editTemplate(id, cenario, frequencia, minutos, texto, ativo) {
             document.getElementById('form-title').textContent = 'Editar Template';
             document.getElementById('template_id').value = id;
             document.getElementById('cenario').value = cenario;
+            document.getElementById('frequencia').value = frequencia || 'diario';
             document.getElementById('minutos_antes').value = minutos;
             document.getElementById('template_texto').value = texto;
             document.getElementById('ativo').checked = (ativo == 1);
@@ -265,6 +293,7 @@ try {
             document.getElementById('form-title').textContent = 'Adicionar Template';
             document.getElementById('template_id').value = '';
             document.getElementById('cenario').value = '';
+            document.getElementById('frequencia').value = 'diario';
             document.getElementById('minutos_antes').value = '0';
             document.getElementById('template_texto').value = '';
             document.getElementById('ativo').checked = true;
