@@ -537,10 +537,13 @@ async function processQueue() {
             // Check if job completed
             const isLastOfJob = queue.findIndex(q => q.jobId === jobId) === -1;
             if (isLastOfJob) {
-                addLog(jobId, 'info', 'Teste de Fila Concluído!');
+                addLog(jobId, 'info', 'Tarefa concluída!');
                 setJobStatus(jobId, 'completed');
-            } else {
-                addLog(jobId, 'info', 'Aguardando 5 segundos para limpar a memória (Garbage Collector)...');
+            }
+            
+            // Pausa obrigatória para proteger o chip anti-spam
+            if (queue.length > 0) {
+                addLog(jobId, 'info', `Aguardando ${DELAY_ENTRE_GRUPOS_MS/1000}s de proteção anti-spam antes do próximo grupo...`);
                 await new Promise(r => setTimeout(r, DELAY_ENTRE_GRUPOS_MS));
             }
         }
