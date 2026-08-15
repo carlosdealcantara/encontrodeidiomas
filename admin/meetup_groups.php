@@ -472,7 +472,11 @@ unset($g);
         </div>
 
         <!-- Tabela de Grupos Cadastrados -->
-        <table>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Grupos Cadastrados</h3>
+            <input type="text" id="search_table" placeholder="🔍 Buscar grupo cadastrado..." onkeyup="filterTable()" style="width: 300px; padding: 10px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+        </div>
+        <table id="groups_table">
             <thead>
                 <tr>
                     <th>Nome do Grupo</th>
@@ -605,6 +609,21 @@ unset($g);
             toggleLang('multi_idioma');
             document.getElementById('ativo').checked = true;
             document.getElementById('btn_cancel').style.display = 'none';
+        }
+
+        function filterTable() {
+            const query = document.getElementById('search_table').value.toLowerCase();
+            const rows = document.querySelectorAll('#groups_table tbody tr');
+            
+            rows.forEach(row => {
+                const nameText = row.cells[0].innerText.toLowerCase();
+                const idText = row.cells[1].innerText.toLowerCase();
+                if (nameText.includes(query) || idText.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         }
     </script>
 </body>
