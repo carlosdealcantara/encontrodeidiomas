@@ -11,24 +11,25 @@ $conn = connectDB();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['save_template'])) {
-        $cenario = trim($_POST['cenario']);
-        $minutos = (int)$_POST['minutos_antes'];
-        $texto = trim($_POST['template_texto']);
-        $ativo = isset($_POST['ativo']) ? 1 : 0;
+        $cenario    = trim($_POST['cenario']);
+        $minutos    = (int)$_POST['minutos_antes'];
+        $texto      = trim($_POST['template_texto']);
+        $ativo      = isset($_POST['ativo']) ? 1 : 0;
         $frequencia = $_POST['frequencia'] ?? 'diario';
+        $escopo     = $_POST['escopo']     ?? 'por_encontro';
         
         try {
             try {
                 if (!empty($_POST['id'])) {
-                    $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ?, frequencia = ? WHERE id = ?");
-                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $_POST['id']]);
+                    $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ?, frequencia = ?, escopo = ? WHERE id = ?");
+                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $escopo, $_POST['id']]);
                 } else {
-                    $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo, frequencia) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia]);
+                    $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo, frequencia, escopo) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $escopo]);
                 }
             } catch (PDOException $e) {
-                // Fallback caso a coluna frequencia ainda não tenha sido criada via migração V5
-                if (strpos($e->getMessage(), "Unknown column 'frequencia'") !== false) {
+                // Fallback caso colunas frequencia/escopo ainda não existam (migração pendente)
+                if (strpos($e->getMessage(), "Unknown column") !== false) {
                     if (!empty($_POST['id'])) {
                         $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ? WHERE id = ?");
                         $stmt->execute([$cenario, $minutos, $texto, $ativo, $_POST['id']]);
@@ -69,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $textoFinal = str_replace('{MEET_LINK}', 'https://meet.google.com/abc-defg-hij', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', 'https://instagram.com/ingles.meetup', $textoFinal);
             $textoFinal = str_replace('{HOST_LINK}', 'https://viaei.com/equipe/', $textoFinal);
+            $textoFinal = str_replace('{BANDEIRAS_DO_DIA}', '🇺🇸🇫🇷🇯🇵', $textoFinal); // Mock com 3 idiomas
             
             // Mock Data para Resumo Diário
             $mockLista = "🇺🇸 English\n🇩🇪 Deutsch";
@@ -190,6 +192,15 @@ try {
                     </div>
                     
                     <div class="form-group">
+                        <label>Escopo do Disparo</label>
+                        <select name="escopo" id="escopo" class="form-control" required>
+                            <option value="por_encontro">Por Encontro — dispara para cada meeting × grupo (padrão)</option>
+                            <option value="diario">Diário — dispara 1x/dia por grupo, X min antes do 1º encontro</option>
+                        </select>
+                        <small style="color: var(--text-dim);">Use "Diário" para o Convite para Host. Use "Por Encontro" para lembretes normais.</small>
+                    </div>
+
+                    <div class="form-group">
                         <label>Frequência do Disparo</label>
                         <select name="frequencia" id="frequencia" class="form-control" required>
                             <option value="diario">Diário (Pode disparar todos os dias)</option>
@@ -198,9 +209,9 @@ try {
                     </div>
                     
                     <div class="form-group">
-                        <label>Minutos de Antecedência (0 = Na hora exata)</label>
+                        <label>Minutos de Antecedência (0 = Na hora exata; para escopo Diário: relativo ao 1º encontro)</label>
                         <input type="number" name="minutos_antes" id="minutos_antes" required value="0">
-                        <small style="color: var(--text-dim);">Use 120 para 2 horas antes, 60 para 1 hora antes, 30 para meia hora antes, etc.</small>
+                        <small style="color: var(--text-dim);">Use 120 para 2 horas antes, 60 para 1 hora, 30 para meia hora, etc.</small>
                     </div>
                     
                     <div class="form-group">
@@ -215,6 +226,7 @@ try {
                             <span class="var-chip" onclick="insertVar('{MEET_LINK}')">{MEET_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{INSTAGRAM_LINK}')">{INSTAGRAM_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{HOST_LINK}')">{HOST_LINK}</span>
+                            <span class="var-chip" onclick="insertVar('{BANDEIRAS_DO_DIA}')" title="Somente para escopo Diário">{BANDEIRAS_DO_DIA} 🗓️</span>
                         </div>
                     </div>
                     
@@ -257,7 +269,7 @@ try {
                                 </div>
                             </div>
                             <div style="display:flex; gap: 5px;">
-                                <button class="btn btn-secondary" style="padding: 5px 10px;" onclick="editTemplate(<?= $t['id'] ?>, '<?= addslashes($t['cenario']) ?>', '<?= $t['frequencia'] ?? 'diario' ?>', <?= $t['minutos_antes'] ?>, `<?= addslashes($t['template_texto']) ?>`, <?= $t['ativo'] ?>)"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px;" onclick="editTemplate(<?= $t['id'] ?>, '<?= addslashes($t['cenario']) ?>', '<?= $t['escopo'] ?? 'por_encontro' ?>', '<?= $t['frequencia'] ?? 'diario' ?>', <?= $t['minutos_antes'] ?>, `<?= addslashes($t['template_texto']) ?>`, <?= $t['ativo'] ?>)"><i class="fas fa-edit"></i></button>
                                 <a href="?delete=<?= $t['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--accent-red);" onclick="return confirm('Excluir?')"><i class="fas fa-trash"></i></a>
                             </div>
                         </div>
@@ -278,10 +290,11 @@ try {
             txt.selectionEnd = start + variable.length;
         }
         
-        function editTemplate(id, cenario, frequencia, minutos, texto, ativo) {
+        function editTemplate(id, cenario, escopo, frequencia, minutos, texto, ativo) {
             document.getElementById('form-title').textContent = 'Editar Template';
             document.getElementById('template_id').value = id;
             document.getElementById('cenario').value = cenario;
+            document.getElementById('escopo').value = escopo || 'por_encontro';
             document.getElementById('frequencia').value = frequencia || 'diario';
             document.getElementById('minutos_antes').value = minutos;
             document.getElementById('template_texto').value = texto;
@@ -293,6 +306,7 @@ try {
             document.getElementById('form-title').textContent = 'Adicionar Template';
             document.getElementById('template_id').value = '';
             document.getElementById('cenario').value = '';
+            document.getElementById('escopo').value = 'por_encontro';
             document.getElementById('frequencia').value = 'diario';
             document.getElementById('minutos_antes').value = '0';
             document.getElementById('template_texto').value = '';
