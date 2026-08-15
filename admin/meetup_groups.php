@@ -310,7 +310,7 @@ unset($g);
             </div>
             <div style="display: flex; gap: 10px;">
                 <form method="POST" style="margin: 0;">
-                    <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco e atualiza a visualização sem perder histórico" onclick="return confirm('Isso vai atualizar o status dos grupos com o celular atual. Continuar?')">
+                    <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco e atualiza a visualização sem perder histórico">
                         🔄 Sincronizar com Celular
                     </button>
                 </form>
