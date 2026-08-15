@@ -255,7 +255,7 @@ foreach ($groups as $g) {
         .badge.spec { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
         .badge.registered { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         
-        .btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; border: none; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: bold; font-family: inherit; font-size: 1.05rem; cursor: pointer; text-decoration: none; border: none; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: var(--accent-red); }
         .btn-primary:hover { opacity: 0.9; }
         .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
