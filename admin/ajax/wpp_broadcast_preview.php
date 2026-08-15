@@ -28,7 +28,7 @@ try {
         $stmt->execute();
     } elseif ($categoria === 'especifico') {
         if ($language_id) {
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1 AND categoria = 'especifico' AND language_id = ?");
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1 AND categoria = 'especifico' AND JSON_CONTAINS(language_ids, CAST(? AS JSON))");
             $stmt->execute([$language_id]);
         } else {
             // Se específico mas sem idioma, mostra o total de específicos

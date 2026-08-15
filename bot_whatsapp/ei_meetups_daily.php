@@ -86,10 +86,14 @@ foreach ($groups as $g) {
     
     if ($g['categoria'] === 'multi_idioma') {
         $podeEnviar = true;
-    } else if ($g['categoria'] === 'especifico') {
-        // Se o idioma específico deste grupo está na lista de encontros de hoje
-        if (in_array($g['language_id'], $languageIdsHoje)) {
-            $podeEnviar = true;
+    } else if ($g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
+        // Se algum dos idiomas deste grupo tem encontro hoje
+        $ids = json_decode($g['language_ids'], true);
+        if (is_array($ids)) {
+            $intersect = array_intersect($ids, $languageIdsHoje);
+            if (!empty($intersect)) {
+                $podeEnviar = true;
+            }
         }
     }
     

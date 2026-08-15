@@ -131,8 +131,13 @@ foreach ($meetings as $m) {
         $textoFinal = str_replace('{HOST_LINK}',     'https://viaei.com/equipe/',               $textoFinal);
 
         foreach ($groups as $g) {
-            $podeEnviar = ($g['categoria'] === 'multi_idioma')
-                || ($g['categoria'] === 'especifico' && $g['language_id'] == $m['language_id']);
+            $podeEnviar = ($g['categoria'] === 'multi_idioma');
+            if (!$podeEnviar && $g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
+                $ids = json_decode($g['language_ids'], true);
+                if (is_array($ids) && in_array($m['language_id'], $ids)) {
+                    $podeEnviar = true;
+                }
+            }
 
             if (!$podeEnviar) continue;
 

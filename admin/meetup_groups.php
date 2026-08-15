@@ -88,14 +88,14 @@ if (isset($_GET['bot_entered'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
     $selected_groups = $_POST['selected_groups'] ?? [];
     $categoria = $_POST['batch_categoria'];
-    $language_id = ($categoria === 'especifico' && !empty($_POST['batch_language_id'])) ? (int)$_POST['batch_language_id'] : null;
+    $language_ids = ($categoria === 'especifico' && !empty($_POST['batch_language_ids'])) ? json_encode(array_map('intval', (array)$_POST['batch_language_ids'])) : null;
     $ativo = isset($_POST['batch_ativo']) ? 1 : 0;
     
     if (!empty($selected_groups)) {
         try {
             $imported = 0;
-            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
-            $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_groups WHERE group_id = ? AND categoria = ? AND (language_id = ? OR (language_id IS NULL AND ? IS NULL))");
+            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo) VALUES (?, ?, ?, ?, ?)");
+            $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_groups WHERE group_id = ?");
             
             foreach ($selected_groups as $group_json) {
                 $group_data = json_decode($group_json, true);
@@ -104,9 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
                     $g_subject = $group_data['subject'] ?? 'Sem Nome';
                     
                     // Verificar duplicidade
-                    $stmtCheck->execute([$g_id, $categoria, $language_id, $language_id]);
+                    $stmtCheck->execute([$g_id]);
                     if ($stmtCheck->rowCount() === 0) {
-                        $stmt->execute([$g_subject, $g_id, $categoria, $language_id, $ativo]);
+                        $stmt->execute([$g_subject, $g_id, $categoria, $language_ids, $ativo]);
                         $imported++;
                     }
                 }
@@ -125,19 +125,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_group'])) {
     $nome = trim($_POST['nome']);
     $group_id = trim($_POST['group_id']);
     $categoria = $_POST['categoria'];
-    $language_id = ($categoria === 'especifico' && !empty($_POST['language_id'])) ? (int)$_POST['language_id'] : null;
+    $language_ids = ($categoria === 'especifico' && !empty($_POST['language_ids'])) ? json_encode(array_map('intval', (array)$_POST['language_ids'])) : null;
     $ativo = isset($_POST['ativo']) ? 1 : 0;
     
     try {
         if (!empty($_POST['id'])) {
             // Atualizar
-            $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_id = ?, ativo = ? WHERE id = ?");
-            $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo, $_POST['id']]);
+            $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_ids = ?, ativo = ? WHERE id = ?");
+            $stmt->execute([$nome, $group_id, $categoria, $language_ids, $ativo, $_POST['id']]);
             $msg = "Grupo atualizado com sucesso!";
         } else {
             // Inserir
-            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_id, ativo) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$nome, $group_id, $categoria, $language_id, $ativo]);
+            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$nome, $group_id, $categoria, $language_ids, $ativo]);
             $msg = "Novo grupo adicionado com sucesso!";
         }
     } catch (PDOException $e) {
@@ -187,17 +187,17 @@ try {
 $languages = [];
 try {
     $languages = $conn->query("SELECT id, name FROM languages ORDER BY name ASC")->fetchAll();
+    $languagesMap = array_column($languages, 'name', 'id');
 } catch (PDOException $e) {
-    // Falha silenciosa
+    $languagesMap = [];
 }
 
 // Buscar grupos cadastrados
 $groups = [];
 try {
     $stmt = $conn->query("
-        SELECT g.*, l.name as language_name 
+        SELECT g.* 
         FROM meetup_whatsapp_groups g 
-        LEFT JOIN languages l ON g.language_id = l.id 
         ORDER BY g.ativo DESC, g.categoria, g.nome ASC
     ");
     $groups = $stmt->fetchAll();
@@ -206,16 +206,29 @@ try {
 }
 
 $registered_groups = [];
-foreach ($groups as $g) {
+foreach ($groups as &$g) {
+    // Parse JSON language_ids for display
+    $g['language_names'] = [];
+    if (!empty($g['language_ids'])) {
+        $ids = json_decode($g['language_ids'], true);
+        if (is_array($ids)) {
+            foreach ($ids as $id) {
+                if (isset($languagesMap[$id])) $g['language_names'][] = $languagesMap[$id];
+            }
+        }
+    }
+    $g['language_name_display'] = implode(', ', $g['language_names']);
+
     if (!isset($registered_groups[$g['group_id']])) {
         $registered_groups[$g['group_id']] = ['is_multi' => false, 'languages' => []];
     }
     if ($g['categoria'] === 'multi_idioma') {
         $registered_groups[$g['group_id']]['is_multi'] = true;
     } else {
-        $registered_groups[$g['group_id']]['languages'][] = $g['language_name'];
+        $registered_groups[$g['group_id']]['languages'] = array_merge($registered_groups[$g['group_id']]['languages'], $g['language_names']);
     }
 }
+unset($g);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -320,12 +333,11 @@ foreach ($groups as $g) {
                         </div>
                         <div class="form-group" id="batch_lang_box" style="display: none;">
                             <label>Idioma Vinculado</label>
-                            <select name="batch_language_id" id="batch_language_id">
-                                <option value="">Selecione...</option>
+                            <div style="display:flex; flex-wrap:wrap; gap:10px; background:var(--input-bg); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
                                 <?php foreach ($languages as $l): ?>
-                                    <option value="<?= $l['id'] ?>"><?= htmlspecialchars($l['name']) ?></option>
+                                    <label style="display:inline-flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" name="batch_language_ids[]" value="<?= $l['id'] ?>"> <?= htmlspecialchars($l['name']) ?></label>
                                 <?php endforeach; ?>
-                            </select>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Status</label>
@@ -415,12 +427,11 @@ foreach ($groups as $g) {
                     </div>
                     <div class="form-group" id="lang_box" style="display: none;">
                         <label>Idioma Vinculado</label>
-                        <select name="language_id" id="language_id">
-                            <option value="">Selecione...</option>
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; background:var(--input-bg); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
                             <?php foreach ($languages as $l): ?>
-                                <option value="<?= $l['id'] ?>"><?= htmlspecialchars($l['name']) ?></option>
+                                <label style="display:inline-flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" name="language_ids[]" value="<?= $l['id'] ?>" class="lang_cb"> <?= htmlspecialchars($l['name']) ?></label>
                             <?php endforeach; ?>
-                        </select>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -456,7 +467,7 @@ foreach ($groups as $g) {
                         <?php if ($g['categoria'] == 'multi_idioma'): ?>
                             <span class="badge multi">Múltiplos Idiomas</span>
                         <?php else: ?>
-                            <span class="badge spec">Específico: <?= htmlspecialchars($g['language_name'] ?? 'Idioma Removido') ?></span>
+                            <span class="badge spec">Específico: <?= htmlspecialchars(empty($g['language_name_display']) ? 'Idioma Removido' : $g['language_name_display']) ?></span>
                         <?php endif; ?>
                     </td>
                     <td><?= $g['ativo'] ? '<span style="color:var(--success);">Ativo</span>' : '<span style="color:var(--text-dim);">Inativo</span>' ?></td>
@@ -471,7 +482,7 @@ foreach ($groups as $g) {
                     </td>
                     <td>
                         <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem;" 
-                            onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= $g['language_id'] ?>', <?= $g['ativo'] ?>)">
+                            onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= addslashes($g['language_ids'] ?? '') ?>', <?= $g['ativo'] ?>)">
                             <i class="fas fa-edit"></i>
                         </button>
                         <a href="?delete=<?= $g['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem; color: var(--accent-red);" onclick="return confirm('Tem certeza que deseja excluir este grupo?')">
@@ -489,11 +500,9 @@ foreach ($groups as $g) {
             const box = document.getElementById('lang_box');
             if (val === 'especifico') {
                 box.style.display = 'block';
-                document.getElementById('language_id').required = true;
             } else {
                 box.style.display = 'none';
-                document.getElementById('language_id').required = false;
-                document.getElementById('language_id').value = '';
+                document.querySelectorAll('.lang_cb').forEach(cb => cb.checked = false);
             }
         }
 
@@ -501,11 +510,9 @@ foreach ($groups as $g) {
             const box = document.getElementById('batch_lang_box');
             if (val === 'especifico') {
                 box.style.display = 'block';
-                document.getElementById('batch_language_id').required = true;
             } else {
                 box.style.display = 'none';
-                document.getElementById('batch_language_id').required = false;
-                document.getElementById('batch_language_id').value = '';
+                document.querySelectorAll('input[name="batch_language_ids[]"]').forEach(cb => cb.checked = false);
             }
         }
 
@@ -539,14 +546,24 @@ foreach ($groups as $g) {
             document.getElementById('select_all_api').checked = false;
         }
 
-        function editGroup(id, nome, group_id, categoria, language_id, ativo) {
+        function editGroup(id, nome, group_id, categoria, language_ids_json, ativo) {
             document.getElementById('form-title').textContent = 'Editar Grupo';
             document.getElementById('group_id_db').value = id;
             document.getElementById('nome').value = nome;
             document.getElementById('group_id').value = group_id;
             document.getElementById('categoria').value = categoria;
             toggleLang(categoria);
-            if (language_id) document.getElementById('language_id').value = language_id;
+            
+            document.querySelectorAll('.lang_cb').forEach(cb => cb.checked = false);
+            if (language_ids_json) {
+                try {
+                    let ids = JSON.parse(language_ids_json);
+                    ids.forEach(langId => {
+                        let cb = document.querySelector('.lang_cb[value="'+langId+'"]');
+                        if(cb) cb.checked = true;
+                    });
+                } catch(e) {}
+            }
             document.getElementById('ativo').checked = (ativo == 1);
             document.getElementById('btn_cancel').style.display = 'inline-block';
             window.scrollTo(0, document.getElementById('form-title').offsetTop - 20);
