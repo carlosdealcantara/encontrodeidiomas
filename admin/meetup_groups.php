@@ -94,8 +94,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
     if (!empty($selected_groups)) {
         try {
             $imported = 0;
-            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo) VALUES (?, ?, ?, ?, ?)");
-            $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_groups WHERE group_id = ?");
+            $updated = 0;
+            $stmtInsert = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo) VALUES (?, ?, ?, ?, ?)");
+            $stmtUpdate = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, categoria = ?, language_ids = ?, ativo = ? WHERE id = ?");
+            $stmtCheck = $conn->prepare("SELECT id, language_ids FROM meetup_whatsapp_groups WHERE group_id = ?");
             
             foreach ($selected_groups as $group_json) {
                 $group_data = json_decode($group_json, true);
@@ -103,15 +105,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
                     $g_id = $group_data['id'];
                     $g_subject = $group_data['subject'] ?? 'Sem Nome';
                     
-                    // Verificar duplicidade
                     $stmtCheck->execute([$g_id]);
                     if ($stmtCheck->rowCount() === 0) {
-                        $stmt->execute([$g_subject, $g_id, $categoria, $language_ids, $ativo]);
+                        $stmtInsert->execute([$g_subject, $g_id, $categoria, $language_ids, $ativo]);
                         $imported++;
+                    } else {
+                        // Se já existe, vamos atualizar as configurações com as selecionadas agora (adicionando os novos idiomas)
+                        $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+                        
+                        // Lógica inteligente: se for específico, mesclar os idiomas em vez de sobrescrever?
+                        // O comportamento esperado da UX de lote é que a seleção da tela defina o estado final.
+                        $stmtUpdate->execute([$g_subject, $categoria, $language_ids, $ativo, $existing['id']]);
+                        $updated++;
                     }
                 }
             }
-            $msg = "Importação em lote concluída! $imported novos grupos cadastrados.";
+            $msg = "Operação em lote concluída! $imported novos cadastrados, $updated atualizados.";
         } catch (PDOException $e) {
             $api_error = "Erro ao importar em lote: " . $e->getMessage();
         }
@@ -302,10 +311,10 @@ unset($g);
             <div style="display: flex; gap: 10px;">
                 <form method="POST" style="margin: 0;">
                     <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco e atualiza a visualização sem perder histórico" onclick="return confirm('Isso vai atualizar o status dos grupos com o celular atual. Continuar?')">
-                        🔄 1. Sincronizar com Celular
+                        🔄 Sincronizar com Celular
                     </button>
                 </form>
-                <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-cog"></i> 2. Configurar Novos Grupos</a>
+                <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-cog"></i> Configurar Novos Grupos</a>
             </div>
         </header>
 
@@ -369,12 +378,8 @@ unset($g);
                             ?>
                                 <div class="api-item">
                                     <div style="display: flex; align-items: center; gap: 15px;">
-                                        <?php if (!$is_multi): ?>
-                                            <input type="checkbox" name="selected_groups[]" class="api-checkbox" 
-                                                value="<?= htmlspecialchars(json_encode(['id' => $ag['id'], 'subject' => $ag['subject']])) ?>">
-                                        <?php else: ?>
-                                            <input type="checkbox" disabled checked style="opacity: 0.5;">
-                                        <?php endif; ?>
+                                        <input type="checkbox" name="selected_groups[]" class="api-checkbox" 
+                                            value="<?= htmlspecialchars(json_encode(['id' => $ag['id'], 'subject' => $ag['subject']])) ?>">
                                         <div>
                                             <strong><?= htmlspecialchars($ag['subject'] ?? 'Sem Nome') ?></strong><br>
                                             <small style="color: var(--text-dim);"><?= htmlspecialchars($ag['id']) ?></small>
