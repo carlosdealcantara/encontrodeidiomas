@@ -288,11 +288,11 @@ foreach ($groups as $g) {
             </div>
             <div style="display: flex; gap: 10px;">
                 <form method="POST" style="margin: 0;">
-                    <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco e atualiza a visualização sem perder histórico" onclick="return confirm('Isso vai atualizar o status dos grupos. Continuar?')">
-                        🤖 Verificar Presença do Bot e Atualizar Cache
+                    <button type="submit" name="check_bot_presence" class="btn btn-primary" title="Cruza a lista da API com o banco e atualiza a visualização sem perder histórico" onclick="return confirm('Isso vai atualizar o status dos grupos com o celular atual. Continuar?')">
+                        🔄 1. Sincronizar com Celular
                     </button>
                 </form>
-                <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-list"></i> Carregar Grupos (Cache)</a>
+                <a href="?fetch_api=1" class="btn btn-secondary"><i class="fas fa-cog"></i> 2. Configurar Novos Grupos</a>
             </div>
         </header>
 
