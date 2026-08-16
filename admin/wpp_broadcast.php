@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
             if ($categoria === 'multi_idioma') {
                 $sql_grupos .= " AND categoria = 'multi_idioma'";
             } elseif ($categoria === 'especifico') {
-                $sql_grupos .= " AND categoria = 'especifico' AND language_id = ?";
+                $sql_grupos .= " AND categoria = 'especifico' AND JSON_CONTAINS(language_ids, CAST(? AS JSON))";
                 $params[] = $language_id;
             }
             

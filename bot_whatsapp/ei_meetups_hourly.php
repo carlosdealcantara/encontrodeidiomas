@@ -222,10 +222,19 @@ if (!empty($templatesDiario)) {
             if ($g['categoria'] === 'multi_idioma') {
                 $bandeirasGrupo = $bandeirasTodas;
                 $podeEnviar     = true;
-            } elseif ($g['categoria'] === 'especifico') {
-                $bandeirasGrupo = $flagsPorIdioma[$g['language_id']] ?? null;
-                // Só envia se há encontro do idioma do grupo hoje
-                $podeEnviar = $bandeirasGrupo !== null;
+            } elseif ($g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
+                // Junta as bandeiras de todos os idiomas do grupo que têm encontro hoje
+                $ids = json_decode($g['language_ids'], true);
+                $bandeirasGrupo = '';
+                if (is_array($ids)) {
+                    foreach ($ids as $idLang) {
+                        if (isset($flagsPorIdioma[$idLang])) {
+                            $bandeirasGrupo .= $flagsPorIdioma[$idLang];
+                        }
+                    }
+                }
+                // Só envia se há encontro de pelo menos um dos idiomas do grupo hoje
+                $podeEnviar = $bandeirasGrupo !== '';
             } else {
                 continue;
             }
