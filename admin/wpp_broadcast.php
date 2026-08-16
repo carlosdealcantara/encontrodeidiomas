@@ -25,19 +25,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
     } else {
         try {
             // Obter grupos a serem afetados
-            $sql_grupos = "SELECT group_id FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1";
-            $params = [];
+            $stmt = $conn->prepare("SELECT group_id, categoria, language_ids FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1");
+            $stmt->execute();
+            $all_groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            if ($categoria === 'multi_idioma') {
-                $sql_grupos .= " AND categoria = 'multi_idioma'";
-            } elseif ($categoria === 'especifico') {
-                $sql_grupos .= " AND categoria = 'especifico' AND JSON_CONTAINS(language_ids, CAST(? AS JSON))";
-                $params[] = $language_id;
+            $grupos = [];
+            $is_resumo = isset($_POST['is_resumo_semanal']);
+            
+            $active_langs = [];
+            if ($is_resumo) {
+                $semana_atual = date('o-\\WW');
+                $stmtAtivos = $conn->prepare("SELECT language_id FROM meetup_replays WHERE semana = ? AND (numero != '' OR link != '' OR titulo != '')");
+                $stmtAtivos->execute([$semana_atual]);
+                $active_langs = $stmtAtivos->fetchAll(PDO::FETCH_COLUMN);
             }
-            
-            $stmt = $conn->prepare($sql_grupos);
-            $stmt->execute($params);
-            $grupos = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            foreach ($all_groups as $g) {
+                // Filtro base (Categoria selecionada na tela)
+                if ($categoria === 'multi_idioma' && $g['categoria'] !== 'multi_idioma') continue;
+                if ($categoria === 'especifico') {
+                    if ($g['categoria'] !== 'especifico') continue;
+                    $ids = json_decode($g['language_ids'], true) ?: [];
+                    if (!in_array($language_id, $ids)) continue;
+                }
+                
+                // Filtro Inteligente (Resumo Semanal)
+                if ($is_resumo && $g['categoria'] === 'especifico') {
+                    $ids = json_decode($g['language_ids'], true) ?: [];
+                    $intersect = array_intersect($ids, $active_langs);
+                    if (empty($intersect)) continue; // Pula este grupo se nenhum dos seus idiomas teve gravação
+                }
+                
+                $grupos[] = $g['group_id'];
+            }
             $total_grupos = count($grupos);
 
             if ($total_grupos > 0) {
@@ -223,7 +243,17 @@ try {
                         </div>
                     </div>
 
-                    <button type="submit" name="enfileirar" class="btn btn-primary" style="width: 100%;"><i class="fas fa-paper-plane"></i> Disparar Mensagem</button>
+                    <div class="form-group" style="margin-top: 15px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 15px; border-radius: 8px;">
+                        <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer; color: var(--info); font-weight: bold;">
+                            <input type="checkbox" name="is_resumo_semanal" value="1" style="width: auto;" checked>
+                            Este disparo é o Resumo da Semana
+                        </label>
+                        <p style="margin-top: 5px; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0;">
+                            Ao marcar, o sistema omitirá os grupos específicos de idiomas que <strong>não tiveram vídeos gravados</strong> postados no Odysee nesta semana. (Evita spam para turmas inativas).
+                        </p>
+                    </div>
+
+                    <button type="submit" name="enfileirar" class="btn btn-primary" style="width: 100%;" onclick="return confirm('ATENÇÃO: Este disparo não pode ser desfeito. Confirmar envio para os grupos selecionados?')"><i class="fas fa-paper-plane"></i> Disparar Mensagem</button>
                     <p style="text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-top: 10px;">O sistema cuidará do envio no plano de fundo automaticamente (delay de 5s entre cada mensagem).</p>
                 </form>
             </div>
