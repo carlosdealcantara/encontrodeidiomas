@@ -82,7 +82,7 @@ try {
 
     // Verifica se a aula/encontro já está confirmada pelo quórum
     $isClassConfirmed = false;
-    if ($schedule['session_type'] === 'practice') {
+    if ($schedule['session_type'] === 'student_practice') {
         $isClassConfirmed = ($currentCount >= 2);
     } else {
         $isClassConfirmed = ($currentCount >= 1);
