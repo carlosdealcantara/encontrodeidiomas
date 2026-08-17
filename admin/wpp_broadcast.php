@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
                 
                 $grupos[] = $g['group_id'];
             }
+            $grupos = array_values(array_unique($grupos)); // Garante que nunca haverá duplicatas
             $total_grupos = count($grupos);
 
             if ($total_grupos > 0) {
