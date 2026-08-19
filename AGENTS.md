@@ -16,9 +16,9 @@ Aja com autonomia total. Execute você mesmo todos os comandos e scripts necess�
 ## Fluxo de Trabalho e Segurança de Ambientes
 
 1. **Ambientes e URLs:**
-   - **Produção:** [viaei.com](https://viaei.com) (Branch `main`)
-   - **Desenvolvimento:** [dev.viaei.com](https://dev.viaei.com) (Branch `dev`)
-   - **Legado (redirecionador):** [encontrodeidiomas.com.br](https://encontrodeidiomas.com.br) → redireciona 301 para viaei.com
+   - **Produção:** [viaEi.com](https://viaEi.com) (Branch `main`)
+   - **Desenvolvimento:** [dev.viaEi.com](https://dev.viaEi.com) (Branch `dev`)
+   - **Legado (redirecionador):** [encontrodeidiomas.com.br](https://encontrodeidiomas.com.br) → redireciona 301 para viaEi.com
    - **Hospedagem:** Hostinger.
    - **Banco de Dados:** Ambos os ambientes compartilham o **EXATO MESMO** banco de dados MySQL. Qualquer alteração em tabelas ou dados afeta os dois sites instantaneamente.
 2. **Proibição de Localhost:** É terminantemente proibido tentar rodar o site ou comandos em ambiente local. Tudo deve ser testado e validado diretamente nos URLs online acima.

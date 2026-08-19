@@ -814,7 +814,7 @@ def processar_fila():
         # Notifica os hosts via webhook integrado para garantir o mesmo padrão do portal
         # Dispara independente do modo de contenção (grupos_alvo vazio ou não), pois é uma notificação interna
         try:
-            webhook_url = "https://dev.viaei.com/ajax/webhook_odysee_success.php"
+            webhook_url = "https://dev.viaEi.com/ajax/webhook_odysee_success.php"
             res_webhook = requests.post(webhook_url, json={
                 "apikey": "SenhaMeetups2026",
                 "lang_id": tarefa.get('language_id')

@@ -128,7 +128,7 @@ foreach ($meetings as $m) {
         $linkLimpo  = str_replace(['https://', 'http://'], '', $m['meet_link'] ?? '');
         $textoFinal = str_replace('{MEET_LINK}',     $linkLimpo ?: 'Link não definido',         $textoFinal);
         $textoFinal = str_replace('{INSTAGRAM_LINK}',$m['instagram_link'] ?: 'Sem link',        $textoFinal);
-        $textoFinal = str_replace('{HOST_LINK}',     'https://viaei.com/equipe/',               $textoFinal);
+        $textoFinal = str_replace('{HOST_LINK}',     'viaEi.com/equipe/',               $textoFinal);
 
         foreach ($groups as $g) {
             $podeEnviar = ($g['categoria'] === 'multi_idioma');
@@ -255,7 +255,7 @@ if (!empty($templatesDiario)) {
             // Substitui variáveis na mensagem
             $textoFinal = $t['template_texto'];
             $textoFinal = str_replace('{BANDEIRAS_DO_DIA}', $bandeirasGrupo,              $textoFinal);
-            $textoFinal = str_replace('{HOST_LINK}',        'https://viaei.com/equipe/',  $textoFinal);
+            $textoFinal = str_replace('{HOST_LINK}',        'viaEi.com/equipe/',  $textoFinal);
 
             // Anti-duplicidade: usa meeting_id = 0 (não é por encontro)
             if (isset($_GET['force'])) {

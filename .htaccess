@@ -6,7 +6,7 @@ RewriteBase /
 
 # --- Redirect 301: Domínio antigo -> Domínio novo (preserva path) ---
 RewriteCond %{HTTP_HOST} ^(www\.)?encontrodeidiomas\.com\.br$ [NC]
-RewriteRule ^(.*)$ https://viaei.com/$1 [R=301,L]
+RewriteRule ^(.*)$ https://viaEi.com/$1 [R=301,L]
 
 # --- Redirect 301: URLs antigas .php -> limpas (preserva SEO) ---
 RewriteCond %{THE_REQUEST} \s/index\.php [NC]

@@ -71,12 +71,12 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
         $replays_list .= "{$row['flag_emoji']} ▪️ {$num} ▪️ {$lnk} ▪️ {$tit}\n";
     }
     
-    $default_template = "*Replays!* viaei.com\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
+    $default_template = "*Replays!* viaEi.com\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
     $template = getSetting('weekly_summary_template', $default_template);
     $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
 
-    // URL do portal sempre em viaei.com (domínio atual)
-    $portal_url = "https://viaei.com/portal_hosts/";
+    // URL do portal sempre em viaEi.com (domínio atual)
+    $portal_url = "https://viaEi.com/portal_hosts/";
 
     enviarWhatsApp('120363164732845564@g.us',
         "🔄 *Mensagem Semanal Atualizada!*\nO idioma {$lang_emoji} *{$lang_nome}* {$acao_desc} desta semana.\n\n🔗 *Acesse o Portal dos Hosts:* {$portal_url}\n\nPrévia da mensagem final:\n\n" . $full_text,

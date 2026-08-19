@@ -16,7 +16,7 @@ $current_page   = $current_page   ?? basename($_SERVER['PHP_SELF']);
 $title          = $title          ?? getSetting('site_title', 'Encontro de Idiomas');
 $og_title       = $og_title       ?? ($title . ' — ' . t('meta.og_title_suffix'));
 $og_description = $og_description ?? t('home.meta_description'); // Puxa da tradução da Home como fallback global
-$canonical      = $canonical      ?? 'https://viaei.com' . langUrl($current_page);
+$canonical      = $canonical      ?? 'https://viaEi.com' . langUrl($current_page);
 
 // SEO Internacional & Slugs — Canonical e Hreflang
 $hreflang_pt = SITE_URL . langSpecificUrl($current_page, 'pt');
@@ -71,7 +71,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <meta name="keywords" content="<?= sanitize($meta_keywords) ?>">
     <?php endif; ?>
     <meta name="author" content="Encontro de Idiomas">
-    <?php if ($_SERVER['HTTP_HOST'] !== 'viaei.com'): ?>
+    <?php if ($_SERVER['HTTP_HOST'] !== 'viaEi.com'): ?>
     <meta name="robots" content="noindex, nofollow">
     <?php else: ?>
     <meta name="robots" content="index, follow">

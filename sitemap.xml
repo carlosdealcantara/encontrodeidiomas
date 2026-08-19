@@ -1,100 +1,100 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <!-- VersÃ£o PortuguÃªs -->
+  <!-- Versão Português -->
   <url>
-    <loc>https://viaei.com/</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/"/>
+    <loc>https://viaEi.com/</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://viaei.com/online</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/online"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/online"/>
+    <loc>https://viaEi.com/online</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/online"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/online"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://viaei.com/presencial</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/presencial"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/in-person"/>
+    <loc>https://viaEi.com/presencial</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/presencial"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/in-person"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://viaei.com/equipe</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/equipe"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/team"/>
+    <loc>https://viaEi.com/equipe</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/equipe"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/team"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://viaei.com/links</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/links"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/links"/>
+    <loc>https://viaEi.com/links</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/links"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/links"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://viaei.com/contato</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/contato"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/contact"/>
+    <loc>https://viaEi.com/contato</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/contato"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/contact"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
-  <!-- VersÃ£o English -->
+  <!-- Versão English -->
   <url>
-    <loc>https://viaei.com/en/</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/"/>
+    <loc>https://viaEi.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://viaei.com/en/online</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/online"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/online"/>
+    <loc>https://viaEi.com/en/online</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/online"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/online"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://viaei.com/en/in-person</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/presencial"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/in-person"/>
+    <loc>https://viaEi.com/en/in-person</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/presencial"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/in-person"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://viaei.com/en/team</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/equipe"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/team"/>
+    <loc>https://viaEi.com/en/team</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/equipe"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/team"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://viaei.com/en/links</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/links"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/links"/>
+    <loc>https://viaEi.com/en/links</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/links"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/links"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://viaei.com/en/contact</loc>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://viaei.com/contato"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://viaei.com/en/contact"/>
+    <loc>https://viaEi.com/en/contact</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://viaEi.com/contato"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://viaEi.com/en/contact"/>
     <lastmod>2024-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
