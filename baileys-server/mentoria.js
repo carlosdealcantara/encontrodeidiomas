@@ -314,11 +314,13 @@ async function handleMessages({ messages, type }) {
         // 2. documentMessage     — arquivo enviado; quando mimeType começa com 'image/' é uma foto salva como doc
         // 3. documentWithCaptionMessage — mesmo que acima, mas com legenda
         // 4. viewOnceMessage (já desembrulhado acima) — visualização única
+        // 5. albumMessage        — álbum de múltiplas fotos (WhatsApp novo)
         const innerDoc = realMsg?.documentWithCaptionMessage?.message?.documentMessage
                          || realMsg?.documentMessage;
         const isVisual = !!(realMsg?.imageMessage ||
                             (innerDoc && (innerDoc.mimetype || '').startsWith('image/')) ||
-                            realMsg?.videoMessage);
+                            realMsg?.videoMessage ||
+                            realMsg?.albumMessage);
 
         let text = realMsg?.conversation || realMsg?.extendedTextMessage?.text ||
                      realMsg?.imageMessage?.caption ||

@@ -386,9 +386,14 @@ async function connectToWhatsApp() {
         // macOS Chrome fingerprint: menos suspeito para o WhatsApp do que 'Ubuntu'
         browser: Browsers.macOS('Chrome'),
         mobile: false,
-        // Necessário para sessão estável — sem isso, algumas mensagens não chegam
+        // Necessário para sessão estável — sem isso, algumas mensagens não chegam.
+        // ATENÇÃO: NÃO retornar { conversation: '' } aqui! Se retornar uma string vazia,
+        // o Baileys a reenvía ao grupo quando um participante falha em descriptografar
+        // a mensagem original (retry request), causando mensagens vazias no grupo.
+        // Retornar undefined informa ao Baileys que não temos a mensagem em cache,
+        // e o retry é simplesmente ignorado.
         getMessage: async (key) => {
-            return { conversation: '' };
+            return undefined;
         }
     });
 
