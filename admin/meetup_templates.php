@@ -67,9 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $textoFinal = str_replace('{EMOJI_FLAG}', '🇺🇸', $textoFinal);
             $textoFinal = str_replace('{EMOJI_FLAGS}', '🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸', $textoFinal);
             $textoFinal = str_replace('{SAUDACAO}', 'Hello!', $textoFinal);
-            $textoFinal = str_replace('{MEET_LINK}', 'https://meet.google.com/abc-defg-hij', $textoFinal);
-            $textoFinal = str_replace('{INSTAGRAM_LINK}', 'https://instagram.com/ingles.meetup', $textoFinal);
-            $textoFinal = str_replace('{HOST_LINK}', 'viaei.com/equipe/', $textoFinal);
+            $textoFinal = str_replace('{MEET_LINK}', 'meet.google.com/abc-defg-hij', $textoFinal);
+            $textoFinal = str_replace('{INSTAGRAM_LINK}', 'instagram.com/encontrodeidiomasingles', $textoFinal);
+            $textoFinal = str_replace('{HOST_LINK}', 'viaEi.com/equipe/', $textoFinal);
             $textoFinal = str_replace('{BANDEIRAS_DO_DIA}', '🇺🇸🇫🇷🇯🇵', $textoFinal); // Mock com 3 idiomas
             
             // Mock Data para Resumo Diário
