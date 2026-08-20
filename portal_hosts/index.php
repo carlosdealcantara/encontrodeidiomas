@@ -37,24 +37,25 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
         }
         $link   = sanitizeOdyseeUrl(trim($_POST['replay_link'] ?? ''));
         $titulo = trim($_POST['replay_titulo'] ?? '');
+        $parte = (int)($_POST['replay_parte'] ?? 1);
 
         // Não sobrescreve o link se o host não enviou um — o campo pode ter sido
         // preenchido automaticamente pelo robô Odysee e não aparece mais no formulário.
         if (!empty($link)) {
             $stmt = $conn->prepare("
-                INSERT INTO meetup_replays (language_id, semana, numero, link, titulo)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO meetup_replays (language_id, semana, parte, numero, link, titulo)
+                VALUES (?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE numero = VALUES(numero), link = VALUES(link), titulo = VALUES(titulo)
             ");
-            $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
+            $stmt->execute([$lang_id, $semana_atual, $parte, $numero, $link, $titulo]);
         } else {
             // Link veio vazio: preserva o link existente no banco (não o apaga)
             $stmt = $conn->prepare("
-                INSERT INTO meetup_replays (language_id, semana, numero, link, titulo)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO meetup_replays (language_id, semana, parte, numero, link, titulo)
+                VALUES (?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE numero = VALUES(numero), titulo = VALUES(titulo)
             ");
-            $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
+            $stmt->execute([$lang_id, $semana_atual, $parte, $numero, $link, $titulo]);
         }
 
         // AUTOMATIZAÇÃO ODYSEE:
@@ -109,10 +110,13 @@ if ($logged_in) {
         $template_db = $stmtT->fetchColumn() ?: "Template padrão não configurado.";
 
         // Dados desta semana para todos os idiomas
-        $stmtS = $conn->prepare("SELECT language_id, numero, link, titulo FROM meetup_replays WHERE semana = ?");
+        $stmtS = $conn->prepare("SELECT language_id, parte, numero, link, titulo FROM meetup_replays WHERE semana = ?");
         $stmtS->execute([$semana_atual]);
         foreach ($stmtS->fetchAll() as $row) {
-            $dados_semana[$row['language_id']] = $row;
+            if (!isset($dados_semana[$row['language_id']])) {
+                $dados_semana[$row['language_id']] = [];
+            }
+            $dados_semana[$row['language_id']][$row['parte']] = $row;
         }
 
         // Pré-preencher se voltou via redirect após salvar
@@ -243,19 +247,18 @@ function sanitizeOdyseeUrl(string $url): string {
                                         data-saved='<?= json_encode($saved) ?>'
                                         <?= ($prefill && $prefill['lang_id'] === $l['id']) ? 'selected' : '' ?>>
                                     <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
-                                    <?php 
-                                    if ($saved) {
-                                        // "Pronto" = titulo preenchido (link é responsabilidade do robô)
-                                        $is_complete = !empty($saved['numero']) && !empty($saved['titulo']);
-                                        if ($is_complete) {
-                                            echo '<span> (Pronto ✅)</span>';
-                                        } else {
-                                            echo '<span> (Incompleto ⏳)</span>';
-                                        }
-                                    }
-                                    ?>
+                                    <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
                                 </option>
                             <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="groupReplayParte" style="display:none;">
+                        <label>Qual encontro é este?</label>
+                        <select name="replay_parte" id="replayParteSelect" onchange="carregarDadosSemana()">
+                            <option value="1">Encontro Principal (Parte 1)</option>
+                            <option value="2">Encontro Extra (Parte 2)</option>
+                            <option value="3">Encontro Extra 2 (Parte 3)</option>
                         </select>
                     </div>
 
@@ -320,8 +323,21 @@ function sanitizeOdyseeUrl(string $url): string {
     // Carrega dados já salvos desta semana quando muda o idioma
     function carregarDadosSemana() {
         const select = document.getElementById('idiomaReplaySelect');
+        const parteSelect = document.getElementById('replayParteSelect');
+        const groupParte = document.getElementById('groupReplayParte');
         const opt = select.options[select.selectedIndex];
-        const saved = JSON.parse(opt.dataset.saved || 'null');
+        
+        if (!select.value) {
+            groupParte.style.display = 'none';
+            document.getElementById('replay_numero').value = '';
+            document.getElementById('replay_titulo').value = '';
+            return;
+        }
+        
+        groupParte.style.display = 'block';
+        const parte = parteSelect.value;
+        const savedAllParts = JSON.parse(opt.dataset.saved || '{}');
+        const saved = savedAllParts ? savedAllParts[parte] : null;
 
         document.getElementById('replay_numero').value = saved?.numero || '';
         document.getElementById('replay_titulo').value = saved?.titulo || '';

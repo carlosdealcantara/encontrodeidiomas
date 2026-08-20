@@ -78,11 +78,15 @@ def atualizar_status(tarefa_id, status, error_msg=None, odysee_url=None, retry_c
             params.append(odysee_url)
             
             # Também atualiza o registro do replay para esta linguagem
-            cursor.execute("SELECT language_id FROM odysee_publish_queue WHERE id = %s", (tarefa_id,))
+            cursor.execute("SELECT language_id, replay_parte FROM odysee_publish_queue WHERE id = %s", (tarefa_id,))
             row = cursor.fetchone()
             if row:
                 lang_id = row[0]
-                cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND (link IS NULL OR link = '') ORDER BY semana DESC LIMIT 1", (odysee_url, lang_id))
+                replay_parte = row[1]
+                if replay_parte is not None:
+                    cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND parte = %s", (odysee_url, lang_id, replay_parte))
+                else:
+                    cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND (link IS NULL OR link = '') ORDER BY semana DESC LIMIT 1", (odysee_url, lang_id))
             
         if retry_count is not None:
             update_cols.append("retry_count = %s")
@@ -612,28 +616,54 @@ def escanear_drive():
                 status_inicial = 'skip_publish'
                 logger.info(f"Idioma sem canal ({idioma_escolhido['name']}). Marcando para apenas organizar arquivos.")
             else:
-                # Verifica se já tem título preenchido no portal (meetup_replays)
+                # Verifica se já tem título preenchido no portal (meetup_replays) para alguma parte livre
                 semana_atual = datetime.datetime.now().strftime("%G-W%V")
-                cursor.execute("SELECT titulo FROM meetup_replays WHERE language_id = %s AND semana = %s AND titulo IS NOT NULL AND titulo != ''", (language_id, semana_atual))
+                cursor.execute("""
+                    SELECT parte, titulo FROM meetup_replays 
+                    WHERE language_id = %s AND semana = %s AND titulo IS NOT NULL AND titulo != '' AND (link IS NULL OR link = '')
+                    AND parte NOT IN (SELECT replay_parte FROM odysee_publish_queue WHERE language_id = %s AND replay_parte IS NOT NULL)
+                    ORDER BY parte ASC LIMIT 1
+                """, (language_id, semana_atual, language_id))
                 row_replay = cursor.fetchone()
                 
+                replay_parte = None
                 if row_replay:
-                    # Host já preencheu o título antes de o robô escanear!
                     titulo_final = row_replay['titulo']
                     status_inicial = 'pending'
-                    logger.info(f"Título já preenchido previamente pelo host: {titulo_final}. Indo direto para pending.")
+                    replay_parte = row_replay['parte']
+                    logger.info(f"Título já preenchido previamente pelo host (Parte {replay_parte}): {titulo_final}. Indo direto para pending.")
                 else:
                     titulo_final = titulo_limpo
                     status_inicial = 'waiting_host'
+                    
+                    # Pega o primeiro parte livre (mesmo sem título)
+                    cursor.execute("""
+                        SELECT parte FROM meetup_replays 
+                        WHERE language_id = %s AND semana = %s AND (link IS NULL OR link = '')
+                        AND parte NOT IN (SELECT replay_parte FROM odysee_publish_queue WHERE language_id = %s AND replay_parte IS NOT NULL)
+                        ORDER BY parte ASC LIMIT 1
+                    """, (language_id, semana_atual, language_id))
+                    row_livre = cursor.fetchone()
+                    
+                    if row_livre:
+                        replay_parte = row_livre['parte']
+                    else:
+                        # Não há linhas livres. Vamos descobrir qual a próxima parte a ser criada.
+                        cursor.execute("SELECT COALESCE(MAX(parte), 0) + 1 FROM meetup_replays WHERE language_id = %s AND semana = %s", (language_id, semana_atual))
+                        prox_parte = cursor.fetchone()[0]
+                        replay_parte = prox_parte
+                        
+                        # Insere um placeholder no meetup_replays para garantir o espaço e evitar que o próximo vídeo pegue o mesmo
+                        cursor.execute("INSERT IGNORE INTO meetup_replays (language_id, semana, parte) VALUES (%s, %s, %s)", (language_id, semana_atual, replay_parte))
             
             # Insere no banco
             cursor.execute("""
                 INSERT INTO odysee_publish_queue 
-                (language_id, drive_file_id, drive_file_name, status, titulo_final, odysee_slug) 
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (language_id, file_id, file_name, status_inicial, titulo_final, slug))
+                (language_id, drive_file_id, drive_file_name, status, titulo_final, odysee_slug, replay_parte) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (language_id, file_id, file_name, status_inicial, titulo_final, slug, replay_parte))
             conn.commit()
-            logger.info(f"Novo vídeo adicionado à fila de triagem: {file_name} | Status Inicial: {status_inicial} | Slug: {slug}")
+            logger.info(f"Novo vídeo adicionado à fila: {file_name} | Status: {status_inicial} | Parte: {replay_parte}")
             
         cursor.close()
         conn.close()

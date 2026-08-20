@@ -13,21 +13,24 @@ $semana_atual = date('o-\WW');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_all') {
     if (!empty($_POST['replays'])) {
-        foreach ($_POST['replays'] as $lang_id => $data) {
-            $lang_id = (int)$lang_id;
-            $numero = trim($data['numero']);
-            if (is_numeric($numero)) {
-                $numero = str_pad($numero, 2, '0', STR_PAD_LEFT);
+        foreach ($_POST['replays'] as $lang_id => $partes) {
+            foreach ($partes as $parte => $data) {
+                $lang_id = (int)$lang_id;
+                $parte = (int)$parte;
+                $numero = trim($data['numero'] ?? '');
+                if (is_numeric($numero)) {
+                    $numero = str_pad($numero, 2, '0', STR_PAD_LEFT);
+                }
+                $link = trim($data['link'] ?? '');
+                $titulo = trim($data['titulo'] ?? '');
+                
+                $stmt = $conn->prepare("
+                    INSERT INTO meetup_replays (language_id, semana, parte, numero, link, titulo)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE numero = VALUES(numero), link = VALUES(link), titulo = VALUES(titulo)
+                ");
+                $stmt->execute([$lang_id, $semana_atual, $parte, $numero, $link, $titulo]);
             }
-            $link = trim($data['link']);
-            $titulo = trim($data['titulo']);
-            
-            $stmt = $conn->prepare("
-                INSERT INTO meetup_replays (language_id, semana, numero, link, titulo)
-                VALUES (?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE numero = VALUES(numero), link = VALUES(link), titulo = VALUES(titulo)
-            ");
-            $stmt->execute([$lang_id, $semana_atual, $numero, $link, $titulo]);
         }
         $msg_success = "Dados atualizados com sucesso!";
         header('Location: wpp_resumo_semanal.php?msg=Dados+salvos!');
@@ -59,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Fetch all languages with their replays for the CURRENT WEEK only, ordered by their first meeting in the week
 $stmt = $conn->prepare("
-    SELECT l.id as language_id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
+    SELECT l.id as language_id, l.name, l.flag_emoji, r.parte, r.numero, r.link, r.titulo 
     FROM languages l 
     LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
     LEFT JOIN (
@@ -69,7 +72,7 @@ $stmt = $conn->prepare("
         GROUP BY language_id
     ) m ON l.id = m.language_id
     WHERE l.active = 1 
-    ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC
+    ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC, r.parte ASC
 ");
 $stmt->execute([$semana_atual]);
 $replays = $stmt->fetchAll();
@@ -183,17 +186,19 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($replays as $r): ?>
+                        <?php foreach ($replays as $r): 
+                                $parte = $r['parte'] ?? 1;
+                        ?>
                         <tr>
-                            <td><?= $r['flag_emoji'] ?> <?= htmlspecialchars($r['name']) ?></td>
+                            <td><?= $r['flag_emoji'] ?> <?= htmlspecialchars($r['name']) ?> <?= $parte > 1 ? "(Extra)" : "" ?></td>
                             <td>
-                                <input type="text" name="replays[<?= $r['language_id'] ?>][numero]" value="<?= htmlspecialchars($r['numero'] ?? '') ?>" placeholder="Nº">
+                                <input type="text" name="replays[<?= $r['language_id'] ?>][<?= $parte ?>][numero]" value="<?= htmlspecialchars($r['numero'] ?? '') ?>" placeholder="Nº">
                             </td>
                             <td>
-                                <input type="text" name="replays[<?= $r['language_id'] ?>][link]" value="<?= htmlspecialchars($r['link'] ?? '') ?>" placeholder="https://odysee.com/..." pattern="^https:\/\/odysee\.com\/@[^\/]+\/\d{4}_\d{2}_\d{2}$" title="O link deve ser do Odysee e terminar com a data no padrão /AAAA_MM_DD (ex: /2026_06_15)">
+                                <input type="text" name="replays[<?= $r['language_id'] ?>][<?= $parte ?>][link]" value="<?= htmlspecialchars($r['link'] ?? '') ?>" placeholder="https://odysee.com/..." pattern="^https:\/\/odysee\.com\/@[^\/]+\/\d{4}_\d{2}_\d{2}$" title="O link deve ser do Odysee e terminar com a data no padrão /AAAA_MM_DD (ex: /2026_06_15)">
                             </td>
                             <td>
-                                <input type="text" name="replays[<?= $r['language_id'] ?>][titulo]" value="<?= htmlspecialchars($r['titulo'] ?? '') ?>" placeholder="Título">
+                                <input type="text" name="replays[<?= $r['language_id'] ?>][<?= $parte ?>][titulo]" value="<?= htmlspecialchars($r['titulo'] ?? '') ?>" placeholder="Título">
                             </td>
                         </tr>
                         <?php endforeach; ?>
