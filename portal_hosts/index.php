@@ -143,7 +143,7 @@ function sanitizeOdyseeUrl(string $url): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal dos Hosts | Encontro de Idiomas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -156,7 +156,7 @@ function sanitizeOdyseeUrl(string $url): string {
             --warning: #f59e0b;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', 'Noto Color Emoji', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 30px 20px; }
         
         .container { width: 100%; max-width: 520px; }
@@ -247,7 +247,17 @@ function sanitizeOdyseeUrl(string $url): string {
                                         data-saved='<?= json_encode($saved) ?>'
                                         <?= ($prefill && $prefill['lang_id'] === $l['id']) ? 'selected' : '' ?>>
                                     <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
-                                    <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
+                                    <?php 
+                                    if ($saved && isset($saved[1])) {
+                                        $s1 = $saved[1];
+                                        $is_complete = !empty($s1['numero']) && !empty($s1['titulo']);
+                                        if ($is_complete) {
+                                            echo '<span> (Pronto ✅)</span>';
+                                        } else {
+                                            echo '<span> (Incompleto ⏳)</span>';
+                                        }
+                                    }
+                                    ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
