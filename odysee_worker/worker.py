@@ -155,6 +155,7 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, 
             drive = init_drive_service()
             
             # 1. Move o vídeo para a pasta do idioma
+            pasta_idioma_id = None
             if move_video:
                 results = drive.files().list(
                     q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='application/vnd.google-apps.folder' and name = '{language_name}'",
@@ -180,7 +181,7 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, 
                 else:
                     logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo mantido na raiz.")
             
-            # 2. Move o arquivo de Chat (.txt) para a pasta de Transcrições
+            # 2. Move o arquivo de Chat (.txt) para a pasta do idioma (ou Transcrições como fallback)
             # Busca o chat na mesma pasta onde o vídeo está atualmente
             # (pode ser a raiz ou uma subpasta criada pelo Google Meet)
             base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
@@ -211,14 +212,19 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, 
                 ).execute()
                 chat_files_found = fallback_results.get('files', [])
 
+            destino_chat_id = pasta_idioma_id if pasta_idioma_id else PASTA_TRANSCRICOES_ID
+
             for chat in chat_files_found:
                 try:
                     drive.files().update(
                         fileId=chat['id'],
-                        addParents=PASTA_TRANSCRICOES_ID,
+                        addParents=destino_chat_id,
                         removeParents=",".join(chat.get('parents', []))
                     ).execute()
-                    logger.info(f"[DRIVE] Chat movido para Transcrições: {chat['name']}")
+                    if pasta_idioma_id:
+                        logger.info(f"[DRIVE] Chat movido para a pasta '{language_name}': {chat['name']}")
+                    else:
+                        logger.info(f"[DRIVE] Chat movido para Transcrições: {chat['name']}")
                 except Exception as e_chat:
                     logger.error(f"[DRIVE] Erro ao mover chat '{chat['name']}': {e_chat}")
             
