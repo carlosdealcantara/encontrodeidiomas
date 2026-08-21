@@ -60,9 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
+if (isset($_GET['toggle_ignore_lang'])) {
+    $lang_id = (int)$_GET['toggle_ignore_lang'];
+    $stmt = $conn->prepare("UPDATE languages SET ignore_next_video = NOT ignore_next_video WHERE id = ?");
+    $stmt->execute([$lang_id]);
+    header('Location: wpp_resumo_semanal.php?msg=Status+de+vídeo+atualizado!');
+    exit;
+}
+
 // Fetch all languages with their replays for the CURRENT WEEK only, ordered by their first meeting in the week
 $stmt = $conn->prepare("
-    SELECT l.id as language_id, l.name, l.flag_emoji, r.parte, r.numero, r.link, r.titulo 
+    SELECT l.id as language_id, l.name, l.flag_emoji, l.ignore_next_video, r.parte, r.numero, r.link, r.titulo 
     FROM languages l 
     LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
     LEFT JOIN (
@@ -190,7 +198,18 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
                                 $parte = $r['parte'] ?? 1;
                         ?>
                         <tr>
-                            <td><?= $r['flag_emoji'] ?> <?= htmlspecialchars($r['name']) ?> <?= $parte > 1 ? "(Extra)" : "" ?></td>
+                            <td>
+                                <?= $r['flag_emoji'] ?> <?= htmlspecialchars($r['name']) ?> <?= $parte > 1 ? "(Extra)" : "" ?>
+                                <a href="wpp_resumo_semanal.php?toggle_ignore_lang=<?= $r['language_id'] ?>" 
+                                   class="btn <?= $r['ignore_next_video'] ? 'btn-danger' : 'btn-outline' ?>" 
+                                   style="padding: 2px 5px; font-size: 0.7rem; margin-left: 5px; <?= $r['ignore_next_video'] ? 'background-color: var(--accent-red); color: white;' : 'opacity: 0.3;' ?>" 
+                                   title="<?= $r['ignore_next_video'] ? 'Cancelar (não ignorar mais)' : 'Ignorar próximo vídeo que cair no drive' ?>">
+                                    <i class="fas fa-video-slash"></i>
+                                </a>
+                                <?php if ($r['ignore_next_video']): ?>
+                                    <br><span style="font-size: 0.7rem; color: var(--accent-red); font-weight: bold;">(Ignorando próx.)</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <input type="text" name="replays[<?= $r['language_id'] ?>][<?= $parte ?>][numero]" value="<?= htmlspecialchars($r['numero'] ?? '') ?>" placeholder="Nº">
                             </td>
