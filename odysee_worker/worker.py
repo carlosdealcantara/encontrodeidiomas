@@ -790,21 +790,20 @@ def processar_fila():
     try:
         drive_service = init_drive_service()
         
-        if tarefa.get('status') == 'skip_publish' or tarefa['status'] == 'processing':
-            # Se for skip_publish, só foi mudado pra processing pela linha acima, então o original era skip_publish
-            # Porém a query também retorna tarefas que eram pending.
-            # Como saber se era skip_publish antes da atualização? O worker vai tentar verificar se tem token.
-            pass
-            
-        # Refinando a verificação:
+        # 1. ORGANIZAÇÃO IMEDIATA: movemos vídeo e chat logo de cara.
+        # Como o ID do Drive é fixo, o download posterior (se houver) não será afetado.
+        logger.info("Organizando arquivos (vídeo e chat) nas pastas definitivas do Drive...")
+        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
+        
+        # 2. VERIFICAÇÃO DE CANAL: se não tem canal configurado, encerra aqui.
         is_skip_publish = (not tarefa['odysee_auth_token']) or (not tarefa['odysee_channel_name'])
         
         if is_skip_publish:
-            logger.info("Tarefa não tem canal Odysee. Apenas organizando pastas.")
-            mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
+            logger.info("Tarefa não tem canal Odysee. Apenas organizando pastas (já feito).")
             atualizar_status(tarefa['id'], 'done', error_msg="Organizado no Drive (sem canal para publicar).")
             return
 
+        # 3. DOWNLOAD E PUBLICAÇÃO
         temp_path = baixar_video_drive(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
         
         if not tarefa['odysee_auth_token']:
@@ -821,8 +820,6 @@ def processar_fila():
         
         # Encurtar a URL via TinyURL!
         url_curta = encurtar_url(odysee_url)
-        
-        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'])
         
         atualizar_status(tarefa['id'], 'done', odysee_url=url_curta)
         
