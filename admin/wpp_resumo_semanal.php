@@ -201,9 +201,11 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
                             <td>
                                 <?= $r['flag_emoji'] ?> <?= htmlspecialchars($r['name']) ?> <?= $parte > 1 ? "(Extra)" : "" ?>
                                 <a href="wpp_resumo_semanal.php?toggle_ignore_lang=<?= $r['language_id'] ?>" 
-                                   class="btn <?= $r['ignore_next_video'] ? 'btn-danger' : 'btn-outline' ?>" 
-                                   style="padding: 2px 5px; font-size: 0.7rem; margin-left: 5px; <?= $r['ignore_next_video'] ? 'background-color: var(--accent-red); color: white;' : 'opacity: 0.3;' ?>" 
-                                   title="<?= $r['ignore_next_video'] ? 'Cancelar (não ignorar mais)' : 'Ignorar próximo vídeo que cair no drive' ?>">
+                                   class="btn" 
+                                   style="padding: 2px 5px; font-size: 0.7rem; margin-left: 5px; transition: 0.3s; <?= $r['ignore_next_video'] ? 'background-color: var(--accent-red); color: white; border: 1px solid var(--accent-red);' : 'background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.4); color: rgba(255,255,255,0.7); opacity: 1;' ?>" 
+                                   title="<?= $r['ignore_next_video'] ? 'Cancelar (não ignorar mais)' : 'Ignorar próximo vídeo que cair no drive' ?>"
+                                   onmouseover="this.style.borderColor='white'; this.style.color='white';"
+                                   onmouseout="this.style.borderColor='<?= $r['ignore_next_video'] ? 'var(--accent-red)' : 'rgba(255,255,255,0.4)' ?>'; this.style.color='<?= $r['ignore_next_video'] ? 'white' : 'rgba(255,255,255,0.7)' ?>';">
                                     <i class="fas fa-video-slash"></i>
                                 </a>
                                 <?php if ($r['ignore_next_video']): ?>
