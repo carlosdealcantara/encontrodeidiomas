@@ -44,7 +44,39 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
     $lang_nome = $langData['name'];
     $lang_emoji = $langData['flag_emoji'];
 
-    // Gera prévia consolidada da semana e notifica o grupo dos hosts
+    if ($acao_desc === "atualizou dados") {
+        // Mensagem inicial de atualização pelo portal
+        $stmtThisLang = $conn->prepare("SELECT titulo FROM meetup_replays WHERE language_id = ? AND semana = ?");
+        $stmtThisLang->execute([$lang_id, $semana_atual]);
+        $rowThisLang = $stmtThisLang->fetch(PDO::FETCH_ASSOC);
+        $titulo_idioma = $rowThisLang && !empty($rowThisLang['titulo']) ? $rowThisLang['titulo'] : "Título";
+
+        $default_group_template = "🎬 *Replay:* {bandeira} {titulo}\n\n🔗 {link}";
+        $group_template = getSetting('odysee_whatsapp_template', $default_group_template);
+        
+        // Remove barras escapadas caso existam no banco
+        $group_template = str_replace('\n', "\n", $group_template);
+
+        $preview_group_message = str_replace(
+            ['{bandeira}', '{titulo}', '{link}'],
+            [$lang_emoji, $titulo_idioma, '[Link será gerado]'],
+            $group_template
+        );
+
+        $portal_url = "https://viaEi.com/portal_hosts/";
+
+        $mensagem = "🔄 *Mensagem Semanal Atualizada!*\n"
+                  . "O idioma {$lang_emoji} *{$lang_nome}* {$acao_desc} desta semana.\n\n"
+                  . "🔗 *Acesse o Portal dos Hosts:* {$portal_url}\n\n"
+                  . "O pipeline de postagem do vídeo no Odysee foi ativado e, em breve, o vídeo estará postado. A mensagem que o host tem para mandar nos grupos será enviada aqui primeiro, seguida pelo resumo semanal já completo.\n\n"
+                  . "Prévia da mensagem para o seu grupo:\n\n"
+                  . $preview_group_message;
+
+        enviarWhatsApp('120363164732845564@g.us', $mensagem, 'hosts_app');
+        return;
+    }
+
+    // Caso contrário (ação final do bot), envia a prévia consolidada da semana
     $stmtAll = $conn->prepare("
         SELECT l.id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
         FROM languages l 
@@ -73,6 +105,8 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
     
     $default_template = "*Replays!* viaEi.com\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
     $template = getSetting('weekly_summary_template', $default_template);
+    // Remove barras escapadas caso existam no banco
+    $template = str_replace('\n', "\n", $template);
     $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
 
     // URL do portal sempre em viaEi.com (domínio atual)

@@ -777,7 +777,7 @@ def processar_fila():
         
         if is_skip_publish:
             logger.info("Tarefa não tem canal Odysee. Apenas organizando pastas.")
-            mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=False)
+            mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
             atualizar_status(tarefa['id'], 'done', error_msg="Organizado no Drive (sem canal para publicar).")
             return
 
