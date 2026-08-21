@@ -564,7 +564,7 @@ def escanear_drive():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         # Busca TODOS os idiomas, independente de ter odysee configurado.
-        cursor.execute("SELECT id, name, odysee_auth_token, odysee_channel_name, odysee_auto_enabled FROM languages")
+        cursor.execute("SELECT id, name, odysee_auth_token, odysee_channel_name, odysee_auto_enabled, ignore_next_video FROM languages")
         idiomas = cursor.fetchall()
         
         for arquivo in arquivos:
@@ -611,7 +611,16 @@ def escanear_drive():
             # Verifica se o idioma está configurado para publicar no Odysee
             has_odysee = bool(idioma_escolhido.get('odysee_auth_token')) and bool(idioma_escolhido.get('odysee_channel_name')) and bool(idioma_escolhido.get('odysee_auto_enabled'))
             
-            if not has_odysee:
+            replay_parte = None
+            if idioma_escolhido.get('ignore_next_video') == 1:
+                titulo_final = f"[IGNORADO] {titulo_limpo}"
+                status_inicial = 'skip_publish'
+                logger.warning(f"Vídeo {file_name} ignorado manualmente via painel para o idioma {idioma_escolhido['name']}.")
+                # Reseta a flag no banco e na memória
+                cursor.execute("UPDATE languages SET ignore_next_video = 0 WHERE id = %s", (language_id,))
+                conn.commit()
+                idioma_escolhido['ignore_next_video'] = 0
+            elif not has_odysee:
                 titulo_final = titulo_limpo
                 status_inicial = 'skip_publish'
                 logger.info(f"Idioma sem canal ({idioma_escolhido['name']}). Marcando para apenas organizar arquivos.")
@@ -626,7 +635,6 @@ def escanear_drive():
                 """, (language_id, semana_atual, language_id))
                 row_replay = cursor.fetchone()
                 
-                replay_parte = None
                 if row_replay:
                     titulo_final = row_replay['titulo']
                     status_inicial = 'pending'
