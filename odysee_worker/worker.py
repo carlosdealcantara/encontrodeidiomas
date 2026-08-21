@@ -51,14 +51,35 @@ def buscar_proxima_tarefa():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
+        # SAFETY: Only process entries created in the last 20 days.
+        # This prevents old "zombie" queue entries (stuck as processing, reverted to pending)
+        # from being unintentionally re-processed weeks later.
         cursor.execute('''
             SELECT q.*, l.odysee_auth_token, l.odysee_channel_name, l.whatsapp_group_id, l.name as language_name, l.flag_emoji
             FROM odysee_publish_queue q
             JOIN languages l ON q.language_id = l.id
-            WHERE q.status = "pending" OR q.status = "skip_publish"
+            WHERE (q.status = "pending" OR q.status = "skip_publish")
+              AND q.created_at >= NOW() - INTERVAL 20 DAY
             ORDER BY q.id ASC LIMIT 1
         ''')
-        return cursor.fetchone()
+        tarefa = cursor.fetchone()
+        
+        # If no recent task found, check if there are OLD stuck ones to quarantine
+        if not tarefa:
+            cursor.execute('''
+                SELECT id, titulo_final FROM odysee_publish_queue
+                WHERE (status = "pending" OR status = "skip_publish")
+                  AND created_at < NOW() - INTERVAL 20 DAY
+                LIMIT 5
+            ''')
+            stale = cursor.fetchall()
+            if stale:
+                for s in stale:
+                    logger.warning(f"[SAFETY] Entrada antiga detectada (mais de 20 dias): ID={s['id']} | '{s['titulo_final']}'. Marcando como 'error' para n\u00e3o reprocessar.")
+                    cursor.execute("UPDATE odysee_publish_queue SET status='error', error_message='[SAFETY] Entrada mais antiga que 20 dias. Bloqueada automaticamente para evitar reprocessamento indevido.' WHERE id=%s", (s['id'],))
+                conn.commit()
+        
+        return tarefa
     finally:
         cursor.close()
         conn.close()
@@ -77,7 +98,8 @@ def atualizar_status(tarefa_id, status, error_msg=None, odysee_url=None, retry_c
             update_cols.append("odysee_url = %s")
             params.append(odysee_url)
             
-            # Também atualiza o registro do replay para esta linguagem
+            # Atualiza o registro do replay apenas se replay_parte está definido.
+            # Se for NULL, não tocamos em meetup_replays para evitar sobrescrever o registro errado.
             cursor.execute("SELECT language_id, replay_parte FROM odysee_publish_queue WHERE id = %s", (tarefa_id,))
             row = cursor.fetchone()
             if row:
@@ -85,8 +107,9 @@ def atualizar_status(tarefa_id, status, error_msg=None, odysee_url=None, retry_c
                 replay_parte = row[1]
                 if replay_parte is not None:
                     cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND parte = %s", (odysee_url, lang_id, replay_parte))
+                    logger.info(f"[REPLAY] Link atualizado em meetup_replays para language_id={lang_id}, parte={replay_parte}")
                 else:
-                    cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND (link IS NULL OR link = '') ORDER BY semana DESC LIMIT 1", (odysee_url, lang_id))
+                    logger.warning(f"[REPLAY] replay_parte é NULL para a tarefa {tarefa_id}. Não atualizando meetup_replays para evitar sobrescrita indevida.")
             
         if retry_count is not None:
             update_cols.append("retry_count = %s")
