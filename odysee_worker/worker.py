@@ -181,13 +181,37 @@ def mover_video_e_apagar_chat(drive_service, file_id, file_name, language_name, 
                     logger.warning(f"[DRIVE] Pasta do idioma '{language_name}' não encontrada. Vídeo mantido na raiz.")
             
             # 2. Move o arquivo de Chat (.txt) para a pasta de Transcrições
+            # Busca o chat na mesma pasta onde o vídeo está atualmente
+            # (pode ser a raiz ou uma subpasta criada pelo Google Meet)
             base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
-            chat_results = drive.files().list(
-                q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType='text/plain' and name contains '{base_name}'",
-                fields="files(id, name, parents)"
-            ).execute()
             
-            for chat in chat_results.get('files', []):
+            # Determina a pasta-pai atual do vídeo para buscar o chat lá
+            chat_search_parents = []
+            try:
+                video_meta = drive.files().get(fileId=file_id, fields='parents').execute()
+                chat_search_parents = video_meta.get('parents', [])
+            except Exception as e_meta:
+                logger.warning(f"[DRIVE] Não foi possível obter pasta do vídeo: {e_meta}. Buscando chat na raiz.")
+                chat_search_parents = [PASTA_RAIZ_DRIVE] if PASTA_RAIZ_DRIVE else []
+
+            chat_files_found = []
+            for parent_id in (chat_search_parents if chat_search_parents else [PASTA_RAIZ_DRIVE]):
+                chat_results = drive.files().list(
+                    q=f"'{parent_id}' in parents and mimeType='text/plain' and name contains '{base_name}'",
+                    fields="files(id, name, parents)"
+                ).execute()
+                chat_files_found.extend(chat_results.get('files', []))
+
+            # Fallback: se não achou na pasta do vídeo, busca globalmente pelo nome
+            if not chat_files_found:
+                logger.info(f"[DRIVE] Chat não encontrado nas pastas do vídeo. Tentando busca global por '{base_name}'.")
+                fallback_results = drive.files().list(
+                    q=f"mimeType='text/plain' and name contains '{base_name}'",
+                    fields="files(id, name, parents)"
+                ).execute()
+                chat_files_found = fallback_results.get('files', [])
+
+            for chat in chat_files_found:
                 try:
                     drive.files().update(
                         fileId=chat['id'],
