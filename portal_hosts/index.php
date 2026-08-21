@@ -63,12 +63,12 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
         // Assim, podemos testar gradualmente: quem mandar o link faz manual, quem deixar em branco aciona o robô.
         try {
             if (empty($link) && !empty($titulo)) {
-                $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET titulo_final = ?, status = 'pending' WHERE language_id = ? AND status = 'waiting_host'");
-                $stmtQ->execute([$titulo, $lang_id]);
+                $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET titulo_final = ?, status = 'pending' WHERE language_id = ? AND status = 'waiting_host' AND (replay_parte = ? OR replay_parte IS NULL)");
+                $stmtQ->execute([$titulo, $lang_id, $parte]);
             } else if (!empty($link)) {
                 // Se o host enviou o link, marca como 'done' (ou ignora) para que o robô não duplique.
-                $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET status = 'done' WHERE language_id = ? AND status = 'waiting_host'");
-                $stmtQ->execute([$lang_id]);
+                $stmtQ = $conn->prepare("UPDATE odysee_publish_queue SET status = 'done' WHERE language_id = ? AND status = 'waiting_host' AND (replay_parte = ? OR replay_parte IS NULL)");
+                $stmtQ->execute([$lang_id, $parte]);
             }
         } catch (PDOException $e) {
             // Falha silenciosa: não bloqueia o envio da notificação ao grupo dos hosts
