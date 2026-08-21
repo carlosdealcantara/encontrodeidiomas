@@ -574,11 +574,34 @@ def escanear_drive():
     print("Escaneando Drive por novos vídeos...", flush=True)
     try:
         drive_service = init_drive_service()
-        results = drive_service.files().list(
-            q=f"'{PASTA_RAIZ_DRIVE}' in parents and mimeType contains 'video/' and name contains ' - Recording'",
-            fields="files(id, name)"
-        ).execute()
-        arquivos = results.get('files', [])
+        
+        PASTA_GOOGLE_MEET = '1LPd1YFUM1AZ5RLxWhOleVg1b126T87oN'
+        
+        # 1. Descobrir todas as subpastas da pasta "Google Meet"
+        folder_ids = [PASTA_RAIZ_DRIVE, PASTA_GOOGLE_MEET]
+        try:
+            folder_results = drive_service.files().list(
+                q=f"'{PASTA_GOOGLE_MEET}' in parents and mimeType = 'application/vnd.google-apps.folder'",
+                fields="files(id)"
+            ).execute()
+            for f in folder_results.get('files', []):
+                folder_ids.append(f['id'])
+        except Exception as e:
+            logger.warning(f"Erro ao buscar subpastas do Google Meet: {e}")
+            
+        arquivos = []
+        # 2. Buscar arquivos de vídeo nessas pastas (em lotes de 10 para evitar query gigante)
+        for i in range(0, len(folder_ids), 10):
+            lote = folder_ids[i:i+10]
+            parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
+            query = f"({parents_q}) and mimeType contains 'video/' and name contains ' - Recording'"
+            
+            results = drive_service.files().list(
+                q=query,
+                fields="files(id, name)"
+            ).execute()
+            arquivos.extend(results.get('files', []))
+            
         print(f"Arquivos encontrados no Drive: {len(arquivos)}", flush=True)
         
         if not arquivos:
