@@ -599,24 +599,47 @@ def escanear_drive():
     try:
         drive_service = init_drive_service()
         
-        # 1. Descobrir todas as pastas 'Google Meet' ou 'Meet Recordings' dinamicamente
+        # 1. Descobrir todas as pastas de origem dos vídeos dinamicamente
+        # Regra: buscamos APENAS subpastas "recurring" dentro das pastas "Google Meet",
+        # pois são essas que contêm os vídeos novos. As pastas de DESTINO (Meet Recordings > Idioma)
+        # NÃO devem ser escaneadas para evitar reprocessar vídeos já arquivados.
         folder_ids = [PASTA_RAIZ_DRIVE]
+        
+        # Pastas extras compartilhadas explicitamente (ex: novas pastas criadas pelo Google)
+        PASTAS_EXTRAS = os.getenv('DRIVE_EXTRA_FOLDER_IDS', '').split(',')
+        
         try:
+            # Busca todas as pastas chamadas "Google Meet"
             meet_folders = drive_service.files().list(
-                q="mimeType='application/vnd.google-apps.folder' and (name='Google Meet' or name='Meet Recordings')",
-                fields="files(id, name)"
+                q="mimeType='application/vnd.google-apps.folder' and name='Google Meet'",
+                fields='files(id, name)'
             ).execute().get('files', [])
             
             for mf in meet_folders:
-                folder_ids.append(mf['id'])
-                # Descobre também as subpastas dentro dessa pasta do Meet
+                # Só adiciona subpastas com "recurring" no nome (são as fontes de gravação)
                 sub_results = drive_service.files().list(
-                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder'",
-                    fields="files(id)"
+                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring'",
+                    fields='files(id, name)'
                 ).execute()
                 for sub in sub_results.get('files', []):
+                    logger.info(f"[SCAN] Pasta de origem encontrada: {sub['name']} ({sub['id']})")
                     folder_ids.append(sub['id'])
                     
+            # Adiciona pastas extras (ex: nova pasta Google Meet bugada) e seus filhos diretos
+            for extra_id in PASTAS_EXTRAS:
+                extra_id = extra_id.strip()
+                if not extra_id:
+                    continue
+                folder_ids.append(extra_id)
+                logger.info(f"[SCAN] Pasta extra adicionada: {extra_id}")
+                extra_subs = drive_service.files().list(
+                    q=f"'{extra_id}' in parents and mimeType='application/vnd.google-apps.folder'",
+                    fields='files(id, name)'
+                ).execute()
+                for sub in extra_subs.get('files', []):
+                    logger.info(f"[SCAN] Subfolder de pasta extra: {sub['name']} ({sub['id']})")
+                    folder_ids.append(sub['id'])
+
         except Exception as e:
             logger.warning(f"Erro ao buscar pastas do Google Meet dinamicamente: {e}")
             
@@ -629,7 +652,7 @@ def escanear_drive():
             
             results = drive_service.files().list(
                 q=query,
-                fields="files(id, name)"
+                fields="files(id, name, size)"
             ).execute()
             arquivos.extend(results.get('files', []))
             
@@ -647,6 +670,7 @@ def escanear_drive():
         for arquivo in arquivos:
             file_id = arquivo['id']
             file_name = arquivo['name']
+            file_size_mb = int(arquivo.get('size', 0)) / (1024 * 1024) if arquivo.get('size') else 0
             
             # Verifica se já está na fila
             cursor.execute("SELECT id FROM odysee_publish_queue WHERE drive_file_id = %s", (file_id,))
@@ -691,7 +715,11 @@ def escanear_drive():
             has_odysee = bool(idioma_escolhido.get('odysee_auth_token')) and bool(idioma_escolhido.get('odysee_channel_name')) and bool(idioma_escolhido.get('odysee_auto_enabled'))
             
             replay_parte = None
-            if idioma_escolhido.get('ignore_next_video') == 1:
+            if file_size_mb > 0 and file_size_mb < 15:
+                titulo_final = f"[IGNORADO <15MB] {titulo_limpo}"
+                status_inicial = 'skip_publish'
+                logger.info(f"Vídeo {file_name} ignorado automaticamente por ter menos de 15MB ({file_size_mb:.1f} MB).")
+            elif idioma_escolhido.get('ignore_next_video') == 1:
                 titulo_final = f"[IGNORADO] {titulo_limpo}"
                 status_inicial = 'skip_publish'
                 logger.warning(f"Vídeo {file_name} ignorado manualmente via painel para o idioma {idioma_escolhido['name']}.")
