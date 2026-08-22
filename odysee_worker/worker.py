@@ -599,19 +599,26 @@ def escanear_drive():
     try:
         drive_service = init_drive_service()
         
-        PASTA_GOOGLE_MEET = '1LPd1YFUM1AZ5RLxWhOleVg1b126T87oN'
-        
-        # 1. Descobrir todas as subpastas da pasta "Google Meet"
-        folder_ids = [PASTA_RAIZ_DRIVE, PASTA_GOOGLE_MEET]
+        # 1. Descobrir todas as pastas 'Google Meet' ou 'Meet Recordings' dinamicamente
+        folder_ids = [PASTA_RAIZ_DRIVE]
         try:
-            folder_results = drive_service.files().list(
-                q=f"'{PASTA_GOOGLE_MEET}' in parents and mimeType = 'application/vnd.google-apps.folder'",
-                fields="files(id)"
-            ).execute()
-            for f in folder_results.get('files', []):
-                folder_ids.append(f['id'])
+            meet_folders = drive_service.files().list(
+                q="mimeType='application/vnd.google-apps.folder' and (name='Google Meet' or name='Meet Recordings')",
+                fields="files(id, name)"
+            ).execute().get('files', [])
+            
+            for mf in meet_folders:
+                folder_ids.append(mf['id'])
+                # Descobre também as subpastas dentro dessa pasta do Meet
+                sub_results = drive_service.files().list(
+                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder'",
+                    fields="files(id)"
+                ).execute()
+                for sub in sub_results.get('files', []):
+                    folder_ids.append(sub['id'])
+                    
         except Exception as e:
-            logger.warning(f"Erro ao buscar subpastas do Google Meet: {e}")
+            logger.warning(f"Erro ao buscar pastas do Google Meet dinamicamente: {e}")
             
         arquivos = []
         # 2. Buscar arquivos de vídeo nessas pastas (em lotes de 10 para evitar query gigante)
