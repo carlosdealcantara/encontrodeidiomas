@@ -627,18 +627,18 @@ def escanear_drive():
                     folder_ids.append(sub['id'])
                     
             # Adiciona pastas extras (ex: nova pasta Google Meet bugada) e seus filhos diretos
+            # IMPORTANTE: mesmo filtro "recurring" para evitar varrer pastas de destino (Meet Recordings)
             for extra_id in PASTAS_EXTRAS:
                 extra_id = extra_id.strip()
                 if not extra_id:
                     continue
-                folder_ids.append(extra_id)
                 logger.info(f"[SCAN] Pasta extra adicionada: {extra_id}")
                 extra_subs = drive_service.files().list(
-                    q=f"'{extra_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+                    q=f"'{extra_id}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
                     fields='files(id, name)'
                 ).execute()
                 for sub in extra_subs.get('files', []):
-                    logger.info(f"[SCAN] Subfolder de pasta extra: {sub['name']} ({sub['id']})")
+                    logger.info(f"[SCAN] Subfolder de pasta extra (recurring): {sub['name']} ({sub['id']})")
                     folder_ids.append(sub['id'])
 
         except Exception as e:
