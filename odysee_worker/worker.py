@@ -98,16 +98,17 @@ def atualizar_status(tarefa_id, status, error_msg=None, odysee_url=None, retry_c
             update_cols.append("odysee_url = %s")
             params.append(odysee_url)
             
-            # Atualiza o registro do replay apenas se replay_parte está definido.
+            # Atualiza o registro do replay apenas se replay_parte e semana estão definidos.
             # Se for NULL, não tocamos em meetup_replays para evitar sobrescrever o registro errado.
-            cursor.execute("SELECT language_id, replay_parte FROM odysee_publish_queue WHERE id = %s", (tarefa_id,))
+            cursor.execute("SELECT language_id, replay_parte, semana FROM odysee_publish_queue WHERE id = %s", (tarefa_id,))
             row = cursor.fetchone()
             if row:
                 lang_id = row[0]
                 replay_parte = row[1]
-                if replay_parte is not None:
-                    cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND parte = %s", (odysee_url, lang_id, replay_parte))
-                    logger.info(f"[REPLAY] Link atualizado em meetup_replays para language_id={lang_id}, parte={replay_parte}")
+                semana_video = row[2]
+                if replay_parte is not None and semana_video is not None:
+                    cursor.execute("UPDATE meetup_replays SET link = %s WHERE language_id = %s AND parte = %s AND semana = %s", (odysee_url, lang_id, replay_parte, semana_video))
+                    logger.info(f"[REPLAY] Link atualizado em meetup_replays para language_id={lang_id}, semana={semana_video}, parte={replay_parte}")
                 else:
                     logger.warning(f"[REPLAY] replay_parte é NULL para a tarefa {tarefa_id}. Não atualizando meetup_replays para evitar sobrescrita indevida.")
             
@@ -609,16 +610,16 @@ def escanear_drive():
         PASTAS_EXTRAS = os.getenv('DRIVE_EXTRA_FOLDER_IDS', '').split(',')
         
         try:
-            # Busca todas as pastas chamadas "Google Meet"
+            logger.info("Buscando pastas 'Google Meet' raiz no Drive...")
             meet_folders = drive_service.files().list(
-                q="mimeType='application/vnd.google-apps.folder' and name='Google Meet'",
+                q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
                 fields='files(id, name)'
             ).execute().get('files', [])
             
             for mf in meet_folders:
                 # Só adiciona subpastas com "recurring" no nome (são as fontes de gravação)
                 sub_results = drive_service.files().list(
-                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring'",
+                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
                     fields='files(id, name)'
                 ).execute()
                 for sub in sub_results.get('files', []):
@@ -633,7 +634,7 @@ def escanear_drive():
                 folder_ids.append(extra_id)
                 logger.info(f"[SCAN] Pasta extra adicionada: {extra_id}")
                 extra_subs = drive_service.files().list(
-                    q=f"'{extra_id}' in parents and mimeType='application/vnd.google-apps.folder'",
+                    q=f"'{extra_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
                     fields='files(id, name)'
                 ).execute()
                 for sub in extra_subs.get('files', []):
@@ -648,7 +649,7 @@ def escanear_drive():
         for i in range(0, len(folder_ids), 10):
             lote = folder_ids[i:i+10]
             parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
-            query = f"({parents_q}) and mimeType contains 'video/' and name contains ' - Recording'"
+            query = f"({parents_q}) and mimeType contains 'video/' and name contains ' - Recording' and trashed=false"
             
             results = drive_service.files().list(
                 q=query,
@@ -707,10 +708,13 @@ def escanear_drive():
             date_match = _re.search(r'(\d{4})[/\-_](\d{2})[/\-_](\d{2})', file_name)
             if date_match:
                 slug = f"{date_match.group(1)}_{date_match.group(2)}_{date_match.group(3)}"
+                video_date = datetime.date(int(date_match.group(1)), int(date_match.group(2)), int(date_match.group(3)))
+                semana_video = video_date.strftime("%G-W%V")
             else:
                 # Fallback: usa apenas os dígitos da data se encontrar padrão numérico
                 numbers = _re.findall(r'\d{4}', file_name)
                 slug = numbers[0] if numbers else 'upload'  # Último recurso seguro
+                semana_video = datetime.datetime.now().strftime("%G-W%V")
             # Verifica se o idioma está configurado para publicar no Odysee
             has_odysee = bool(idioma_escolhido.get('odysee_auth_token')) and bool(idioma_escolhido.get('odysee_channel_name')) and bool(idioma_escolhido.get('odysee_auto_enabled'))
             
@@ -733,13 +737,12 @@ def escanear_drive():
                 logger.info(f"Idioma sem canal ({idioma_escolhido['name']}). Marcando para apenas organizar arquivos.")
             else:
                 # Verifica se já tem título preenchido no portal (meetup_replays) para alguma parte livre
-                semana_atual = datetime.datetime.now().strftime("%G-W%V")
                 cursor.execute("""
                     SELECT parte, titulo FROM meetup_replays 
                     WHERE language_id = %s AND semana = %s AND titulo IS NOT NULL AND titulo != '' AND (link IS NULL OR link = '')
-                    AND parte NOT IN (SELECT replay_parte FROM odysee_publish_queue WHERE language_id = %s AND replay_parte IS NOT NULL)
+                    AND parte NOT IN (SELECT replay_parte FROM odysee_publish_queue WHERE language_id = %s AND replay_parte IS NOT NULL AND semana = %s)
                     ORDER BY parte ASC LIMIT 1
-                """, (language_id, semana_atual, language_id))
+                """, (language_id, semana_video, language_id, semana_video))
                 row_replay = cursor.fetchone()
                 
                 if row_replay:
@@ -755,28 +758,25 @@ def escanear_drive():
                     cursor.execute("""
                         SELECT parte FROM meetup_replays 
                         WHERE language_id = %s AND semana = %s AND (link IS NULL OR link = '')
-                        AND parte NOT IN (SELECT replay_parte FROM odysee_publish_queue WHERE language_id = %s AND replay_parte IS NOT NULL)
+                        AND parte NOT IN (SELECT replay_parte FROM odysee_publish_queue WHERE language_id = %s AND replay_parte IS NOT NULL AND semana = %s)
                         ORDER BY parte ASC LIMIT 1
-                    """, (language_id, semana_atual, language_id))
+                    """, (language_id, semana_video, language_id, semana_video))
                     row_livre = cursor.fetchone()
                     
                     if row_livre:
                         replay_parte = row_livre['parte']
                     else:
                         # Não há linhas livres. Vamos descobrir qual a próxima parte a ser criada.
-                        cursor.execute("SELECT COALESCE(MAX(parte), 0) + 1 FROM meetup_replays WHERE language_id = %s AND semana = %s", (language_id, semana_atual))
+                        cursor.execute("SELECT COALESCE(MAX(parte), 0) + 1 FROM meetup_replays WHERE language_id = %s AND semana = %s", (language_id, semana_video))
                         prox_parte = cursor.fetchone()[0]
                         replay_parte = prox_parte
                         
                         # Insere um placeholder no meetup_replays para garantir o espaço e evitar que o próximo vídeo pegue o mesmo
-                        cursor.execute("INSERT IGNORE INTO meetup_replays (language_id, semana, parte) VALUES (%s, %s, %s)", (language_id, semana_atual, replay_parte))
+                        cursor.execute("INSERT IGNORE INTO meetup_replays (language_id, semana, parte) VALUES (%s, %s, %s)", (language_id, semana_video, replay_parte))
             
-            # Insere no banco
-            cursor.execute("""
-                INSERT INTO odysee_publish_queue 
-                (language_id, drive_file_id, drive_file_name, status, titulo_final, odysee_slug, replay_parte) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (language_id, file_id, file_name, status_inicial, titulo_final, slug, replay_parte))
+            # Insere na fila de publicação
+            sql = "INSERT INTO odysee_publish_queue (drive_file_id, drive_file_name, size_mb, language_id, status, titulo_final, odysee_slug, replay_parte, semana) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            cursor.execute(sql, (file_id, file_name, file_size_mb, language_id, status_inicial, titulo_final, slug, replay_parte, semana_video))
             conn.commit()
             logger.info(f"Novo vídeo adicionado à fila: {file_name} | Status: {status_inicial} | Parte: {replay_parte}")
             
