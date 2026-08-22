@@ -641,7 +641,7 @@ def escanear_drive():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         # Busca TODOS os idiomas, independente de ter odysee configurado.
-        cursor.execute("SELECT id, name, odysee_auth_token, odysee_channel_name, odysee_auto_enabled, ignore_next_video FROM languages")
+        cursor.execute("SELECT id, name, name_en, odysee_auth_token, odysee_channel_name, odysee_auto_enabled, ignore_next_video FROM languages")
         idiomas = cursor.fetchall()
         
         for arquivo in arquivos:
@@ -658,7 +658,9 @@ def escanear_drive():
             idioma_escolhido = None
             file_name_norm = normalize_text(file_name)
             for idioma in idiomas:
-                if normalize_text(idioma['name']) in file_name_norm:
+                match_name = normalize_text(idioma['name']) in file_name_norm
+                match_name_en = bool(idioma.get('name_en')) and (normalize_text(idioma['name_en']) in file_name_norm)
+                if match_name or match_name_en:
                     language_id = idioma['id']
                     idioma_escolhido = idioma
                     break
