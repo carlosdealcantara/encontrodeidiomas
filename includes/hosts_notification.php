@@ -54,13 +54,23 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
 
         $portal_url = "viaEi.com/portal_hosts/";
 
-        $mensagem = "🔄 *Mensagem Semanal Atualizada!*\n"
-                  . "{$portal_url}\n\n"
-                  . "O idioma {$lang_emoji} *{$lang_nome}* {$acao_desc} desta semana.\n\n"
-                  . "O pipeline de postagem do vídeo no Odysee foi ativado e, em breve, o vídeo estará postado. A mensagem que o host tem para mandar nos grupos será enviada aqui primeiro, seguida pelo resumo semanal já completo.\n\n"
-                  . "📌 *Backup das informações preenchidas:*\n"
-                  . "Título: {$titulo_preenchido}\n"
-                  . "Participantes simultâneos: {$numero_preenchido}";
+        $default_msg = "🔄 *Mensagem Semanal Atualizada!*\n"
+                     . "{portal_url}\n\n"
+                     . "O idioma {lang_emoji} *{lang_nome}* {acao_desc} desta semana.\n\n"
+                     . "O pipeline de postagem do vídeo no Odysee foi ativado e, em breve, o vídeo estará postado. A mensagem que o host tem para mandar nos grupos será enviada aqui primeiro, seguida pelo resumo semanal já completo.\n\n"
+                     . "📌 *Backup das informações preenchidas:*\n"
+                     . "Título: {titulo_preenchido}\n"
+                     . "Participantes simultâneos: {numero_preenchido}";
+
+        $mensagem_template = getSetting('host_notification_template', $default_msg);
+        
+        $mensagem_template = str_replace('\n', "\n", $mensagem_template);
+
+        $mensagem = str_replace(
+            ['{portal_url}', '{lang_emoji}', '{lang_nome}', '{acao_desc}', '{titulo_preenchido}', '{numero_preenchido}'],
+            [$portal_url, $lang_emoji, $lang_nome, $acao_desc, $titulo_preenchido, $numero_preenchido],
+            $mensagem_template
+        );
 
         enviarWhatsApp('120363164732845564@g.us', $mensagem, 'hosts_app');
         return;
