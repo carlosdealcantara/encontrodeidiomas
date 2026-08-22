@@ -284,7 +284,7 @@ function sanitizeOdyseeUrl(string $url): string {
                         <label>Título (Clickbait Honesto)</label>
                         <input type="text" name="replay_titulo" id="replay_titulo"
                                value="<?= htmlspecialchars($prefill['titulo'] ?? '') ?>"
-                               placeholder='Ex: "Ela disse que aprendeu isso em 40 minutos!"'>
+                               placeholder='Ex: "Ela disse que aprendeu isso em 40 minutos!"' required>
                     </div>
 
                     <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Salvar e Notificar Grupo</button>
@@ -384,6 +384,11 @@ function sanitizeOdyseeUrl(string $url): string {
             setTimeout(() => { btn.innerHTML = orig; btn.style.background = '#38bdf8'; }, 2000);
         });
     }
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('idiomaReplaySelect').value) {
+            carregarDadosSemana();
+        }
+    });
 </script>
 <?php endif; ?>
 </body>

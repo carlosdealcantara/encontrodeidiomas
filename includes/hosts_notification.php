@@ -46,31 +46,21 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
 
     if ($acao_desc === "atualizou dados") {
         // Mensagem inicial de atualização pelo portal
-        $stmtThisLang = $conn->prepare("SELECT titulo FROM meetup_replays WHERE language_id = ? AND semana = ?");
+        $stmtThisLang = $conn->prepare("SELECT titulo, numero FROM meetup_replays WHERE language_id = ? AND semana = ?");
         $stmtThisLang->execute([$lang_id, $semana_atual]);
         $rowThisLang = $stmtThisLang->fetch(PDO::FETCH_ASSOC);
-        $titulo_idioma = $rowThisLang && !empty($rowThisLang['titulo']) ? $rowThisLang['titulo'] : "Título";
+        $titulo_preenchido = $rowThisLang && !empty($rowThisLang['titulo']) ? $rowThisLang['titulo'] : "(vazio)";
+        $numero_preenchido = $rowThisLang && !empty($rowThisLang['numero']) ? $rowThisLang['numero'] : "(vazio)";
 
-        $default_group_template = "🎬 *Replay:* {bandeira} {titulo}\n\n🔗 {link}";
-        $group_template = getSetting('odysee_whatsapp_template', $default_group_template);
-        
-        // Remove barras escapadas caso existam no banco
-        $group_template = str_replace('\n', "\n", $group_template);
-
-        $preview_group_message = str_replace(
-            ['{bandeira}', '{titulo}', '{link}'],
-            [$lang_emoji, $titulo_idioma, '[Link será gerado]'],
-            $group_template
-        );
-
-        $portal_url = "https://viaEi.com/portal_hosts/";
+        $portal_url = "viaEi.com/portal_hosts/";
 
         $mensagem = "🔄 *Mensagem Semanal Atualizada!*\n"
+                  . "{$portal_url}\n\n"
                   . "O idioma {$lang_emoji} *{$lang_nome}* {$acao_desc} desta semana.\n\n"
-                  . "🔗 *Acesse o Portal dos Hosts:* {$portal_url}\n\n"
                   . "O pipeline de postagem do vídeo no Odysee foi ativado e, em breve, o vídeo estará postado. A mensagem que o host tem para mandar nos grupos será enviada aqui primeiro, seguida pelo resumo semanal já completo.\n\n"
-                  . "Prévia da mensagem para o seu grupo:\n\n"
-                  . $preview_group_message;
+                  . "📌 *Backup das informações preenchidas:*\n"
+                  . "Título: {$titulo_preenchido}\n"
+                  . "Participantes simultâneos: {$numero_preenchido}";
 
         enviarWhatsApp('120363164732845564@g.us', $mensagem, 'hosts_app');
         return;
