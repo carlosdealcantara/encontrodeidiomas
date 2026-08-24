@@ -560,8 +560,18 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     
                     if (!data.success && data.reason === 'multiple_sessions_require_id') {
+                        let optionsTxt = '';
+                        if (data.schedules && data.schedules.length > 0) {
+                            data.schedules.forEach((s, idx) => {
+                                let label = s.session_type === 'student_practice' ? '🗣️ *!attend ' + (idx + 1) + '* — Students Practice' : '👨‍🏫 *!attend ' + (idx + 1) + '* — Teacher Class';
+                                optionsTxt += label + '\n';
+                            });
+                        } else {
+                            optionsTxt = "👨‍🏫 *!attend 1* — Teacher Class\n🗣️ *!attend 2* — Students Practice\n";
+                        }
+
                         await sock.sendMessage(groupJid, { 
-                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n👨‍🏫 *!attend 1* — Teacher Class\n🗣️ *!attend 2* — Students Practice\n\nWhich one are you joining?`,
+                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n${optionsTxt}\nWhich one are you joining?`,
                             mentions: [senderJid]
                         });
                         return;
@@ -626,8 +636,18 @@ async function handleMessages({ messages, type }) {
                     const data = await res.json();
                     
                     if (!data.success && data.reason === 'multiple_sessions_require_id') {
+                        let optionsTxt = '';
+                        if (data.schedules && data.schedules.length > 0) {
+                            data.schedules.forEach((s, idx) => {
+                                let label = s.session_type === 'student_practice' ? '🗣️ *!unattend ' + (idx + 1) + '* — Students Practice' : '👨‍🏫 *!unattend ' + (idx + 1) + '* — Teacher Class';
+                                optionsTxt += label + '\n';
+                            });
+                        } else {
+                            optionsTxt = "👨‍🏫 *!unattend 1* — Teacher Class\n🗣️ *!unattend 2* — Students Practice\n";
+                        }
+
                         await sock.sendMessage(groupJid, { 
-                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n👨‍🏫 *!unattend 1* — Teacher Class\n🗣️ *!unattend 2* — Students Practice\n\nWhich one are you leaving?`,
+                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n${optionsTxt}\nWhich one are you leaving?`,
                             mentions: [senderJid]
                         });
                         return;

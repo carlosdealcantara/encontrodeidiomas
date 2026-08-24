@@ -51,7 +51,7 @@ try {
         }
     } else {
         if (count($schedules) > 1 && in_array($action, ['attend', 'unattend'])) {
-            die(json_encode(['success' => false, 'reason' => 'multiple_sessions_require_id', 'schedules_count' => count($schedules)]));
+            die(json_encode(['success' => false, 'reason' => 'multiple_sessions_require_id', 'schedules_count' => count($schedules), 'schedules' => $schedules]));
         }
         
         // Encontra a próxima aula válida (limite máximo para interagir é 14 min APÓS o início)
