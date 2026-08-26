@@ -766,17 +766,17 @@ def escanear_drive():
                     if row_livre:
                         replay_parte = row_livre['parte']
                     else:
-                        # Não há linhas livres. Vamos descobrir qual a próxima parte a ser criada.
-                        cursor.execute("SELECT COALESCE(MAX(parte), 0) + 1 FROM meetup_replays WHERE language_id = %s AND semana = %s", (language_id, semana_video))
-                        prox_parte = cursor.fetchone()[0]
+                        cursor.execute("SELECT COALESCE(MAX(parte), 0) + 1 AS max_parte FROM meetup_replays WHERE language_id = %s AND semana = %s", (language_id, semana_video))
+                        row_max = cursor.fetchone()
+                        prox_parte = row_max['max_parte'] if row_max and 'max_parte' in row_max else 1
                         replay_parte = prox_parte
                         
                         # Insere um placeholder no meetup_replays para garantir o espaço e evitar que o próximo vídeo pegue o mesmo
                         cursor.execute("INSERT IGNORE INTO meetup_replays (language_id, semana, parte) VALUES (%s, %s, %s)", (language_id, semana_video, replay_parte))
             
             # Insere na fila de publicação
-            sql = "INSERT INTO odysee_publish_queue (drive_file_id, drive_file_name, size_mb, language_id, status, titulo_final, odysee_slug, replay_parte, semana) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-            cursor.execute(sql, (file_id, file_name, file_size_mb, language_id, status_inicial, titulo_final, slug, replay_parte, semana_video))
+            sql = "INSERT INTO odysee_publish_queue (drive_file_id, drive_file_name, language_id, status, titulo_final, odysee_slug, replay_parte, semana) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            cursor.execute(sql, (file_id, file_name, language_id, status_inicial, titulo_final, slug, replay_parte, semana_video))
             conn.commit()
             logger.info(f"Novo vídeo adicionado à fila: {file_name} | Status: {status_inicial} | Parte: {replay_parte}")
             
