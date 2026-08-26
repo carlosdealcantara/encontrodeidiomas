@@ -71,7 +71,7 @@ $extra_head = '
 </script>';
 
 $webpage_desc = (CURRENT_LANG === 'en')
-    ? "Encontro de Idiomas is the largest free language practice community in Brazil. Weekly conversation meetups, online and in-person, for all levels."
+    ? "Encontro de Idiomas is the largest free language practice community worldwide. Weekly conversation meetups, online and in-person, for all levels."
     : "O Encontro de Idiomas é a maior comunidade gratuita de prática de idiomas do Brasil. Encontros de conversação semanais, online e presencial, para todos os níveis.";
 
 $webpage_keys = (CURRENT_LANG === 'en')
