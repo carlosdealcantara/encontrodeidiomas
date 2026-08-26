@@ -92,6 +92,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
           "@type": "EducationalOrganization",
           "@id": "<?= SITE_URL ?>/#organization",
           "name": "<?= SITE_NAME ?>",
+          "alternateName": ["Ei", "viaEi", "Projeto Encontro de Idiomas", "Encontros de Idiomas"],
           "url": "<?= SITE_URL ?>",
           "logo": {
             "@type": "ImageObject",
@@ -108,7 +109,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
           "@type": "WebSite",
           "@id": "<?= SITE_URL ?>/#website",
           "url": "<?= SITE_URL ?>",
-          "name": "viaEi.com",
+          "name": "Encontro de Idiomas",
+          "alternateName": ["viaEi", "viaEi.com", "Ei"],
           "description": "<?= t('meta.seo_web_desc') ?>",
           "publisher": { "@id": "<?= SITE_URL ?>/#organization" }
         },
@@ -121,7 +123,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
               "position": 1,
               "item": {
                 "@id": "<?= SITE_URL ?>",
-                "name": "viaEi.com"
+                "name": "Encontro de Idiomas"
               }
             }
             <?php if (isset($title) && $current_page !== 'index.php'): ?>
@@ -153,7 +155,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
     <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
-    <meta property="og:site_name"   content="viaEi.com">
+    <meta property="og:site_name"   content="Encontro de Idiomas">
     <meta property="og:locale"      content="<?= t('meta.og_locale') ?>">
 
     <!-- Twitter -->

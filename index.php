@@ -68,7 +68,29 @@ $extra_head = '
     }
   ]
 }
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "' . SITE_URL . '/#webpage",
+  "url": "' . SITE_URL . '/",
+  "name": "Encontro de Idiomas",
+  "description": "O Encontro de Idiomas é a maior comunidade gratuita de prática de idiomas do Brasil. Encontros de conversação semanais, online e presencial, para todos os níveis.",
+  "keywords": "encontro de idiomas, encontros de idiomas, clube de idiomas, clube de conversação, praticar inglês grátis, praticar espanhol online, conversação gratuita, Ei, viaEi",
+  "inLanguage": "pt-BR",
+  "isPartOf": {
+    "@id": "' . SITE_URL . '/#website"
+  },
+  "about": {
+    "@id": "' . SITE_URL . '/#organization"
+  },
+  "breadcrumb": {
+    "@id": "' . SITE_URL . '/#breadcrumb"
+  }
+}
 </script>';
+
 
 $page_scripts = <<<JS
 <script>

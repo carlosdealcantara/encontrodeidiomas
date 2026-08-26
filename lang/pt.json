@@ -30,9 +30,9 @@
     "presencial_state_bubble": "Idiomas {state}"
   },
   "home": {
-    "title": "Conversação Grátis em Inglês e outros Idiomas",
-    "og_title": "Conversação Grátis em Inglês e outros Idiomas — Encontro de Idiomas",
-    "meta_description": "A melhor comunidade gratuita para praticar idiomas. Encontros de conversação para estudantes de todos os níveis, online e presencial. Junte-se a nós!",
+    "title": "Encontro de Idiomas · Conversação Grátis em Inglês e outros Idiomas",
+    "og_title": "Encontro de Idiomas · Conversação Grátis em Inglês e outros Idiomas — viaEi",
+    "meta_description": "O Encontro de Idiomas é a comunidade gratuita para praticar idiomas. Encontros de conversação semanais para todos os níveis, online e presencial em todo o Brasil. Junte-se a nós!",
     "hero_heading": "Pratique idiomas com <span class=\"highlight\">pessoas reais</span>",
     "welcome_text": "Pratique inglês, espanhol e outros idiomas gratuitamente. Participe de uma comunidade vibrante com encontros online e presenciais em sua região.",
     "cta_participate": "Ver como participar",
@@ -135,7 +135,7 @@
     "tz_all_timezones": "Todos os fusos"
   },
   "presencial": {
-    "title_default": "Encontros de Conversação Presenciais e Gratuitos — Brasil e Mundo",
+    "title_default": "Encontro de Idiomas Presencial · Grupos Gratuitos em Todo o Brasil e Mundo",
     "meta_description_default": "Encontre pessoas reais para praticar idiomas na sua cidade. Grupos presenciais gratuitos em cafés e parques por todo o Brasil. Junte-se a nós!",
     "title_city": "Prática de Idiomas em {city} | {site_name}",
     "meta_description_city": "Participe da nossa comunidade local de idiomas em {city}. Encontros gratuitos e conversação real.",
