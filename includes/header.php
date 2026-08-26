@@ -167,10 +167,10 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
 
     <link rel="canonical" href="<?= sanitize($canonical) ?>">
     <?php
-    // Evita duplicação: se o $title já contém o nome do site, usa apelido curto como sufixo
-    $title_suffix = (stripos($title, SITE_NAME) !== false) ? '— Ei' : '— ' . SITE_NAME;
+    // Evita duplicação: se o $title já contém o nome do site, não usa sufixo
+    $title_suffix = (stripos($title, SITE_NAME) !== false) ? '' : ' — ' . SITE_NAME;
     ?>
-    <title><?= sanitize($title) ?> <?= $title_suffix ?></title>
+    <title><?= sanitize($title) ?><?= $title_suffix ?></title>
 
     <!-- Favicon -->
     <link rel="icon"             type="image/png" href="/assets/images/favicon.png">
