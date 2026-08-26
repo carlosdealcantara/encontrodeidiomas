@@ -166,7 +166,11 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
 
     <link rel="canonical" href="<?= sanitize($canonical) ?>">
-    <title><?= sanitize($title) ?> — <?= SITE_NAME ?></title>
+    <?php
+    // Evita duplicação: se o $title já contém o nome do site, usa apelido curto como sufixo
+    $title_suffix = (stripos($title, SITE_NAME) !== false) ? '— Ei' : '— ' . SITE_NAME;
+    ?>
+    <title><?= sanitize($title) ?> <?= $title_suffix ?></title>
 
     <!-- Favicon -->
     <link rel="icon"             type="image/png" href="/assets/images/favicon.png">
