@@ -71,7 +71,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <meta name="keywords" content="<?= sanitize($meta_keywords) ?>">
     <?php endif; ?>
     <meta name="author" content="Encontro de Idiomas">
-    <?php if ($_SERVER['HTTP_HOST'] !== 'viaEi.com'): ?>
+    <?php if (!in_array(strtolower($_SERVER['HTTP_HOST']), ['viaei.com', 'www.viaei.com'])): ?>
     <meta name="robots" content="noindex, nofollow">
     <?php else: ?>
     <meta name="robots" content="index, follow">
