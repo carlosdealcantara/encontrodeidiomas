@@ -68,7 +68,19 @@ $extra_head = '
     }
   ]
 }
-</script>
+</script>';
+
+$webpage_desc = (CURRENT_LANG === 'en')
+    ? "Encontro de Idiomas is the largest free language practice community in Brazil. Weekly conversation meetups, online and in-person, for all levels."
+    : "O Encontro de Idiomas é a maior comunidade gratuita de prática de idiomas do Brasil. Encontros de conversação semanais, online e presencial, para todos os níveis.";
+
+$webpage_keys = (CURRENT_LANG === 'en')
+    ? "language practice, free language exchange, practice english, practice spanish online, free conversation, language club, Ei, viaEi"
+    : "encontro de idiomas, encontros de idiomas, clube de idiomas, clube de conversação, praticar inglês grátis, praticar espanhol online, conversação gratuita, Ei, viaEi";
+
+$webpage_lang = (CURRENT_LANG === 'en') ? "en" : "pt-BR";
+
+$extra_head .= '
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -76,9 +88,9 @@ $extra_head = '
   "@id": "' . SITE_URL . '/#webpage",
   "url": "' . SITE_URL . '/",
   "name": "Encontro de Idiomas",
-  "description": "O Encontro de Idiomas é a maior comunidade gratuita de prática de idiomas do Brasil. Encontros de conversação semanais, online e presencial, para todos os níveis.",
-  "keywords": "encontro de idiomas, encontros de idiomas, clube de idiomas, clube de conversação, praticar inglês grátis, praticar espanhol online, conversação gratuita, Ei, viaEi",
-  "inLanguage": "pt-BR",
+  "description": "' . $webpage_desc . '",
+  "keywords": "' . $webpage_keys . '",
+  "inLanguage": "' . $webpage_lang . '",
   "isPartOf": {
     "@id": "' . SITE_URL . '/#website"
   },
