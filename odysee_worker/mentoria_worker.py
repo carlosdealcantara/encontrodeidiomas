@@ -209,6 +209,11 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             viewport={"width": 1920, "height": 1080}
         )
         page = context.new_page()
+        # CORREÇÃO: timeout curto e isolado para o Passo 7.
+        # Esta função NÃO é um upload demorado — ela só navega e lê um input.
+        # Nunca deve herdar o timeout global de 4h do contexto de upload.
+        page.set_default_timeout(60000)  # 60s máximo para qualquer operação aqui
+        page.set_default_navigation_timeout(60000)
         try:
             page.goto("https://odysee.com", timeout=60000)
             context.add_cookies([{"name": "auth_token", "value": auth_token, "domain": ".odysee.com", "path": "/"}])
@@ -222,7 +227,10 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             except:
                 pass
             page.wait_for_timeout(8000)
-            salvar_screenshot(page, "07_video_page", tarefa_id)
+            try:
+                page.screenshot(path=f"/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+            except Exception as e:
+                logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
             
             clicked = page.evaluate("""
                 () => {
@@ -235,7 +243,6 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
                 share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
                 share_btn.click(force=True, no_wait_after=True)
             page.wait_for_timeout(2000)
-            salvar_screenshot(page, "08_share_modal", tarefa_id)
             
             share_input = page.locator('input[value*="ody.sh"]').first
             if not share_input.is_visible():
@@ -627,6 +634,11 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         share_link = None
         if upload_ok and channel_name and slug:
             try:
+                # CORREÇÃO: O timeout global de 4h ainda está ativo neste ponto.
+                # Redefine para 60s antes de qualquer operação do Passo 7.
+                page.set_default_timeout(60000)
+                page.set_default_navigation_timeout(60000)
+                
                 video_url = f"https://odysee.com/@{channel_name.lstrip('@')}/{slug}"
                 logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
                 page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
@@ -635,7 +647,10 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                 except:
                     pass
                 page.wait_for_timeout(8000)
-                salvar_screenshot(page, "07_video_page", tarefa_id)
+                try:
+                    page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                except Exception as e:
+                    logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
                 
                 clicked = page.evaluate("""
                     () => {
@@ -648,7 +663,6 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
                     share_btn.click(force=True, no_wait_after=True)
                 page.wait_for_timeout(2000)
-                salvar_screenshot(page, "08_share_modal", tarefa_id)
                 
                 share_input = page.locator('input[value*="ody.sh"]').first
                 if not share_input.is_visible():
