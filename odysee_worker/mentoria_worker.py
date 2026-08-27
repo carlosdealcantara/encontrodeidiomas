@@ -750,6 +750,11 @@ def encurtar_url(url_longa):
     return url_longa
 
 def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
+    """
+    Envia a notificação de novo vídeo para o grupo Our Classes.
+    Retorna uma tupla (mensagem_str, sucesso_bool).
+    sucesso_bool = True apenas se ao menos um envio foi disparado sem exceção.
+    """
     # --- Busca o template editável do banco (settings table) ---
     template = "🎓 *{titulo}*\n\n🔗 {url}"
     try:
@@ -777,15 +782,23 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
         if resp.status_code == 200:
             conf = resp.json()
             jid = conf.get("groups", {}).get("our_classes", {}).get("jid")
-            if jid:
+            if jid and jid.strip():
                 grupos_alvo = [jid]
                 logger.info(f"[WHATSAPP] Grupo alvo Our Classes: {jid}")
             else:
-                logger.warning("[WHATSAPP] our_classes.jid não encontrado no mentoria-config")
+                # ERRO EXPLÍCITO: JID ausente é um problema de configuração, não um aviso
+                logger.error(
+                    "[WHATSAPP] FALHA: our_classes.jid está vazio ou ausente no mentoria-config. "
+                    "A mensagem NÃO será enviada. Verifique o painel Mentoria > Configurações."
+                )
         else:
-            logger.warning(f"[WHATSAPP] Baileys retornou HTTP {resp.status_code} ao buscar mentoria-config")
+            logger.error(f"[WHATSAPP] FALHA: Baileys retornou HTTP {resp.status_code} ao buscar mentoria-config. Mensagem NÃO enviada.")
     except Exception as e:
-        logger.error(f"[WHATSAPP] Erro ao buscar mentoria-config do Baileys: {e}")
+        logger.error(f"[WHATSAPP] FALHA CRÍTICA ao buscar mentoria-config do Baileys: {e}. Mensagem NÃO será enviada.")
+
+    if not grupos_alvo:
+        logger.error("[WHATSAPP] Nenhum grupo alvo encontrado. Abortando envio da notificação.")
+        return mensagem, False
 
     link_preview_data = {
         "title": titulo,
@@ -795,6 +808,7 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
     if thumbnail_b64:
         link_preview_data["thumbnailBase64"] = thumbnail_b64
 
+    wpp_ok = False
     for grupo_id in grupos_alvo:
         try:
             requests.post("http://host.docker.internal:3000/send", json={
@@ -804,10 +818,11 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
                 "linkPreview": link_preview_data
             }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
             logger.info(f"[WHATSAPP] Notificação enviada para {grupo_id}")
+            wpp_ok = True
         except Exception as e:
-            logger.warning(f"[WHATSAPP] Erro ao notificar {grupo_id}: {e}")
+            logger.error(f"[WHATSAPP] Erro ao notificar {grupo_id}: {e}")
 
-    return mensagem
+    return mensagem, wpp_ok
 
 
 
@@ -870,7 +885,11 @@ def processar_fila():
                     if result: thumbnail_b64 = base64.b64encode(encimg).decode('utf-8')
             except: pass
             
-        msg_wpp = notificar_whatsapp(title, url_curta, thumbnail_b64)
+        msg_wpp, wpp_ok = notificar_whatsapp(title, url_curta, thumbnail_b64)
+        if not wpp_ok:
+            # Grava aviso visível no painel: tarefa concluída mas WPP não foi enviado
+            logger.error(f"[WHATSAPP] Notificação NÃO enviada para a tarefa {tarefa['id']}. Verifique os logs e o painel Mentoria > Configurações.")
+            msg_wpp = f"[WPP FALHOU — verificar config] {msg_wpp}"
         atualizar_status(tarefa['id'], 'done', odysee_url=url_curta, whatsapp_message=msg_wpp)
         
     except Exception as e:
