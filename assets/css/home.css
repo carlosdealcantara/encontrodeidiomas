@@ -535,7 +535,7 @@ html {
     .hero-premium-grid { grid-template-columns: 1fr; gap: 30px; text-align: center; } /* Gap reduzido de 40px */
     .hero-content { max-width: 100%; }
     .hero-cta { justify-content: center; }
-    .hero-visual .photo-swiper { padding: 10px; }
+    .hero-visual .photo-swiper { padding: 10px 10px 45px; }
 }
 @media (max-width: 680px) {
     .hero-content h1 { font-size: 1.8rem; margin-bottom: 12px; } /* Reduzido de 2.2rem e menor margem */
