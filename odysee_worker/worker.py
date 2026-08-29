@@ -34,6 +34,8 @@ DB_NAME = os.getenv('DB_NAME', '')
 GOOGLE_SA_JSON = 'google_service_account.json'  # fallback: service account
 GOOGLE_OAUTH_TOKEN = 'google_oauth_token.json'  # preferencial: OAuth com conta principal
 PASTA_RAIZ_DRIVE = os.getenv('DRIVE_RECORDINGS_FOLDER_ID')
+PASTA_FUTURE_CHANNELS = os.getenv('DRIVE_FUTURE_CHANNELS_FOLDER_ID')  # holding: idiomas sem canal ainda
+
 
 def get_db_connection():
     print("Tentando conectar ao banco de dados...", flush=True)
@@ -883,6 +885,50 @@ def encurtar_url(url_longa):
     logger.warning("clck.ru falhou 3 vezes. Usando URL canônica do Odysee.")
     return url_longa
 
+def mover_para_future_channels(drive_service, file_id, file_name, language_name):
+    """
+    Move o video de um idioma sem canal Odysee para a pasta 'Future Channels'
+    dentro de uma subpasta com o nome do idioma (criada automaticamente se nao existir).
+    Isso preserva a invariante arquitetural: pasta de destino final = so postados.
+    """
+    if not PASTA_FUTURE_CHANNELS:
+        logger.warning("[FUTURE] DRIVE_FUTURE_CHANNELS_FOLDER_ID nao configurado. Video mantido onde esta.")
+        return
+    try:
+        drive = init_drive_service()
+        
+        # Busca ou cria subpasta com nome do idioma dentro de Future Channels
+        result = drive.files().list(
+            q=f"'{PASTA_FUTURE_CHANNELS}' in parents and mimeType='application/vnd.google-apps.folder' and name='{language_name}' and trashed=false",
+            fields='files(id, name)'
+        ).execute()
+        subpastas = result.get('files', [])
+        
+        if subpastas:
+            subfolder_id = subpastas[0]['id']
+            logger.info(f"[FUTURE] Subpasta '{language_name}' ja existe em Future Channels.")
+        else:
+            # Cria a subpasta automaticamente
+            folder_meta = {'name': language_name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [PASTA_FUTURE_CHANNELS]}
+            nova = drive.files().create(body=folder_meta, fields='id').execute()
+            subfolder_id = nova['id']
+            logger.info(f"[FUTURE] Subpasta '{language_name}' criada em Future Channels ({subfolder_id}).")
+        
+        # Move o video para essa subpasta
+        file_meta = drive.files().get(fileId=file_id, fields='parents').execute()
+        current_parents = file_meta.get('parents', [])
+        if subfolder_id not in current_parents:
+            drive.files().update(
+                fileId=file_id,
+                addParents=subfolder_id,
+                removeParents=",".join(current_parents)
+            ).execute()
+            logger.info(f"[FUTURE] Video '{file_name}' movido para Future Channels/{language_name}")
+        else:
+            logger.info(f"[FUTURE] Video ja esta em Future Channels/{language_name}")
+    except Exception as e:
+        logger.error(f"[FUTURE] Erro ao mover para Future Channels: {e}")
+
 def processar_fila():
     # 1. Escanear o Drive por novos arquivos
     escanear_drive()
@@ -899,18 +945,20 @@ def processar_fila():
     try:
         drive_service = init_drive_service()
         
-        # 1. ORGANIZAÇÃO IMEDIATA: movemos vídeo e chat logo de cara.
-        # Como o ID do Drive é fixo, o download posterior (se houver) não será afetado.
-        logger.info("Organizando arquivos (vídeo e chat) nas pastas definitivas do Drive...")
-        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
-        
-        # 2. VERIFICAÇÃO DE CANAL: se não tem canal configurado, encerra aqui.
+        # Verifica se o idioma tem canal Odysee configurado
         is_skip_publish = (not tarefa['odysee_auth_token']) or (not tarefa['odysee_channel_name'])
         
         if is_skip_publish:
-            logger.info("Tarefa não tem canal Odysee. Apenas organizando pastas (já feito).")
-            atualizar_status(tarefa['id'], 'done', error_msg="Organizado no Drive (sem canal para publicar).")
+            # Sem canal: move o video para Future Channels (pasta de espera) em vez da pasta de destino final.
+            # A pasta de destino final e reservada exclusivamente para videos postados via pipeline.
+            logger.info(f"Idioma sem canal ({tarefa['language_name']}). Movendo para Future Channels.")
+            mover_para_future_channels(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'])
+            atualizar_status(tarefa['id'], 'done', error_msg="Arquivado em Future Channels (sem canal para publicar).")
             return
+        
+        # COM CANAL: organiza arquivos na pasta de destino definitiva e publica.
+        logger.info("Organizando arquivos (video e chat) nas pastas definitivas do Drive...")
+        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
 
         # 3. DOWNLOAD E PUBLICAÇÃO
         temp_path = baixar_video_drive(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
