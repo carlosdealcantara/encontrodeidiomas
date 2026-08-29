@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
             ]);
 
             if (!empty(trim($data['token'])) && !empty(trim($data['channel'])) && $auto_enabled == 1) {
-                $stmt_reactivate = $conn->prepare("UPDATE odysee_publish_queue SET status='pending', error_message='[CANAL CONFIGURADO] Reprocessando automaticamente', retry_count=0 WHERE language_id = ? AND status = 'no_channel'");
+                $stmt_reactivate = $conn->prepare("UPDATE odysee_publish_queue SET status='pending', error_message='[CANAL CONFIGURADO] Reprocessando automaticamente', retry_count=0, created_at=NOW() WHERE language_id = ? AND (status = 'no_channel' OR (status = 'error' AND error_message LIKE '%[SAFETY]%'))");
                 $stmt_reactivate->execute([$id]);
                 $reactivated += $stmt_reactivate->rowCount();
             }
