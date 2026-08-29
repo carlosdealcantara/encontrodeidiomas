@@ -627,10 +627,50 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             
         return upload_ok
 
+def limpar_pastas_vazias(drive_service):
+    """
+    Limpa o Drive movendo para a lixeira as pastas 'Google Meet' e 'recurring' 
+    que ficaram completamente vazias apos o processamento anterior.
+    """
+    try:
+        meet_folders = drive_service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+            fields='files(id, name)'
+        ).execute().get('files', [])
+        
+        for mf in meet_folders:
+            subs = drive_service.files().list(
+                q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
+                fields='files(id, name)'
+            ).execute().get('files', [])
+            
+            for sub in subs:
+                contents = drive_service.files().list(
+                    q=f"'{sub['id']}' in parents and trashed=false",
+                    fields='files(id)'
+                ).execute().get('files', [])
+                if not contents:
+                    logger.info(f"[LIXEIRA] Removendo subpasta vazia: {sub['name']} ({sub['id']})")
+                    drive_service.files().update(fileId=sub['id'], body={'trashed': True}).execute()
+                    
+            # Verifica novamente se a pasta Google Meet ficou vazia
+            contents_mf = drive_service.files().list(
+                q=f"'{mf['id']}' in parents and trashed=false",
+                fields='files(id)'
+            ).execute().get('files', [])
+            if not contents_mf:
+                logger.info(f"[LIXEIRA] Removendo pasta Google Meet raiz vazia: {mf['id']}")
+                drive_service.files().update(fileId=mf['id'], body={'trashed': True}).execute()
+    except Exception as e:
+        logger.error(f"[LIXEIRA] Erro ao limpar pastas: {e}")
+
 def escanear_drive():
     print("Escaneando Drive por novos vídeos...", flush=True)
     try:
         drive_service = init_drive_service()
+        
+        # Limpeza automatica de pastas vazias residuais da execucao anterior
+        limpar_pastas_vazias(drive_service)
         
         # 1. Descobrir todas as pastas de origem dos vídeos dinamicamente
         # Regra: buscamos APENAS subpastas "recurring" dentro das pastas "Google Meet",
