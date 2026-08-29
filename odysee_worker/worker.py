@@ -7,6 +7,8 @@ import mysql.connector
 import datetime
 from dotenv import load_dotenv
 from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from playwright.sync_api import sync_playwright
@@ -29,7 +31,8 @@ DB_USER = os.getenv('DB_USER', '')
 DB_PASS = os.getenv('DB_PASS', '')
 DB_NAME = os.getenv('DB_NAME', '')
 
-GOOGLE_SA_JSON = 'google_service_account.json' # montado no docker
+GOOGLE_SA_JSON = 'google_service_account.json'  # fallback: service account
+GOOGLE_OAUTH_TOKEN = 'google_oauth_token.json'  # preferencial: OAuth com conta principal
 PASTA_RAIZ_DRIVE = os.getenv('DRIVE_RECORDINGS_FOLDER_ID')
 
 def get_db_connection():
@@ -43,9 +46,38 @@ def get_db_connection():
     )
 
 def init_drive_service():
+    """Inicializa o serviço do Drive.
+    Prioridade: OAuth token da conta principal (google_oauth_token.json).
+    Fallback: Service Account (google_service_account.json).
+    Com OAuth, o worker enxerga TODAS as pastas da conta, sem precisar de compartilhamento manual.
+    """
     scopes = ['https://www.googleapis.com/auth/drive']
-    creds = service_account.Credentials.from_service_account_file(GOOGLE_SA_JSON, scopes=scopes)
-    return build('drive', 'v3', credentials=creds)
+    
+    if os.path.exists(GOOGLE_OAUTH_TOKEN):
+        import json
+        with open(GOOGLE_OAUTH_TOKEN) as f:
+            token_data = json.load(f)
+        creds = Credentials(
+            token=token_data.get('token'),
+            refresh_token=token_data.get('refresh_token'),
+            token_uri=token_data.get('token_uri', 'https://oauth2.googleapis.com/token'),
+            client_id=token_data.get('client_id'),
+            client_secret=token_data.get('client_secret'),
+            scopes=token_data.get('scopes', scopes),
+        )
+        # Renova o access token se estiver expirado (usa o refresh_token automaticamente)
+        if not creds.valid:
+            creds.refresh(Request())
+            # Persiste o novo access token para evitar refresh desnecessario na proxima vez
+            token_data['token'] = creds.token
+            with open(GOOGLE_OAUTH_TOKEN, 'w') as f:
+                json.dump(token_data, f, indent=2)
+        logger.info("[DRIVE] Autenticado via OAuth (conta principal).")
+        return build('drive', 'v3', credentials=creds)
+    else:
+        logger.warning("[DRIVE] google_oauth_token.json nao encontrado. Usando Service Account como fallback.")
+        creds = service_account.Credentials.from_service_account_file(GOOGLE_SA_JSON, scopes=scopes)
+        return build('drive', 'v3', credentials=creds)
 
 def buscar_proxima_tarefa():
     conn = get_db_connection()
