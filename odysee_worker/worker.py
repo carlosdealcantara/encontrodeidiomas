@@ -953,7 +953,7 @@ def processar_fila():
             # A pasta de destino final e reservada exclusivamente para videos postados via pipeline.
             logger.info(f"Idioma sem canal ({tarefa['language_name']}). Movendo para Future Channels.")
             mover_para_future_channels(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'])
-            atualizar_status(tarefa['id'], 'done', error_msg="Arquivado em Future Channels (sem canal para publicar).")
+            atualizar_status(tarefa['id'], 'no_channel', error_msg="Arquivado em Future Channels. Será publicado quando o canal for configurado.")
             return
         
         # COM CANAL: organiza arquivos na pasta de destino definitiva e publica.

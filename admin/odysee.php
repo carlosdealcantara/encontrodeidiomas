@@ -15,10 +15,12 @@ $active_tab = $_POST['tab'] ?? $_GET['tab'] ?? 'fila';
 
 // --- LOGIC: CONFIG ---
 try { $conn->exec("ALTER TABLE languages ADD COLUMN odysee_auto_enabled TINYINT(1) DEFAULT 0"); } catch (PDOException $e) {}
+try { $conn->exec("ALTER TABLE odysee_publish_queue MODIFY COLUMN status VARCHAR(50) DEFAULT 'pending'"); } catch (PDOException $e) {}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
     try {
         $conn->beginTransaction();
+        $reactivated = 0;
         foreach ($_POST['langs'] as $id => $data) {
             $auto_enabled = isset($data['auto']) ? 1 : 0;
             $stmt = $conn->prepare("UPDATE languages SET odysee_auth_token = ?, odysee_channel_name = ?, odysee_auto_enabled = ? WHERE id = ?");
@@ -28,9 +30,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
                 $auto_enabled,
                 $id
             ]);
+
+            if (!empty(trim($data['token'])) && !empty(trim($data['channel'])) && $auto_enabled == 1) {
+                $stmt_reactivate = $conn->prepare("UPDATE odysee_publish_queue SET status='pending', error_message='[CANAL CONFIGURADO] Reprocessando automaticamente', retry_count=0 WHERE language_id = ? AND status = 'no_channel'");
+                $stmt_reactivate->execute([$id]);
+                $reactivated += $stmt_reactivate->rowCount();
+            }
         }
         $conn->commit();
         $msg = "Configurações do Odysee salvas com sucesso!";
+        if ($reactivated > 0) {
+            $msg .= " $reactivated vídeo(s) foram reativados para publicação!";
+        }
         $active_tab = 'config';
     } catch (Exception $e) {
         if ($conn->inTransaction()) $conn->rollBack();
@@ -175,6 +186,7 @@ if (isset($_GET['msg']) && !$msg) {
         .badge-done { background: rgba(16, 185, 129, 0.2); color: #34d399; }
         .badge-error { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         .badge-waiting_host { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+        .badge-no_channel { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
         
         .btn-sm { padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 6px; color: white; text-decoration: none; font-size: 0.85rem; transition: 0.2s; border: none; cursor: pointer; }
         .btn-sm:hover { background: var(--accent-blue); }
@@ -186,6 +198,7 @@ if (isset($_GET['msg']) && !$msg) {
         .status-WAITING_TITLE { background: #6c757d; color: white; }
         .status-DISABLED { background: #475569; color: #cbd5e1; border: 1px solid #334155; }
         .status-NO_TOKEN { background: #b91c1c; color: white; border: 1px dashed #ef4444; }
+        .status-NO_CHANNEL { background: #f59e0b; color: white; }
         .actions-col { display: flex; gap: 5px; flex-wrap: nowrap; align-items: center; }
 
         /* Config Table Styles */
@@ -268,7 +281,10 @@ if (isset($_GET['msg']) && !$msg) {
                         $display_status = $row['status'];
                         $badge_class = strtoupper($row['status']);
                         
-                        if ($row['status'] === 'waiting_host') {
+                        if ($row['status'] === 'no_channel') {
+                            $display_status = 'SEM CANAL';
+                            $badge_class = 'NO_CHANNEL';
+                        } elseif ($row['status'] === 'waiting_host') {
                             if (!$row['odysee_auto_enabled']) {
                                 $display_status = 'DISABLED';
                                 $badge_class = 'DISABLED';
@@ -334,11 +350,14 @@ if (isset($_GET['msg']) && !$msg) {
                             <?php if ($row['status'] === 'processing' || $row['status'] === 'pending' || $row['status'] === 'waiting_host'): ?>
                                 <button class="btn-sm btn-danger" onclick="if(confirm('Tem certeza? Isso marcará a tarefa como erro.')) location.href='odysee.php?cancel=<?= $row['id'] ?>'"><i class="fas fa-times"></i> Cancelar</button>
                             <?php endif; ?>
-                            <?php if ($row['status'] !== 'done'): ?>
+                            <?php if ($row['status'] !== 'done' && $row['status'] !== 'no_channel'): ?>
                                 <button class="btn-sm" style="background-color: #8b5cf6;" onclick="manualResolve(<?= $row['id'] ?>)"><i class="fas fa-link"></i> Inserir Link</button>
                             <?php endif; ?>
                             <?php if ($row['status'] === 'done'): ?>
                                 <button class="btn-sm" style="background-color: #25D366; border-color: #25D366; color: white;" onclick="location.href='odysee_manual_dispatch.php?id=<?= $row['id'] ?>'"><i class="fab fa-whatsapp"></i> Disparar Zap</button>
+                            <?php endif; ?>
+                            <?php if ($row['status'] === 'no_channel'): ?>
+                                <button class="btn-sm" style="background-color: #f59e0b; border-color: #f59e0b; color: white;" onclick="switchMainTab('config')"><i class="fas fa-cog"></i> Ir para Contas Conectadas</button>
                             <?php endif; ?>
                         </td>
                     </tr>
