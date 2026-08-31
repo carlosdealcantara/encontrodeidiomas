@@ -153,7 +153,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <meta property="og:type"        content="website">
     <meta property="og:title"       content="<?= sanitize($og_title) ?>">
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
-    <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
+    <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=9.0">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
     <meta property="og:site_name"   content="Encontro de Idiomas">
     <meta property="og:locale"      content="<?= t('meta.og_locale') ?>">
@@ -163,14 +163,14 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <meta property="twitter:url"         content="<?= sanitize($canonical) ?>">
     <meta property="twitter:title"       content="<?= sanitize($og_title) ?>">
     <meta property="twitter:description" content="<?= sanitize($og_description) ?>">
-    <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=8.0">
+    <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=9.0">
 
     <link rel="canonical" href="<?= sanitize($canonical) ?>">
     <?php
     // Evita duplicação: se o $title já contém o nome do site, não usa sufixo
     $title_suffix = (stripos($title, SITE_NAME) !== false) ? '' : ' — ' . SITE_NAME;
     ?>
-    <title><?= sanitize($title) ?><?= $title_suffix ?></title>
+    <title>Ei | <?= sanitize($title) ?><?= $title_suffix ?></title>
 
     <!-- Favicon -->
     <link rel="icon"             type="image/png" href="/assets/images/favicon.png">
