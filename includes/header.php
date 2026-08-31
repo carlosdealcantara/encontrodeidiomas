@@ -96,7 +96,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
           "url": "<?= SITE_URL ?>",
           "logo": {
             "@type": "ImageObject",
-            "url": "<?= SITE_URL ?>/assets/images/logo.png?v=4"
+            "url": "<?= SITE_URL ?>/assets/images/logo.png?v=5"
           },
           "description": "<?= t('meta.seo_org_desc') ?>",
           "sameAs": [
@@ -288,7 +288,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             height: 60px;
             border-radius: 50%;
             object-fit: cover;
-            border: 1px solid var(--white);
+            border: 1.5px solid var(--white);
         }
 
         .site-title {
@@ -745,7 +745,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         </script>
         <div class="header-content">
             <div class="logo-container">
-                <img src="/assets/images/logo.png?v=4" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
+                <img src="/assets/images/logo.png?v=5" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
                 <div>
                     <div class="site-title"><?= SITE_NAME ?></div>
                     <div class="site-description"><?= t('meta.tagline') ?></div>
