@@ -173,8 +173,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <title>Ei | <?= sanitize($title) ?><?= $title_suffix ?></title>
 
     <!-- Favicon -->
-    <link rel="icon"             type="image/png" href="/assets/images/favicon.png">
-    <link rel="apple-touch-icon"                  href="/assets/images/favicon.png">
+    <link rel="icon"             type="image/png" href="/assets/images/favicon.png?v=2">
+    <link rel="apple-touch-icon"                  href="/assets/images/favicon.png?v=2">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
