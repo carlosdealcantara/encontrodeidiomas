@@ -10,7 +10,8 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
     // Só envia se a última notificação para ESTE idioma foi há mais
     // de 5 minutos. Usa a tabela settings como mutex leve.
     // ============================================================
-    $rateKey = 'hosts_notif_last_' . (int)$lang_id;
+    $tipo = ($acao_desc === "atualizou dados") ? 'portal' : 'webhook';
+    $rateKey = 'hosts_notif_last_' . $tipo . '_' . (int)$lang_id;
     $RATE_LIMIT_SECONDS = 300; // 5 minutos
 
     try {

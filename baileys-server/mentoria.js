@@ -331,7 +331,7 @@ async function handleMessages({ messages, type }) {
                         const actionLabel = dataWord.is_update ? 'atualizada' : 'registrada';
                         console.log(`[E-BOOK] Palavra #${wordNumber} ${actionLabel} com sucesso no banco (ID: ${dataWord.id})`);
                         await sock.sendMessage(groupJid, {
-                            text: `✅ Palavra #${wordNumber} ${actionLabel} com sucesso!`
+                            text: `✅ Palavra *#${wordNumber}* ${actionLabel} com sucesso!`
                         }, { quoted: msg });
                     } else {
                         console.error(`[E-BOOK] Erro retornado pela API PHP:`, dataWord);

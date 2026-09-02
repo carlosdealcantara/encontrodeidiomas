@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__) . '/config.php';
+
 /**
  * MOTOR UNIFICADO DE WHATSAPP
  * Todas as funções de disparo devem usar este helper.
@@ -6,7 +8,7 @@
  */
 
 define('BAILEYS_API_URL_DIRECT', 'http://136.248.92.126:3000');
-define('BAILEYS_API_URL_TUNNEL', 'https://instant-record-existence-encounter.trycloudflare.com');
+define('BAILEYS_API_URL_TUNNEL_FALLBACK', 'https://instant-record-existence-encounter.trycloudflare.com');
 define('BAILEYS_API_KEY', 'SenhaMeetups2026');
 
 function checkWhatsAppConnection($url) {
@@ -24,8 +26,12 @@ function getBestBaileysUrl() {
     if (checkWhatsAppConnection(BAILEYS_API_URL_DIRECT)) {
         return BAILEYS_API_URL_DIRECT;
     }
+    
+    // Tenta buscar a URL do túnel na configuração do banco (atualizada pelo worker)
+    $tunnelUrl = rtrim(getSetting('baileys_tunnel_url', BAILEYS_API_URL_TUNNEL_FALLBACK), '/');
+    
     // Fallback para o túnel
-    return BAILEYS_API_URL_TUNNEL;
+    return $tunnelUrl;
 }
 
 function sendBaileysRequest($endpoint, $payload = null, $method = 'POST') {
