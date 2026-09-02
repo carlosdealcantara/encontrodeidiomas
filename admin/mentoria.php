@@ -92,7 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'music'         => ['jid' => trim($_POST['jid_music'] ?? ''),        'automations' => ['ranking']],
             'vocabulary'    => ['jid' => trim($_POST['jid_vocabulary'] ?? ''),   'automations' => ['ranking']],
             'games'         => ['jid' => trim($_POST['jid_games'] ?? ''),        'automations' => ['ranking']],
-            'homework'      => ['jid' => trim($_POST['jid_homework'] ?? ''),     'automations' => ['ranking']]
+            'homework'      => ['jid' => trim($_POST['jid_homework'] ?? ''),     'automations' => ['ranking']],
+            'protocolo_1001'=> ['jid' => trim($_POST['jid_protocolo_1001'] ?? ''),'automations' => ['ranking']]
         ],
         'templates' => [
             'welcome' => trim($_POST['tpl_welcome']),
@@ -147,6 +148,7 @@ $jid_music        = $config['groups']['music']['jid']         ?? '';
 $jid_vocabulary   = $config['groups']['vocabulary']['jid']    ?? '';
 $jid_games        = $config['groups']['games']['jid']         ?? '';
 $jid_homework     = $config['groups']['homework']['jid']      ?? '';
+$jid_protocolo_1001 = $config['groups']['protocolo_1001']['jid'] ?? '';
 
 $tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
 $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome}!* 🎉\n\nToday is a special day — one of our amazing Mentorship members is celebrating their birthday! 🥳\n\nWe hope this new year of life brings you lots of growth, joy, and of course... fluency! 🌟\n\nDrop a 🎂 or send a birthday message to make {nome}'s day even more special! 💬 @{numero}";
@@ -392,7 +394,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
         // ⚠️ AVISO CRÍTICO: detectar grupos não configurados
         $groupsConfigured = array_filter([
             $jid_the_lounge, $jid_desafio, $jid_our_classes,
-            $jid_pronunciation, $jid_music, $jid_vocabulary, $jid_games
+            $jid_pronunciation, $jid_music, $jid_vocabulary, $jid_games, $jid_protocolo_1001
         ], fn($v) => !empty(trim($v ?? '')));
         if (count($groupsConfigured) === 0): ?>
         <div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.5); border-radius: 12px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px;">

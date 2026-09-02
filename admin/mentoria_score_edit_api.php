@@ -36,6 +36,7 @@ const GROUP_LABELS = [
     'vocabulary'    => 'Vocab.',
     'games'         => 'Games',
     'homework'      => 'Homework',
+    'protocolo_1001'=> '🔒 Protocolo',
 ];
 
 try {

@@ -86,7 +86,8 @@ $GROUP_EMOJIS = [
     'desafio'       => '📚',
     'music'         => '🎶',
     'games'         => '🧩',
-    'vocabulary'    => '📒'
+    'vocabulary'    => '📒',
+    'protocolo_1001'=> '🔒'
 ];
 
 if (!empty($config['groups'])) {

@@ -14,8 +14,8 @@
 </div>
 
 <style>
-    .sub-tabs-container { margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; overflow-x: auto; }
-    .sub-tab-btn { padding: 10px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; white-space: nowrap; transition: 0.2s; }
+    .sub-tabs-container { margin-bottom: 20px; display: flex; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; flex-wrap: wrap; justify-content: flex-start; }
+    .sub-tab-btn { padding: 12px 24px; font-size: 1.05rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; white-space: nowrap; transition: 0.2s; flex: 1 1 auto; text-align: center; }
     .sub-tab-btn:hover { color: var(--white); background: rgba(255,255,255,0.05); }
     .sub-tab-btn.active { background: var(--accent-red); color: white; border-color: var(--accent-red); }
     .sub-tab-pane { display: none; }
@@ -41,6 +41,7 @@
     <button class="sub-tab-btn" onclick="openSubTab('sub_vocabulary')">📒 New word!</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_games')">🧩 Games</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_homework')">📝 Homework</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_protocolo')">🔒 Protocolo 1001</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_testes')"><i class="fas fa-vial"></i> Testes Manuais</button>
 </div>
 
@@ -288,6 +289,19 @@
                 <label>Mapeamento de Grupo (JID)</label>
                 <?= renderGroupSelect('jid_homework', $jid_homework, $available_groups) ?>
                 <p class="help-text">Selecione o grupo de Homework do WhatsApp. Atividades enviadas aqui serão contabilizadas no ranking e você poderá usar <code>!N</code> para atribuir pontos.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB TAB PROTOCOLO 1001 -->
+    <div id="sub_protocolo" class="sub-tab-pane">
+        <div class="form-card">
+            <h3 class="section-title">🔒 Protocolo 1001</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Subgrupo dentro da comunidade da mentoria. As atividades enviadas aqui gerarão pontos automáticos na categoria de interação social (Word Slingers/Emoji Gang) e permitirão atribuição manual de pontos pelo comando <code>!N</code>.</p>
+            <div class="form-group">
+                <label>Mapeamento de Grupo (JID)</label>
+                <?= renderGroupSelect('jid_protocolo_1001', $jid_protocolo_1001, $available_groups) ?>
+                <p class="help-text">Selecione o grupo Protocolo 1001 do WhatsApp.</p>
             </div>
         </div>
     </div>
