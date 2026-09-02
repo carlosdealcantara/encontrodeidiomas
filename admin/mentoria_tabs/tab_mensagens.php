@@ -14,8 +14,8 @@
 </div>
 
 <style>
-    .sub-tabs-container { margin-bottom: 20px; display: flex; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; flex-wrap: wrap; justify-content: flex-start; }
-    .sub-tab-btn { padding: 12px 24px; font-size: 1.05rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; white-space: nowrap; transition: 0.2s; flex: 1 1 auto; text-align: center; }
+    .sub-tabs-container { margin-bottom: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+    .sub-tab-btn { padding: 12px 10px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; white-space: nowrap; transition: 0.2s; text-align: center; overflow: hidden; text-overflow: ellipsis; }
     .sub-tab-btn:hover { color: var(--white); background: rgba(255,255,255,0.05); }
     .sub-tab-btn.active { background: var(--accent-red); color: white; border-color: var(--accent-red); }
     .sub-tab-pane { display: none; }
@@ -284,11 +284,11 @@
     <div id="sub_homework" class="sub-tab-pane">
         <div class="form-card">
             <h3 class="section-title">📝 Homework</h3>
-            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de tarefa de casa. O bot rastreará as atividades (mensagens, imagens, áudios) enviadas pelos alunos e o admin poderá atribuir pontos extras com o comando <code>!N</code> respondendo a uma mensagem do aluno.</p>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de tarefa de casa. O bot rastreará as atividades (mensagens, imagens, áudios) enviadas pelos alunos e o admin poderá atribuir pontos extras com o comando <code>!wordN</code> respondendo a uma mensagem do aluno.</p>
             <div class="form-group">
                 <label>Mapeamento de Grupo (JID)</label>
                 <?= renderGroupSelect('jid_homework', $jid_homework, $available_groups) ?>
-                <p class="help-text">Selecione o grupo de Homework do WhatsApp. Atividades enviadas aqui serão contabilizadas no ranking e você poderá usar <code>!N</code> para atribuir pontos.</p>
+                <p class="help-text">Selecione o grupo de Homework do WhatsApp. Atividades enviadas aqui serão contabilizadas no ranking e você poderá usar <code>!wordN</code> para atribuir pontos.</p>
             </div>
         </div>
     </div>
@@ -297,7 +297,7 @@
     <div id="sub_protocolo" class="sub-tab-pane">
         <div class="form-card">
             <h3 class="section-title">🔒 Protocolo 1001</h3>
-            <p style="color: var(--text-dim); margin-bottom: 20px;">Subgrupo dentro da comunidade da mentoria. As atividades enviadas aqui gerarão pontos automáticos na categoria de interação social (Word Slingers/Emoji Gang) e permitirão atribuição manual de pontos pelo comando <code>!N</code>.</p>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Subgrupo dentro da comunidade da mentoria. As atividades enviadas aqui gerarão pontos automáticos na categoria de interação social (Word Slingers/Emoji Gang) e permitirão atribuição manual de pontos pelo comando <code>!wordN</code>.</p>
             <div class="form-group">
                 <label>Mapeamento de Grupo (JID)</label>
                 <?= renderGroupSelect('jid_protocolo_1001', $jid_protocolo_1001, $available_groups) ?>
