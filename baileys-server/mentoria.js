@@ -278,6 +278,72 @@ async function handleMessages({ messages, type }) {
             }
         }
 
+        // === E-BOOK: CAPTURA DE ÁUDIO VIA COMANDO !wordN (GLOBAL) ===
+        const wordCmdMatch = globalText.match(/^!word(\d+)$/i);
+        if (isMasterAdmin && !processedMessageIds.has(msgId) && wordCmdMatch) {
+            const wordNumber = parseInt(wordCmdMatch[1], 10);
+            const rawQuotedWord = globalRealMsg?.extendedTextMessage?.contextInfo?.quotedMessage;
+            const unwrappedQuotedWord = rawQuotedWord?.ephemeralMessage?.message || rawQuotedWord?.viewOnceMessage?.message || rawQuotedWord;
+
+            const quotedAudioWord = unwrappedQuotedWord?.audioMessage || unwrappedQuotedWord?.pttMessage;
+
+            if (quotedAudioWord) {
+                processedMessageIds.add(msgId);
+                console.log(`[E-BOOK] Comando !word${wordNumber} detectado no grupo ${groupJid}. Baixando áudio...`);
+                try {
+                    // Reação imediata com emoji de livro
+                    await sock.sendMessage(groupJid, { react: { text: '📖', key: msg.key } });
+
+                    const fakeMsgWord = {
+                        key: msg.key,
+                        message: unwrappedQuotedWord
+                    };
+                    const bufferWord = await downloadMediaMessage(
+                        fakeMsgWord,
+                        'buffer',
+                        {},
+                        { logger: sock.logger, reuploadRequest: sock.updateMediaMessage }
+                    );
+
+                    const fileNameWord = `word_${wordNumber}_${Date.now()}.ogg`;
+                    const ebookAudiosDir = path.join(dataDir, 'audios_ebook');
+                    if (!fs.existsSync(ebookAudiosDir)) {
+                        fs.mkdirSync(ebookAudiosDir, { recursive: true });
+                    }
+                    const filePathWord = path.join(ebookAudiosDir, fileNameWord);
+                    fs.writeFileSync(filePathWord, bufferWord);
+                    console.log(`[E-BOOK] Áudio salvo em: ${filePathWord}`);
+
+                    // Chamar a API PHP para registrar a palavra
+                    const resWord = await fetch('https://dev.viaEi.com/bot_whatsapp/api_ebook_webhook.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            apikey: 'SenhaMeetups2026',
+                            action: 'register_word',
+                            word_number: wordNumber,
+                            audio_path: `baileys-server/data/audios_ebook/${fileNameWord}`
+                        })
+                    });
+
+                    const dataWord = await resWord.json();
+                    if (dataWord.success) {
+                        const actionLabel = dataWord.is_update ? 'atualizada' : 'registrada';
+                        console.log(`[E-BOOK] Palavra #${wordNumber} ${actionLabel} com sucesso no banco (ID: ${dataWord.id})`);
+                        await sock.sendMessage(groupJid, {
+                            text: `✅ Palavra *#${wordNumber}* ${actionLabel} no e-book com sucesso!`
+                        }, { quoted: msg });
+                    } else {
+                        console.error(`[E-BOOK] Erro retornado pela API PHP:`, dataWord);
+                        await sock.sendMessage(groupJid, { text: `❌ Falha ao registrar a palavra #${wordNumber} no painel admin.` }, { quoted: msg });
+                    }
+                } catch (err) {
+                    console.error('[E-BOOK] Erro ao processar áudio:', err);
+                    await sock.sendMessage(groupJid, { text: `❌ Erro interno ao tentar baixar o áudio da palavra #${wordNumber}.` }, { quoted: msg });
+                }
+            }
+        }
+
         // Check if group is one of the configured ones, ignore others
         const allowedGroups = Object.values(config.groups || {}).map(g => g.jid);
         if (!allowedGroups.includes(groupJid)) continue;

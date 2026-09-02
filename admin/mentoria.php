@@ -318,6 +318,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_pilula']) && $
     $msg = "Pílula salva com sucesso!";
 }
 
+// --- LOGIC: E-BOOK ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_ebook']) && $_POST['action_ebook'] === 'save') {
+    $ebook_id    = (int)$_POST['ebook_id'];
+    $titulo      = trim($_POST['titulo']);
+    $descricao   = trim($_POST['descricao'] ?? '');
+    $ativo       = isset($_POST['ativo']) && $_POST['ativo'] == '1' ? 1 : 0;
+
+    try {
+        $stmtEbookSave = $conn->prepare("UPDATE ebook_palavras SET titulo=?, descricao=?, ativo=? WHERE id=?");
+        $stmtEbookSave->execute([$titulo, $descricao, $ativo, $ebook_id]);
+        $msg = "Palavra #" . (int)($_POST['ebook_numero'] ?? 0) . " atualizada com sucesso!";
+    } catch (Exception $e) {
+        $error = "Erro ao salvar palavra do e-book: " . $e->getMessage();
+    }
+}
+
 $schedules = [];
 try {
     $schedules = $conn->query("SELECT * FROM class_schedule ORDER BY day_of_week ASC, start_time ASC")->fetchAll(PDO::FETCH_ASSOC);
@@ -422,6 +438,7 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             <button class="main-tab-btn <?= $active_tab == 'odysee' ? 'active' : '' ?>" onclick="switchMainTab('odysee')"><i class="fas fa-video"></i> Odysee</button>
             <button class="main-tab-btn <?= $active_tab == 'telegram_cobranca' ? 'active' : '' ?>" onclick="switchMainTab('telegram_cobranca')"><i class="fab fa-telegram"></i> Avisos Telegram</button>
             <button class="main-tab-btn <?= $active_tab == 'pilulas' ? 'active' : '' ?>" onclick="switchMainTab('pilulas')"><i class="fas fa-pills"></i> Pílulas de Inglês</button>
+            <button class="main-tab-btn <?= $active_tab == 'ebook' ? 'active' : '' ?>" onclick="switchMainTab('ebook')"><i class="fas fa-book-open"></i> E-book</button>
         </div>
 
         <div id="tab_pagamentos" class="main-tab-content <?= $active_tab == 'pagamentos' ? 'active' : '' ?>">
@@ -458,6 +475,10 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_pilulas" class="main-tab-content <?= $active_tab == 'pilulas' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_pilulas.php'; ?>
+        </div>
+
+        <div id="tab_ebook" class="main-tab-content <?= $active_tab == 'ebook' ? 'active' : '' ?>">
+            <?php include 'mentoria_tabs/tab_ebook.php'; ?>
         </div>
 
     </main>
