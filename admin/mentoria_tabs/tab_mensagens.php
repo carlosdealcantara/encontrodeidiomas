@@ -284,11 +284,11 @@
     <div id="sub_homework" class="sub-tab-pane">
         <div class="form-card">
             <h3 class="section-title">📝 Homework</h3>
-            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de tarefa de casa. O bot rastreará as atividades (mensagens, imagens, áudios) enviadas pelos alunos e o admin poderá atribuir pontos extras com o comando <code>!wordN</code> respondendo a uma mensagem do aluno.</p>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Grupo de tarefa de casa. O bot rastreará as atividades (mensagens, imagens, áudios) enviadas pelos alunos e o admin poderá atribuir pontos extras com o comando <code>!N</code> respondendo a uma mensagem do aluno.</p>
             <div class="form-group">
                 <label>Mapeamento de Grupo (JID)</label>
                 <?= renderGroupSelect('jid_homework', $jid_homework, $available_groups) ?>
-                <p class="help-text">Selecione o grupo de Homework do WhatsApp. Atividades enviadas aqui serão contabilizadas no ranking e você poderá usar <code>!wordN</code> para atribuir pontos.</p>
+                <p class="help-text">Selecione o grupo de Homework do WhatsApp. Atividades enviadas aqui serão contabilizadas no ranking e você poderá usar <code>!N</code> para atribuir pontos.</p>
             </div>
         </div>
     </div>
@@ -297,7 +297,7 @@
     <div id="sub_protocolo" class="sub-tab-pane">
         <div class="form-card">
             <h3 class="section-title">🔒 Protocolo 1001</h3>
-            <p style="color: var(--text-dim); margin-bottom: 20px;">Subgrupo dentro da comunidade da mentoria. As atividades enviadas aqui gerarão pontos automáticos na categoria de interação social (Word Slingers/Emoji Gang) e permitirão atribuição manual de pontos pelo comando <code>!wordN</code>.</p>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Subgrupo dentro da comunidade da mentoria. As atividades enviadas aqui gerarão pontos automáticos na categoria de interação social (Word Slingers/Emoji Gang) e permitirão atribuição manual de pontos pelo comando <code>!N</code>.</p>
             <div class="form-group">
                 <label>Mapeamento de Grupo (JID)</label>
                 <?= renderGroupSelect('jid_protocolo_1001', $jid_protocolo_1001, $available_groups) ?>
