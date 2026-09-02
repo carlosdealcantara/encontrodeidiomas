@@ -36,7 +36,7 @@
 
 <?php
 // ---- Dados ----
-$totalWords = 1000; // Total esperado de palavras no e-book
+$totalWords = 1001; // Total esperado de palavras no e-book
 
 $stmtEbook = $conn->query("SELECT * FROM ebook_palavras ORDER BY numero ASC");
 $ebookPalavras = $stmtEbook->fetchAll(PDO::FETCH_ASSOC);
@@ -99,9 +99,9 @@ foreach ($ebookPalavras as $p) {
 <!-- Grid de palavras -->
 <div class="ebook-grid" id="ebookGrid">
 <?php
-$numMin = 1001;
-$numMax = $numMin + $totalWords - 1;
-for ($n = $numMin; $n <= $numMax; $n++):
+$numMax = 1001;
+$numMin = 1;
+for ($n = $numMax; $n >= $numMin; $n--):
     $p = $byNum[$n] ?? null;
     $hasAudio = !empty($p);
     $isAtivo  = $hasAudio && $p['ativo'] == 1;
