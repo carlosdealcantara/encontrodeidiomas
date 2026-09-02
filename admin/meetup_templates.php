@@ -65,14 +65,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $textoFinal = str_replace('{IDIOMA}', 'INGLÊS (TESTE)', $textoBruto);
             $textoFinal = str_replace('{idioma}', 'Inglês', $textoFinal);
             $textoFinal = str_replace('{EMOJI_FLAG}', '🇺🇸', $textoFinal);
-            $textoFinal = str_replace('{EMOJI_FLAGS}', '🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸', $textoFinal);
+            $textoFinal = str_replace('{EMOJI_REPETIDO_5X}', '🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸', $textoFinal);
             $textoFinal = str_replace('{SAUDACAO}', 'Hello!', $textoFinal);
             $textoFinal = str_replace('{BOAS_VINDAS_NATIVAS}', 'Welcome! (nativo mock)', $textoFinal);
             $textoFinal = str_replace('{SITE_LINK}', 'viaEi.com/online', $textoFinal);
             $textoFinal = str_replace('{MEET_LINK}', 'meet.google.com/abc-defg-hij', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', 'instagram.com/encontrodeidiomasingles', $textoFinal);
             $textoFinal = str_replace('{HOST_LINK}', 'viaEi.com/equipe/', $textoFinal);
-            $textoFinal = str_replace('{BANDEIRAS_DO_DIA}', '🇺🇸🇫🇷🇯🇵', $textoFinal); // Mock com 3 idiomas
+            $textoFinal = str_replace('{TODAS_BANDEIRAS_HOJE}', '🇺🇸🇫🇷🇯🇵', $textoFinal); // Mock com 3 idiomas
             
             // Mock Data para Resumo Diário
             $mockLista = "🇺🇸 English\n🇩🇪 Deutsch";
@@ -184,13 +184,8 @@ try {
                     <input type="hidden" name="id" id="template_id">
                     
                     <div class="form-group">
-                        <label>Cenário do Disparo</label>
-                        <select name="cenario" id="cenario" class="form-control" required>
-                            <option value="Hora Exata">Hora Exata</option>
-                            <option value="Resumo do Dia">Resumo do Dia</option>
-                            <option value="Lembrete">Lembrete (Ex: 15 min antes)</option>
-                            <option value="Convite para Host">Convite para Host</option>
-                        </select>
+                        <label>Nome do Template (Cenário) <small style="color:var(--text-dim); font-weight:normal;">Ex: "Lembrete 30 min", "Resumo do Dia"</small></label>
+                        <input type="text" name="cenario" id="cenario" class="form-control" required placeholder="Ex: Lembrete 30 min">
                     </div>
                     
                     <div class="form-group">
@@ -233,14 +228,14 @@ try {
                         <div class="variables">
                             <span class="var-chip" onclick="insertVar('{IDIOMA}')">{IDIOMA}</span>
                             <span class="var-chip" onclick="insertVar('{EMOJI_FLAG}')">{EMOJI_FLAG}</span>
-                            <span class="var-chip" onclick="insertVar('{EMOJI_FLAGS}')">{EMOJI_FLAGS}</span>
-                            <span class="var-chip" onclick="insertVar('{SAUDACAO}')">{SAUDACAO}</span>
-                            <span class="var-chip" onclick="insertVar('{BOAS_VINDAS_NATIVAS}')" title="Boas-vindas no idioma-alvo (campo welcome_native do idioma)">{BOAS_VINDAS_NATIVAS} 🌐</span>
-                            <span class="var-chip" onclick="insertVar('{SITE_LINK}')" title="URL localizada: viaEi.com/online (Brasil) ou viaEi.com/en/online (Global)">{SITE_LINK} 🔗</span>
+                            <span class="var-chip" onclick="insertVar('{EMOJI_REPETIDO_5X}')" title="Ex: 🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸">{EMOJI_REPETIDO_5X}</span>
+                            <span class="var-chip" onclick="insertVar('{SAUDACAO}')" title="Puxa o campo 'Saudação (EN)' da aba idiomas">{SAUDACAO}</span>
+                            <span class="var-chip" onclick="insertVar('{BOAS_VINDAS_NATIVAS}')" title="Puxa as boas-vindas no idioma-alvo (Ex: 欢迎!)">{BOAS_VINDAS_NATIVAS} 🌐</span>
+                            <span class="var-chip" onclick="insertVar('{SITE_LINK}')" title="Muda sozinho: viaEi.com/online (Brasil) ou viaEi.com/en/online (Global)">{SITE_LINK} 🔗</span>
                             <span class="var-chip" onclick="insertVar('{MEET_LINK}')">{MEET_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{INSTAGRAM_LINK}')">{INSTAGRAM_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{HOST_LINK}')">{HOST_LINK}</span>
-                            <span class="var-chip" onclick="insertVar('{BANDEIRAS_DO_DIA}')" title="Somente para escopo Diário">{BANDEIRAS_DO_DIA} 🗓️</span>
+                            <span class="var-chip" onclick="insertVar('{TODAS_BANDEIRAS_HOJE}')" title="Lista as bandeiras dos encontros de hoje. Somente para o template 'Resumo do Dia'">{TODAS_BANDEIRAS_HOJE} 🗓️</span>
                         </div>
                     </div>
                     
