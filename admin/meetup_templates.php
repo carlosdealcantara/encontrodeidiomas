@@ -210,7 +210,6 @@ try {
                         <select name="comunidade_alvo" id="comunidade_alvo" class="form-control" required>
                             <option value="brasil">🇧🇷 Brasil — apenas grupos Brasil</option>
                             <option value="global">🌐 Global — apenas grupos Global</option>
-                            <option value="ambos">🌍 Ambos — todos os grupos</option>
                         </select>
                         <small style="color: var(--text-dim);">Define para qual comunidade este template será disparado.</small>
                     </div>

@@ -19,6 +19,7 @@ $meeting = [
     'description' => '',
     'meet_link' => '',
     'replay_link' => '',
+    'comunidade' => 'brasil',
     'active' => 1
 ];
 
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'desc_en' => $_POST['description_en'] ?? '',
         'meet'    => $_POST['meet_link'],
         'replay'  => $_POST['replay_link'],
+        'comunidade' => in_array($_POST['comunidade'] ?? '', ['brasil','global','ambos']) ? $_POST['comunidade'] : 'brasil',
         'active'  => isset($_POST['active']) ? 1 : 0
     ];
 
@@ -51,13 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "UPDATE meetings SET 
                 language_id = :lang, host_id = :host, day_of_week = :day, time_hour = :hour,
                 title = :title, description = :desc, description_en = :desc_en, meet_link = :meet, 
-                replay_link = :replay, active = :active 
+                replay_link = :replay, comunidade = :comunidade, active = :active 
                 WHERE id = :id";
         $data['id'] = $id;
     } else {
         $sql = "INSERT INTO meetings 
-                (language_id, host_id, day_of_week, time_hour, title, description, description_en, meet_link, replay_link, active) 
-                VALUES (:lang, :host, :day, :hour, :title, :desc, :desc_en, :meet, :replay, :active)";
+                (language_id, host_id, day_of_week, time_hour, title, description, description_en, meet_link, replay_link, comunidade, active) 
+                VALUES (:lang, :host, :day, :hour, :title, :desc, :desc_en, :meet, :replay, :comunidade, :active)";
     }
 
     try {
@@ -183,6 +185,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label>Horário (Apenas a hora, ex: 19)</label>
                     <input type="number" name="time_hour" value="<?= htmlspecialchars($meeting['time_hour']) ?>" min="0" max="23" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Comunidade</label>
+                    <select name="comunidade" id="comunidade" required>
+                        <option value="brasil" <?= ($meeting['comunidade'] ?? 'brasil') === 'brasil' ? 'selected' : '' ?>>🇧🇷 Brasil (Apenas grupos BR)</option>
+                        <option value="global" <?= ($meeting['comunidade'] ?? '') === 'global' ? 'selected' : '' ?>>🌐 Global (Grupos Global e BR)</option>
+                        <option value="ambos" <?= ($meeting['comunidade'] ?? '') === 'ambos' ? 'selected' : '' ?>>🌍 Ambos (Igual ao Global na prática)</option>
+                    </select>
                 </div>
 
                 <div class="form-group full-width">

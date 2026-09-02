@@ -159,6 +159,7 @@ function getDayLabel($day) {
                         <th>Dia / Hora</th>
                         <th>Idioma</th>
                         <th>Anfitrião</th>
+                        <th>Comunidade</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -190,6 +191,22 @@ function getDayLabel($day) {
                                     <span style="color: var(--accent-blue); font-weight: 600;">Free Conversation</span>
                                 <?php endif; ?>
                             </span>
+                        </td>
+                        <td>
+                            <?php
+                                $com = $m['comunidade'] ?? 'brasil';
+                                $comLabel = match($com) {
+                                    'global' => '🌐 Global',
+                                    'ambos'  => '🌍 Ambos',
+                                    default  => '🇧🇷 Brasil',
+                                };
+                                $comColor = match($com) {
+                                    'global' => '#38bdf8',
+                                    'ambos'  => '#a78bfa',
+                                    default  => '#10b981',
+                                };
+                            ?>
+                            <span class="badge" style="background:<?= $comColor ?>20;color:<?= $comColor ?>;"><?= $comLabel ?></span>
                         </td>
                         <td>
                             <?php if ($m['active']): ?>

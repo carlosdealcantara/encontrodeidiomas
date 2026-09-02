@@ -71,14 +71,29 @@ if (count($meetings) === 0) {
 }
 echo "Encontros de hoje encontrados: " . count($meetings) . ".<br>";
 
-// 3. Monta a lista de encontros de hoje (todos os grupos recebem a mesma lista completa)
-$listaGlobalEncontros = [];
-$languageIdsHoje = [];
+// 3. Monta as listas de encontros de hoje (Regra Unilateral)
+$listaEncontrosBrasil = [];
+$listaEncontrosGlobal = [];
+$languageIdsHojeBrasil = [];
+$languageIdsHojeGlobal = [];
+
 foreach ($meetings as $m) {
-    $listaGlobalEncontros[] = "{$m['flag_emoji']} {$m['name_en']} | {$m['language_name']}";
-    $languageIdsHoje[] = $m['language_id'];
+    $com = $m['comunidade'] ?? 'brasil';
+    $isGlobal = ($com === 'global' || $com === 'ambos');
+    
+    // Lista para Brasil (recebe todos)
+    $prefix = $isGlobal ? '🌐 ' : '';
+    $listaEncontrosBrasil[] = "{$prefix}{$m['flag_emoji']} {$m['name_en']} | {$m['language_name']}";
+    $languageIdsHojeBrasil[] = $m['language_id'];
+    
+    // Lista para Global (recebe APENAS globais, formatado em inglês)
+    if ($isGlobal) {
+        $listaEncontrosGlobal[] = "{$m['flag_emoji']} {$m['name_en']}";
+        $languageIdsHojeGlobal[] = $m['language_id'];
+    }
 }
-$listaFormatadaGlobal = implode("\n", $listaGlobalEncontros);
+$listaFormatadaBrasil = implode("\n", $listaEncontrosBrasil);
+$listaFormatadaGlobal = implode("\n", $listaEncontrosGlobal);
 
 // 4. Pega grupos ativos com bot presente
 echo "Buscando grupos ativos...<br>";
@@ -91,14 +106,21 @@ $sucessos = 0;
 foreach ($groups as $g) {
     $podeEnviar     = false;
     $comunidadeGrupo = $g['comunidade'] ?? 'brasil';
+    $isGrupoGlobal = ($comunidadeGrupo === 'global');
+    
+    $listaFormatadaAUsar = $isGrupoGlobal ? $listaFormatadaGlobal : $listaFormatadaBrasil;
+    $languageIdsHojeAUsar = $isGrupoGlobal ? $languageIdsHojeGlobal : $languageIdsHojeBrasil;
 
     if ($g['categoria'] === 'multi_idioma') {
-        $podeEnviar = true;
+        // Se for multi-idioma, só pode enviar se houver encontros na lista destinada a ele
+        if (!empty($languageIdsHojeAUsar)) {
+            $podeEnviar = true;
+        }
     } elseif ($g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
-        // Se algum dos idiomas deste grupo tem encontro hoje
+        // Se algum dos idiomas deste grupo tem encontro hoje, na lista destinada a ele
         $ids = json_decode($g['language_ids'], true);
         if (is_array($ids)) {
-            $intersect = array_intersect($ids, $languageIdsHoje);
+            $intersect = array_intersect($ids, $languageIdsHojeAUsar);
             if (!empty($intersect)) {
                 $podeEnviar = true;
             }
@@ -135,7 +157,7 @@ foreach ($groups as $g) {
         flush();
 
         // Substitui variáveis mágicas
-        $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
+        $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaAUsar, $templateDiario['template_texto']);
         $textoFinal = str_replace('{SITE_LINK}',       $siteLink,             $textoFinal);
         $textoFinal = str_replace('{HOST_LINK}',       'viaEi.com/equipe/',   $textoFinal);
 

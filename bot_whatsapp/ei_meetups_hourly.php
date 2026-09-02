@@ -138,6 +138,12 @@ foreach ($meetings as $m) {
             $compativel = ($comunidadeTemplate === 'ambos') || ($comunidadeTemplate === $comunidadeGrupo);
             if (!$compativel) continue;
 
+            // Regra Unilateral: Encontro Brasil NÃO vai para Grupo Global
+            $comunidadeEncontro = $m['comunidade'] ?? 'brasil';
+            if ($comunidadeEncontro === 'brasil' && $comunidadeGrupo === 'global') {
+                continue;
+            }
+
             $podeEnviar = ($g['categoria'] === 'multi_idioma');
             if (!$podeEnviar && $g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
                 $ids = json_decode($g['language_ids'], true);
@@ -212,14 +218,20 @@ if (!empty($templatesDiario)) {
 
     // Constrói mapas de bandeiras
     $flagsPorIdioma = []; // [language_id => flag_emoji]
-    $flagsDodia     = []; // lista única de emojis para multi_idioma
+    $flagsGlobaisDodia = []; // Lista única de emojis apenas para encontros globais
+    $flagsDodia     = []; // Lista única de emojis (todos)
     foreach ($meetings as $m) {
         $flagsPorIdioma[$m['language_id']] = $m['flag_emoji'];
         if (!in_array($m['flag_emoji'], $flagsDodia)) {
             $flagsDodia[] = $m['flag_emoji'];
         }
+        $com = $m['comunidade'] ?? 'brasil';
+        if (($com === 'global' || $com === 'ambos') && !in_array($m['flag_emoji'], $flagsGlobaisDodia)) {
+            $flagsGlobaisDodia[] = $m['flag_emoji'];
+        }
     }
     $bandeirasTodas = implode('', $flagsDodia);
+    $bandeirasTodasGlobais = implode('', $flagsGlobaisDodia);
 
     foreach ($templatesDiario as $t) {
         $minutosAntes = (int)$t['minutos_antes'];
@@ -237,7 +249,8 @@ if (!empty($templatesDiario)) {
 
             // Define bandeiras e elegibilidade por tipo de grupo
             if ($g['categoria'] === 'multi_idioma') {
-                $bandeirasGrupo = $bandeirasTodas;
+                // Se o grupo for global, ele só recebe as bandeiras dos encontros globais
+                $bandeirasGrupo = ($comunidadeGrupo === 'global') ? $bandeirasTodasGlobais : $bandeirasTodas;
                 $podeEnviar     = true;
             } elseif ($g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
                 // Junta as bandeiras de todos os idiomas do grupo que têm encontro hoje
@@ -246,7 +259,15 @@ if (!empty($templatesDiario)) {
                 if (is_array($ids)) {
                     foreach ($ids as $idLang) {
                         if (isset($flagsPorIdioma[$idLang])) {
-                            $bandeirasGrupo .= $flagsPorIdioma[$idLang];
+                            // Regra Unilateral: Se for grupo global, a bandeira só entra se houver pelo menos 1 encontro global para ela
+                            // Para simplificar, num grupo específico global, vamos assumir que o encontro é global.
+                            // Mas, para ser preciso, precisaríamos saber se o encontro *deste idioma hoje* é global.
+                            // Como $flagsGlobaisDodia já tem as bandeiras dos encontros globais de hoje:
+                            $flag = $flagsPorIdioma[$idLang];
+                            if ($comunidadeGrupo === 'global' && !in_array($flag, $flagsGlobaisDodia)) {
+                                continue;
+                            }
+                            $bandeirasGrupo .= $flag;
                         }
                     }
                 }
