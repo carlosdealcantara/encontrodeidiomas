@@ -5,11 +5,17 @@
  * ============================================================
  * Este arquivo deve ser chamado pelo servidor (Hostinger)
  * apenas 1 VEZ AO DIA (ex: 09:00 AM).
+ *
+ * Suporte a Comunidade Brasil / Global:
+ *  - Busca TODOS os templates de Resumo do Dia ativos.
+ *  - Para cada grupo, seleciona apenas os templates compatíveis
+ *    com a comunidade do grupo (brasil / global / ambos).
+ *  - {SITE_LINK} é resolvido automaticamente por comunidade.
  */
 
 require_once __DIR__ . '/../config.php';
 
-$token_secreto = '83x9aZ2pLQw1'; 
+$token_secreto = '83x9aZ2pLQw1';
 $is_cli = (php_sapi_name() === 'cli');
 
 if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
@@ -38,15 +44,16 @@ $hoje = new DateTime();
 $diaDaSemanaAtual = (int)$hoje->format('N'); // 1 = Segunda, 7 = Domingo
 $dataDisparo = $hoje->format('Y-m-d');
 
-// 1. Pega o template do "Resumo do Dia" (Busca por nome mágico)
-echo "Buscando template 'Resumo do Dia'...<br>";
-$stmtTemplate = $conn->query("SELECT * FROM meetup_whatsapp_templates WHERE ativo = 1 AND cenario = 'Resumo do Dia' LIMIT 1");
-$templateDiario = $stmtTemplate->fetch();
+// 1. Pega TODOS os templates do "Resumo do Dia" ativos
+//    O cruzamento por comunidade é feito no loop de grupos abaixo
+echo "Buscando templates 'Resumo do Dia'...<br>";
+$stmtTemplate = $conn->query("SELECT * FROM meetup_whatsapp_templates WHERE ativo = 1 AND cenario = 'Resumo do Dia'");
+$templatesDiario = $stmtTemplate->fetchAll();
 
-if (!$templateDiario) {
+if (empty($templatesDiario)) {
     die("Nenhum template chamado 'Resumo do Dia' encontrado ou ativo. Abortando.");
 }
-echo "Template encontrado (ID: {$templateDiario['id']}).<br>";
+echo count($templatesDiario) . " template(s) 'Resumo do Dia' encontrado(s).<br>";
 
 // 2. Pega encontros ativos para HOJE
 $stmtMeetings = $conn->prepare("
@@ -59,12 +66,12 @@ $stmtMeetings = $conn->prepare("
 $stmtMeetings->execute([$diaDaSemanaAtual]);
 $meetings = $stmtMeetings->fetchAll();
 
-if(count($meetings) === 0) {
+if (count($meetings) === 0) {
     die("Nenhum encontro ativo para hoje ($diaDaSemanaAtual). Abortando.");
 }
 echo "Encontros de hoje encontrados: " . count($meetings) . ".<br>";
 
-// 3. Monta a lista global de todos os encontros de hoje (todos os grupos recebem a mesma lista completa)
+// 3. Monta a lista de encontros de hoje (todos os grupos recebem a mesma lista completa)
 $listaGlobalEncontros = [];
 $languageIdsHoje = [];
 foreach ($meetings as $m) {
@@ -73,7 +80,7 @@ foreach ($meetings as $m) {
 }
 $listaFormatadaGlobal = implode("\n", $listaGlobalEncontros);
 
-// 4. Pega grupos ativos
+// 4. Pega grupos ativos com bot presente
 echo "Buscando grupos ativos...<br>";
 $stmtGroups = $conn->query("SELECT * FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1");
 $groups = $stmtGroups->fetchAll();
@@ -82,11 +89,12 @@ echo "Total de grupos ativos: " . count($groups) . ". Iniciando loop de disparos
 $sucessos = 0;
 
 foreach ($groups as $g) {
-    $podeEnviar = false;
-    
+    $podeEnviar     = false;
+    $comunidadeGrupo = $g['comunidade'] ?? 'brasil';
+
     if ($g['categoria'] === 'multi_idioma') {
         $podeEnviar = true;
-    } else if ($g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
+    } elseif ($g['categoria'] === 'especifico' && !empty($g['language_ids'])) {
         // Se algum dos idiomas deste grupo tem encontro hoje
         $ids = json_decode($g['language_ids'], true);
         if (is_array($ids)) {
@@ -96,50 +104,62 @@ foreach ($groups as $g) {
             }
         }
     }
-    
-    // Se o grupo tem direito de receber o resumo hoje
-    if ($podeEnviar) {
-        echo "Grupo '{$g['nome']}' QUALIFICADO. Checando anti-duplicidade...<br>";
-        
-        // Verifica anti-duplicidade (já enviou o resumo hoje para este grupo?)
-        // Como o Resumo não tem meeting_id específico, usamos meeting_id = 0
+
+    if (!$podeEnviar) continue;
+
+    echo "Grupo '{$g['nome']}' ({$comunidadeGrupo}) QUALIFICADO. Checando templates compatíveis...<br>";
+
+    // URL do site por comunidade
+    $siteLink = ($comunidadeGrupo === 'global') ? 'viaEi.com/en/online' : 'viaEi.com/online';
+
+    // Itera sobre os templates compatíveis com a comunidade deste grupo
+    foreach ($templatesDiario as $templateDiario) {
+        $comunidadeTemplate = $templateDiario['comunidade_alvo'] ?? 'brasil';
+        $compativel = ($comunidadeTemplate === 'ambos') || ($comunidadeTemplate === $comunidadeGrupo);
+
+        if (!$compativel) {
+            echo "&nbsp;&nbsp;-&gt; Template ID {$templateDiario['id']} ({$comunidadeTemplate}): incompatível com grupo {$comunidadeGrupo}. Pulando.<br>";
+            continue;
+        }
+
+        // Anti-duplicidade: já enviou este template hoje para este grupo?
         $stmtCheck = $conn->prepare("SELECT id FROM meetup_whatsapp_logs WHERE grupo_id = ? AND template_id = ? AND data_disparo = ? AND meeting_id = 0");
         $stmtCheck->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
-        
-        if ($stmtCheck->rowCount() === 0 || isset($_GET['force'])) {
-            echo "&nbsp;&nbsp;-> Tudo limpo! Tentando conectar na API Evolution para '{$g['nome']}'...<br>";
-            flush();
-            
-            // Troca a variável mágica {LISTA_ENCONTROS}
-            $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
-            
-            // Envia para o motor unificado do Baileys
-            $inicioCurl = microtime(true);
-            $result = enviarWhatsApp($g['group_id'], $textoFinal, 'meetup_cron_diario');
-            $httpcode = $result['httpCode'];
-            $tempoGasto = round(microtime(true) - $inicioCurl, 2);
-            $response = json_encode($result);
-            
-            // Só loga no banco se a API respondeu OK
-            if ($httpcode >= 200 && $httpcode < 300) {
-                // Log usando meeting_id = 0 (valor fixo para o Resumo do Dia)
-                $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, 0, ?, ?)");
-                $stmtLog->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
-                
-                echo "&nbsp;&nbsp;-> ✅ Sucesso! Enviado em {$tempoGasto}s (Status: {$httpcode}). Log registrado.<br>";
-                $sucessos++;
-            } else {
-                echo "&nbsp;&nbsp;-> ❌ Erro na API HTTP {$httpcode}. (Demorou {$tempoGasto}s) Resposta: " . htmlspecialchars($response) . "<br>";
-                // Se deu erro fatal (ex: 400), pausamos por 5 segundos para dar tempo do Node.js da Evolution API se recuperar
-                if ($httpcode >= 400) {
-                    echo "&nbsp;&nbsp;-> ⚠️ Pausando 5 segundos para a API respirar após o erro...<br>";
-                    sleep(5);
-                }
-            }
-        } else {
-            echo "&nbsp;&nbsp;-> ⏭️ Pulando Grupo '{$g['nome']}': Resumo do dia já enviado hoje.<br>";
+
+        if ($stmtCheck->rowCount() > 0 && !isset($_GET['force'])) {
+            echo "&nbsp;&nbsp;-&gt; ⏭️ Pulando Template ID {$templateDiario['id']}: Resumo já enviado hoje para '{$g['nome']}'.<br>";
+            continue;
         }
-    }
+
+        echo "&nbsp;&nbsp;-&gt; Template ID {$templateDiario['id']} ({$comunidadeTemplate}): Tudo limpo! Enviando...<br>";
+        flush();
+
+        // Substitui variáveis mágicas
+        $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaGlobal, $templateDiario['template_texto']);
+        $textoFinal = str_replace('{SITE_LINK}',       $siteLink,             $textoFinal);
+        $textoFinal = str_replace('{HOST_LINK}',       'viaEi.com/equipe/',   $textoFinal);
+
+        // Envia para o motor do Baileys
+        $inicioCurl = microtime(true);
+        $result     = enviarWhatsApp($g['group_id'], $textoFinal, 'meetup_cron_diario');
+        $httpcode   = $result['httpCode'];
+        $tempoGasto = round(microtime(true) - $inicioCurl, 2);
+        $response   = json_encode($result);
+
+        if ($httpcode >= 200 && $httpcode < 300) {
+            $stmtLog = $conn->prepare("INSERT INTO meetup_whatsapp_logs (grupo_id, meeting_id, template_id, data_disparo) VALUES (?, 0, ?, ?)");
+            $stmtLog->execute([$g['id'], $templateDiario['id'], $dataDisparo]);
+
+            echo "&nbsp;&nbsp;-&gt; ✅ Sucesso! Enviado em {$tempoGasto}s (Status: {$httpcode}). Log registrado.<br>";
+            $sucessos++;
+        } else {
+            echo "&nbsp;&nbsp;-&gt; ❌ Erro na API HTTP {$httpcode}. (Demorou {$tempoGasto}s) Resposta: " . htmlspecialchars($response) . "<br>";
+            if ($httpcode >= 400) {
+                echo "&nbsp;&nbsp;-&gt; ⚠️ Pausando 5 segundos para a API respirar após o erro...<br>";
+                sleep(5);
+            }
+        }
+    } // fim foreach templatesDiario
 }
 
 echo "<h3>Varredura concluída! {$sucessos} Resumos do Dia enviados hoje.</h3>";

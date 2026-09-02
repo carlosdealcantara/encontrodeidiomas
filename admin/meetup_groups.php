@@ -90,13 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
     $categoria = $_POST['batch_categoria'];
     $language_ids = ($categoria === 'especifico' && !empty($_POST['batch_language_ids'])) ? json_encode(array_map('intval', (array)$_POST['batch_language_ids'])) : null;
     $ativo = isset($_POST['batch_ativo']) ? 1 : 0;
+    $batch_comunidade = in_array($_POST['batch_comunidade'] ?? '', ['brasil','global']) ? $_POST['batch_comunidade'] : 'brasil';
     
     if (!empty($selected_groups)) {
         try {
             $imported = 0;
             $updated = 0;
-            $stmtInsert = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo) VALUES (?, ?, ?, ?, ?)");
-            $stmtUpdate = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, categoria = ?, language_ids = ?, ativo = ? WHERE id = ?");
+            $stmtInsert = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo, comunidade) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtUpdate = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, categoria = ?, language_ids = ?, ativo = ?, comunidade = ? WHERE id = ?");
             $stmtCheck = $conn->prepare("SELECT id, language_ids FROM meetup_whatsapp_groups WHERE group_id = ?");
             
             foreach ($selected_groups as $group_json) {
@@ -107,15 +108,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_batch'])) {
                     
                     $stmtCheck->execute([$g_id]);
                     if ($stmtCheck->rowCount() === 0) {
-                        $stmtInsert->execute([$g_subject, $g_id, $categoria, $language_ids, $ativo]);
+                        $stmtInsert->execute([$g_subject, $g_id, $categoria, $language_ids, $ativo, $batch_comunidade]);
                         $imported++;
                     } else {
-                        // Se já existe, vamos atualizar as configurações com as selecionadas agora (adicionando os novos idiomas)
+                        // Se já existe, vamos atualizar as configurações com as selecionadas agora
                         $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-                        
-                        // Lógica inteligente: se for específico, mesclar os idiomas em vez de sobrescrever?
-                        // O comportamento esperado da UX de lote é que a seleção da tela defina o estado final.
-                        $stmtUpdate->execute([$g_subject, $categoria, $language_ids, $ativo, $existing['id']]);
+                        $stmtUpdate->execute([$g_subject, $categoria, $language_ids, $ativo, $batch_comunidade, $existing['id']]);
                         $updated++;
                     }
                 }
@@ -136,17 +134,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_group'])) {
     $categoria = $_POST['categoria'];
     $language_ids = ($categoria === 'especifico' && !empty($_POST['language_ids'])) ? json_encode(array_map('intval', (array)$_POST['language_ids'])) : null;
     $ativo = isset($_POST['ativo']) ? 1 : 0;
+    $comunidade = in_array($_POST['comunidade'] ?? '', ['brasil','global']) ? $_POST['comunidade'] : 'brasil';
     
     try {
         if (!empty($_POST['id'])) {
             // Atualizar
-            $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_ids = ?, ativo = ? WHERE id = ?");
-            $stmt->execute([$nome, $group_id, $categoria, $language_ids, $ativo, $_POST['id']]);
+            $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET nome = ?, group_id = ?, categoria = ?, language_ids = ?, ativo = ?, comunidade = ? WHERE id = ?");
+            $stmt->execute([$nome, $group_id, $categoria, $language_ids, $ativo, $comunidade, $_POST['id']]);
             $msg = "Grupo atualizado com sucesso!";
         } else {
             // Inserir
-            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$nome, $group_id, $categoria, $language_ids, $ativo]);
+            $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_groups (nome, group_id, categoria, language_ids, ativo, comunidade) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$nome, $group_id, $categoria, $language_ids, $ativo, $comunidade]);
             $msg = "Novo grupo adicionado com sucesso!";
         }
     } catch (PDOException $e) {
@@ -354,7 +353,7 @@ unset($g);
                 <p style="color: var(--text-dim); margin-top: 5px; margin-bottom: 20px;">Selecione os grupos abaixo e defina a categoria/idioma padrão para eles.</p>
                 
                 <form method="POST">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                         <div class="form-group">
                             <label>Categoria para os Selecionados</label>
                             <select name="batch_categoria" onchange="toggleBatchLang(this.value)" required>
@@ -369,6 +368,13 @@ unset($g);
                                     <label style="display:inline-flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" name="batch_language_ids[]" value="<?= $l['id'] ?>"> <?= htmlspecialchars($l['name']) ?></label>
                                 <?php endforeach; ?>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Comunidade</label>
+                            <select name="batch_comunidade">
+                                <option value="brasil">🇧🇷 Brasil</option>
+                                <option value="global">🌐 Global</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Status</label>
@@ -461,10 +467,19 @@ unset($g);
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" name="ativo" id="ativo" checked> Grupo Ativo
-                    </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Comunidade</label>
+                        <select name="comunidade" id="comunidade">
+                            <option value="brasil">🇧🇷 Comunidade Brasil</option>
+                            <option value="global">🌐 Comunidade Global</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="ativo" id="ativo" checked> Grupo Ativo
+                        </label>
+                    </div>
                 </div>
                 <button type="submit" name="save_group" class="btn btn-primary">Salvar Grupo</button>
                 <button type="button" class="btn btn-secondary" onclick="resetForm()" style="display:none;" id="btn_cancel">Cancelar</button>
@@ -482,6 +497,7 @@ unset($g);
                     <th>Nome do Grupo</th>
                     <th>ID (WhatsApp)</th>
                     <th>Categoria / Idioma</th>
+                    <th>Comunidade</th>
                     <th>Status do Sistema</th>
                     <th>Presença do Bot</th>
                     <th>Ações</th>
@@ -501,6 +517,13 @@ unset($g);
                             <span class="badge spec">Específico: <?= htmlspecialchars(empty($g['language_name_display']) ? 'Idioma Removido' : $g['language_name_display']) ?></span>
                         <?php endif; ?>
                     </td>
+                    <td>
+                        <?php if (($g['comunidade'] ?? 'brasil') === 'global'): ?>
+                            <span class="badge" style="background:rgba(56,189,248,0.1);color:#38bdf8;">🌐 Global</span>
+                        <?php else: ?>
+                            <span class="badge" style="background:rgba(16,185,129,0.1);color:var(--success);">🇧🇷 Brasil</span>
+                        <?php endif; ?>
+                    </td>
                     <td><?= $g['ativo'] ? '<span style="color:var(--success);">Ativo</span>' : '<span style="color:var(--text-dim);">Inativo</span>' ?></td>
                     <td>
                         <?php if ($g['bot_presente']): ?>
@@ -513,7 +536,7 @@ unset($g);
                     </td>
                     <td>
                         <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem;" 
-                            onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= addslashes($g['language_ids'] ?? '') ?>', <?= $g['ativo'] ?>)">
+                            onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= addslashes($g['language_ids'] ?? '') ?>', <?= $g['ativo'] ?>, '<?= $g['comunidade'] ?? 'brasil' ?>')">
                             <i class="fas fa-edit"></i>
                         </button>
                         <a href="?delete=<?= $g['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem; color: var(--accent-red);" onclick="return confirm('Tem certeza que deseja excluir este grupo?')">
@@ -577,7 +600,7 @@ unset($g);
             document.getElementById('select_all_api').checked = false;
         }
 
-        function editGroup(id, nome, group_id, categoria, language_ids_json, ativo) {
+        function editGroup(id, nome, group_id, categoria, language_ids_json, ativo, comunidade) {
             document.getElementById('form-title').textContent = 'Editar Grupo';
             document.getElementById('group_id_db').value = id;
             document.getElementById('nome').value = nome;
@@ -596,6 +619,7 @@ unset($g);
                 } catch(e) {}
             }
             document.getElementById('ativo').checked = (ativo == 1);
+            document.getElementById('comunidade').value = comunidade || 'brasil';
             document.getElementById('btn_cancel').style.display = 'inline-block';
             window.scrollTo(0, document.getElementById('form-title').offsetTop - 20);
         }
@@ -608,6 +632,7 @@ unset($g);
             document.getElementById('categoria').value = 'multi_idioma';
             toggleLang('multi_idioma');
             document.getElementById('ativo').checked = true;
+            document.getElementById('comunidade').value = 'brasil';
             document.getElementById('btn_cancel').style.display = 'none';
         }
 

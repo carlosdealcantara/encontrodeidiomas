@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
                 throw new Exception("O link curto '$slug_en' é uma palavra reservada do sistema.");
             }
 
-            $stmt = $conn->prepare("UPDATE languages SET name = ?, name_en = ?, slug_pt = ?, slug_en = ?, flag_code = ?, flag_emoji = ?, whatsapp_link = ?, instagram_link = ?, greeting = ?, active = ? WHERE id = ?");
+            $stmt = $conn->prepare("UPDATE languages SET name = ?, name_en = ?, slug_pt = ?, slug_en = ?, flag_code = ?, flag_emoji = ?, whatsapp_link = ?, instagram_link = ?, greeting = ?, welcome_native = ?, active = ? WHERE id = ?");
             $stmt->execute([
                 $data['name'], 
                 $data['name_en'] ?? '',
@@ -62,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_save'])) {
                 trim($data['whatsapp_link'], '/ '), 
                 trim($data['instagram_link'], '/ '), 
                 $data['greeting'] ?? 'Welcome!',
+                $data['welcome_native'] ?? '',
                 isset($data['active']) ? 1 : 0,
                 $id
             ]);
@@ -171,13 +172,14 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 15%;">Idioma (PT)</th>
-                            <th style="width: 15%;">Idioma (EN)</th>
-                            <th style="width: 15%;">Link Curto (PT/EN)</th>
-                            <th style="width: 10%;">Bandeira / Emoji</th>
+                            <th style="width: 13%;">Idioma (PT)</th>
+                            <th style="width: 13%;">Idioma (EN)</th>
+                            <th style="width: 13%;">Link Curto (PT/EN)</th>
+                            <th style="width: 9%;">Bandeira / Emoji</th>
                             <th>Link WhatsApp</th>
                             <th>Link Instagram</th>
-                            <th>Saudação</th>
+                            <th>Saudação (EN)</th>
+                            <th>Boas-vindas Nativas</th>
                             <th style="width: 50px;">Ativo</th>
                         </tr>
                     </thead>
@@ -201,6 +203,7 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
                             <td><input type="url" name="langs[<?= $l['id'] ?>][whatsapp_link]" value="<?= htmlspecialchars($l['whatsapp_link'] ?? '') ?>" placeholder="https://chat.whatsapp.com/..."></td>
                             <td><input type="url" name="langs[<?= $l['id'] ?>][instagram_link]" value="<?= htmlspecialchars($l['instagram_link'] ?? '') ?>" placeholder="https://instagram.com/..."></td>
                             <td><input type="text" name="langs[<?= $l['id'] ?>][greeting]" value="<?= htmlspecialchars($l['greeting'] ?? 'Welcome!') ?>" placeholder="ex: ¡Bienvenidos!"></td>
+                            <td><input type="text" name="langs[<?= $l['id'] ?>][welcome_native]" value="<?= htmlspecialchars($l['welcome_native'] ?? '') ?>" placeholder="ex: 欢迎!" title="Boas-vindas no idioma-alvo para mensagens globais ({BOAS_VINDAS_NATIVAS})"></td>
                             <td style="text-align:center;">
                                 <label class="switch">
                                     <input type="checkbox" name="langs[<?= $l['id'] ?>][active]" <?= $l['active'] ? 'checked' : '' ?>>

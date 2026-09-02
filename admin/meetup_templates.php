@@ -21,14 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             try {
                 if (!empty($_POST['id'])) {
-                    $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ?, frequencia = ?, escopo = ? WHERE id = ?");
-                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $escopo, $_POST['id']]);
+                    $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ?, frequencia = ?, escopo = ?, comunidade_alvo = ? WHERE id = ?");
+                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $escopo, $_POST['comunidade_alvo'] ?? 'brasil', $_POST['id']]);
                 } else {
-                    $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo, frequencia, escopo) VALUES (?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $escopo]);
+                    $stmt = $conn->prepare("INSERT INTO meetup_whatsapp_templates (cenario, minutos_antes, template_texto, ativo, frequencia, escopo, comunidade_alvo) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$cenario, $minutos, $texto, $ativo, $frequencia, $escopo, $_POST['comunidade_alvo'] ?? 'brasil']);
                 }
             } catch (PDOException $e) {
-                // Fallback caso colunas frequencia/escopo ainda não existam (migração pendente)
+                // Fallback caso colunas frequencia/escopo/comunidade_alvo ainda não existam (migração pendente)
                 if (strpos($e->getMessage(), "Unknown column") !== false) {
                     if (!empty($_POST['id'])) {
                         $stmt = $conn->prepare("UPDATE meetup_whatsapp_templates SET cenario = ?, minutos_antes = ?, template_texto = ?, ativo = ? WHERE id = ?");
@@ -67,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $textoFinal = str_replace('{EMOJI_FLAG}', '🇺🇸', $textoFinal);
             $textoFinal = str_replace('{EMOJI_FLAGS}', '🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸', $textoFinal);
             $textoFinal = str_replace('{SAUDACAO}', 'Hello!', $textoFinal);
+            $textoFinal = str_replace('{BOAS_VINDAS_NATIVAS}', 'Welcome! (nativo mock)', $textoFinal);
+            $textoFinal = str_replace('{SITE_LINK}', 'viaEi.com/online', $textoFinal);
             $textoFinal = str_replace('{MEET_LINK}', 'meet.google.com/abc-defg-hij', $textoFinal);
             $textoFinal = str_replace('{INSTAGRAM_LINK}', 'instagram.com/encontrodeidiomasingles', $textoFinal);
             $textoFinal = str_replace('{HOST_LINK}', 'viaEi.com/equipe/', $textoFinal);
@@ -207,6 +209,16 @@ try {
                             <option value="semanal">Semanal (Máximo 1 vez por semana por grupo/idioma)</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label>Comunidade Alvo</label>
+                        <select name="comunidade_alvo" id="comunidade_alvo" class="form-control" required>
+                            <option value="brasil">🇧🇷 Brasil — apenas grupos Brasil</option>
+                            <option value="global">🌐 Global — apenas grupos Global</option>
+                            <option value="ambos">🌍 Ambos — todos os grupos</option>
+                        </select>
+                        <small style="color: var(--text-dim);">Define para qual comunidade este template será disparado.</small>
+                    </div>
                     
                     <div class="form-group">
                         <label>Minutos de Antecedência (0 = Na hora exata; para escopo Diário: relativo ao 1º encontro)</label>
@@ -223,6 +235,8 @@ try {
                             <span class="var-chip" onclick="insertVar('{EMOJI_FLAG}')">{EMOJI_FLAG}</span>
                             <span class="var-chip" onclick="insertVar('{EMOJI_FLAGS}')">{EMOJI_FLAGS}</span>
                             <span class="var-chip" onclick="insertVar('{SAUDACAO}')">{SAUDACAO}</span>
+                            <span class="var-chip" onclick="insertVar('{BOAS_VINDAS_NATIVAS}')" title="Boas-vindas no idioma-alvo (campo welcome_native do idioma)">{BOAS_VINDAS_NATIVAS} 🌐</span>
+                            <span class="var-chip" onclick="insertVar('{SITE_LINK}')" title="URL localizada: viaEi.com/online (Brasil) ou viaEi.com/en/online (Global)">{SITE_LINK} 🔗</span>
                             <span class="var-chip" onclick="insertVar('{MEET_LINK}')">{MEET_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{INSTAGRAM_LINK}')">{INSTAGRAM_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{HOST_LINK}')">{HOST_LINK}</span>
@@ -266,10 +280,24 @@ try {
                                     <span class="template-status <?= $t['ativo'] ? 'status-on' : 'status-off' ?>" style="margin-left: 10px;">
                                         <?= $t['ativo'] ? 'Ativo' : 'Inativo' ?>
                                     </span>
+                                    <?php
+                                        $com = $t['comunidade_alvo'] ?? 'brasil';
+                                        $comLabel = match($com) {
+                                            'global' => '🌐 Global',
+                                            'ambos'  => '🌍 Ambos',
+                                            default  => '🇧🇷 Brasil',
+                                        };
+                                        $comColor = match($com) {
+                                            'global' => '#38bdf8',
+                                            'ambos'  => '#a78bfa',
+                                            default  => '#10b981',
+                                        };
+                                    ?>
+                                    <span style="margin-left:8px; font-size:0.8rem; color:<?= $comColor ?>;"><?= $comLabel ?></span>
                                 </div>
                             </div>
                             <div style="display:flex; gap: 5px;">
-                                <button class="btn btn-secondary" style="padding: 5px 10px;" onclick="editTemplate(<?= $t['id'] ?>, '<?= addslashes($t['cenario']) ?>', '<?= $t['escopo'] ?? 'por_encontro' ?>', '<?= $t['frequencia'] ?? 'diario' ?>', <?= $t['minutos_antes'] ?>, `<?= addslashes($t['template_texto']) ?>`, <?= $t['ativo'] ?>)"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px;" onclick="editTemplate(<?= $t['id'] ?>, '<?= addslashes($t['cenario']) ?>', '<?= $t['escopo'] ?? 'por_encontro' ?>', '<?= $t['frequencia'] ?? 'diario' ?>', <?= $t['minutos_antes'] ?>, `<?= addslashes($t['template_texto']) ?>`, <?= $t['ativo'] ?>, '<?= $t['comunidade_alvo'] ?? 'brasil' ?>')"><i class="fas fa-edit"></i></button>
                                 <a href="?delete=<?= $t['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; color: var(--accent-red);" onclick="return confirm('Excluir?')"><i class="fas fa-trash"></i></a>
                             </div>
                         </div>
@@ -290,7 +318,7 @@ try {
             txt.selectionEnd = start + variable.length;
         }
         
-        function editTemplate(id, cenario, escopo, frequencia, minutos, texto, ativo) {
+        function editTemplate(id, cenario, escopo, frequencia, minutos, texto, ativo, comunidade_alvo) {
             document.getElementById('form-title').textContent = 'Editar Template';
             document.getElementById('template_id').value = id;
             document.getElementById('cenario').value = cenario;
@@ -299,6 +327,7 @@ try {
             document.getElementById('minutos_antes').value = minutos;
             document.getElementById('template_texto').value = texto;
             document.getElementById('ativo').checked = (ativo == 1);
+            document.getElementById('comunidade_alvo').value = comunidade_alvo || 'brasil';
             document.getElementById('btn_cancel').style.display = 'inline-block';
         }
         
@@ -311,6 +340,7 @@ try {
             document.getElementById('minutos_antes').value = '0';
             document.getElementById('template_texto').value = '';
             document.getElementById('ativo').checked = true;
+            document.getElementById('comunidade_alvo').value = 'brasil';
             document.getElementById('btn_cancel').style.display = 'none';
         }
     </script>
