@@ -412,10 +412,12 @@ async function handleMessages({ messages, type }) {
             console.error('Error fetching group admins:', e);
         }
 
-        const isAdmin = msg.key.fromMe || excludedJids.has(cleanSenderJid) || cleanSenderJid === '217230939836567@lid' || isGroupAdmin;
+        const isGlobalAdmin = msg.key.fromMe || excludedJids.has(cleanSenderJid) || cleanSenderJid === '217230939836567@lid';
+        const isAdmin = isGlobalAdmin || isGroupAdmin; // Used for commands below
         // msgId already declared above (line ~204)
 
-        if (!isAdmin && !processedMessageIds.has(msgId)) {
+        // Only exclude global admins from activity tracking (group admins will now be tracked)
+        if (!isGlobalAdmin && !processedMessageIds.has(msgId)) {
             processedMessageIds.add(msgId);
 
             const msgTypes = Object.keys(realMsg || {});
