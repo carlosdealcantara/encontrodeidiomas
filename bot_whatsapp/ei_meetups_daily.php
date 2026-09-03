@@ -79,7 +79,7 @@ $languageIdsHojeGlobal = [];
 
 foreach ($meetings as $m) {
     $com = $m['comunidade'] ?? 'brasil';
-    $isGlobal = ($com === 'global' || $com === 'ambos');
+    $isGlobal = ($com === 'global');
     
     // Lista para Brasil (recebe todos)
     $prefix = $isGlobal ? '🌐 ' : '';
@@ -137,7 +137,7 @@ foreach ($groups as $g) {
     // Itera sobre os templates compatíveis com a comunidade deste grupo
     foreach ($templatesDiario as $templateDiario) {
         $comunidadeTemplate = $templateDiario['comunidade_alvo'] ?? 'brasil';
-        $compativel = ($comunidadeTemplate === 'ambos') || ($comunidadeTemplate === $comunidadeGrupo);
+        $compativel = ($comunidadeTemplate === $comunidadeGrupo);
 
         if (!$compativel) {
             echo "&nbsp;&nbsp;-&gt; Template ID {$templateDiario['id']} ({$comunidadeTemplate}): incompatível com grupo {$comunidadeGrupo}. Pulando.<br>";

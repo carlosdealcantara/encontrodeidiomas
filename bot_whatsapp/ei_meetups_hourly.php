@@ -130,12 +130,16 @@ foreach ($meetings as $m) {
         $textoBase = str_replace('{MEET_LINK}',     $linkLimpo ?: 'Link não definido',         $textoBase);
         $textoBase = str_replace('{INSTAGRAM_LINK}',$m['instagram_link'] ?: 'Sem link',        $textoBase);
         $textoBase = str_replace('{HOST_LINK}',     'viaEi.com/equipe/',               $textoBase);
+        
+        // Define o Idioma Base baseado na comunidade do encontro
+        $idiomaBaseStr = ($m['comunidade'] ?? 'brasil') === 'global' ? '🗣️ 🇺🇸 EN' : '🗣️ 🇧🇷 PT-BR';
+        $textoBase = str_replace('{IDIOMA_BASE}',   $idiomaBaseStr,                            $textoBase);
 
         foreach ($groups as $g) {
             // Compatibilidade de comunidade: grupo × template
             $comunidadeGrupo    = $g['comunidade'] ?? 'brasil';
             $comunidadeTemplate = $t['comunidade_alvo'] ?? 'brasil';
-            $compativel = ($comunidadeTemplate === 'ambos') || ($comunidadeTemplate === $comunidadeGrupo);
+            $compativel = ($comunidadeTemplate === $comunidadeGrupo);
             if (!$compativel) continue;
 
             // Regra Unilateral: Encontro Brasil NÃO vai para Grupo Global
@@ -226,7 +230,7 @@ if (!empty($templatesDiario)) {
             $flagsDodia[] = $m['flag_emoji'];
         }
         $com = $m['comunidade'] ?? 'brasil';
-        if (($com === 'global' || $com === 'ambos') && !in_array($m['flag_emoji'], $flagsGlobaisDodia)) {
+        if ($com === 'global' && !in_array($m['flag_emoji'], $flagsGlobaisDodia)) {
             $flagsGlobaisDodia[] = $m['flag_emoji'];
         }
     }
@@ -244,7 +248,7 @@ if (!empty($templatesDiario)) {
             // Compatibilidade de comunidade: grupo × template
             $comunidadeGrupo    = $g['comunidade'] ?? 'brasil';
             $comunidadeTemplate = $t['comunidade_alvo'] ?? 'brasil';
-            $compativel = ($comunidadeTemplate === 'ambos') || ($comunidadeTemplate === $comunidadeGrupo);
+            $compativel = ($comunidadeTemplate === $comunidadeGrupo);
             if (!$compativel) continue;
 
             // Define bandeiras e elegibilidade por tipo de grupo

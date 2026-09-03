@@ -197,12 +197,10 @@ function getDayLabel($day) {
                                 $com = $m['comunidade'] ?? 'brasil';
                                 $comLabel = match($com) {
                                     'global' => '🌐 Global',
-                                    'ambos'  => '🌍 Ambos',
                                     default  => '🇧🇷 Brasil',
                                 };
                                 $comColor = match($com) {
                                     'global' => '#38bdf8',
-                                    'ambos'  => '#a78bfa',
                                     default  => '#10b981',
                                 };
                             ?>

@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'desc_en' => $_POST['description_en'] ?? '',
         'meet'    => $_POST['meet_link'],
         'replay'  => $_POST['replay_link'],
-        'comunidade' => in_array($_POST['comunidade'] ?? '', ['brasil','global','ambos']) ? $_POST['comunidade'] : 'brasil',
+        'comunidade' => in_array($_POST['comunidade'] ?? '', ['brasil','global']) ? $_POST['comunidade'] : 'brasil',
         'active'  => isset($_POST['active']) ? 1 : 0
     ];
 
@@ -192,7 +192,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select name="comunidade" id="comunidade" required>
                         <option value="brasil" <?= ($meeting['comunidade'] ?? 'brasil') === 'brasil' ? 'selected' : '' ?>>🇧🇷 Brasil (Apenas grupos BR)</option>
                         <option value="global" <?= ($meeting['comunidade'] ?? '') === 'global' ? 'selected' : '' ?>>🌐 Global (Grupos Global e BR)</option>
-                        <option value="ambos" <?= ($meeting['comunidade'] ?? '') === 'ambos' ? 'selected' : '' ?>>🌍 Ambos (Igual ao Global na prática)</option>
                     </select>
                 </div>
 

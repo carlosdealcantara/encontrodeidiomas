@@ -231,6 +231,7 @@ try {
                             <span class="var-chip" onclick="insertVar('{SAUDACAO}')" title="Puxa o campo 'Saudação (EN)' da aba idiomas">{SAUDACAO}</span>
                             <span class="var-chip" onclick="insertVar('{BOAS_VINDAS_NATIVAS}')" title="Puxa as boas-vindas no idioma-alvo (Ex: 欢迎!)">{BOAS_VINDAS_NATIVAS} 🌐</span>
                             <span class="var-chip" onclick="insertVar('{SITE_LINK}')" title="Muda sozinho: viaEi.com/online (Brasil) ou viaEi.com/en/online (Global)">{SITE_LINK} 🔗</span>
+                            <span class="var-chip" onclick="insertVar('{IDIOMA_BASE}')" title="Se encontro Global: 🗣️ 🇺🇸 EN. Se Brasil: 🗣️ 🇧🇷 PT-BR.">{IDIOMA_BASE} 🗣️</span>
                             <span class="var-chip" onclick="insertVar('{MEET_LINK}')">{MEET_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{INSTAGRAM_LINK}')">{INSTAGRAM_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{HOST_LINK}')">{HOST_LINK}</span>
