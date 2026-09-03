@@ -31,6 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
                 'ranking_enabled' => true
             ];
         }
+
+        if (isset($_POST['tpl_messenger'])) {
+            $config['templates']['community_ranking_messenger'] = trim($_POST['tpl_messenger']);
+        }
+        if (isset($_POST['tpl_reactor'])) {
+            $config['templates']['community_ranking_reactor'] = trim($_POST['tpl_reactor']);
+        }
         
         // 3. Envia para o Baileys
         $res = sendBaileysRequest('/mentoria-config', $config, 'POST');
@@ -46,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
 
 // Pegar config atual para exibição
 $config = getMentoriaConfig();
+
+$tpl_messenger = $config['templates']['community_ranking_messenger'] ?? "📊 *DAILY RANKING — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 *TOP TALKERS*\n_Who sent the most messages today?_\n\n{msg_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n✨ _Keep the conversation going! Tomorrow's ranking starts now._ 🚀";
+$tpl_reactor = $config['templates']['community_ranking_reactor'] ?? "❤️ *REACTION STARS — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n_Who spread the most love today?_\n\n{react_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n_React to others and climb the ranking! 🙌_";
 
 $title = 'Comunidade Global - Admin';
 $current_page = 'comunidade_global.php';
@@ -75,14 +85,25 @@ include 'includes/header.php';
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <div class="card" style="display: flex; align-items: center; justify-content: space-between;">
-        <div>
-            <h3 style="margin-top:0; color:#fff;">Sincronizar Grupos com o Robô</h3>
-            <p style="color: var(--text-dim); margin-top:5px; font-size: 14px;">Ao adicionar ou editar um grupo da Comunidade Global na aba WhatsApp (Meetups), clique aqui para forçar o robô a começar a "escutar" a atividade nesses grupos.</p>
-        </div>
-        <form method="POST">
+    <div class="card">
+        <h3 style="margin-top:0; color:#fff;">Configurações e Sincronização</h3>
+        <p style="color: var(--text-dim); margin-top:5px; font-size: 14px;">Ao adicionar ou editar um grupo na aba WhatsApp (Meetups), salve aqui para forçar o robô a sincronizar. Abaixo você também pode editar as mensagens do ranking.</p>
+        
+        <form method="POST" style="margin-top: 20px;">
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom: 5px; font-weight:600;">Template: Top Mensagens</label>
+                <textarea name="tpl_messenger" style="width:100%; min-height:150px; background:var(--input-bg); color:#fff; border:1px solid #333; border-radius:6px; padding:10px;"><?= htmlspecialchars($tpl_messenger) ?></textarea>
+                <small style="color:var(--text-dim);">Variáveis: <code>{group_name}</code>, <code>{date}</code>, <code>{msg_ranking_list}</code></small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom: 5px; font-weight:600;">Template: Top Reações</label>
+                <textarea name="tpl_reactor" style="width:100%; min-height:150px; background:var(--input-bg); color:#fff; border:1px solid #333; border-radius:6px; padding:10px;"><?= htmlspecialchars($tpl_reactor) ?></textarea>
+                <small style="color:var(--text-dim);">Variáveis: <code>{group_name}</code>, <code>{date}</code>, <code>{react_ranking_list}</code></small>
+            </div>
+
             <button type="submit" name="sync_global_config" class="btn-primary">
-                <i class="fas fa-sync-alt"></i> Sincronizar Agora
+                <i class="fas fa-save"></i> Salvar e Sincronizar Robô
             </button>
         </form>
     </div>
