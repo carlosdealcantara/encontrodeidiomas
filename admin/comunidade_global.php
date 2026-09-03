@@ -86,29 +86,6 @@ include 'includes/header.php';
     <?php endif; ?>
 
     <div class="card">
-        <h3 style="margin-top:0; color:#fff;">Configurações e Sincronização</h3>
-        <p style="color: var(--text-dim); margin-top:5px; font-size: 14px;">Ao adicionar ou editar um grupo na aba WhatsApp (Meetups), salve aqui para forçar o robô a sincronizar. Abaixo você também pode editar as mensagens do ranking.</p>
-        
-        <form method="POST" style="margin-top: 20px;">
-            <div style="margin-bottom: 15px;">
-                <label style="display:block; margin-bottom: 5px; font-weight:600;">Template: Top Mensagens</label>
-                <textarea name="tpl_messenger" style="width:100%; min-height:150px; background:var(--input-bg); color:#fff; border:1px solid #333; border-radius:6px; padding:10px;"><?= htmlspecialchars($tpl_messenger) ?></textarea>
-                <small style="color:var(--text-dim);">Variáveis: <code>{group_name}</code>, <code>{date}</code>, <code>{msg_ranking_list}</code></small>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display:block; margin-bottom: 5px; font-weight:600;">Template: Top Reações</label>
-                <textarea name="tpl_reactor" style="width:100%; min-height:150px; background:var(--input-bg); color:#fff; border:1px solid #333; border-radius:6px; padding:10px;"><?= htmlspecialchars($tpl_reactor) ?></textarea>
-                <small style="color:var(--text-dim);">Variáveis: <code>{group_name}</code>, <code>{date}</code>, <code>{react_ranking_list}</code></small>
-            </div>
-
-            <button type="submit" name="sync_global_config" class="btn-primary">
-                <i class="fas fa-save"></i> Salvar e Sincronizar Robô
-            </button>
-        </form>
-    </div>
-
-    <div class="card">
         <h3 style="margin-top:0; margin-bottom: 15px; color:#fff;">Monitoramento de Atividade (Hoje)</h3>
         <p style="color: var(--text-dim); margin-bottom:20px; font-size: 14px;">Abaixo você pode acompanhar quantas mensagens e reações cada participante já enviou hoje (<b><?= date('d/m/Y') ?></b>) nos grupos globais.</p>
 
@@ -119,7 +96,6 @@ include 'includes/header.php';
         if (empty($activityToday)) {
             echo "<div class='alert alert-warning'>Nenhuma atividade registrada ainda para o dia de hoje ($hoje). Se o robô acabou de ser configurado, aguarde os alunos começarem a enviar mensagens.</div>";
         } else {
-            // Pegar apenas nomes dos grupos que são "globais" da config
             $globalGroupNames = [];
             foreach (($config['groups'] ?? []) as $g) {
                 if (!empty($g['jid']) && !empty($g['is_community_group'])) {
@@ -130,7 +106,7 @@ include 'includes/header.php';
             echo "<div style='display:flex; flex-wrap:wrap; gap:20px; margin-top:20px;'>";
             $hasGlobalActivity = false;
             foreach ($activityToday as $groupJid => $members) {
-                if (!isset($globalGroupNames[$groupJid])) continue; // Só mostra os globais aqui!
+                if (!isset($globalGroupNames[$groupJid])) continue;
                 
                 $gName = $globalGroupNames[$groupJid];
                 if (empty($members)) continue;
@@ -177,6 +153,29 @@ include 'includes/header.php';
             echo "</div>";
         }
         ?>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0; color:#fff;">Configurações e Sincronização</h3>
+        <p style="color: var(--text-dim); margin-top:5px; font-size: 14px;">Ao adicionar ou editar um grupo na aba WhatsApp (Meetups), salve aqui para forçar o robô a sincronizar. Abaixo você também pode editar as mensagens do ranking.</p>
+        
+        <form method="POST" style="margin-top: 20px;">
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom: 5px; font-weight:600;">Template: Top Mensagens</label>
+                <textarea name="tpl_messenger" style="width:100%; min-height:150px; background:var(--input-bg); color:#fff; border:1px solid #333; border-radius:6px; padding:10px;"><?= htmlspecialchars($tpl_messenger) ?></textarea>
+                <small style="color:var(--text-dim);">Variáveis: <code>{group_name}</code>, <code>{date}</code>, <code>{msg_ranking_list}</code></small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom: 5px; font-weight:600;">Template: Top Reações</label>
+                <textarea name="tpl_reactor" style="width:100%; min-height:150px; background:var(--input-bg); color:#fff; border:1px solid #333; border-radius:6px; padding:10px;"><?= htmlspecialchars($tpl_reactor) ?></textarea>
+                <small style="color:var(--text-dim);">Variáveis: <code>{group_name}</code>, <code>{date}</code>, <code>{react_ranking_list}</code></small>
+            </div>
+
+            <button type="submit" name="sync_global_config" class="btn-primary">
+                <i class="fas fa-save"></i> Salvar e Sincronizar Robô
+            </button>
+        </form>
     </div>
 </main>
 </body>
