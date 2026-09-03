@@ -167,8 +167,12 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
 
     <link rel="canonical" href="<?= sanitize($canonical) ?>">
     <?php
-    // Evita duplicação: se o $title já contém o nome do site, não usa sufixo
-    $title_suffix = (stripos($title, SITE_NAME) !== false) ? '' : ' — ' . SITE_NAME;
+    // Evita duplicação ou fricção internacional:
+    if (CURRENT_LANG === 'en') {
+        $title_suffix = '';
+    } else {
+        $title_suffix = (stripos($title, SITE_NAME) !== false) ? '' : ' — ' . SITE_NAME;
+    }
     ?>
     <title>Ei | <?= sanitize($title) ?><?= $title_suffix ?></title>
 
