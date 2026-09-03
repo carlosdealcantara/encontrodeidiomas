@@ -151,11 +151,6 @@ include 'includes/header.php';
     <?php if (!isset($_COOKIE['ga_dismissed'])): ?>
     <div class="global-announcement" id="global-announcement-bar">
         <div class="global-announcement-inner">
-            <!-- Imagem da comunidade global -->
-            <div class="ga-image-col">
-                <img src="/assets/images/eiglobal.jpg" alt="Global Community" loading="lazy">
-            </div>
-
             <!-- Conteúdo -->
             <div class="ga-content">
                 <div class="ga-eyebrow">
