@@ -278,9 +278,8 @@ try {
                                     <?php
                                         $com = $t['comunidade_alvo'] ?? 'brasil';
                                         $comLabel = match($com) {
-                                            'global' => '🌐 Global',
-                                            'ambos'  => '🌍 Ambos',
-                                            default  => '🇧🇷 Brasil',
+                                            'global' => '<img src="https://flagcdn.com/w20/us.png" style="width:16px; margin-right:5px; border-radius:2px;" alt="US"> Global',
+                                            default  => '<img src="https://flagcdn.com/w20/br.png" style="width:16px; margin-right:5px; border-radius:2px;" alt="BR"> Brasil',
                                         };
                                         $comColor = match($com) {
                                             'global' => '#38bdf8',
@@ -288,7 +287,7 @@ try {
                                             default  => '#10b981',
                                         };
                                     ?>
-                                    <span style="margin-left:8px; font-size:0.8rem; color:<?= $comColor ?>;"><?= $comLabel ?></span>
+                                    <span class="badge" style="background:<?= $comColor ?>20;color:<?= $comColor ?>; display: inline-flex; align-items: center;"><?= $comLabel ?></span>
                                 </div>
                             </div>
                             <div style="display:flex; gap: 5px;">
