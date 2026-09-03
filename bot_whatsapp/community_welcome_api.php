@@ -34,9 +34,24 @@ try {
     }
 
     $lang_code = $group['lang_code'] ?? 'en';
+    $is_english_group = ($lang_code === 'en');
 
-    // 2. Sorteia 1 intro
-    $introStmt = $conn->query("SELECT text_target, text_en FROM community_welcome_intros WHERE ativo = 1 ORDER BY RAND() LIMIT 1");
+    // 2. Sorteia 1 intro com tradução (fallback para inglês se não tiver)
+    $introStmt = $conn->prepare("
+        SELECT 
+            cwi.id, 
+            cwi.text_en, 
+            COALESCE(cwt.text, cwi.text_en) AS text_target 
+        FROM community_welcome_intros cwi
+        LEFT JOIN community_welcome_translations cwt 
+            ON cwt.entity_type = 'intro' 
+            AND cwt.entity_id = cwi.id 
+            AND cwt.lang_code = :lang_code
+        WHERE cwi.ativo = 1 
+        ORDER BY RAND() 
+        LIMIT 1
+    ");
+    $introStmt->execute([':lang_code' => $lang_code]);
     $intro = $introStmt->fetch(PDO::FETCH_ASSOC);
 
     // Se não houver intros ativas, aborta a mensagem
@@ -45,8 +60,22 @@ try {
         exit;
     }
 
-    // 3. Sorteia 3 perguntas
-    $qStmt = $conn->query("SELECT text_target, text_en FROM community_welcome_questions WHERE ativo = 1 ORDER BY RAND() LIMIT 3");
+    // 3. Sorteia 3 perguntas com tradução (fallback para inglês se não tiver)
+    $qStmt = $conn->prepare("
+        SELECT 
+            cwq.id, 
+            cwq.text_en, 
+            COALESCE(cwt.text, cwq.text_en) AS text_target 
+        FROM community_welcome_questions cwq
+        LEFT JOIN community_welcome_translations cwt 
+            ON cwt.entity_type = 'question' 
+            AND cwt.entity_id = cwq.id 
+            AND cwt.lang_code = :lang_code
+        WHERE cwq.ativo = 1 
+        ORDER BY RAND() 
+        LIMIT 3
+    ");
+    $qStmt->execute([':lang_code' => $lang_code]);
     $questions = $qStmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Formatar perguntas para o JSON
@@ -62,6 +91,7 @@ try {
     echo json_encode([
         "enabled" => true,
         "lang_code" => $lang_code,
+        "is_english_group" => $is_english_group,
         "intro_target" => $intro['text_target'],
         "intro_en" => $intro['text_en'],
         "questions" => $formattedQuestions
