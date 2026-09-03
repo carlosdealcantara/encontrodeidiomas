@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     
     // Inject global community groups so Baileys tracks their activity
     try {
-        $stmtGlob = $conn->query("SELECT jid, nome FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
+        $stmtGlob = $conn->query("SELECT group_id as jid, nome FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
         $globalGroups = $stmtGlob->fetchAll(PDO::FETCH_ASSOC);
         foreach ($globalGroups as $gg) {
             $key = 'global_' . preg_replace('/[^a-z0-9]/', '', strtolower($gg['nome']));

@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
     
     // 2. Busca grupos globais no banco
     try {
-        $stmtGlob = $conn->query("SELECT jid, nome FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
+        $stmtGlob = $conn->query("SELECT group_id as jid, nome FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
         $globalGroups = $stmtGlob->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($globalGroups as $gg) {
