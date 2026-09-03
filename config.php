@@ -18,7 +18,7 @@ if (file_exists($envFile)) {
 
 define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
 define('DB_NAME',    getenv('DB_NAME')    ?: '');
-define('ASSET_VERSION', '1.9'); // Versão para cache-busting
+define('ASSET_VERSION', '2.0'); // Versão para cache-busting
 define('DB_USER',    getenv('DB_USER')    ?: '');
 define('DB_PASS',    getenv('DB_PASS')    ?: '');
 define('SITE_NAME',  getenv('SITE_NAME')  ?: 'Encontro de Idiomas');
