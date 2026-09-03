@@ -12,6 +12,52 @@ $conn = connectDB();
 $msg = null;
 $error = null;
 
+// --- LÓGICA DE BOAS-VINDAS (CRUD) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['save_toggles'])) {
+        $conn->query("UPDATE meetup_whatsapp_groups SET welcome_enabled = 0 WHERE comunidade = 'global'");
+        if (!empty($_POST['welcome_enabled'])) {
+            $stmt = $conn->prepare("UPDATE meetup_whatsapp_groups SET welcome_enabled = 1 WHERE group_id = ?");
+            foreach ($_POST['welcome_enabled'] as $jid => $val) {
+                $stmt->execute([$jid]);
+            }
+        }
+        $msg = "Configurações de grupos salvas com sucesso.";
+    }
+    
+    if (isset($_POST['add_intro'])) {
+        $stmt = $conn->prepare("INSERT INTO community_welcome_intros (text_target, text_en) VALUES (?, ?)");
+        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en'])]);
+        $msg = "Saudação adicionada com sucesso.";
+    }
+    if (isset($_POST['edit_intro'])) {
+        $stmt = $conn->prepare("UPDATE community_welcome_intros SET text_target = ?, text_en = ? WHERE id = ?");
+        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en']), (int)$_POST['id']]);
+        $msg = "Saudação atualizada com sucesso.";
+    }
+    if (isset($_POST['toggle_intro'])) {
+        $stmt = $conn->prepare("UPDATE community_welcome_intros SET ativo = NOT ativo WHERE id = ?");
+        $stmt->execute([(int)$_POST['id']]);
+        $msg = "Status da saudação alterado.";
+    }
+    
+    if (isset($_POST['add_question'])) {
+        $stmt = $conn->prepare("INSERT INTO community_welcome_questions (text_target, text_en) VALUES (?, ?)");
+        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en'])]);
+        $msg = "Pergunta adicionada com sucesso.";
+    }
+    if (isset($_POST['edit_question'])) {
+        $stmt = $conn->prepare("UPDATE community_welcome_questions SET text_target = ?, text_en = ? WHERE id = ?");
+        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en']), (int)$_POST['id']]);
+        $msg = "Pergunta atualizada com sucesso.";
+    }
+    if (isset($_POST['toggle_question'])) {
+        $stmt = $conn->prepare("UPDATE community_welcome_questions SET ativo = NOT ativo WHERE id = ?");
+        $stmt->execute([(int)$_POST['id']]);
+        $msg = "Status da pergunta alterado.";
+    }
+}
+
 // Lógica de Sincronização Manual (Push config to Baileys)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])) {
     // 1. Pega config atual da mentoria para não perder o resto
@@ -19,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
     
     // 2. Busca grupos globais no banco
     try {
-        $stmtGlob = $conn->query("SELECT group_id as jid, nome FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
+        $stmtGlob = $conn->query("SELECT group_id as jid, nome, welcome_enabled FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
         $globalGroups = $stmtGlob->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($globalGroups as $gg) {
@@ -28,7 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
                 'jid' => $gg['jid'],
                 'name' => $gg['nome'],
                 'is_community_group' => true,
-                'ranking_enabled' => true
+                'ranking_enabled' => true,
+                'welcome_enabled' => (bool)$gg['welcome_enabled']
             ];
         }
 
@@ -57,9 +104,19 @@ $config = getMentoriaConfig();
 $tpl_messenger = $config['templates']['community_ranking_messenger'] ?? "📊 *DAILY RANKING — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 *TOP TALKERS*\n_Who sent the most messages today?_\n\n{msg_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n✨ _Keep the conversation going! Tomorrow's ranking starts now._ 🚀";
 $tpl_reactor = $config['templates']['community_ranking_reactor'] ?? "❤️ *REACTION STARS — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n_Who spread the most love today?_\n\n{react_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n_React to others and climb the ranking! 🙌_";
 
-$title = 'Comunidade Global - Admin';
+$title = 'Global - Admin';
 $current_page = 'comunidade_global.php';
 include 'includes/header.php';
+
+// Busca dados para a feature de boas-vindas
+$stmtGroups = $conn->query("SELECT group_id as jid, nome, lang_code, welcome_enabled FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1 ORDER BY nome ASC");
+$allGlobalGroups = $stmtGroups->fetchAll(PDO::FETCH_ASSOC);
+
+$stmtIntros = $conn->query("SELECT * FROM community_welcome_intros ORDER BY id ASC");
+$introsList = $stmtIntros->fetchAll(PDO::FETCH_ASSOC);
+
+$stmtQs = $conn->query("SELECT * FROM community_welcome_questions ORDER BY id ASC");
+$qsList = $stmtQs->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
@@ -67,16 +124,29 @@ include 'includes/header.php';
     .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
     .btn-primary { background: #38bdf8; color: #fff; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
     .btn-primary:hover { background: #0284c7; }
+    .btn-small { background: #444; color: #fff; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .btn-small:hover { background: #555; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-success { background: #10b981; }
+    .btn-success:hover { background: #059669; }
     .alert { padding: 15px; border-radius: 6px; margin-bottom: 20px; }
     .alert-success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
     .alert-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
     .alert-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    
+    .table-dark { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .table-dark th { text-align: left; padding: 10px; border-bottom: 1px solid #444; color: #aaa; font-size: 13px; }
+    .table-dark td { padding: 10px; border-bottom: 1px solid #2a2a2a; color: #fff; font-size: 14px; }
+    
+    .crud-form { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #333; }
+    .crud-form input, .crud-form textarea { width: 100%; padding: 8px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; margin-top: 5px; margin-bottom: 10px; }
 </style>
 
 <?php include 'includes/sidebar.php'; ?>
 
 <main style="flex:1; padding:30px; overflow-y:auto;">
-    <h1 class="page-title"><i class="fas fa-globe" style="color: #38bdf8; margin-right: 10px;"></i> Comunidade Global</h1>
+    <h1 class="page-title"><i class="fas fa-globe" style="color: #38bdf8; margin-right: 10px;"></i> Global</h1>
     
     <?php if ($msg): ?>
         <div class="alert alert-success"><?= htmlspecialchars($msg) ?></div>
@@ -85,6 +155,120 @@ include 'includes/header.php';
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
+    <!-- BOAS VINDAS -->
+    <div class="card">
+        <h3 style="margin-top:0; color:#fff;">🎉 Mensagens de Boas-Vindas</h3>
+        <p style="color: var(--text-dim); font-size: 14px;">O bot envia uma mensagem automaticamente para novos membros com uma saudação e 3 perguntas sorteadas.</p>
+        
+        <!-- Toggles por grupo -->
+        <h4 style="color:#38bdf8; margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 5px;">Configuração por Grupo</h4>
+        <form method="POST">
+            <table class="table-dark">
+                <tr>
+                    <th>Grupo</th>
+                    <th>Idioma (Lang Code)</th>
+                    <th>Ativar Boas-Vindas</th>
+                </tr>
+                <?php foreach ($allGlobalGroups as $g): ?>
+                <tr>
+                    <td><?= htmlspecialchars($g['nome']) ?></td>
+                    <td><span style="background:#333; padding:2px 6px; border-radius:4px; font-size:12px;"><?= htmlspecialchars($g['lang_code']) ?></span></td>
+                    <td>
+                        <label class="switch" style="position:relative; display:inline-block; width:40px; height:20px;">
+                            <input type="checkbox" name="welcome_enabled[<?= $g['jid'] ?>]" value="1" <?= $g['welcome_enabled'] ? 'checked' : '' ?> style="opacity:0; width:0; height:0;">
+                            <span class="slider round" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:20px;"></span>
+                        </label>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </table>
+            <button type="submit" name="save_toggles" class="btn-primary" style="margin-top:15px; font-size:13px; padding:6px 12px;"><i class="fas fa-save"></i> Salvar Toggles</button>
+        </form>
+
+        <!-- Saudações Iniciais -->
+        <h4 style="color:#38bdf8; margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 5px;">Pool de Saudações (Intros)</h4>
+        <p style="color: var(--text-dim); font-size: 13px;">Uma dessas saudações será sorteada. Use <code>{mentions}</code> onde os membros devem ser marcados.</p>
+        
+        <form method="POST" class="crud-form">
+            <div style="display:flex; gap:15px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:#aaa;">Texto no Idioma Alvo</label>
+                    <textarea name="text_target" rows="2" required placeholder="Ex: Olá {mentions}! Bem-vindos!"></textarea>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:#aaa;">Fallback em Inglês</label>
+                    <textarea name="text_en" rows="2" required placeholder="Ex: Hello {mentions}! Welcome!"></textarea>
+                </div>
+            </div>
+            <button type="submit" name="add_intro" class="btn-primary btn-success" style="font-size:12px; padding:6px 10px;"><i class="fas fa-plus"></i> Adicionar Saudação</button>
+        </form>
+
+        <table class="table-dark">
+            <?php foreach ($introsList as $i): ?>
+            <tr>
+                <td style="width:50px;">
+                    <form method="POST" style="margin:0;">
+                        <input type="hidden" name="id" value="<?= $i['id'] ?>">
+                        <button type="submit" name="toggle_intro" class="btn-small <?= $i['ativo'] ? 'btn-success' : 'btn-danger' ?>" title="Clique para alternar">
+                            <?= $i['ativo'] ? 'ON' : 'OFF' ?>
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" style="margin:0; display:flex; gap:10px; align-items:center;">
+                        <input type="hidden" name="id" value="<?= $i['id'] ?>">
+                        <div style="flex:1;"><input type="text" name="text_target" value="<?= htmlspecialchars($i['text_target']) ?>" style="width:100%; padding:5px; background:transparent; border:1px solid #444; color:#fff;" required></div>
+                        <div style="flex:1;"><input type="text" name="text_en" value="<?= htmlspecialchars($i['text_en']) ?>" style="width:100%; padding:5px; background:transparent; border:1px solid #444; color:#fff;" required></div>
+                        <button type="submit" name="edit_intro" class="btn-small"><i class="fas fa-save"></i> Salvar</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+
+        <!-- Pool de Perguntas -->
+        <h4 style="color:#38bdf8; margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 5px;">Pool de Perguntas</h4>
+        <p style="color: var(--text-dim); font-size: 13px;">Sortearemos 3 perguntas a cada envio.</p>
+        
+        <form method="POST" class="crud-form">
+            <div style="display:flex; gap:15px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:#aaa;">Pergunta no Idioma Alvo</label>
+                    <textarea name="text_target" rows="2" required></textarea>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:#aaa;">Pergunta em Inglês</label>
+                    <textarea name="text_en" rows="2" required></textarea>
+                </div>
+            </div>
+            <button type="submit" name="add_question" class="btn-primary btn-success" style="font-size:12px; padding:6px 10px;"><i class="fas fa-plus"></i> Adicionar Pergunta</button>
+        </form>
+
+        <table class="table-dark">
+            <?php foreach ($qsList as $q): ?>
+            <tr>
+                <td style="width:50px;">
+                    <form method="POST" style="margin:0;">
+                        <input type="hidden" name="id" value="<?= $q['id'] ?>">
+                        <button type="submit" name="toggle_question" class="btn-small <?= $q['ativo'] ? 'btn-success' : 'btn-danger' ?>" title="Clique para alternar">
+                            <?= $q['ativo'] ? 'ON' : 'OFF' ?>
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" style="margin:0; display:flex; gap:10px; align-items:center;">
+                        <input type="hidden" name="id" value="<?= $q['id'] ?>">
+                        <div style="flex:1;"><input type="text" name="text_target" value="<?= htmlspecialchars($q['text_target']) ?>" style="width:100%; padding:5px; background:transparent; border:1px solid #444; color:#fff;" required></div>
+                        <div style="flex:1;"><input type="text" name="text_en" value="<?= htmlspecialchars($q['text_en']) ?>" style="width:100%; padding:5px; background:transparent; border:1px solid #444; color:#fff;" required></div>
+                        <button type="submit" name="edit_question" class="btn-small"><i class="fas fa-save"></i> Salvar</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
+
+    <!-- MONITORAMENTO DE ATIVIDADE -->
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <div>
@@ -162,6 +346,7 @@ include 'includes/header.php';
         ?>
     </div>
 
+    <!-- CONFIGURAÇÕES -->
     <div class="card">
         <h3 style="margin-top:0; color:#fff;">Configurações e Sincronização</h3>
         <p style="color: var(--text-dim); margin-top:5px; font-size: 14px;">Ao adicionar ou editar um grupo na aba WhatsApp (Meetups), salve aqui para forçar o robô a sincronizar. Abaixo você também pode editar as mensagens do ranking.</p>
@@ -185,5 +370,12 @@ include 'includes/header.php';
         </form>
     </div>
 </main>
+<style>
+/* Estilo para os switches */
+.switch input:checked + .slider { background-color: #10b981; }
+.switch input:focus + .slider { box-shadow: 0 0 1px #10b981; }
+.switch input:checked + .slider:before { transform: translateX(20px); }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+</style>
 </body>
 </html>
