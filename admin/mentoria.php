@@ -122,11 +122,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
             'streak_confirm' => trim($_POST['tpl_streak_confirm'] ?? ''),
             'streak_milestone' => trim($_POST['tpl_streak_milestone'] ?? ''),
             'streak_leaderboard' => trim($_POST['tpl_streak_leaderboard'] ?? ''),
+            'community_ranking_messenger' => trim($_POST['tpl_community_ranking_messenger'] ?? ''),
+            'community_ranking_reactor' => trim($_POST['tpl_community_ranking_reactor'] ?? ''),
             'ranking_weekly'     => trim($_POST['tpl_ranking_weekly']     ?? ''),
             'ranking_monthly'    => trim($_POST['tpl_ranking_monthly']    ?? ''),
             'ranking_yearly'     => trim($_POST['tpl_ranking_yearly']     ?? '')
         ]
     ];
+    
+    // Inject global community groups so Baileys tracks their activity
+    try {
+        $stmtGlob = $conn->query("SELECT jid, nome FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
+        $globalGroups = $stmtGlob->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($globalGroups as $gg) {
+            $key = 'global_' . preg_replace('/[^a-z0-9]/', '', strtolower($gg['nome']));
+            $newConfig['groups'][$key] = [
+                'jid' => $gg['jid'],
+                'name' => $gg['nome'],
+                'is_community_group' => true,
+                'ranking_enabled' => true // Default to true, we can build a toggle later
+            ];
+        }
+    } catch (Exception $e) {}
     
     $res = sendBaileysRequest('/mentoria-config', $newConfig, 'POST');
     if ($res['success']) {
