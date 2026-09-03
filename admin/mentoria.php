@@ -452,7 +452,6 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             <button class="main-tab-btn <?= $active_tab == 'agenda' ? 'active' : '' ?>" onclick="switchMainTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda Classes</button>
             <button class="main-tab-btn <?= $active_tab == 'streaks' ? 'active' : '' ?>" onclick="switchMainTab('streaks')"><i class="fas fa-fire"></i> Streaks Desafio</button>
             <button class="main-tab-btn <?= $active_tab == 'score_editor' ? 'active' : '' ?>" onclick="switchMainTab('score_editor')"><i class="fas fa-trophy"></i> Ranking</button>
-            <button class="main-tab-btn <?= $active_tab == 'atividade' ? 'active' : '' ?>" onclick="switchMainTab('atividade')"><i class="fas fa-chart-line"></i> Atividade Hoje</button>
             <button class="main-tab-btn <?= $active_tab == 'odysee' ? 'active' : '' ?>" onclick="switchMainTab('odysee')"><i class="fas fa-video"></i> Odysee</button>
             <button class="main-tab-btn <?= $active_tab == 'telegram_cobranca' ? 'active' : '' ?>" onclick="switchMainTab('telegram_cobranca')"><i class="fab fa-telegram"></i> Avisos Telegram</button>
             <button class="main-tab-btn <?= $active_tab == 'pilulas' ? 'active' : '' ?>" onclick="switchMainTab('pilulas')"><i class="fas fa-pills"></i> Pílulas de Inglês</button>
@@ -481,10 +480,6 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
         <div id="tab_score_editor" class="main-tab-content <?= $active_tab == 'score_editor' ? 'active' : '' ?>">
             <?php include 'mentoria_tabs/tab_score_editor.php'; ?>
-        </div>
-
-        <div id="tab_atividade" class="main-tab-content <?= $active_tab == 'atividade' ? 'active' : '' ?>">
-            <?php include 'mentoria_tabs/tab_atividade.php'; ?>
         </div>
 
         <div id="tab_odysee" class="main-tab-content <?= $active_tab == 'odysee' ? 'active' : '' ?>">

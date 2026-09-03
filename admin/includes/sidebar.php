@@ -15,6 +15,7 @@ $nav_items = [
     'languages.php'    => ['icon' => 'fas fa-language',       'label' => 'Idiomas'],
     'mentoria.php'         => ['icon' => 'fas fa-graduation-cap', 'label' => 'Mentoria'],
     'whatsapp'             => ['icon' => 'fab fa-whatsapp',       'label' => 'WhatsApp', 'link' => 'meetup_groups.php', 'active' => $is_whatsapp_page],
+    'comunidade_global.php'=> ['icon' => 'fas fa-globe',          'label' => 'Comunidade Global'],
     'odysee.php'           => ['icon' => 'fas fa-cloud-upload-alt','label' => 'Odysee'],
     'telegram_bot.php'     => ['icon' => 'fab fa-telegram',       'label' => 'Telegram'],
     'useful_links.php'     => ['icon' => 'fas fa-link',           'label' => 'Links'],
