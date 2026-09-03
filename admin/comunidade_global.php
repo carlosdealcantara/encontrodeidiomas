@@ -86,8 +86,15 @@ include 'includes/header.php';
     <?php endif; ?>
 
     <div class="card">
-        <h3 style="margin-top:0; margin-bottom: 15px; color:#fff;">Monitoramento de Atividade (Hoje)</h3>
-        <p style="color: var(--text-dim); margin-bottom:20px; font-size: 14px;">Abaixo você pode acompanhar quantas mensagens e reações cada participante já enviou hoje (<b><?= date('d/m/Y') ?></b>) nos grupos globais.</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <h3 style="margin-top:0; margin-bottom:0; color:#fff;">Monitoramento de Atividade (Hoje)</h3>
+                <p style="color: var(--text-dim); margin-top:5px; margin-bottom:0; font-size: 14px;">Abaixo você pode acompanhar quantas mensagens e reações cada participante já enviou hoje (<b><?= date('d/m/Y') ?></b>) nos grupos globais.</p>
+            </div>
+            <a href="comunidade_global.php" class="btn-primary" style="font-size: 13px; padding: 8px 12px; background: #10b981;">
+                <i class="fas fa-sync-alt"></i> Atualizar Placar
+            </a>
+        </div>
 
         <?php
         $hoje = date('Y-m-d');
