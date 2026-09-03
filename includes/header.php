@@ -151,17 +151,17 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type"        content="website">
-    <meta property="og:title"       content="<?= sanitize($og_title) ?>">
+    <meta property="og:title"       content="Ei | <?= sanitize($og_title) ?>">
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
     <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=9.0">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
-    <meta property="og:site_name"   content="Encontro de Idiomas">
+    <meta property="og:site_name"   content="Ei">
     <meta property="og:locale"      content="<?= t('meta.og_locale') ?>">
 
     <!-- Twitter -->
     <meta property="twitter:card"        content="summary">
     <meta property="twitter:url"         content="<?= sanitize($canonical) ?>">
-    <meta property="twitter:title"       content="<?= sanitize($og_title) ?>">
+    <meta property="twitter:title"       content="Ei | <?= sanitize($og_title) ?>">
     <meta property="twitter:description" content="<?= sanitize($og_description) ?>">
     <meta property="twitter:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=9.0">
 

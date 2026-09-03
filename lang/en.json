@@ -5,17 +5,17 @@
     "og_title_suffix": "Free Conversation in English and more",
     "org_description": "The best free community for language students and online and in-person conversation practice.",
     "website_description": "Community for students and language enthusiasts to practice conversation for free.",
-    "site_name": "Encontro de Idiomas",
+    "site_name": "Ei",
     "tagline": "Practice languages for free",
     "banner_text": "This site is also available in Portuguese.",
     "banner_cta": "Switch to Portuguese",
-    "seo_org_desc": "Encontro de Idiomas: A vibrant and free club for language students and the polyglot community to practice real conversation at all levels.",
-    "seo_web_desc": "Encontro de Idiomas is the ideal club for the polyglot student to practice free conversation with real people.",
-    "alt_presencial": "Encontro de Idiomas - Practice in a conversation club for the polyglot public and students of all levels",
-    "alt_online": "Encontro de Idiomas - Virtual meetings in a free and welcoming club for the polyglot student",
-    "alt_replay": "Encontro de Idiomas - Replay of sessions from a club focused on polyglot development and students",
-    "alt_activities": "Encontro de Idiomas - Activities from a club for the polyglot community to practice languages freely",
-    "alt_mentorship": "Encontro de Idiomas - Mentorship and support in our club for the polyglot student"
+    "seo_org_desc": "Ei: A vibrant and free club for language students and the polyglot community to practice real conversation at all levels.",
+    "seo_web_desc": "Ei is the ideal club for the polyglot student to practice free conversation with real people.",
+    "alt_presencial": "Ei - Practice in a conversation club for the polyglot public and students of all levels",
+    "alt_online": "Ei - Virtual meetings in a free and welcoming club for the polyglot student",
+    "alt_replay": "Ei - Replay of sessions from a club focused on polyglot development and students",
+    "alt_activities": "Ei - Activities from a club for the polyglot community to practice languages freely",
+    "alt_mentorship": "Ei - Mentorship and support in our club for the polyglot student"
   },
   "nav": {
     "home": "Home",
@@ -30,9 +30,9 @@
     "presencial_state_bubble": "Languages {state}"
   },
   "home": {
-    "title": "Encontro de Idiomas · Free Conversation in English and more",
-    "og_title": "Encontro de Idiomas · Free Conversation in English and more",
-    "meta_description": "Encontro de Idiomas is the free community to practice languages. Weekly conversation meetups for all levels, online and in-person worldwide. Join us!",
+    "title": "Free Conversation in English and more",
+    "og_title": "Free Conversation in English and more",
+    "meta_description": "Ei is the free community to practice languages. Weekly conversation meetups for all levels, online and in-person worldwide. Join us!",
     "hero_heading": "Practice languages with <span class=\"highlight\">real people</span>",
     "welcome_text": "Practice English, Spanish and other languages for free. Join a vibrant community with online and in-person meetups in your region.",
     "cta_participate": "See how to join",
@@ -72,7 +72,7 @@
     "faq": {
       "eyebrow": "FAQ",
       "heading": "Common Questions",
-      "q1": "Is Encontro de Idiomas free?",
+      "q1": "Is Ei free?",
       "a1": "Yes, all our meetups, both online and in person, are 100% free and open to the community. Our goal is to democratize language practice.",
       "q2": "Do I need to be advanced to participate?",
       "a2": "No! We have participants of all levels. The environment is welcoming and focused on mutual learning. If you can introduce yourself, you can start practicing.",
@@ -81,7 +81,7 @@
     },
     "community": {
       "heading": "Join our community",
-      "text": "More than just practicing languages, Encontro de Idiomas is about creating real connections. Meet incredible people, make friends and build something truly greater with us.",
+      "text": "More than just practicing languages, Ei is about creating real connections. Meet incredible people, make friends and build something truly greater with us.",
       "team_title": "Meet the Team",
       "team_text": "Volunteer hosts who make everything happen.",
       "links_title": "Links Hub",
@@ -135,7 +135,7 @@
     "tz_all_timezones": "All timezones"
   },
   "presencial": {
-    "title_default": "Encontro de Idiomas In-Person · Free Language Groups Worldwide",
+    "title_default": "Ei In-Person · Free Language Groups Worldwide",
     "meta_description_default": "Find real people to practice languages in your city. Free meetups in cafes and parks across the globe. Join our community!",
     "title_city": "Language Practice in {city} | {site_name}",
     "meta_description_city": "Join our local language community in {city}. Free meetups and real conversation.",
