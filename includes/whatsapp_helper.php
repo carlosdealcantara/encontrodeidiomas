@@ -8,7 +8,7 @@ require_once dirname(__DIR__) . '/config.php';
  */
 
 define('BAILEYS_API_URL_DIRECT', 'http://136.248.92.126:3000');
-define('BAILEYS_API_URL_TUNNEL_FALLBACK', 'https://instant-record-existence-encounter.trycloudflare.com');
+define('BAILEYS_API_URL_TUNNEL_FALLBACK', 'https://forests-hydrogen-transcripts-iowa.trycloudflare.com');
 define('BAILEYS_API_KEY', 'SenhaMeetups2026');
 
 function checkWhatsAppConnection($url) {
@@ -29,6 +29,12 @@ function getBestBaileysUrl() {
     
     // Tenta buscar a URL do túnel na configuração do banco (atualizada pelo worker)
     $tunnelUrl = rtrim(getSetting('baileys_tunnel_url', BAILEYS_API_URL_TUNNEL_FALLBACK), '/');
+    
+    if (strpos($tunnelUrl, 'instant-record-existence-encounter') !== false) {
+        $tunnelUrl = rtrim(BAILEYS_API_URL_TUNNEL_FALLBACK, '/');
+        // Opcional: Atualiza o banco para corrigir definitivamente
+        updateSetting('baileys_tunnel_url', $tunnelUrl);
+    }
     
     // Fallback para o túnel
     return $tunnelUrl;
