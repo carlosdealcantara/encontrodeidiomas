@@ -342,5 +342,14 @@
     "Paraguai": "Paraguai"
   },
   "states": {},
-  "cities": {}
+  "cities": {},
+  "global_community": {
+    "announcement_eyebrow": "🌐 Grande Novidade",
+    "announcement_heading": "Chegou a Comunidade Global!",
+    "announcement_text": "O inglês é a base. Sua língua-alvo, o destino. Entre agora e pratique com o mundo.",
+    "announcement_cta": "Entrar na Comunidade Global",
+    "announcement_secondary": "Ver na Central de Links",
+    "links_subtitle": "Use o inglês como base e pratique seu idioma-alvo com o mundo",
+    "links_badge": "NOVO 🌐"
+  }
 }

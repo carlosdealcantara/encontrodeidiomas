@@ -147,6 +147,72 @@ include 'includes/header.php';
 ?>
 
     <main>
+    <!-- ===== GLOBAL COMMUNITY ANNOUNCEMENT BANNER ===== -->
+    <?php if (!isset($_COOKIE['ga_dismissed'])): ?>
+    <div class="global-announcement" id="global-announcement-bar">
+        <div class="global-announcement-inner">
+            <!-- Imagem da comunidade global -->
+            <div class="ga-image-col">
+                <img src="/assets/images/eiglobal.jpg" alt="Global Community" loading="lazy">
+            </div>
+
+            <!-- Conteúdo -->
+            <div class="ga-content">
+                <div class="ga-eyebrow">
+                    <i class="fas fa-globe ga-globe-icon"></i>
+                    <?= t('global_community.announcement_eyebrow') ?>
+                    <span class="ga-badge"><?= (CURRENT_LANG === 'en') ? 'NEW' : 'NOVO' ?></span>
+                </div>
+                <h2 class="ga-heading"><?= t('global_community.announcement_heading') ?></h2>
+                <p class="ga-text"><?= t('global_community.announcement_text') ?></p>
+                <div class="ga-actions">
+                    <a href="https://chat.whatsapp.com/CorMfQfDhZj6X4tIofl67T"
+                       class="ga-btn-primary"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       id="btn-global-community-cta">
+                        <i class="fab fa-whatsapp"></i>
+                        <?= t('global_community.announcement_cta') ?>
+                    </a>
+                    <a href="<?= langUrl('links.php') ?>#comunidade-global"
+                       class="ga-btn-secondary"
+                       id="btn-global-community-links">
+                        <?= t('global_community.announcement_secondary') ?> →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Botão fechar -->
+            <button class="ga-close" id="ga-close-btn" aria-label="Fechar anúncio">×</button>
+        </div>
+    </div>
+    <script>
+    (function() {
+        var btn = document.getElementById('ga-close-btn');
+        var bar = document.getElementById('global-announcement-bar');
+        if (btn && bar) {
+            btn.addEventListener('click', function() {
+                bar.style.transition = 'opacity 0.4s, transform 0.4s, max-height 0.5s';
+                bar.style.opacity = '0';
+                bar.style.transform = 'translateY(-10px)';
+                bar.style.maxHeight = bar.offsetHeight + 'px';
+                setTimeout(function() {
+                    bar.style.maxHeight = '0';
+                    bar.style.overflow = 'hidden';
+                }, 50);
+                setTimeout(function() {
+                    bar.style.display = 'none';
+                }, 500);
+                // Persiste por 30 dias
+                var d = new Date();
+                d.setTime(d.getTime() + (30*24*60*60*1000));
+                document.cookie = 'ga_dismissed=1; expires=' + d.toUTCString() + '; path=/';
+            });
+        }
+    })();
+    </script>
+    <?php endif; ?>
+
         <!-- HERO PREMIUM FUSION — Text + Visual Carousel -->
         <section class="hero-premium">
             <div class="container">
