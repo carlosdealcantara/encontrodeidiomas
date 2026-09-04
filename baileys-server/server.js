@@ -321,7 +321,7 @@ app.use((req, res, next) => {
     next();
 });
 
-const mentoriaPlugin = require('./mentoria');
+const mentoriaPlugin = require('./bot');
 mentoriaPlugin.initRoutes(app, dataDir);
 
 // Helpers for logging
