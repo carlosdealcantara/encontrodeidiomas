@@ -328,7 +328,7 @@ include 'includes/header.php';
                                 <textarea name="text_target" rows="3" required placeholder="Ex: Oba, gente nova! 🥳 Nossas boas-vindas, {mentions}!"></textarea>
                             </div>
                             <div>
-                                <label>🇬🇧 Fallback em Inglês (grupos sem tradução)</label>
+                                <label>🇺🇸 Inglês (Original/Fallback)</label>
                                 <textarea name="text_en" rows="3" required placeholder="Ex: Look who just joined! 🥳 Welcome, {mentions}!"></textarea>
                             </div>
                         </div>
@@ -376,7 +376,7 @@ include 'includes/header.php';
                                         <textarea name="text_target" class="edit-textarea" rows="3" required><?= htmlspecialchars($i['text_target']) ?></textarea>
                                     </div>
                                     <div>
-                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇬🇧 Fallback Inglês</label>
+                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇺🇸 Inglês (Original/Fallback)</label>
                                         <textarea name="text_en" class="edit-textarea" rows="3" required><?= htmlspecialchars($i['text_en']) ?></textarea>
                                     </div>
                                 </div>
@@ -434,7 +434,7 @@ include 'includes/header.php';
                                 <textarea name="text_target" rows="2" required placeholder="Ex: Qual é o seu hobby favorito?"></textarea>
                             </div>
                             <div>
-                                <label>🇬🇧 Fallback em Inglês</label>
+                                <label>🇺🇸 Inglês (Original/Fallback)</label>
                                 <textarea name="text_en" rows="2" required placeholder="Ex: What's your favorite hobby?"></textarea>
                             </div>
                         </div>
@@ -478,7 +478,7 @@ include 'includes/header.php';
                                         <textarea name="text_target" class="edit-textarea" rows="2" required><?= htmlspecialchars($q['text_target']) ?></textarea>
                                     </div>
                                     <div>
-                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇬🇧 Fallback Inglês</label>
+                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇺🇸 Inglês (Original/Fallback)</label>
                                         <textarea name="text_en" class="edit-textarea" rows="2" required><?= htmlspecialchars($q['text_en']) ?></textarea>
                                     </div>
                                 </div>
