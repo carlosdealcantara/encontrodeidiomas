@@ -95,6 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
             $config['templates']['community_welcome_general'] = trim($_POST['tpl_welcome_general']);
         }
         
+        // Mantém o admin global no JSON da comunidade para referência
+        $config['admin_jid'] = "556192666148@s.whatsapp.net";
+        
         // 3. Envia para o Baileys
         $res = sendBaileysRequest('/community-config', $config, 'POST');
         if ($res['success']) {
