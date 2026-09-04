@@ -414,7 +414,8 @@ $activeLangs = $stmtLangs->fetchAll(PDO::FETCH_COLUMN);
                         $reacts = $data['reactions_given'] ?? 0;
                         
                         $isAdminMarker = '';
-                        if (strpos($jid, preg_replace('/:\d+@/', '@', $config['admin_jid'] ?? '')) !== false) {
+                        $adminJidFallback = $config['admin_jid'] ?? '556192666148@s.whatsapp.net';
+                        if (!empty($adminJidFallback) && strpos($jid, preg_replace('/:\d+@/', '@', $adminJidFallback)) !== false) {
                             $isAdminMarker = ' <span style="font-size:10px; background:#444; padding:2px 4px; border-radius:4px;">Admin</span>';
                         }
 
