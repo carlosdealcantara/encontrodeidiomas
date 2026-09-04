@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Módulos por escopo — cada um cuida exclusivamente do seu universo
-const globalCmds   = require('./modules/global_cmds');
-const communityMod = require('./modules/community');
-const mentoriaMod  = require('./modules/mentoria');
+const adminCmds          = require('./modules/admin_cmds');
+const communityGlobalMod = require('./modules/community_global');
+const mentoriaMod        = require('./modules/mentoria');
 
 let sock    = null;
 let dataDir = '';
@@ -266,7 +266,7 @@ async function handleMessages({ messages, type }) {
         }
 
         // Comandos globais: !pill e !word — qualquer grupo
-        await globalCmds.handle({ sock, msg, groupJid, globalText, globalRealMsg, isMasterAdmin, msgId, processedMessageIds, dataDir });
+        await adminCmds.handle({ sock, msg, groupJid, globalText, globalRealMsg, isMasterAdmin, msgId, processedMessageIds, dataDir });
 
         // ─── ROTEAMENTO ───────────────────────────────────────────────────────
         const mentoriaGroups  = Object.values(config.groups || {}).map(g => g.jid);
@@ -358,7 +358,7 @@ async function handleMessages({ messages, type }) {
         };
 
         if (isMentoriaGroup)  await mentoriaMod.handleMessage(moduleCtx);
-        if (isCommunityGroup) await communityMod.handleMessage(moduleCtx);
+        if (isCommunityGroup) await communityGlobalMod.handleMessage(moduleCtx);
     }
 }
 
@@ -375,7 +375,7 @@ async function handleParticipants({ id, participants, action }) {
     await mentoriaMod.handleParticipant(sock, id, participants, config);
 
     // Comunidade Global: welcome com intros + perguntas
-    await communityMod.handleParticipant(sock, id, participants, communityConfig);
+    await communityGlobalMod.handleParticipant(sock, id, participants, communityConfig);
 }
 
 // ─── ROTAS HTTP ───────────────────────────────────────────────────────────────
