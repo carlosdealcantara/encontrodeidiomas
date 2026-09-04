@@ -379,30 +379,6 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         # PASSO 4: Navegar pelo Wizard do Odysee
         logger.info("[PASSO 4] Navegando pelo Wizard de publicação...")
         
-        # Tenta forçar a seleção do canal correto (evitando o bug de publicar como Anonymous)
-        if channel_name:
-            try:
-                c_name = channel_name if channel_name.startswith('@') else '@' + channel_name
-                c_name_no_at = channel_name.lstrip('@')
-                page.evaluate(f"""
-                    var selects = document.querySelectorAll('select');
-                    for (var i=0; i<selects.length; i++) {{
-                        var options = selects[i].options;
-                        for (var j=0; j<options.length; j++) {{
-                            if (options[j].text.includes('{c_name}') || options[j].text.includes('{c_name_no_at}')) {{
-                                if (selects[i].selectedIndex !== j) {{
-                                    selects[i].selectedIndex = j;
-                                    selects[i].dispatchEvent(new Event('change', {{bubbles: true}}));
-                                }}
-                                return;
-                            }}
-                        }}
-                    }}
-                """)
-                logger.info(f"[PASSO 4] Canal {c_name} selecionado (ou confirmado) via JS para evitar bug do Anonymous.")
-            except Exception as e:
-                logger.warning(f"[PASSO 4] Aviso ao tentar selecionar o canal {channel_name}: {e}")
-        
         # Odysee usa um Wizard de 4 etapas: 1. Arquivo, 2. Detalhes, 3. Tags, 4. Publicação
         # O botão final "Publicação" está na parte inferior da página (não na barra de navegação do topo)
         for step in range(1, 6):
@@ -412,6 +388,46 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             # Tenta preencher o título se ele estiver visível (somente na etapa de Detalhes)
             try:
                 if page.locator('input[name="content_title"], input[placeholder*="ítulo"], input[placeholder*="Title"]').first.is_visible():
+                    
+                    # Tenta forçar a seleção do canal correto (evitando o bug de publicar como Anonymous)
+                    # Fazemos isso APÓS garantir que a tela de Detalhes já carregou
+                    if channel_name:
+                        try:
+                            c_name = channel_name if channel_name.startswith('@') else '@' + channel_name
+                            c_name_no_at = channel_name.lstrip('@')
+                            
+                            # Tenta via Playwright nativo primeiro (mais confiável para o React)
+                            channel_select = page.locator('select').filter(has_text="Anonymous").first
+                            if not channel_select.is_visible():
+                                channel_select = page.locator('select').filter(has_text=c_name_no_at).first
+                                
+                            if channel_select.is_visible():
+                                try:
+                                    channel_select.select_option(label=c_name, timeout=2000)
+                                    logger.info(f"[PASSO 4] Canal {c_name} selecionado nativamente via Playwright.")
+                                except Exception as inner_e:
+                                    logger.warning(f"[PASSO 4] select_option nativo falhou, caindo pro fallback JS: {inner_e}")
+                                    # Fallback JS
+                                    page.evaluate(f"""
+                                        var selects = document.querySelectorAll('select');
+                                        for (var i=0; i<selects.length; i++) {{
+                                            var options = selects[i].options;
+                                            for (var j=0; j<options.length; j++) {{
+                                                if (options[j].text.includes('{c_name}') || options[j].text.includes('{c_name_no_at}')) {{
+                                                    if (selects[i].selectedIndex !== j) {{
+                                                        selects[i].selectedIndex = j;
+                                                        selects[i].dispatchEvent(new Event('change', {{bubbles: true}}));
+                                                    }}
+                                                    return;
+                                                }}
+                                            }}
+                                        }}
+                                    """)
+                                    logger.info(f"[PASSO 4] Canal {c_name} selecionado via fallback JS.")
+                            else:
+                                logger.info(f"[PASSO 4] Select de canal não encontrado, Odysee deve estar usando o padrão.")
+                        except Exception as e:
+                            logger.warning(f"[PASSO 4] Aviso ao tentar selecionar o canal {channel_name}: {e}")
                     try:
                         page.locator('input[name="content_title"], input[placeholder*="ítulo"], input[placeholder*="Title"]').first.fill(title, timeout=5000, force=True)
                     except Exception as e:
