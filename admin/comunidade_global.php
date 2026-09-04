@@ -30,12 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // INTROS
     if (isset($_POST['add_intro'])) {
         $stmt = $conn->prepare("INSERT INTO community_welcome_intros (text_target, text_en) VALUES (?, ?)");
-        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en'])]);
+        $text_en = trim($_POST['text_en']);
+        $stmt->execute([$text_en, $text_en]);
         $msg = "Saudação adicionada.";
     }
     if (isset($_POST['edit_intro'])) {
         $stmt = $conn->prepare("UPDATE community_welcome_intros SET text_target = ?, text_en = ? WHERE id = ?");
-        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en']), (int)$_POST['id']]);
+        $text_en = trim($_POST['text_en']);
+        $stmt->execute([$text_en, $text_en, (int)$_POST['id']]);
         $msg = "Saudação atualizada.";
     }
     if (isset($_POST['toggle_intro'])) {
@@ -53,12 +55,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // PERGUNTAS
     if (isset($_POST['add_question'])) {
         $stmt = $conn->prepare("INSERT INTO community_welcome_questions (text_target, text_en) VALUES (?, ?)");
-        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en'])]);
+        $text_en = trim($_POST['text_en']);
+        $stmt->execute([$text_en, $text_en]);
         $msg = "Pergunta adicionada.";
     }
     if (isset($_POST['edit_question'])) {
         $stmt = $conn->prepare("UPDATE community_welcome_questions SET text_target = ?, text_en = ? WHERE id = ?");
-        $stmt->execute([trim($_POST['text_target']), trim($_POST['text_en']), (int)$_POST['id']]);
+        $text_en = trim($_POST['text_en']);
+        $stmt->execute([$text_en, $text_en, (int)$_POST['id']]);
         $msg = "Pergunta atualizada.";
     }
     if (isset($_POST['toggle_question'])) {
@@ -322,15 +326,9 @@ include 'includes/header.php';
                 <div class="form-add" style="margin-bottom:22px;">
                     <p style="margin:0 0 12px; font-size:13px; color:#aaa; font-weight:600;"><i class="fas fa-plus-circle" style="color:var(--success);"></i> Adicionar nova saudação</p>
                     <form method="POST">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:12px;">
-                            <div>
-                                <label>📝 Texto Base (referência sua)</label>
-                                <textarea name="text_target" rows="3" required placeholder="Ex: Oba, gente nova! 🥳 Nossas boas-vindas, {mentions}!"></textarea>
-                            </div>
-                            <div>
-                                <label>🇺🇸 Inglês (Original/Fallback)</label>
-                                <textarea name="text_en" rows="3" required placeholder="Ex: Look who just joined! 🥳 Welcome, {mentions}!"></textarea>
-                            </div>
+                        <div style="margin-bottom:12px;">
+                            <label>🇺🇸 Texto Base (Inglês) — Será o fallback para outros idiomas</label>
+                            <textarea name="text_en" rows="3" required placeholder="Ex: Look who just joined! 🥳 Welcome, {mentions}!"></textarea>
                         </div>
                         <button type="submit" name="add_intro" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Adicionar Saudação</button>
                     </form>
@@ -370,17 +368,11 @@ include 'includes/header.php';
                             <!-- Edição dos textos base -->
                             <form method="POST">
                                 <input type="hidden" name="id" value="<?= $i['id'] ?>">
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;">
-                                    <div>
-                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">📝 Texto Base</label>
-                                        <textarea name="text_target" class="edit-textarea" rows="3" required><?= htmlspecialchars($i['text_target']) ?></textarea>
-                                    </div>
-                                    <div>
-                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇺🇸 Inglês (Original/Fallback)</label>
-                                        <textarea name="text_en" class="edit-textarea" rows="3" required><?= htmlspecialchars($i['text_en']) ?></textarea>
-                                    </div>
+                                <div style="margin-bottom:10px;">
+                                    <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇺🇸 Texto Base (Inglês) / Fallback</label>
+                                    <textarea name="text_en" class="edit-textarea" rows="3" required><?= htmlspecialchars($i['text_en']) ?></textarea>
                                 </div>
-                                <button type="submit" name="edit_intro" class="btn btn-ghost btn-xs"><i class="fas fa-save"></i> Salvar alterações nos textos acima</button>
+                                <button type="submit" name="edit_intro" class="btn btn-ghost btn-xs"><i class="fas fa-save"></i> Salvar alterações no texto acima</button>
                             </form>
 
                             <!-- Traduções por idioma -->
@@ -428,15 +420,9 @@ include 'includes/header.php';
                 <div class="form-add" style="margin-bottom:22px;">
                     <p style="margin:0 0 12px; font-size:13px; color:#aaa; font-weight:600;"><i class="fas fa-plus-circle" style="color:var(--success);"></i> Adicionar nova pergunta</p>
                     <form method="POST">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:12px;">
-                            <div>
-                                <label>📝 Texto Base (referência sua)</label>
-                                <textarea name="text_target" rows="2" required placeholder="Ex: Qual é o seu hobby favorito?"></textarea>
-                            </div>
-                            <div>
-                                <label>🇺🇸 Inglês (Original/Fallback)</label>
-                                <textarea name="text_en" rows="2" required placeholder="Ex: What's your favorite hobby?"></textarea>
-                            </div>
+                        <div style="margin-bottom:12px;">
+                            <label>🇺🇸 Texto Base (Inglês) / Fallback</label>
+                            <textarea name="text_en" rows="2" required placeholder="Ex: What's your favorite hobby?"></textarea>
                         </div>
                         <button type="submit" name="add_question" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Adicionar Pergunta</button>
                     </form>
@@ -472,17 +458,11 @@ include 'includes/header.php';
 
                             <form method="POST">
                                 <input type="hidden" name="id" value="<?= $q['id'] ?>">
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;">
-                                    <div>
-                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">📝 Texto Base</label>
-                                        <textarea name="text_target" class="edit-textarea" rows="2" required><?= htmlspecialchars($q['text_target']) ?></textarea>
-                                    </div>
-                                    <div>
-                                        <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇺🇸 Inglês (Original/Fallback)</label>
-                                        <textarea name="text_en" class="edit-textarea" rows="2" required><?= htmlspecialchars($q['text_en']) ?></textarea>
-                                    </div>
+                                <div style="margin-bottom:10px;">
+                                    <label style="font-size:11px; color:#666; display:block; margin-bottom:4px;">🇺🇸 Texto Base (Inglês) / Fallback</label>
+                                    <textarea name="text_en" class="edit-textarea" rows="2" required><?= htmlspecialchars($q['text_en']) ?></textarea>
                                 </div>
-                                <button type="submit" name="edit_question" class="btn btn-ghost btn-xs"><i class="fas fa-save"></i> Salvar alterações nos textos acima</button>
+                                <button type="submit" name="edit_question" class="btn btn-ghost btn-xs"><i class="fas fa-save"></i> Salvar alterações no texto acima</button>
                             </form>
 
                             <?php if (!empty($activeLangs)): ?>
