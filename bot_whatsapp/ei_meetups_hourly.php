@@ -124,6 +124,7 @@ foreach ($meetings as $m) {
         $textoBase = str_replace('{idioma}',        $m['language_name'],                       $textoBase);
         $textoBase = str_replace('{EMOJI_FLAG}',    $m['flag_emoji'],                          $textoBase);
         $textoBase = str_replace('{EMOJI_REPETIDO_5X}',   str_repeat($m['flag_emoji'], 5),           $textoBase);
+        $textoBase = str_replace('{EMOJI_FLAGS}',         str_repeat($m['flag_emoji'], 5),           $textoBase); // Retrocompatibilidade
         $textoBase = str_replace('{SAUDACAO}',      $m['greeting'] ?? 'Welcome!',              $textoBase);
         $textoBase = str_replace('{BOAS_VINDAS_NATIVAS}', $m['welcome_native'] ?? '',          $textoBase);
         $linkLimpo  = str_replace(['https://', 'http://'], '', $m['meet_link'] ?? '');
@@ -139,7 +140,7 @@ foreach ($meetings as $m) {
             // Compatibilidade de comunidade: grupo × template
             $comunidadeGrupo    = $g['comunidade'] ?? 'brasil';
             $comunidadeTemplate = $t['comunidade_alvo'] ?? 'brasil';
-            $compativel = ($comunidadeTemplate === $comunidadeGrupo);
+            $compativel = ($comunidadeTemplate === 'ambos') || ($comunidadeTemplate === $comunidadeGrupo);
             if (!$compativel) continue;
 
             // Regra Unilateral: Encontro Brasil NÃO vai para Grupo Global
@@ -248,7 +249,7 @@ if (!empty($templatesDiario)) {
             // Compatibilidade de comunidade: grupo × template
             $comunidadeGrupo    = $g['comunidade'] ?? 'brasil';
             $comunidadeTemplate = $t['comunidade_alvo'] ?? 'brasil';
-            $compativel = ($comunidadeTemplate === $comunidadeGrupo);
+            $compativel = ($comunidadeTemplate === 'ambos') || ($comunidadeTemplate === $comunidadeGrupo);
             if (!$compativel) continue;
 
             // Define bandeiras e elegibilidade por tipo de grupo
@@ -297,6 +298,7 @@ if (!empty($templatesDiario)) {
             // Substitui variáveis na mensagem
             $textoFinal = $t['template_texto'];
             $textoFinal = str_replace('{TODAS_BANDEIRAS_HOJE}', $bandeirasGrupo,              $textoFinal);
+            $textoFinal = str_replace('{BANDEIRAS_DO_DIA}',     $bandeirasGrupo,              $textoFinal); // Retrocompatibilidade
             $siteLink   = ($comunidadeGrupo === 'global') ? 'viaEi.com/en/online' : 'viaEi.com/online';
             $textoFinal = str_replace('{SITE_LINK}',        $siteLink,                    $textoFinal);
             $textoFinal = str_replace('{HOST_LINK}',        'viaEi.com/equipe/',  $textoFinal);
