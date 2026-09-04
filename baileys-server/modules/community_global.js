@@ -74,9 +74,18 @@ async function handleParticipant(sock, groupJid, participants, communityConfig) 
             .replace('{intro_text}', introText.trim())
             .replace('{questions_text}', questionsText.trim());
 
-        await sock.sendMessage(groupJid, { text: finalMsg, mentions: participants });
+        // Random delay entre 1 e 3 minutos (60000 a 180000 ms) para parecer mais humano
+        const delayMs = Math.floor(Math.random() * (180000 - 60000 + 1)) + 60000;
+        console.log(`[COMMUNITY-WELCOME] Aguardando ${Math.round(delayMs / 1000)}s antes de enviar para ${groupJid}...`);
 
-        console.log(`[COMMUNITY-WELCOME] ✅ Sent welcome to ${participants.length} participant(s) in group ${groupJid}`);
+        setTimeout(async () => {
+            try {
+                await sock.sendMessage(groupJid, { text: finalMsg, mentions: participants });
+                console.log(`[COMMUNITY-WELCOME] ✅ Sent welcome to ${participants.length} participant(s) in group ${groupJid} (após delay)`);
+            } catch (err) {
+                console.error(`[COMMUNITY-WELCOME] ❌ Error sending delayed welcome message in group ${groupJid}:`, err);
+            }
+        }, delayMs);
 
     } catch (err) {
         console.error(`[COMMUNITY-WELCOME] ❌ Error sending welcome message in group ${groupJid}:`, err);
