@@ -235,7 +235,8 @@ try {
                             <span class="var-chip" onclick="insertVar('{MEET_LINK}')">{MEET_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{INSTAGRAM_LINK}')">{INSTAGRAM_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{HOST_LINK}')">{HOST_LINK}</span>
-                            <span class="var-chip" onclick="insertVar('{TODAS_BANDEIRAS_HOJE}')" title="Lista as bandeiras dos encontros de hoje. Somente para o template 'Resumo do Dia'">{TODAS_BANDEIRAS_HOJE} 🗓️</span>
+                            <span class="var-chip" onclick="insertVar('{TODAS_BANDEIRAS_HOJE}')" title="Lista as bandeiras dos encontros de hoje. Somente para o template 'Convite para Host'">{TODAS_BANDEIRAS_HOJE} 🗓️</span>
+                            <span class="var-chip" onclick="insertVar('{LISTA_ENCONTROS}')" title="Lista completa dos encontros (Brasil ou Global). Exclusivo para 'Resumo do Dia'">{LISTA_ENCONTROS} 📋</span>
                         </div>
                     </div>
                     
