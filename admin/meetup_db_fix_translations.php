@@ -63,10 +63,14 @@ foreach ($updates as $upd) {
     $idx = $upd[1];
     $text = $upd[2];
     
+    if (!isset($intros[$idx])) continue;
     $entity_id = $intros[$idx];
+    
+    // Debug
+    echo "Updating intro $idx (ID: $entity_id) for lang $lang...\n";
     
     $stmt->execute([$text, $lang, $entity_id]);
     $count += $stmt->rowCount();
 }
 
-echo "Correções de gênero e número aplicadas! Linhas afetadas: $count\n";
+echo "\nCorreções de gênero e número aplicadas! Linhas afetadas: $count\n";
