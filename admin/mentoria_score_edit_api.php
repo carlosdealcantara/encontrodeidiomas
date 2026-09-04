@@ -48,17 +48,14 @@ try {
         $adminJid = $config['admin_jid'] ?? '';
 
         // Monta lista ordenada de grupos com JID e nome amigável
-        // IMPORTANTE: exclui grupos globais (is_community_group) — eles não pertencem à mentoria
         $groupsOrdered = [];
-        $mentoriaJids  = []; // set de JIDs exclusivos da mentoria, para filtrar o activity loop
         foreach ($config['groups'] ?? [] as $key => $gData) {
-            if (!empty($gData['jid']) && empty($gData['is_community_group'])) {
+            if (!empty($gData['jid'])) {
                 $groupsOrdered[] = [
                     'jid'  => $gData['jid'],
                     'key'  => $key,
                     'name' => GROUP_LABELS[$key] ?? ucfirst(str_replace('_', ' ', $key)),
                 ];
-                $mentoriaJids[$gData['jid']] = true;
             }
         }
 
@@ -90,8 +87,6 @@ try {
         $socialMap = []; // seção Social (por membro → por grupo)
 
         foreach ($activity as $groupJid => $members) {
-            // Pula grupos que não são da mentoria (ex: grupos globais)
-            if (!isset($mentoriaJids[$groupJid])) continue;
             foreach ($members as $memberJid => $stats) {
                 if ($memberJid === $adminJid) continue;
                 if (str_ends_with($memberJid, '@g.us')) continue;

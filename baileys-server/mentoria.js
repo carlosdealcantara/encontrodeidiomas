@@ -34,6 +34,49 @@ function getConfigBackupFile() {
     return path.join(dataDir, 'mentoria_config.backup.json');
 }
 
+// === COMMUNITY MODULE ===
+
+function getCommunityConfigFile() {
+    return path.join(dataDir, 'community_config.json');
+}
+
+function getCommunityActivityFile() {
+    return path.join(dataDir, 'community_activity_log.json');
+}
+
+function loadCommunityConfig() {
+    try {
+        const file = getCommunityConfigFile();
+        if (fs.existsSync(file)) {
+            return JSON.parse(fs.readFileSync(file, 'utf8'));
+        }
+    } catch (e) {
+        console.error('Error loading community config:', e);
+    }
+    return { groups: {}, templates: {} };
+}
+
+function saveCommunityConfig(config) {
+    fs.writeFileSync(getCommunityConfigFile(), JSON.stringify(config, null, 2));
+}
+
+function loadCommunityActivity() {
+    try {
+        const file = getCommunityActivityFile();
+        if (fs.existsSync(file)) {
+            return JSON.parse(fs.readFileSync(file, 'utf8'));
+        }
+    } catch (e) {
+        console.error('Error loading community activity:', e);
+    }
+    return {};
+}
+
+function saveCommunityActivity(data) {
+    fs.writeFileSync(getCommunityActivityFile(), JSON.stringify(data, null, 2));
+}
+// === END COMMUNITY MODULE ===
+
 function loadConfig() {
     try {
         const file = getConfigFile();
@@ -71,6 +114,13 @@ function loadConfig() {
 }
 
 function saveConfig(config) {
+    // SAFETY: Nunca deixa entrar grupos da comunidade global no config da mentoria
+    const cleanGroups = {};
+    for (const [key, val] of Object.entries(config.groups || {})) {
+        if (!val.is_community_group) cleanGroups[key] = val;
+    }
+    config.groups = cleanGroups;
+
     fs.writeFileSync(getConfigFile(), JSON.stringify(config, null, 2));
     // ✅ Always keep a backup of the last config that had groups configured
     const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
@@ -166,6 +216,62 @@ function logActivity(groupJid, senderJid, senderName, type) {
     writeQueue.push({ groupJid, senderJid, senderName, type, date });
     processQueue();
 }
+
+function logCommunityActivity(groupJid, senderJid, senderName, type) {
+    const date = getTodayDate();
+    // Usa a mesma fila de escrita, mas aponta para o arquivo da comunidade
+    communityWriteQueue.push({ groupJid, senderJid, senderName, type, date });
+    processCommunityQueue();
+}
+
+// === COMMUNITY WRITE QUEUE ===
+const communityWriteQueue = [];
+let isSavingCommunity = false;
+
+async function processCommunityQueue() {
+    if (isSavingCommunity || communityWriteQueue.length === 0) return;
+    isSavingCommunity = true;
+    const events = communityWriteQueue.splice(0, communityWriteQueue.length);
+    try {
+        const data = loadCommunityActivity();
+        for (const event of events) {
+            const { groupJid, senderJid, senderName, type, date } = event;
+            if (!data[date]) data[date] = {};
+            if (!data[date][groupJid]) data[date][groupJid] = {};
+            if (!data[date][groupJid][senderJid]) {
+                data[date][groupJid][senderJid] = {
+                    name: senderName,
+                    messages: 0,
+                    reactions_given: 0,
+                    images_sent: 0,
+                    audios_sent: 0,
+                    first_message_at: new Date().toISOString(),
+                    last_message_at: new Date().toISOString(),
+                };
+            }
+            if (type === 'message') data[date][groupJid][senderJid].messages += 1;
+            else if (type === 'reaction') data[date][groupJid][senderJid].reactions_given += 1;
+            else if (type === 'image') {
+                data[date][groupJid][senderJid].images_sent = (data[date][groupJid][senderJid].images_sent || 0) + 1;
+                data[date][groupJid][senderJid].messages += 1;
+            } else if (type === 'audio') {
+                data[date][groupJid][senderJid].audios_sent = (data[date][groupJid][senderJid].audios_sent || 0) + 1;
+                data[date][groupJid][senderJid].messages += 1;
+            }
+            if (data[date][groupJid][senderJid].name === 'Desconhecido' && senderName && senderName !== 'Desconhecido') {
+                data[date][groupJid][senderJid].name = senderName;
+            }
+            data[date][groupJid][senderJid].last_message_at = new Date().toISOString();
+        }
+        saveCommunityActivity(data);
+    } catch (e) {
+        console.error('Error processing community write queue:', e);
+    } finally {
+        isSavingCommunity = false;
+        if (communityWriteQueue.length > 0) setTimeout(processCommunityQueue, 0);
+    }
+}
+// ==============================
 
 async function handleMessages({ messages, type }) {
     if (type !== 'notify') return;
@@ -344,9 +450,15 @@ async function handleMessages({ messages, type }) {
             }
         }
 
-        // Check if group is one of the configured ones, ignore others
-        const allowedGroups = Object.values(config.groups || {}).map(g => g.jid);
-        if (!allowedGroups.includes(groupJid)) continue;
+        // Determina a qual módulo este grupo pertence
+        const mentoriaGroups = Object.values(config.groups || {}).map(g => g.jid);
+        const communityConfig = loadCommunityConfig();
+        const communityGroups = Object.values(communityConfig.groups || {}).map(g => g.jid);
+        const isMentoriaGroup = mentoriaGroups.includes(groupJid);
+        const isCommunityGroup = communityGroups.includes(groupJid);
+
+        // Ignora grupos não reconhecidos por nenhum módulo
+        if (!isMentoriaGroup && !isCommunityGroup) continue;
 
         // Ignore phantom/system messages in groups that lack a participant
         if (!msg.key.fromMe && !msg.key.participant) continue;
@@ -421,20 +533,22 @@ async function handleMessages({ messages, type }) {
             processedMessageIds.add(msgId);
 
             const msgTypes = Object.keys(realMsg || {});
+            
+            const logFunc = isCommunityGroup ? logCommunityActivity : logActivity;
 
             if (realMsg?.reactionMessage || msg.message?.reactionMessage) {
-                logActivity(groupJid, senderJid, senderName, 'reaction');
+                logFunc(groupJid, senderJid, senderName, 'reaction');
             } else if (realMsg?.audioMessage || realMsg?.pttMessage) {
-                logActivity(groupJid, senderJid, senderName, 'audio');
+                logFunc(groupJid, senderJid, senderName, 'audio');
             } else if (isVisual) {
-                logActivity(groupJid, senderJid, senderName, 'image');
+                logFunc(groupJid, senderJid, senderName, 'image');
                 // Log diagnóstico para acompanhamento
                 const desafioGrp = config.groups?.desafio?.jid;
                 if (groupJid === desafioGrp) {
                     console.log('[DESAFIO-IMG]', senderName, '| tipos:', msgTypes.join(','), '| visual=true');
                 }
             } else {
-                logActivity(groupJid, senderJid, senderName, 'message');
+                logFunc(groupJid, senderJid, senderName, 'message');
                 // Log diagnóstico temporário para qualquer tipo não-texto no Desafio
                 const desafioGrp = config.groups?.desafio?.jid;
                 if (groupJid === desafioGrp) {
@@ -442,6 +556,9 @@ async function handleMessages({ messages, type }) {
                 }
             }
         }
+
+        // Comandos interativos só funcionam em grupos da Mentoria
+        if (!isMentoriaGroup) continue;
 
         // (Pill command logic was moved to the top of handleMessages to be global)
 
@@ -934,6 +1051,24 @@ function initRoutes(app, dir) {
     app.post('/mentoria-config', (req, res) => {
         saveConfig(req.body);
         res.json({ success: true });
+    });
+
+    // GET /community-config
+    app.get('/community-config', (req, res) => {
+        res.json(loadCommunityConfig());
+    });
+
+    // POST /community-config
+    app.post('/community-config', (req, res) => {
+        saveCommunityConfig(req.body);
+        res.json({ success: true });
+    });
+
+    // GET /community-activity
+    app.get('/community-activity', (req, res) => {
+        const date = req.query.date || getTodayDate();
+        const data = loadCommunityActivity();
+        res.json(data[date] || {});
     });
 
     // POST /mentoria-edit-activity

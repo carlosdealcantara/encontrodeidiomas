@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Lógica de Sincronização Manual (Push config to Baileys)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])) {
     // 1. Pega config atual da mentoria para não perder o resto
-    $config = getMentoriaConfig();
+    $config = getCommunityConfig();
     
     // 2. Busca grupos globais no banco
     try {
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
         }
         
         // 3. Envia para o Baileys
-        $res = sendBaileysRequest('/mentoria-config', $config, 'POST');
+        $res = sendBaileysRequest('/community-config', $config, 'POST');
         if ($res['success']) {
             $msg = "As configurações e grupos foram sincronizados com sucesso no servidor do robô!";
         } else {
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_global_config'])
 }
 
 // Pegar config atual para exibição
-$config = getMentoriaConfig();
+$config = getCommunityConfig();
 
 $tpl_messenger = $config['templates']['community_ranking_messenger'] ?? "📊 *DAILY RANKING — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 *TOP TALKERS*\n_Who sent the most messages today?_\n\n{msg_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n✨ _Keep the conversation going! Tomorrow's ranking starts now._ 🚀";
 $tpl_reactor = $config['templates']['community_ranking_reactor'] ?? "❤️ *REACTION STARS — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n_Who spread the most love today?_\n\n{react_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n_React to others and climb the ranking! 🙌_";
@@ -371,7 +371,7 @@ $activeLangs = $stmtLangs->fetchAll(PDO::FETCH_COLUMN);
 
             <?php
             $hoje = date('Y-m-d');
-            $activityToday = fetchBaileysActivity($hoje);
+            $activityToday = fetchCommunityActivity($hoje);
 
             if (empty($activityToday)) {
                 echo "<div class='alert alert-warning'>Nenhuma atividade registrada ainda para o dia de hoje ($hoje). Se o robô acabou de ser configurado, aguarde os alunos começarem a enviar mensagens.</div>";

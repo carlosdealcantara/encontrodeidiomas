@@ -120,6 +120,16 @@ function fetchBaileysActivity(string $date): array {
     return $res['success'] ? ($res['data'] ?? []) : [];
 }
 
+function getCommunityConfig(): array {
+    $res = sendBaileysRequest('/community-config', null, 'GET');
+    return $res['success'] ? ($res['data'] ?? []) : [];
+}
+
+function fetchCommunityActivity(string $date): array {
+    $res = sendBaileysRequest('/community-activity?date=' . urlencode($date), null, 'GET');
+    return $res['success'] ? ($res['data'] ?? []) : [];
+}
+
 function fetchGroupMembers(string $groupId): array {
     $res = sendBaileysRequest('/group-members?groupId=' . urlencode($groupId), null, 'GET');
     return $res['success'] ? ($res['data'] ?? []) : [];

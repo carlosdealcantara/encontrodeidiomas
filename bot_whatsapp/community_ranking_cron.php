@@ -45,7 +45,7 @@ if ($check->rowCount() > 0 && !isset($_GET['force'])) {
     die("Ranking da comunidade já processado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
 }
 
-$config = getMentoriaConfig();
+$config = getCommunityConfig();
 
 // Default templates se não houver customizado
 $tplMsg = $config['templates']['community_ranking_messenger'] ?? "📊 *DAILY RANKING — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 *TOP TALKERS*\n_Who sent the most messages today?_\n\n{msg_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n✨ _Keep the conversation going! Tomorrow's ranking starts now._ 🚀";
@@ -53,7 +53,7 @@ $tplMsg = $config['templates']['community_ranking_messenger'] ?? "📊 *DAILY RA
 $tplReact = $config['templates']['community_ranking_reactor'] ?? "❤️ *REACTION STARS — {group_name}*\n📅 _{date}_\n━━━━━━━━━━━━━━━━━━━━━━\n\n_Who spread the most love today?_\n\n{react_ranking_list}\n\n━━━━━━━━━━━━━━━━━━━━━━\n_React to others and climb the ranking! 🙌_";
 
 $enDate = date('F jS, Y', strtotime($ontem));
-$activity = fetchBaileysActivity($ontem);
+$activity = fetchCommunityActivity($ontem);
 $medals = ['🥇', '🥈', '🥉'];
 
 // Vamos iterar sobre os grupos informados pelo admin (hardcoded fallback):
