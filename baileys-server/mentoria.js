@@ -952,20 +952,88 @@ async function handleMessages({ messages, type }) {
 
 async function handleParticipants({ id, participants, action }) {
     if (!sock) return;
+
     if (action === 'add') {
+        // === MENTORIA: The Lounge legacy welcome ===
         const config = loadConfig();
         const theLoungeJid = config.groups?.the_lounge?.jid;
-        
+
         if (id === theLoungeJid && config.templates?.welcome) {
             for (const participantJid of participants) {
                 const name = participantJid.split('@')[0];
                 const text = config.templates.welcome.replace('@{name}', `@${name}`).replace('{name}', name);
-                
-                await sock.sendMessage(id, {
-                    text,
-                    mentions: [participantJid]
-                });
+                await sock.sendMessage(id, { text, mentions: [participantJid] });
                 console.log(`[WELCOME] Welcome message sent to ${participantJid} in The Lounge`);
+            }
+        }
+
+        // === COMMUNITY GLOBAL: Welcome with intros + questions ===
+        const communityConfig = loadCommunityConfig();
+        const communityGroupEntry = Object.values(communityConfig.groups || {}).find(g => g.jid === id);
+
+        if (communityGroupEntry && communityGroupEntry.welcome_enabled) {
+            console.log(`[COMMUNITY-WELCOME] New participant(s) in community group: ${id} — fetching welcome content...`);
+
+            try {
+                const apiUrl = `https://dev.viaEi.com/bot_whatsapp/community_welcome_api.php?token=83x9aZ2pLQw1&group_jid=${encodeURIComponent(id)}`;
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+
+                if (!data.enabled) {
+                    console.log(`[COMMUNITY-WELCOME] Welcome disabled for group ${id} (API returned enabled=false)`);
+                    return;
+                }
+
+                const isEnglishGroup = data.is_english_group;
+                const introTarget = data.intro_target;
+                const introEn     = data.intro_en;
+                const questions   = data.questions || [];
+
+                // Build mentions list
+                const mentionsList = participants.map(jid => `@${jid.split('@')[0]}`).join(' ');
+
+                // Build intro text
+                let introText = isEnglishGroup
+                    ? introEn
+                    : introTarget; // already has translation or falls back to EN via COALESCE in PHP
+
+                // Replace {mentions} placeholder
+                introText = introText.replace('{mentions}', mentionsList);
+
+                // Build questions block
+                let questionsText = '';
+                questions.forEach((q, i) => {
+                    if (isEnglishGroup) {
+                        // English group: just the English question
+                        questionsText += `${i + 1}. ${q.en}\n`;
+                    } else {
+                        // Non-English: target in bold, then English below (immersion)
+                        if (q.target && q.target !== q.en) {
+                            questionsText += `${i + 1}. *${q.target}*\n_${q.en}_\n\n`;
+                        } else {
+                            // No translation — only English
+                            questionsText += `${i + 1}. ${q.en}\n`;
+                        }
+                    }
+                });
+
+                // Assemble final message using template
+                const tplGeneral = communityConfig.templates?.community_welcome_general ||
+                    '{intro_text}\n\nWe\'d love to get to know you! Tell us:\n\n{questions_text}';
+
+                const finalMsg = tplGeneral
+                    .replace('{intro_text}', introText.trim())
+                    .replace('{questions_text}', questionsText.trim());
+
+                await sock.sendMessage(id, {
+                    text: finalMsg,
+                    mentions: participants
+                });
+
+                console.log(`[COMMUNITY-WELCOME] ✅ Sent welcome to ${participants.length} participant(s) in group ${id}`);
+
+            } catch (err) {
+                console.error(`[COMMUNITY-WELCOME] ❌ Error sending welcome message in group ${id}:`, err);
             }
         }
     }
