@@ -294,7 +294,7 @@ def salvar_screenshot(page, nome, tarefa_id):
     except Exception as e:
         logger.warning(f"[SCREENSHOT] Falhou ao salvar {nome}: {e}")
 
-def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None):
+def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=None, channel_name=None):
     logger.info("Iniciando publicação no Odysee via Playwright")
     
     # Gera thumbnail inteligente antes de abrir o browser (independe de GPU)
@@ -378,6 +378,30 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         
         # PASSO 4: Navegar pelo Wizard do Odysee
         logger.info("[PASSO 4] Navegando pelo Wizard de publicação...")
+        
+        # Tenta forçar a seleção do canal correto (evitando o bug de publicar como Anonymous)
+        if channel_name:
+            try:
+                c_name = channel_name if channel_name.startswith('@') else '@' + channel_name
+                c_name_no_at = channel_name.lstrip('@')
+                page.evaluate(f"""
+                    var selects = document.querySelectorAll('select');
+                    for (var i=0; i<selects.length; i++) {{
+                        var options = selects[i].options;
+                        for (var j=0; j<options.length; j++) {{
+                            if (options[j].text.includes('{c_name}') || options[j].text.includes('{c_name_no_at}')) {{
+                                if (selects[i].selectedIndex !== j) {{
+                                    selects[i].selectedIndex = j;
+                                    selects[i].dispatchEvent(new Event('change', {{bubbles: true}}));
+                                }}
+                                return;
+                            }}
+                        }}
+                    }}
+                """)
+                logger.info(f"[PASSO 4] Canal {c_name} selecionado (ou confirmado) via JS para evitar bug do Anonymous.")
+            except Exception as e:
+                logger.warning(f"[PASSO 4] Aviso ao tentar selecionar o canal {channel_name}: {e}")
         
         # Odysee usa um Wizard de 4 etapas: 1. Arquivo, 2. Detalhes, 3. Tags, 4. Publicação
         # O botão final "Publicação" está na parte inferior da página (não na barra de navegação do topo)
@@ -967,7 +991,7 @@ def processar_fila():
             raise Exception("Auth token não configurado")
             
         title = tarefa.get('titulo_final') or tarefa.get('topico') or tarefa.get('drive_file_name', 'Sem Título')
-        upload_ok = publicar_odysee_playwright(tarefa['id'], tarefa['odysee_auth_token'], title, temp_path, slug=tarefa.get('odysee_slug'))
+        upload_ok = publicar_odysee_playwright(tarefa['id'], tarefa['odysee_auth_token'], title, temp_path, slug=tarefa.get('odysee_slug'), channel_name=tarefa.get('odysee_channel_name'))
         
         if not upload_ok:
             raise Exception("Falha no processo de publicação (Timeout ou Erro no Odysee)")
