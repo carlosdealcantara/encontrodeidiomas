@@ -115,8 +115,8 @@ foreach ($meetings as $m) {
         $minutosAntes = (int)$t['minutos_antes'];
         $totalMinAlvo = $totalMinEncontro - $minutosAntes;
 
-        // Tolerância de ±4 min (cron de 5 em 5 minutos)
-        if (abs($totalMinAtual - $totalMinAlvo) > 4) continue;
+        // Tolerância de ±7 min (cron de 5 em 5 minutos, evita falhas por atraso da VPS)
+        if (abs($totalMinAtual - $totalMinAlvo) > 7) continue;
 
         // Substitui variáveis na mensagem (sem depender do grupo ainda)
         $textoBase = $t['template_texto'];
@@ -241,8 +241,8 @@ if (!empty($templatesDiario)) {
         $minutosAntes = (int)$t['minutos_antes'];
         $totalMinAlvo = $primeiroMin - $minutosAntes;
 
-        // Tolerância de ±4 min (cron de 5 em 5 minutos)
-        if (abs($totalMinAtual - $totalMinAlvo) > 4) continue;
+        // Tolerância de ±7 min (cron de 5 em 5 minutos, evita falhas por atraso da VPS)
+        if (abs($totalMinAtual - $totalMinAlvo) > 7) continue;
 
         foreach ($groups as $g) {
             // Compatibilidade de comunidade: grupo × template
