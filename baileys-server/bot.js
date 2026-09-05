@@ -9,6 +9,18 @@ const mentoriaMod        = require('./modules/mentoria');
 let sock    = null;
 let dataDir = '';
 
+// Proxy seguro para garantir que referências antigas em callbacks (ex: setTimeouts)
+// sempre acessem a instância mais atualizada do socket após reconexões.
+const safeSock = new Proxy({}, {
+    get: function(target, prop) {
+        if (!sock) throw new Error("Socket disconnected");
+        if (typeof sock[prop] === 'function') {
+            return (...args) => sock[prop](...args);
+        }
+        return sock[prop];
+    }
+});
+
 // Deduplication: impede contar o mesmo evento duas vezes
 // (Baileys às vezes dispara 2 eventos para mensagens de mídia)
 let processedMessageIds = new Set();
@@ -351,7 +363,7 @@ async function handleMessages({ messages, type }) {
 
         // ─── DESPACHA PARA O MÓDULO CORRETO ──────────────────────────────────
         const moduleCtx = {
-            sock, msg, groupJid, senderJid, senderName,
+            sock: safeSock, msg, groupJid, senderJid, senderName,
             text, realMsg, isVisual,
             isAdmin, isGroupAdmin, isGlobalAdmin,
             msgId, config, communityConfig
@@ -372,10 +384,10 @@ async function handleParticipants({ id, participants, action }) {
     const communityConfig = loadCommunityConfig();
 
     // Mentoria: welcome no The Lounge (legado)
-    await mentoriaMod.handleParticipant(sock, id, participants, config);
+    await mentoriaMod.handleParticipant(safeSock, id, participants, config);
 
     // Comunidade Global: welcome com intros + perguntas
-    await communityGlobalMod.handleParticipant(sock, id, participants, communityConfig);
+    await communityGlobalMod.handleParticipant(safeSock, id, participants, communityConfig);
 }
 
 // ─── ROTAS HTTP ───────────────────────────────────────────────────────────────
