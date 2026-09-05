@@ -284,7 +284,6 @@ try {
                                         };
                                         $comColor = match($com) {
                                             'global' => '#38bdf8',
-                                            'ambos'  => '#a78bfa',
                                             default  => '#10b981',
                                         };
                                     ?>
