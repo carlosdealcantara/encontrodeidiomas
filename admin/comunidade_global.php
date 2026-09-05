@@ -525,15 +525,19 @@ include 'includes/header.php';
                 foreach ($activityToday as $groupJid => $members) {
                     if (!isset($globalGroupNames[$groupJid]) || empty($members)) continue;
                     $hasActivity = true;
-                    uasort($members, fn($a,$b) =>
-                        (($b['messages']??0)+($b['reactions_given']??0)+($b['images_sent']??0)+($b['audios_sent']??0)) <=>
-                        (($a['messages']??0)+($a['reactions_given']??0)+($a['images_sent']??0)+($a['audios_sent']??0))
-                    );
+                    uasort($members, function($a, $b) {
+                        $msgsA = $a['messages'] ?? 0;
+                        $msgsB = $b['messages'] ?? 0;
+                        if ($msgsA === $msgsB) {
+                            return ($b['reactions_given']??0) <=> ($a['reactions_given']??0);
+                        }
+                        return $msgsB <=> $msgsA;
+                    });
                     echo "<div style='background:#181818; padding:16px; border-radius:10px; border:1px solid #2a2a2a; flex:1 1 280px;'>";
                     echo "<h4 style='margin:0 0 12px; color:#38bdf8; font-size:15px;'>" . htmlspecialchars($globalGroupNames[$groupJid]) . "</h4>";
                     echo "<table class='tbl'><tr><th>Participante</th><th style='text-align:center;'>💬</th><th style='text-align:center;'>❤️</th></tr>";
                     foreach ($members as $jid => $data) {
-                        $msgs = ($data['messages']??0)+($data['images_sent']??0)+($data['audios_sent']??0);
+                        $msgs = $data['messages'] ?? 0;
                         $reacts = $data['reactions_given']??0;
                         echo "<tr><td>" . htmlspecialchars($data['name']??'?') . "</td>";
                         echo "<td style='text-align:center; color:var(--success); font-weight:700;'>$msgs</td>";
