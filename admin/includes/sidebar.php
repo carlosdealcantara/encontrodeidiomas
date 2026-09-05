@@ -126,7 +126,64 @@ $nav_items = [
 
     /* ─── Main Content (default, can be overridden per-page) ──────── */
     .main-content { flex: 1; padding: 36px 40px; overflow-y: auto; }
+
+    /* ─── Mobile Sidebar ──────────────────────────────────────────── */
+    .hamburger-btn {
+        display: none;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        background: var(--sidebar-bg);
+        color: var(--white);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.6);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .sidebar-overlay.show {
+        display: block;
+        opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+        .hamburger-btn { display: block; }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        .main-content {
+            width: 100%;
+            padding: 70px 16px 20px 16px; /* Extra top padding for hamburger */
+        }
+    }
 </style>
+
+<button class="hamburger-btn" id="hamburger-btn">
+    <i class="fas fa-bars"></i>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 <aside class="sidebar">
     <div class="brand">
@@ -151,3 +208,34 @@ $nav_items = [
         <i class="fas fa-sign-out-alt"></i> Sair do Painel
     </a>
 </aside>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    function toggleSidebar() {
+        if(sidebar && overlay) {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+    }
+
+    if(hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+    }
+    if(overlay) {
+        overlay.addEventListener('click', toggleSidebar);
+    }
+    
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            if(window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
+        });
+    });
+});
+</script>

@@ -190,6 +190,35 @@ $currentHour = (int)date('H');
         .welcome-text p { opacity: 0.9; max-width: 500px; }
         .welcome-img { font-size: 4rem; opacity: 0.3; }
 
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                width: 100%;
+                padding: 70px 16px 20px 16px;
+            }
+            .welcome-banner { 
+                flex-direction: column; 
+                text-align: center; 
+                gap: 20px; 
+            }
+            .header { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 15px; 
+            }
+        }
+
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>
