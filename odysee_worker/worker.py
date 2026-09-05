@@ -706,6 +706,18 @@ def limpar_pastas_vazias(drive_service):
     except Exception as e:
         logger.error(f"[LIXEIRA] Erro ao limpar pastas: {e}")
 
+def mover_para_lixeira(drive_service, file_id, file_name):
+    """
+    Move o arquivo para a lixeira do Google Drive.
+    Usado para vídeos inválidos (< 15 MB) que não devem ser processados nem arquivados.
+    """
+    try:
+        drive_service.files().update(fileId=file_id, body={'trashed': True}).execute()
+        logger.info(f"[LIXEIRA] Vídeo '{file_name}' movido para a lixeira do Drive.")
+    except Exception as e:
+        logger.error(f"[LIXEIRA] Erro ao mover '{file_name}' para a lixeira: {e}")
+
+
 def escanear_drive():
     print("Escaneando Drive por novos vídeos...", flush=True)
     try:
@@ -834,9 +846,12 @@ def escanear_drive():
             
             replay_parte = None
             if file_size_mb > 0 and file_size_mb < 15:
-                titulo_final = f"[IGNORADO <15MB] {titulo_limpo}"
-                status_inicial = 'skip_publish'
-                logger.info(f"Vídeo {file_name} ignorado automaticamente por ter menos de 15MB ({file_size_mb:.1f} MB).")
+                logger.warning(
+                    f"[DESCARTE] Vídeo '{file_name}' tem apenas {file_size_mb:.1f} MB (< 15 MB). "
+                    f"Movendo para a lixeira do Drive. NÃO será inserido na fila."
+                )
+                mover_para_lixeira(drive_service, file_id, file_name)
+                continue
             elif idioma_escolhido.get('ignore_next_video') == 1:
                 titulo_final = f"[IGNORADO] {titulo_limpo}"
                 status_inicial = 'skip_publish'
