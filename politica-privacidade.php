@@ -1,4 +1,5 @@
 <?php
+require_once 'config.php';
 $page_title = "Política de Privacidade";
 require_once 'includes/header.php';
 ?>
