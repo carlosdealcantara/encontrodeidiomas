@@ -109,7 +109,7 @@ foreach ($replays as $r) {
     $replays_list_clean .= $linha;
 }
 
-$default_template = "*Replays!* https://encontrodeidiomas.com.br\n\n{REPLAYS_LIST}\n*Nº: Máximo de participantes simultâneos | Max simultaneous participants.*\n*🚀 Stay tuned for the next one! | Fique de olho para participar do próximo!*";
+$default_template = "*Replays!* https://encontrodeidiomas.com.br\n\n{REPLAYS_LIST}\n*Nº: Max simultaneous participants{BR} | Máximo de participantes simultâneos{/BR}.*\n*🚀 Stay tuned for the next one!{BR} | Fique de olho para participar do próximo!{/BR}*";
 $template = getSetting('weekly_summary_template', $default_template);
 
 $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $template);

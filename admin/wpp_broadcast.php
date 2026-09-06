@@ -25,16 +25,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
     } else {
         try {
             // Obter grupos a serem afetados
-            $stmt = $conn->prepare("SELECT group_id, categoria, language_ids FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1");
+            $stmt = $conn->prepare("SELECT group_id, categoria, language_ids, comunidade FROM meetup_whatsapp_groups WHERE ativo = 1 AND bot_presente = 1");
             $stmt->execute();
             $all_groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            $grupos = [];
+            $grupos_br = [];
+            $grupos_global = [];
             $is_resumo = isset($_POST['is_resumo_semanal']);
             
             $active_langs = [];
             if ($is_resumo) {
-                $semana_atual = date('o-\\WW');
+                $semana_atual = date('o-\WW');
                 $stmtAtivos = $conn->prepare("SELECT language_id FROM meetup_replays WHERE semana = ? AND (numero != '' OR link != '' OR titulo != '')");
                 $stmtAtivos->execute([$semana_atual]);
                 $active_langs = $stmtAtivos->fetchAll(PDO::FETCH_COLUMN);
@@ -56,27 +57,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enfileirar'])) {
                     if (empty($intersect)) continue; // Pula este grupo se nenhum dos seus idiomas teve gravação
                 }
                 
-                $grupos[] = $g['group_id'];
+                $comunidadeGrupo = $g['comunidade'] ?? 'brasil';
+                if ($comunidadeGrupo === 'global') {
+                    $grupos_global[] = $g['group_id'];
+                } else {
+                    $grupos_br[] = $g['group_id'];
+                }
             }
-            $grupos = array_values(array_unique($grupos)); // Garante que nunca haverá duplicatas
-            $total_grupos = count($grupos);
+            
+            $grupos_br = array_values(array_unique($grupos_br));
+            $grupos_global = array_values(array_unique($grupos_global));
+            $total_grupos = count($grupos_br) + count($grupos_global);
 
             if ($total_grupos > 0) {
-                // Enviar os grupos diretamente para a fila nativa do Baileys
-                $result = enviarWhatsApp($grupos, $mensagem, 'admin_broadcast');
+                // Parse das tags {BR} para criar as duas versões da mensagem
+                // Para Brasil: remove a tag mas mantém o texto dentro dela
+                $mensagem_br = preg_replace('/\{BR\}(.*?)\{\/BR\}/s', '$1', $mensagem);
                 
-                if ($result['success']) {
+                // Para Global: remove a tag E todo o texto dentro dela
+                $mensagem_global = preg_replace('/\{BR\}(.*?)\{\/BR\}/s', '', $mensagem);
+                
+                $sucessos = 0;
+                $erroMsg = '';
+                $temErro = false;
+                
+                // 1. Enviar para grupos do Brasil
+                if (count($grupos_br) > 0) {
+                    $result_br = enviarWhatsApp($grupos_br, $mensagem_br, 'admin_broadcast');
+                    if ($result_br['success']) {
+                        $sucessos += count($grupos_br);
+                    } else {
+                        $temErro = true;
+                        $erroMsg .= 'BR: ' . ($result_br['error'] ?? 'Erro desconhecido. ');
+                    }
+                }
+                
+                // 2. Enviar para grupos Globais
+                if (count($grupos_global) > 0) {
+                    $result_global = enviarWhatsApp($grupos_global, $mensagem_global, 'admin_broadcast');
+                    if ($result_global['success']) {
+                        $sucessos += count($grupos_global);
+                    } else {
+                        $temErro = true;
+                        $erroMsg .= 'Global: ' . ($result_global['error'] ?? 'Erro desconhecido. ');
+                    }
+                }
+                
+                if ($sucessos > 0 && !$temErro) {
                     $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, enviados, status, iniciado_em, concluido_em) VALUES (?, ?, ?, ?, ?, ?, 'concluido', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)");
-                    $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos, $total_grupos]);
+                    $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos, $sucessos]);
                     
-                    // PRG: redireciona para GET para evitar re-envio do formulário no reload
                     header('Location: wpp_broadcast.php?msg=Disparo+concluído+com+sucesso%21');
                     exit;
+                } else if ($sucessos > 0 && $temErro) {
+                    // Parcialmente bem sucedido
+                    $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, enviados, status, concluido_em) VALUES (?, ?, ?, ?, ?, ?, 'erro', CURRENT_TIMESTAMP)");
+                    $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos, $sucessos]);
+                    $error = "Disparo parcial com erros: " . $erroMsg;
                 } else {
-                    $erroMsg = $result['error'] ?? 'Erro desconhecido na API do Baileys.';
                     $error = "Falha ao enviar para o motor de disparo: " . $erroMsg;
                     
-                    // Registra como erro se falhar na largada
+                    // Registra como erro total
                     $stmt = $conn->prepare("INSERT INTO wpp_broadcast_queue (titulo, mensagem, filtro_categoria, filtro_language_id, total_grupos, status, concluido_em) VALUES (?, ?, ?, ?, ?, 'erro', CURRENT_TIMESTAMP)");
                     $stmt->execute([$titulo, $mensagem, $categoria, $language_id, $total_grupos]);
                 }
