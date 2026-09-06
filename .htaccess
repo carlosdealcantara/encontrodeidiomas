@@ -55,6 +55,7 @@ RewriteRule ^equipe/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/?$ equipe.php?lang=pt&tabslu
 RewriteRule ^equipe/([a-zA-Z0-9-]+)/?$            equipe.php?lang=pt&tabslug=$1 [L,QSA]
 RewriteRule ^links/?$        links.php?lang=pt [L,QSA]
 RewriteRule ^contato/?$      contato.php?lang=pt [L,QSA]
+RewriteRule ^politica-privacidade/?$      politica-privacidade.php?lang=pt [L,QSA]
 
 # --- Slugs de Idioma (Links Curtos Dinâmicos) ---
 RewriteCond %{REQUEST_FILENAME} !-f
