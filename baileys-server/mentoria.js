@@ -146,6 +146,34 @@ function saveActivity(data) {
     fs.writeFileSync(getActivityFile(), JSON.stringify(data, null, 2));
 }
 
+function resolveParticipantName(jid) {
+    try {
+        const tryFind = (logData) => {
+            if (!logData) return null;
+            const dates = Object.keys(logData).sort().reverse();
+            for (const d of dates) {
+                for (const g of Object.keys(logData[d])) {
+                    if (logData[d][g][jid] && logData[d][g][jid].name && logData[d][g][jid].name !== 'Unknown' && logData[d][g][jid].name !== 'Desconhecido') {
+                        return logData[d][g][jid].name;
+                    }
+                }
+            }
+            return null;
+        };
+
+        const actData = loadActivity();
+        let name = tryFind(actData);
+        if (name) return name;
+
+        const comData = loadCommunityActivity();
+        name = tryFind(comData);
+        if (name) return name;
+    } catch (err) {
+        console.error('Error in resolveParticipantName:', err);
+    }
+    return 'Unknown';
+}
+
 // === WRITE QUEUE SYSTEM ===
 const writeQueue = [];
 let isSaving = false;
@@ -590,6 +618,7 @@ async function handleMessages({ messages, type }) {
                                 group_jid: groupJid,
                                 group_key: groupKey,
                                 member_jid: quotedParticipant,
+                                member_name: resolveParticipantName(quotedParticipant),
                                 points: points
                             })
                         });
