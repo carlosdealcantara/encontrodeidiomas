@@ -178,11 +178,17 @@ foreach ($streakCompleters as $completer) {
     
     $mName = $completer['member_name'] ?? 'Unknown';
     if ($mName === 'Unknown' || empty(trim($mName))) {
-        $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-        $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
-        $stmtName->execute([$phoneOnly]);
-        $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-        if ($rowName) $mName = $rowName['nome'];
+        if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
+            $mName = $rankingMsgs[$mJid]['name'];
+        } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
+            $mName = $rankingReacts[$mJid]['name'];
+        } else {
+            $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+            $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
+            $stmtName->execute([$phoneOnly]);
+            $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+            if ($rowName) $mName = $rowName['nome'];
+        }
     }
 
     if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
@@ -222,11 +228,17 @@ foreach ($manualPoints as $row) {
 
     $mName = $row['member_name'] ?: 'Unknown';
     if ($mName === 'Unknown') {
-        $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-        $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
-        $stmtName->execute([$phoneOnly]);
-        $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-        if ($rowName) $mName = $rowName['nome'];
+        if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
+            $mName = $rankingMsgs[$mJid]['name'];
+        } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
+            $mName = $rankingReacts[$mJid]['name'];
+        } else {
+            $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+            $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
+            $stmtName->execute([$phoneOnly]);
+            $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+            if ($rowName) $mName = $rowName['nome'];
+        }
     }
 
     if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
