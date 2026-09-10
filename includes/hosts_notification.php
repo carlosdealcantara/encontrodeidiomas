@@ -109,6 +109,8 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
     // Remove barras escapadas caso existam no banco
     $template = str_replace('\n', "\n", $template);
     $full_text = str_replace('{REPLAYS_LIST}', trim($replays_list), $template);
+    // Grupo dos hosts é interno: processa as tags {BR} mantendo o conteúdo (igual ao tratamento Brasil)
+    $full_text = preg_replace('/\{BR\}(.*?)\{\/BR\}/s', '$1', $full_text);
 
     // URL do portal sempre em viaEi.com (domínio atual)
     $portal_url = "https://viaEi.com/portal_hosts/";

@@ -42,9 +42,17 @@ if ($memberName === 'Unknown') {
             $memberName = $found2;
         } else {
             // Tenta em mentoria_alunos pelo telefone
-            $stmtN3 = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? LIMIT 1");
+            $stmtN3 = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? OR telefone = ? LIMIT 1");
             $phoneOnly = preg_replace('/\D/', '', explode('@', $memberJid)[0]);
-            $stmtN3->execute([$phoneOnly]);
+            
+            $phoneAlt = $phoneOnly;
+            if (str_starts_with($phoneOnly, '55') && strlen($phoneOnly) === 12) {
+                $phoneAlt = substr($phoneOnly, 0, 4) . '9' . substr($phoneOnly, 4);
+            } elseif (str_starts_with($phoneOnly, '55') && strlen($phoneOnly) === 13 && $phoneOnly[4] === '9') {
+                $phoneAlt = substr($phoneOnly, 0, 4) . substr($phoneOnly, 5);
+            }
+            
+            $stmtN3->execute([$phoneOnly, $phoneAlt]);
             $found3 = $stmtN3->fetchColumn();
             if ($found3) {
                 $memberName = $found3;
