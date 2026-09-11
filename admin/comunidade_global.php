@@ -144,7 +144,7 @@ $activeLangs = $conn->query("SELECT DISTINCT lang_code FROM meetup_whatsapp_grou
 $langNames = [
     'es' => 'Español', 'pt' => 'Português', 'de' => 'Deutsch',
     'ru' => 'Русский', 'ja' => '日本語', 'zh' => '中文',
-    'id' => 'Bahasa', 'it' => 'Italiano',
+    'id' => 'Bahasa', 'it' => 'Italiano', 'fr' => 'Français',
 ];
 
 $title = 'Global - Admin';
