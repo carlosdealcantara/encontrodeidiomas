@@ -1168,6 +1168,24 @@ function initRoutes(app, dir) {
         res.json(data[date] || {});
     });
 
+    // POST /community-activity-delete — remove a group entry from a given day's activity log
+    app.post('/community-activity-delete', (req, res) => {
+        const { date, groupJid } = req.body;
+        if (!date || !groupJid) return res.status(400).json({ error: 'date and groupJid are required' });
+        try {
+            const data = loadCommunityActivity();
+            if (data[date] && data[date][groupJid]) {
+                delete data[date][groupJid];
+                saveCommunityActivity(data);
+                res.json({ success: true, message: `Group ${groupJid} removed from ${date}` });
+            } else {
+                res.json({ success: false, message: `No entry found for group ${groupJid} on ${date}` });
+            }
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
     // POST /mentoria-edit-activity
     app.post('/mentoria-edit-activity', (req, res) => {
         const { apikey, date, group_jid, member_jid, field, value } = req.body;
