@@ -145,6 +145,7 @@ $langNames = [
     'es' => 'Español', 'pt' => 'Português', 'de' => 'Deutsch',
     'ru' => 'Русский', 'ja' => '日本語', 'zh' => '中文',
     'id' => 'Bahasa', 'it' => 'Italiano', 'fr' => 'Français',
+    'en' => 'English',
 ];
 
 $title = 'Global - Admin';
