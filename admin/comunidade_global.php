@@ -24,7 +24,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$jid]);
             }
         }
-        $msg = "Configurações de grupos salvas com sucesso.";
+
+        // Sincroniza automaticamente a configuração de grupos com o robô Baileys
+        try {
+            $config = getCommunityConfig();
+            $stmtGlob = $conn->query("SELECT group_id as jid, nome, welcome_enabled FROM meetup_whatsapp_groups WHERE comunidade = 'global' AND ativo = 1");
+            $globalGroups = $stmtGlob->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($globalGroups as $gg) {
+                $key = 'global_' . preg_replace('/[^a-z0-9]/', '', strtolower($gg['nome']));
+                $config['groups'][$key] = [
+                    'jid' => $gg['jid'],
+                    'name' => $gg['nome'],
+                    'is_community_group' => true,
+                    'ranking_enabled' => true,
+                    'welcome_enabled' => (bool)$gg['welcome_enabled']
+                ];
+            }
+            sendBaileysRequest('/community-config', $config, 'POST');
+        } catch (Exception $e) {
+            error_log("Erro ao sincronizar config de comunidade: " . $e->getMessage());
+        }
+
+        $msg = "Configurações de grupos salvas e sincronizadas com o robô com sucesso.";
     }
 
     // INTROS
