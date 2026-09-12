@@ -31,16 +31,38 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
     exit;
 }
 
-// Busca todos os encontros com info de idioma e host (apenas hosts ATIVOS)
+// Verifica se a tabela meeting_sessions existe
+$hasSessionsTable = false;
+try {
+    $res = $conn->query("SHOW TABLES LIKE 'meeting_sessions'")->fetch();
+    $hasSessionsTable = !empty($res);
+} catch (Exception $e) {
+    $hasSessionsTable = false;
+}
+
+// Busca todos os encontros conceituais (1 por encontro)
 $stmt = $conn->query("
     SELECT m.*, l.name as language_name, l.flag_code, l.flag_emoji,
            h.full_name as host_name
     FROM meetings m
     JOIN languages l ON m.language_id = l.id
     LEFT JOIN hosts h ON m.host_id = h.id AND h.status = 'ativo'
-    ORDER BY m.day_of_week ASC, m.time_hour ASC
+    ORDER BY l.name ASC, m.id ASC
 ");
 $meetings = $stmt->fetchAll();
+
+// Se a tabela meeting_sessions existir, busca as sessões de cada encontro
+$sessionsByMeeting = [];
+if ($hasSessionsTable && !empty($meetings)) {
+    $sessionsStmt = $conn->query("
+        SELECT * FROM meeting_sessions 
+        ORDER BY day_of_week ASC, time_hour ASC
+    ");
+    $allSessions = $sessionsStmt->fetchAll();
+    foreach ($allSessions as $s) {
+        $sessionsByMeeting[$s['meeting_id']][] = $s;
+    }
+}
 
 function getDayLabel($day) {
     $days = [1=>'Segunda', 2=>'Terça', 3=>'Quarta', 4=>'Quinta', 5=>'Sexta', 6=>'Sábado', 7=>'Domingo'];
@@ -101,8 +123,26 @@ function getDayLabel($day) {
 
         .meeting-info { display: flex; align-items: center; gap: 15px; }
         .lang-flag { width: 30px; height: 22px; border-radius: 4px; object-fit: cover; }
-        .meeting-name { font-weight: 600; color: var(--white); }
-        .meeting-time { font-size: 0.85rem; color: var(--accent-blue); font-weight: 600; }
+        .meeting-name { font-weight: 600; color: var(--white); font-size: 1.05rem; }
+
+        /* Chips de sessões */
+        .sessions-badges { display: flex; flex-wrap: wrap; gap: 8px; max-width: 320px; }
+        .session-chip {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-blue);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .session-chip.inactive {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
 
         .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .badge-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
@@ -133,7 +173,7 @@ function getDayLabel($day) {
         <header class="header">
             <div class="header-title">
                 <h2>Gestão da Agenda</h2>
-                <p>Configure os horários e anfitriões dos encontros semanais.</p>
+                <p>Configure os encontros e adicione múltiplos horários/dias para cada idioma.</p>
             </div>
             <a href="meeting_form.php" class="btn-add">
                 <i class="fas fa-plus"></i> Novo Encontro
@@ -156,8 +196,8 @@ function getDayLabel($day) {
             <table>
                 <thead>
                     <tr>
-                        <th>Dia / Hora</th>
                         <th>Idioma</th>
+                        <th>Dias e Horários</th>
                         <th>Anfitrião</th>
                         <th>Comunidade</th>
                         <th>Status</th>
@@ -165,12 +205,18 @@ function getDayLabel($day) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($meetings as $m): ?>
+                    <?php foreach ($meetings as $m): 
+                        $mSessions = $sessionsByMeeting[$m['id']] ?? [];
+                        // Fallback caso não haja sessões na tabela nova ainda
+                        if (empty($mSessions) && isset($m['day_of_week']) && $m['day_of_week'] !== null) {
+                            $mSessions = [[
+                                'day_of_week' => $m['day_of_week'],
+                                'time_hour' => $m['time_hour'],
+                                'active' => $m['active']
+                            ]];
+                        }
+                    ?>
                     <tr>
-                        <td>
-                            <div class="meeting-time"><?= getDayLabel($m['day_of_week']) ?></div>
-                            <div style="font-size: 1.1rem; font-weight: 700;"><?= $m['time_hour'] ?>h</div>
-                        </td>
                         <td>
                             <div class="meeting-info">
                                 <?php if ($m['flag_code']): ?>
@@ -178,7 +224,28 @@ function getDayLabel($day) {
                                 <?php elseif ($m['flag_emoji']): ?>
                                     <span style="font-size: 1.5rem;"><?= $m['flag_emoji'] ?></span>
                                 <?php endif; ?>
-                                <span class="meeting-name"><?= htmlspecialchars($m['language_name']) ?></span>
+                                <div>
+                                    <span class="meeting-name"><?= htmlspecialchars($m['language_name']) ?></span>
+                                    <?php if (!empty($m['title'])): ?>
+                                        <div style="font-size:0.8rem; color:var(--text-dim); margin-top:2px;">
+                                            <?= htmlspecialchars($m['title']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="sessions-badges">
+                                <?php if (!empty($mSessions)): ?>
+                                    <?php foreach ($mSessions as $s): ?>
+                                        <span class="session-chip <?= (isset($s['active']) && !$s['active']) ? 'inactive' : '' ?>">
+                                            <i class="far fa-clock"></i>
+                                            <?= getDayLabel($s['day_of_week']) ?> às <?= $s['time_hour'] ?>h
+                                        </span>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <span style="color:var(--text-dim); font-size:0.85rem;">Nenhum horário definido</span>
+                                <?php endif; ?>
                             </div>
                         </td>
                         <td>
@@ -215,14 +282,19 @@ function getDayLabel($day) {
                         </td>
                         <td>
                             <div class="actions">
-                                <a href="meeting_form.php?id=<?= $m['id'] ?>" class="action-btn btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
-                                <a href="meetings.php?toggle_active=<?= $m['active'] ?>&id=<?= $m['id'] ?>" class="action-btn btn-toggle" title="Alternar Status">
+                                <a href="meeting_form.php?id=<?= $m['id'] ?>" class="action-btn btn-edit" title="Editar encontro e horários"><i class="fas fa-edit"></i></a>
+                                <a href="meetings.php?toggle_active=<?= $m['active'] ?>&id=<?= $m['id'] ?>" class="action-btn btn-toggle" title="Alternar Status Geral">
                                     <i class="fas fa-power-off"></i>
                                 </a>
-                                <div class="action-btn btn-copy" title="Copiar para WhatsApp" onclick="copyToWhatsapp('<?= addslashes($m['language_name']) ?>', '<?= getDayLabel($m['day_of_week']) ?>', '<?= $m['time_hour'] ?>', '<?= $m['meet_link'] ?>')">
+                                <?php 
+                                    $firstSess = !empty($mSessions) ? $mSessions[0] : null;
+                                    $copyDay = $firstSess ? getDayLabel($firstSess['day_of_week']) : '';
+                                    $copyHour = $firstSess ? $firstSess['time_hour'] : '';
+                                ?>
+                                <div class="action-btn btn-copy" title="Copiar para WhatsApp" onclick="copyToWhatsapp('<?= addslashes($m['language_name']) ?>', '<?= $copyDay ?>', '<?= $copyHour ?>', '<?= $m['meet_link'] ?>')">
                                     <i class="fab fa-whatsapp"></i>
                                 </div>
-                                <a href="meetings.php?delete=1&id=<?= $m['id'] ?>" class="action-btn btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este encontro?')">
+                                <a href="meetings.php?delete=1&id=<?= $m['id'] ?>" class="action-btn btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este encontro e todos os seus horários?')">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </div>
@@ -239,7 +311,7 @@ function getDayLabel($day) {
         function copyToWhatsapp(lang, day, hour, link) {
             const text = `🚀 *ENCONTRO DE IDIOMAS* 🚀\n\n` +
                          `🗣 Idioma: *${lang}*\n` +
-                         `🗓 Quando: ${day} às ${hour}h\n` +
+                         (day ? `🗓 Quando: ${day} às ${hour}h\n` : '') +
                          `🔗 Link da Sala: ${link || 'Link será enviado em breve'}\n\n` +
                          `Vem praticar com a gente!`;
             

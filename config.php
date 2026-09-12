@@ -127,27 +127,63 @@ function updateSetting(string $key, string $value): void {
 function getMeetings(): array {
     try {
         $conn = connectDB();
-        $stmt = $conn->prepare("
-            SELECT 
-                m.*, 
-                l.name AS language_name, l.name_en AS language_name_en, l.flag_code, l.flag_emoji,
-                l.whatsapp_link AS final_whatsapp,
-                l.instagram_link AS final_instagram,
-                COALESCE(h.full_name, h_auto.full_name) AS host_name,
-                COALESCE(h.profile_picture, h_auto.profile_picture) AS host_photo
-            FROM meetings m
-            JOIN languages l ON m.language_id = l.id
-            LEFT JOIN hosts h ON (m.host_id = h.id AND h.status = 'ativo')
-            LEFT JOIN hosts h_auto ON (
-                h.id IS NULL 
-                AND h_auto.status = 'ativo' 
-                AND h_auto.category LIKE '%Online%'
-                AND h_auto.languages LIKE CONCAT('%', l.name, '%')
-            )
-            WHERE m.active = 1
-            GROUP BY m.id
-            ORDER BY m.day_of_week, m.time_hour
-        ");
+        // Verifica se a tabela meeting_sessions existe e tem dados
+        $hasSessions = false;
+        try {
+            $check = $conn->query("SELECT 1 FROM meeting_sessions LIMIT 1");
+            $hasSessions = ($check !== false);
+        } catch (Exception $e) {
+            $hasSessions = false;
+        }
+
+        if ($hasSessions) {
+            $stmt = $conn->prepare("
+                SELECT 
+                    m.*, 
+                    ms.id AS session_id,
+                    ms.day_of_week,
+                    ms.time_hour,
+                    ms.active AS session_active,
+                    l.name AS language_name, l.name_en AS language_name_en, l.flag_code, l.flag_emoji,
+                    l.whatsapp_link AS final_whatsapp,
+                    l.instagram_link AS final_instagram,
+                    COALESCE(h.full_name, h_auto.full_name) AS host_name,
+                    COALESCE(h.profile_picture, h_auto.profile_picture) AS host_photo
+                FROM meetings m
+                JOIN meeting_sessions ms ON ms.meeting_id = m.id AND ms.active = 1
+                JOIN languages l ON m.language_id = l.id
+                LEFT JOIN hosts h ON (m.host_id = h.id AND h.status = 'ativo')
+                LEFT JOIN hosts h_auto ON (
+                    h.id IS NULL 
+                    AND h_auto.status = 'ativo' 
+                    AND h_auto.category LIKE '%Online%'
+                    AND h_auto.languages LIKE CONCAT('%', l.name, '%')
+                )
+                WHERE m.active = 1
+                ORDER BY ms.day_of_week ASC, ms.time_hour ASC
+            ");
+        } else {
+            $stmt = $conn->prepare("
+                SELECT 
+                    m.*, 
+                    l.name AS language_name, l.name_en AS language_name_en, l.flag_code, l.flag_emoji,
+                    l.whatsapp_link AS final_whatsapp,
+                    l.instagram_link AS final_instagram,
+                    COALESCE(h.full_name, h_auto.full_name) AS host_name,
+                    COALESCE(h.profile_picture, h_auto.profile_picture) AS host_photo
+                FROM meetings m
+                JOIN languages l ON m.language_id = l.id
+                LEFT JOIN hosts h ON (m.host_id = h.id AND h.status = 'ativo')
+                LEFT JOIN hosts h_auto ON (
+                    h.id IS NULL 
+                    AND h_auto.status = 'ativo' 
+                    AND h_auto.category LIKE '%Online%'
+                    AND h_auto.languages LIKE CONCAT('%', l.name, '%')
+                )
+                WHERE m.active = 1
+                ORDER BY m.day_of_week, m.time_hour
+            ");
+        }
         $stmt->execute();
         return $stmt->fetchAll();
     } catch (PDOException $e) {
