@@ -137,10 +137,11 @@ foreach ($meetings as $m) {
 
         foreach ($groups as $g) {
             // Compatibilidade de comunidade: grupo × template
-            // 'todas' = template centralizado com tags {BR}/{GLOBAL} → serve qualquer grupo
+            // Regra Unilateral: 'global' = Brasil + Global (vai para os dois tipos de grupo)
+            // 'brasil' = só grupos Brasil
             $comunidadeGrupo    = $g['comunidade'] ?? 'brasil';
             $comunidadeTemplate = $t['comunidade_alvo'] ?? 'brasil';
-            $compativel = ($comunidadeTemplate === $comunidadeGrupo || $comunidadeTemplate === 'todas');
+            $compativel = ($comunidadeTemplate === 'global' || $comunidadeTemplate === $comunidadeGrupo);
             if (!$compativel) continue;
 
             // Regra Unilateral: Encontro Brasil NÃO vai para Grupo Global
@@ -248,10 +249,11 @@ if (!empty($templatesDiario)) {
 
         foreach ($groups as $g) {
             // Compatibilidade de comunidade: grupo × template
-            // 'todas' = template centralizado com tags {BR}/{GLOBAL} → serve qualquer grupo
+            // Regra Unilateral: 'global' = Brasil + Global (vai para os dois tipos de grupo)
+            // 'brasil' = só grupos Brasil
             $comunidadeGrupo    = $g['comunidade'] ?? 'brasil';
             $comunidadeTemplate = $t['comunidade_alvo'] ?? 'brasil';
-            $compativel = ($comunidadeTemplate === $comunidadeGrupo || $comunidadeTemplate === 'todas');
+            $compativel = ($comunidadeTemplate === 'global' || $comunidadeTemplate === $comunidadeGrupo);
             if (!$compativel) continue;
 
             // Define bandeiras e elegibilidade por tipo de grupo

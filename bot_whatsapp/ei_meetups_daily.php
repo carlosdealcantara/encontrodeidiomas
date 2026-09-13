@@ -137,8 +137,8 @@ foreach ($groups as $g) {
     // Itera sobre os templates compatíveis com a comunidade deste grupo
     foreach ($templatesDiario as $templateDiario) {
         $comunidadeTemplate = $templateDiario['comunidade_alvo'] ?? 'brasil';
-        // 'todas' = template centralizado com tags {BR}/{GLOBAL} → serve qualquer grupo
-        $compativel = ($comunidadeTemplate === $comunidadeGrupo || $comunidadeTemplate === 'todas');
+        // Regra Unilateral: 'global' = Brasil + Global (vai para os dois tipos de grupo)
+        $compativel = ($comunidadeTemplate === 'global' || $comunidadeTemplate === $comunidadeGrupo);
 
         if (!$compativel) {
             echo "&nbsp;&nbsp;-&gt; Template ID {$templateDiario['id']} ({$comunidadeTemplate}): incompatível com grupo {$comunidadeGrupo}. Pulando.<br>";
