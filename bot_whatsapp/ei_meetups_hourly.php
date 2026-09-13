@@ -161,6 +161,7 @@ foreach ($meetings as $m) {
             // Resolve {SITE_LINK} e monta texto final por grupo
             $siteLink   = ($comunidadeGrupo === 'global') ? 'viaEi.com/en/online' : 'viaEi.com/online';
             $textoFinal = str_replace('{SITE_LINK}', $siteLink, $textoBase);
+            $textoFinal = aplicarTagsComunidade($textoFinal, $comunidadeGrupo);
 
             // Verificação semanal (para templates marcados como semanal dentro do escopo por_encontro)
             $frequencia = $t['frequencia'] ?? 'diario';
@@ -300,6 +301,7 @@ if (!empty($templatesDiario)) {
             $siteLink   = ($comunidadeGrupo === 'global') ? 'viaEi.com/en/online' : 'viaEi.com/online';
             $textoFinal = str_replace('{SITE_LINK}',        $siteLink,                    $textoFinal);
             $textoFinal = str_replace('{HOST_LINK}',        'viaEi.com/equipe/',  $textoFinal);
+            $textoFinal = aplicarTagsComunidade($textoFinal, $comunidadeGrupo);
 
             // Anti-duplicidade: usa meeting_id = 0 (não é por encontro)
             if (isset($_GET['force'])) {

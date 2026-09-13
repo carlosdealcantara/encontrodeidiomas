@@ -182,3 +182,35 @@ function formatTime12h(DateTime $dtObj): string {
     }
     return "$h:$m $ampm";
 }
+
+/**
+ * Processa as tags de bloco de comunidade {BR}...{/BR} e {GLOBAL}...{/GLOBAL}.
+ * - Para comunidade 'global': remove blocos {BR} e desempacota {GLOBAL}
+ * - Para comunidade 'brasil' (ou padrão): desempacota {BR} e remove blocos {GLOBAL}
+ * Limpa quebras de linha duplas residuais de forma elegante.
+ *
+ * @param string $texto Texto original com as tags
+ * @param string $comunidade 'brasil' ou 'global'
+ * @return string Texto processado pronto para envio
+ */
+function aplicarTagsComunidade(string $texto, string $comunidade = 'brasil'): string {
+    if (empty($texto)) return '';
+
+    if ($comunidade === 'global') {
+        // Remove todo o bloco {BR} e seu conteúdo
+        $texto = preg_replace('/\{BR\}(.*?)\{\/BR\}/s', '', $texto);
+        // Mantém apenas o conteúdo interno de {GLOBAL}
+        $texto = preg_replace('/\{GLOBAL\}(.*?)\{\/GLOBAL\}/s', '$1', $texto);
+    } else {
+        // Mantém apenas o conteúdo interno de {BR}
+        $texto = preg_replace('/\{BR\}(.*?)\{\/BR\}/s', '$1', $texto);
+        // Remove todo o bloco {GLOBAL} e seu conteúdo
+        $texto = preg_replace('/\{GLOBAL\}(.*?)\{\/GLOBAL\}/s', '', $texto);
+    }
+
+    // Normaliza excesso de quebras de linha que possam surgir da remoção de blocos
+    $texto = preg_replace("/\n{3,}/", "\n\n", $texto);
+
+    return trim($texto);
+}
+

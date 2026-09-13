@@ -77,9 +77,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Mock Data para Resumo Diário
             $mockLista = "🇺🇸 English\n🇩🇪 Deutsch";
             $textoFinal = str_replace('{LISTA_ENCONTROS}', $mockLista, $textoFinal);
-            
+
             require_once '../includes/whatsapp_helper.php';
-            
+
+            $comunidadeTeste = $_POST['comunidade_alvo'] ?? 'brasil';
+            if ($comunidadeTeste === 'global') {
+                $textoFinal = str_replace('{SITE_LINK}', 'viaEi.com/en/online', $textoFinal);
+            }
+            $textoFinal = aplicarTagsComunidade($textoFinal, $comunidadeTeste);
+
             $result = enviarWhatsApp($telefone, $textoFinal, 'template_teste');
             $httpcode = $result['httpCode'];
             $response = json_encode($result);
@@ -237,6 +243,8 @@ try {
                             <span class="var-chip" onclick="insertVar('{HOST_LINK}')">{HOST_LINK}</span>
                             <span class="var-chip" onclick="insertVar('{TODAS_BANDEIRAS_HOJE}')" title="Lista as bandeiras dos encontros de hoje. Somente para o template 'Convite para Host'">{TODAS_BANDEIRAS_HOJE} 🗓️</span>
                             <span class="var-chip" onclick="insertVar('{LISTA_ENCONTROS}')" title="Lista completa dos encontros (Brasil ou Global). Exclusivo para 'Resumo do Dia'">{LISTA_ENCONTROS} 📋</span>
+                            <span class="var-chip" onclick="insertVar('{BR}Texto para o Brasil{/BR}')" style="background:rgba(16, 185, 129, 0.15); color:#10b981; border-color:rgba(16, 185, 129, 0.3);" title="Texto que SÓ aparece nos grupos do Brasil">{BR}...{/BR} 🇧🇷</span>
+                            <span class="var-chip" onclick="insertVar('{GLOBAL}Text for Global community{/GLOBAL}')" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; border-color:rgba(56, 189, 248, 0.3);" title="Texto que SÓ aparece nos grupos da Comunidade Global">{GLOBAL}...{/GLOBAL} 🌐</span>
                         </div>
                     </div>
                     

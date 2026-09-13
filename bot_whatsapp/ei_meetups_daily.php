@@ -160,6 +160,7 @@ foreach ($groups as $g) {
         $textoFinal = str_replace('{LISTA_ENCONTROS}', $listaFormatadaAUsar, $templateDiario['template_texto']);
         $textoFinal = str_replace('{SITE_LINK}',       $siteLink,             $textoFinal);
         $textoFinal = str_replace('{HOST_LINK}',       'viaEi.com/equipe/',   $textoFinal);
+        $textoFinal = aplicarTagsComunidade($textoFinal, $comunidadeGrupo);
 
         // Envia para o motor do Baileys
         $inicioCurl = microtime(true);
