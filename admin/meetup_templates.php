@@ -214,10 +214,11 @@ try {
                     <div class="form-group">
                         <label>Comunidade Alvo</label>
                         <select name="comunidade_alvo" id="comunidade_alvo" class="form-control" required>
+                            <option value="todas">🌎 Todas — Brasil + Global (use {BR} e {GLOBAL} no texto)</option>
                             <option value="brasil">🇧🇷 Brasil — apenas grupos Brasil</option>
                             <option value="global">🌐 Global — apenas grupos Global</option>
                         </select>
-                        <small style="color: var(--text-dim);">Define para qual comunidade este template será disparado.</small>
+                        <small style="color: var(--text-dim);">"Todas" permite um único template com blocos {BR} e {GLOBAL} para personalizar por comunidade.</small>
                     </div>
                     
                     <div class="form-group">
@@ -288,10 +289,12 @@ try {
                                         $com = $t['comunidade_alvo'] ?? 'brasil';
                                         $comLabel = match($com) {
                                             'global' => '<img src="https://flagcdn.com/w20/us.png" style="width:16px; margin-right:5px; border-radius:2px;" alt="US"> Global',
+                                            'todas'  => '🌎 Todas',
                                             default  => '<img src="https://flagcdn.com/w20/br.png" style="width:16px; margin-right:5px; border-radius:2px;" alt="BR"> Brasil',
                                         };
                                         $comColor = match($com) {
                                             'global' => '#38bdf8',
+                                            'todas'  => '#f59e0b',
                                             default  => '#10b981',
                                         };
                                     ?>
