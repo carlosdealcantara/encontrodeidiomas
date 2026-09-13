@@ -112,7 +112,7 @@ if (isset($_GET['delete'])) {
 
 $templates = [];
 try {
-    $templates = $conn->query("SELECT * FROM meetup_whatsapp_templates ORDER BY minutos_antes DESC")->fetchAll();
+    $templates = $conn->query("SELECT * FROM meetup_whatsapp_templates ORDER BY ativo DESC, minutos_antes DESC, id ASC")->fetchAll();
 } catch (PDOException $e) {
     $_GET['msg'] = "Erro no banco: " . $e->getMessage() . ". As tabelas provavelmente ainda não foram criadas.";
 }
