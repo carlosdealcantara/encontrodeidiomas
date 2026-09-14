@@ -115,8 +115,17 @@ foreach ($meetings as $m) {
         $minutosAntes = (int)$t['minutos_antes'];
         $totalMinAlvo = $totalMinEncontro - $minutosAntes;
 
-        // Tolerância de ±7 min (cron de 5 em 5 minutos, evita falhas por atraso da VPS)
-        if (abs($totalMinAtual - $totalMinAlvo) > 7) continue;
+        $diffMin = $totalMinAtual - $totalMinAlvo;
+
+        // Janela de tolerância para cron de 5 em 5 minutos:
+        // Se o template é para o momento de início (minutos_antes <= 0, ex: "Começando Agora"),
+        // JAMAIS deve disparar adiantado (diffMin deve ser >= 0 e até 4 minutos após).
+        // Se for lembrete antecipado (ex: 30 minutos antes), aceita tolerância de -1 a +3 min para compensar oscilações de segundos da VPS.
+        if ($minutosAntes <= 0) {
+            if ($diffMin < 0 || $diffMin > 4) continue;
+        } else {
+            if ($diffMin < -1 || $diffMin > 3) continue;
+        }
 
         // Substitui variáveis na mensagem (sem depender do grupo ainda)
         $textoBase = $t['template_texto'];
@@ -244,8 +253,14 @@ if (!empty($templatesDiario)) {
         $minutosAntes = (int)$t['minutos_antes'];
         $totalMinAlvo = $primeiroMin - $minutosAntes;
 
-        // Tolerância de ±7 min (cron de 5 em 5 minutos, evita falhas por atraso da VPS)
-        if (abs($totalMinAtual - $totalMinAlvo) > 7) continue;
+        $diffMin = $totalMinAtual - $totalMinAlvo;
+
+        // Janela de tolerância para cron de 5 em 5 minutos
+        if ($minutosAntes <= 0) {
+            if ($diffMin < 0 || $diffMin > 4) continue;
+        } else {
+            if ($diffMin < -1 || $diffMin > 3) continue;
+        }
 
         foreach ($groups as $g) {
             // Compatibilidade de comunidade: grupo × template
