@@ -61,9 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $textoBruto = $_POST['template_texto'];
             
-            // Mock Data
-            $textoFinal = str_replace('{IDIOMA}', 'INGLÊS (TESTE)', $textoBruto);
-            $textoFinal = str_replace('{idioma}', 'Inglês', $textoFinal);
+            // Mock Data (simula grupo Brasil; para teste Global, o painel mostra comunidade_alvo=global)
+            $textoFinal = str_replace('{IDIOMA}', 'English (EN) / Inglês (PT)', $textoBruto);
+            $textoFinal = str_replace('{idioma}', 'English / Inglês', $textoFinal);
             $textoFinal = str_replace('{EMOJI_FLAG}', '🇺🇸', $textoFinal);
             $textoFinal = str_replace('{EMOJI_REPETIDO_5X}', '🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸', $textoFinal);
             $textoFinal = str_replace('{SAUDACAO}', 'Hello!', $textoFinal);

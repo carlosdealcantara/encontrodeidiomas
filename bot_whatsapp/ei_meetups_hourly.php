@@ -58,7 +58,7 @@ if (count($templates) === 0) {
 // Usa IFNULL(time_minute, 0) para compatibilidade caso a coluna não exista
 try {
     $stmtMeetings = $conn->prepare("
-        SELECT m.*, l.name as language_name, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
+        SELECT m.*, l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
                IFNULL(m.time_minute, 0) as time_minute_safe
         FROM meetings m
         JOIN languages l ON m.language_id = l.id
@@ -69,7 +69,7 @@ try {
 } catch (PDOException $e) {
     // Fallback: coluna time_minute não existe na tabela meetings
     $stmtMeetings = $conn->prepare("
-        SELECT m.*, l.name as language_name, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
+        SELECT m.*, l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
                0 as time_minute_safe
         FROM meetings m
         JOIN languages l ON m.language_id = l.id
@@ -127,22 +127,22 @@ foreach ($meetings as $m) {
             if ($diffMin < -1 || $diffMin > 3) continue;
         }
 
-        // Substitui variáveis na mensagem (sem depender do grupo ainda)
+        // Substitui variáveis na mensagem que não dependem do grupo
         $textoBase = $t['template_texto'];
-        $textoBase = str_replace('{IDIOMA}',        strtoupper($m['language_name']),          $textoBase);
-        $textoBase = str_replace('{idioma}',        $m['language_name'],                       $textoBase);
-        $textoBase = str_replace('{EMOJI_FLAG}',    $m['flag_emoji'],                          $textoBase);
+        $textoBase = str_replace('{EMOJI_FLAG}',          $m['flag_emoji'],                          $textoBase);
         $textoBase = str_replace('{EMOJI_REPETIDO_5X}',   str_repeat($m['flag_emoji'], 5),           $textoBase);
-        $textoBase = str_replace('{SAUDACAO}',      $m['greeting'] ?? 'Welcome!',              $textoBase);
-        $textoBase = str_replace('{BOAS_VINDAS_NATIVAS}', $m['welcome_native'] ?? '',          $textoBase);
+        $textoBase = str_replace('{SAUDACAO}',            $m['greeting'] ?? 'Welcome!',              $textoBase);
+        $textoBase = str_replace('{BOAS_VINDAS_NATIVAS}', $m['welcome_native'] ?? '',                $textoBase);
         $linkLimpo  = str_replace(['https://', 'http://'], '', $m['meet_link'] ?? '');
-        $textoBase = str_replace('{MEET_LINK}',     $linkLimpo ?: 'Link não definido',         $textoBase);
-        $textoBase = str_replace('{INSTAGRAM_LINK}',$m['instagram_link'] ?: 'Sem link',        $textoBase);
-        $textoBase = str_replace('{HOST_LINK}',     'viaEi.com/equipe/',               $textoBase);
+        $textoBase = str_replace('{MEET_LINK}',           $linkLimpo ?: 'Link não definido',         $textoBase);
+        $textoBase = str_replace('{INSTAGRAM_LINK}',      $m['instagram_link'] ?: 'Sem link',        $textoBase);
+        $textoBase = str_replace('{HOST_LINK}',           'viaEi.com/equipe/',               $textoBase);
         
         // Define o Idioma Base baseado na comunidade do encontro
         $idiomaBaseStr = ($m['comunidade'] ?? 'brasil') === 'global' ? '🗣️ 🇺🇸 EN' : '🗣️ 🇧🇷 PT-BR';
-        $textoBase = str_replace('{IDIOMA_BASE}',   $idiomaBaseStr,                            $textoBase);
+        $textoBase = str_replace('{IDIOMA_BASE}',         $idiomaBaseStr,                            $textoBase);
+        // NOTA: {IDIOMA} e {idioma} são substituídos dentro do loop de grupos (abaixo),
+        // pois o nome correto depende da comunidade do grupo (PT para Brasil, EN para Global).
 
         foreach ($groups as $g) {
             // Compatibilidade de comunidade: grupo × template
@@ -169,10 +169,16 @@ foreach ($meetings as $m) {
 
             if (!$podeEnviar) continue;
 
-            // Resolve {SITE_LINK} e monta texto final por grupo
-            $siteLink   = ($comunidadeGrupo === 'global') ? 'viaEi.com/en/online' : 'viaEi.com/online';
-            $textoFinal = str_replace('{SITE_LINK}', $siteLink, $textoBase);
-            $textoFinal = aplicarTagsComunidade($textoFinal, $comunidadeGrupo);
+            // Resolve {SITE_LINK}, {IDIOMA} e monta texto final por grupo
+            // {IDIOMA}: usa nome em inglês para grupos globais, nome em português para Brasil
+            $nomeIdiomaPT  = $m['language_name'];
+            $nomeIdiomaEN  = !empty($m['name_en']) ? $m['name_en'] : $nomeIdiomaPT;
+            $nomeIdioma    = ($comunidadeGrupo === 'global') ? $nomeIdiomaEN : $nomeIdiomaPT;
+            $siteLink      = ($comunidadeGrupo === 'global') ? 'viaEi.com/en/online' : 'viaEi.com/online';
+            $textoFinal    = str_replace('{IDIOMA}',    $nomeIdioma,  $textoBase);
+            $textoFinal    = str_replace('{idioma}',    $nomeIdioma,  $textoFinal);
+            $textoFinal    = str_replace('{SITE_LINK}', $siteLink,    $textoFinal);
+            $textoFinal    = aplicarTagsComunidade($textoFinal, $comunidadeGrupo);
 
             // Verificação semanal (para templates marcados como semanal dentro do escopo por_encontro)
             $frequencia = $t['frequencia'] ?? 'diario';
