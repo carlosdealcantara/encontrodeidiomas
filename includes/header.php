@@ -182,11 +182,17 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <link rel="icon"             type="image/webp" href="/assets/images/favicon.webp?v=4">
     <link rel="apple-touch-icon"                   href="/assets/images/favicon.webp?v=4">
 
-    <!-- Fonts -->
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+    <?php if ($current_page === 'index.php'): ?>
+    <!-- Preload LCP hero image -->
+    <link rel="preload" as="image" href="/assets/images/encontrodeidiomas-20250407-0001.webp" type="image/webp" fetchpriority="high">
+    <?php endif; ?>
 
     <?php if (!empty($swiper_enabled)): ?>
     <!-- Swiper CSS -->
@@ -753,7 +759,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         </script>
         <div class="header-content">
             <div class="logo-container">
-                <img src="/assets/images/logo.webp?v=6" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
+                <img src="/assets/images/logo.webp?v=6" alt="Logo Encontro de Idiomas" class="logo" width="60" height="60" fetchpriority="high">
                 <div>
                     <div class="site-title"><?= SITE_NAME ?></div>
                     <div class="site-description"><?= t('meta.tagline') ?></div>

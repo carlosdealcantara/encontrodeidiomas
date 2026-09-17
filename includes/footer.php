@@ -15,7 +15,7 @@
 
                 <!-- Logo + Tagline -->
                 <div class="footer-logo-section">
-                    <img src="/assets/images/logo.webp" alt="Logo Encontro de Idiomas" class="footer-logo">
+                    <img src="/assets/images/logo.webp" alt="Logo Encontro de Idiomas" class="footer-logo" width="70" height="70" loading="lazy">
                     <div>
                         <div class="footer-title">Encontro de Idiomas</div>
                         <div class="footer-tagline"><?= t('footer.tagline') ?></div>
