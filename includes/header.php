@@ -195,9 +195,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <?php endif; ?>
 
     <?php if (!empty($swiper_enabled)): ?>
-    <!-- Swiper CSS — non-blocking -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"></noscript>
+    <!-- Swiper CSS — bloqueante pois controla o carrossel hero (elemento LCP) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <?php endif; ?>
 
     <!-- Google Analytics (GA4) — carregado após interação do usuário -->
