@@ -948,4 +948,4 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             }
         });
     </script>
-    <script src="/assets/js/timezone.js?v=<?= ASSET_VERSION ?>"></script>
+    <script src="/assets/js/timezone.js?v=<?= ASSET_VERSION ?>" defer></script>
