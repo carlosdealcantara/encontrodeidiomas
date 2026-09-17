@@ -230,55 +230,55 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.webp" alt="<?= t('meta.alt_presencial') ?>" fetchpriority="high">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.webp" alt="<?= t('meta.alt_presencial') ?>" width="400" height="300" fetchpriority="high">
                                         <div class="photo-label"><?= t('home.hero_labels.presencial') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.webp" alt="<?= t('meta.alt_online') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.webp" alt="<?= t('meta.alt_online') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.online') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/replay.webp" alt="<?= t('meta.alt_replay') ?>">
+                                        <img src="/assets/images/replay.webp" alt="<?= t('meta.alt_replay') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.replay') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.webp" alt="<?= t('meta.alt_activities') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.webp" alt="<?= t('meta.alt_activities') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.activities') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/mentoria.webp" alt="<?= t('meta.alt_mentorship') ?>">
+                                        <img src="/assets/images/mentoria.webp" alt="<?= t('meta.alt_mentorship') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.mentorship') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/IMG_20250408_175458_304.webp" alt="<?= t('home.hero_labels.outdoor') ?>">
+                                        <img src="/assets/images/IMG_20250408_175458_304.webp" alt="<?= t('home.hero_labels.outdoor') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.outdoor') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/Grupos.webp" alt="<?= t('home.hero_labels.varied') ?>">
+                                        <img src="/assets/images/Grupos.webp" alt="<?= t('home.hero_labels.varied') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.varied') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/IMG_20250408_174649_714.webp" alt="<?= t('home.hero_labels.moments') ?>">
+                                        <img src="/assets/images/IMG_20250408_174649_714.webp" alt="<?= t('home.hero_labels.moments') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.moments') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/instagram_social.webp" alt="<?= t('home.hero_labels.social') ?>">
+                                        <img src="/assets/images/instagram_social.webp" alt="<?= t('home.hero_labels.social') ?>" width="400" height="300" loading="lazy">
                                         <div class="photo-label"><?= t('home.hero_labels.social') ?></div>
                                     </div>
                                 </div>

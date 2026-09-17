@@ -182,24 +182,44 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <link rel="icon"             type="image/webp" href="/assets/images/favicon.webp?v=4">
     <link rel="apple-touch-icon"                   href="/assets/images/favicon.webp?v=4">
 
-    <!-- Fonts -->
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+    <?php if ($current_page === 'index.php'): ?>
+    <!-- Preload LCP hero image -->
+    <link rel="preload" as="image" href="/assets/images/encontrodeidiomas-20250407-0001.webp" type="image/webp" fetchpriority="high">
+    <?php endif; ?>
 
     <?php if (!empty($swiper_enabled)): ?>
-    <!-- Swiper CSS -->
+    <!-- Swiper CSS — bloqueante pois controla o carrossel hero (elemento LCP) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <?php endif; ?>
 
-    <!-- Google Analytics (GA4) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1BD3DH8TJ"></script>
+    <!-- Google Analytics (GA4) — carregado após interação do usuário -->
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-C1BD3DH8TJ');
+        // Adia o carregamento do GA4 até que a página seja interativa
+        function loadGA4() {
+            if (window._ga4Loaded) return;
+            window._ga4Loaded = true;
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-C1BD3DH8TJ';
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-C1BD3DH8TJ');
+        }
+        // Carrega após 3s ou na primeira interação do usuário (o que vier primeiro)
+        setTimeout(loadGA4, 3000);
+        ['click','scroll','keydown','touchstart'].forEach(function(e) {
+            document.addEventListener(e, loadGA4, {once: true, passive: true});
+        });
     </script>
 
     <style>
@@ -753,7 +773,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         </script>
         <div class="header-content">
             <div class="logo-container">
-                <img src="/assets/images/logo.webp?v=6" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
+                <img src="/assets/images/logo.webp?v=6" alt="Logo Encontro de Idiomas" class="logo" width="60" height="60" fetchpriority="high">
                 <div>
                     <div class="site-title"><?= SITE_NAME ?></div>
                     <div class="site-description"><?= t('meta.tagline') ?></div>
@@ -806,13 +826,26 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             }
         }
 
-        // Executar ao carregar, ao redimensionar e ao interagir
+        // Executar ao carregar e ao redimensionar
         window.addEventListener('load', syncHeaderHeight);
         window.addEventListener('resize', syncHeaderHeight);
+        // Executar imediatamente (antes do load) para evitar CLS no first paint
+        document.addEventListener('DOMContentLoaded', syncHeaderHeight);
         
-        // Se houver banners que podem sumir, reajustar
+        // Observer focado APENAS no header e banners — evita reflows em cascata
+        // causados por observar o body inteiro com subtree:true
+        const _observerTargets = [
+            document.querySelector('.header'),
+            document.getElementById('smart-suggestion-banner'),
+            document.querySelector('.global-notice')
+        ].filter(Boolean);
         const observer = new MutationObserver(syncHeaderHeight);
-        observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+        _observerTargets.forEach(function(el) {
+            observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
+        });
+        // Também observe mudanças diretas de filhos do header (ex: banner sendo inserido)
+        const _headerEl = document.querySelector('.header');
+        if (_headerEl) observer.observe(_headerEl, { childList: true });
 
         // Menu mobile toggle
         document.getElementById('menu-toggle-btn').addEventListener('click', function () {
@@ -942,4 +975,4 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             }
         });
     </script>
-    <script src="/assets/js/timezone.js?v=<?= ASSET_VERSION ?>"></script>
+    <script src="/assets/js/timezone.js?v=<?= ASSET_VERSION ?>" defer></script>

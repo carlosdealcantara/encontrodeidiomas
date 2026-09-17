@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!tzDropdownMenu.contains(e.target) && !tzToggleBtn.contains(e.target)) {
                     tzDropdownMenu.classList.remove('show');
                 }
-            });
+            }, { passive: true });
         }
 
         buildDropdown();
@@ -359,37 +359,50 @@ document.addEventListener("DOMContentLoaded", function() {
         if (typeof syncHeaderHeight === 'function') syncHeaderHeight();
     }
 
-    let clockInterval;
+    let clockRafId = null;
     let lastTimeStr = "";
+    let lastClockTZ = null;
 
     function startLiveClock(tz) {
-        if (clockInterval) clearInterval(clockInterval);
+        if (clockRafId) cancelAnimationFrame(clockRafId);
         lastTimeStr = ""; // Força atualização no primeiro tick
+        lastClockTZ = tz;
 
-        function updateClock() {
-            if (!tzCurrentLabel) return;
+        // Referencia horaria de quando o minuto mudou pela última vez
+        let lastMinuteChecked = -1;
+
+        function tick() {
+            if (!tzCurrentLabel || lastClockTZ !== tz) return; // Para se o TZ mudou
             const now = new Date();
-            const locale = currentLang === 'en' ? 'en-US' : 'pt-BR';
-            const opts = { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: currentLang === 'en' };
-            
-            let timeStr = now.toLocaleString(locale, opts);
-            
-            if (timeStr !== lastTimeStr) {
-                lastTimeStr = timeStr;
-                const parts = timeStr.split(':');
-                if (parts.length >= 2) {
-                    const first = parts[0];
-                    const rest = parts.slice(1).join(':');
-                    
-                    tzCurrentLabel.innerHTML = `${first}<span class="blink-colon">:</span>${rest} <i class="fas fa-caret-down" style="margin-left:6px; opacity:0.8;"></i>`;
-                } else {
-                    tzCurrentLabel.textContent = timeStr;
+            const currentMinute = now.getMinutes();
+
+            // Só atualiza o DOM quando o minuto muda (reduz writes de 60x/min para 1x/min)
+            if (currentMinute !== lastMinuteChecked) {
+                lastMinuteChecked = currentMinute;
+                const locale = currentLang === 'en' ? 'en-US' : 'pt-BR';
+                const opts = { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: currentLang === 'en' };
+                
+                let timeStr = now.toLocaleString(locale, opts);
+                
+                if (timeStr !== lastTimeStr) {
+                    lastTimeStr = timeStr;
+                    const parts = timeStr.split(':');
+                    if (parts.length >= 2) {
+                        const first = parts[0];
+                        const rest = parts.slice(1).join(':');
+                        tzCurrentLabel.innerHTML = `${first}<span class="blink-colon">:</span>${rest} <i class="fas fa-caret-down" style="margin-left:6px; opacity:0.8;"></i>`;
+                    } else {
+                        tzCurrentLabel.textContent = timeStr;
+                    }
                 }
             }
+            clockRafId = requestAnimationFrame(tick);
         }
         
-        updateClock();
-        clockInterval = setInterval(updateClock, 1000);
+        // Inicia o loop apenas se o elemento existir
+        if (tzCurrentLabel) {
+            tick();
+        }
     }
 
     initTimezone();
