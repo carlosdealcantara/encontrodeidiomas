@@ -195,17 +195,32 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <?php endif; ?>
 
     <?php if (!empty($swiper_enabled)): ?>
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <!-- Swiper CSS — non-blocking -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"></noscript>
     <?php endif; ?>
 
-    <!-- Google Analytics (GA4) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1BD3DH8TJ"></script>
+    <!-- Google Analytics (GA4) — carregado após interação do usuário -->
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-C1BD3DH8TJ');
+        // Adia o carregamento do GA4 até que a página seja interativa
+        function loadGA4() {
+            if (window._ga4Loaded) return;
+            window._ga4Loaded = true;
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-C1BD3DH8TJ';
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-C1BD3DH8TJ');
+        }
+        // Carrega após 3s ou na primeira interação do usuário (o que vier primeiro)
+        setTimeout(loadGA4, 3000);
+        ['click','scroll','keydown','touchstart'].forEach(function(e) {
+            document.addEventListener(e, loadGA4, {once: true, passive: true});
+        });
     </script>
 
     <style>
@@ -812,13 +827,26 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
             }
         }
 
-        // Executar ao carregar, ao redimensionar e ao interagir
+        // Executar ao carregar e ao redimensionar
         window.addEventListener('load', syncHeaderHeight);
         window.addEventListener('resize', syncHeaderHeight);
+        // Executar imediatamente (antes do load) para evitar CLS no first paint
+        document.addEventListener('DOMContentLoaded', syncHeaderHeight);
         
-        // Se houver banners que podem sumir, reajustar
+        // Observer focado APENAS no header e banners — evita reflows em cascata
+        // causados por observar o body inteiro com subtree:true
+        const _observerTargets = [
+            document.querySelector('.header'),
+            document.getElementById('smart-suggestion-banner'),
+            document.querySelector('.global-notice')
+        ].filter(Boolean);
         const observer = new MutationObserver(syncHeaderHeight);
-        observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+        _observerTargets.forEach(function(el) {
+            observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
+        });
+        // Também observe mudanças diretas de filhos do header (ex: banner sendo inserido)
+        const _headerEl = document.querySelector('.header');
+        if (_headerEl) observer.observe(_headerEl, { childList: true });
 
         // Menu mobile toggle
         document.getElementById('menu-toggle-btn').addEventListener('click', function () {
