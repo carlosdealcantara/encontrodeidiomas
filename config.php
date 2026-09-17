@@ -202,22 +202,39 @@ function getUsefulLinks(): array {
 }
 /**
  * Retorna a URL da foto do anfitrião com fallback inteligente entre ambientes
+/**
+ * Helper unificado para fotos de Hosts
  * @param string|null $fileName Nome do arquivo no banco
+ * @param bool $thumb Se deve buscar a versão miniatura (_thumb)
  * @return string URL completa ou relativa para a imagem
  */
-function getHostPhotoUrl(?string $fileName): string {
+function getHostPhotoUrl(?string $fileName, bool $thumb = false): string {
     $fallback = '/assets/images/HostSemFoto.webp';
-    if (empty($fileName) || $fileName === 'HostSemFoto.png') return $fallback;
+    if (empty($fileName) || $fileName === 'HostSemFoto.png' || $fileName === 'HostSemFoto.webp') return $fallback;
     
     $is_admin = (strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false);
     $relative_prefix = $is_admin ? '../' : '/';
     $v = defined('ASSET_VERSION') ? ASSET_VERSION : '1';
     
+    $checkName = $fileName;
+    if ($thumb) {
+        $info = pathinfo($fileName);
+        $candidateThumb = ($info['filename'] ?? '') . '_thumb.webp';
+        if (file_exists(__DIR__ . '/assets/images/' . $candidateThumb)) {
+            $checkName = $candidateThumb;
+        } else {
+            $candidateThumbExt = ($info['filename'] ?? '') . '_thumb.' . ($info['extension'] ?? '');
+            if (file_exists(__DIR__ . '/assets/images/' . $candidateThumbExt)) {
+                $checkName = $candidateThumbExt;
+            }
+        }
+    }
+    
     // Caminho absoluto no disco para o check
-    $filePath = __DIR__ . '/assets/images/' . $fileName;
+    $filePath = __DIR__ . '/assets/images/' . $checkName;
     
     if (file_exists($filePath)) {
-        return $relative_prefix . 'assets/images/' . $fileName . '?v=' . $v;
+        return $relative_prefix . 'assets/images/' . $checkName . '?v=' . $v;
     } else {
         // Fallback dinâmico entre domínios (Dev <-> Prod)
         $currentHost = $_SERVER['HTTP_HOST'] ?? '';
@@ -227,10 +244,10 @@ function getHostPhotoUrl(?string $fileName): string {
         
         if ($isProduction) {
             // Estamos na Produção -> Busca no Dev
-            return 'https://' . $devDomain . '/assets/images/' . $fileName;
+            return 'https://' . $devDomain . '/assets/images/' . $checkName;
         } else {
             // Estamos no Dev (ou localhost) -> Busca na Produção
-            return 'https://' . $prodDomain . '/assets/images/' . $fileName;
+            return 'https://' . $prodDomain . '/assets/images/' . $checkName;
         }
     }
 }

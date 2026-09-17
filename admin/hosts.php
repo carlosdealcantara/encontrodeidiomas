@@ -159,7 +159,7 @@ if (isset($_GET['toggle_status']) && isset($_GET['id'])) {
                 </thead>
                 <tbody>
                     <?php foreach ($hosts as $host): 
-                        $photo = getHostPhotoUrl($host['profile_picture'] ?? $host['photo'] ?? null);
+                        $photo = getHostPhotoUrl($host['profile_picture'] ?? $host['photo'] ?? null, true);
                     ?>
                     <tr>
                         <td>

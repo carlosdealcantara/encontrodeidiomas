@@ -44,7 +44,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         
         <?php if (!empty($ev['host_name'])): ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
-            <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null); ?>
+            <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null, true); ?>
             <img src="<?= $hostPhotoUrl ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Foto do Host <?= htmlspecialchars($ev['host_name']) ?>" onerror="this.src='/assets/images/logo.webp'">
             <span><?= t('events.host_label') ?> <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
         </div>

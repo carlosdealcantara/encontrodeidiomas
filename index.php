@@ -341,7 +341,7 @@ include 'includes/header.php';
                                                 </div>
                                                 <div class="hms-host">
                                                     <?php if (!empty($ev['host_name'])): ?>
-                                                        <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null); ?>
+                                                        <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null, true); ?>
                                                         <img src="<?= $hostPhotoUrl ?>" alt="Host" onerror="this.src='/assets/images/logo.webp'">
                                                         <span>Host: <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
                                                     <?php else: ?>
