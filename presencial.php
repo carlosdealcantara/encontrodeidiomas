@@ -94,7 +94,7 @@ foreach ($events as $ev) {
         "@type" => "LocalBusiness",
         "name" => t('presencial.local_business_name', ['city' => $ev['city']]),
         "description" => t('presencial.local_business_desc', ['city' => $ev['city'], 'country' => $ev['country']]),
-        "image" => SITE_URL . "/assets/images/og_image.png",
+        "image" => SITE_URL . "/assets/images/og_image.webp",
         "url" => SITE_URL . "/presencial.php",
         "address" => [
             "@type" => "PostalAddress",
@@ -138,7 +138,7 @@ ob_start();
         content: '';
         position: absolute;
         inset: 0;
-        background: url('/assets/images/IMG_20250408_174649_714.jpg') center/cover;
+        background: url('/assets/images/IMG_20250408_174649_714.webp') center/cover;
         opacity: .3;
     }
     .hero-presencial .container { position: relative; z-index: 1; }

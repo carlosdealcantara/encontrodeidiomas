@@ -236,49 +236,49 @@ include 'includes/header.php';
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.jpg" alt="<?= t('meta.alt_online') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0002.webp" alt="<?= t('meta.alt_online') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.online') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/replay.png" alt="<?= t('meta.alt_replay') ?>">
+                                        <img src="/assets/images/replay.webp" alt="<?= t('meta.alt_replay') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.replay') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.jpg" alt="<?= t('meta.alt_activities') ?>">
+                                        <img src="/assets/images/encontrodeidiomas-20250408-0013.webp" alt="<?= t('meta.alt_activities') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.activities') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/mentoria.jpg" alt="<?= t('meta.alt_mentorship') ?>">
+                                        <img src="/assets/images/mentoria.webp" alt="<?= t('meta.alt_mentorship') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.mentorship') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/IMG_20250408_175458_304.jpg" alt="<?= t('home.hero_labels.outdoor') ?>">
+                                        <img src="/assets/images/IMG_20250408_175458_304.webp" alt="<?= t('home.hero_labels.outdoor') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.outdoor') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/Grupos.png" alt="<?= t('home.hero_labels.varied') ?>">
+                                        <img src="/assets/images/Grupos.webp" alt="<?= t('home.hero_labels.varied') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.varied') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/IMG_20250408_174649_714.jpg" alt="<?= t('home.hero_labels.moments') ?>">
+                                        <img src="/assets/images/IMG_20250408_174649_714.webp" alt="<?= t('home.hero_labels.moments') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.moments') ?></div>
                                     </div>
                                 </div>
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/instagram_social.png" alt="<?= t('home.hero_labels.social') ?>">
+                                        <img src="/assets/images/instagram_social.webp" alt="<?= t('home.hero_labels.social') ?>">
                                         <div class="photo-label"><?= t('home.hero_labels.social') ?></div>
                                     </div>
                                 </div>
@@ -342,7 +342,7 @@ include 'includes/header.php';
                                                 <div class="hms-host">
                                                     <?php if (!empty($ev['host_name'])): ?>
                                                         <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null); ?>
-                                                        <img src="<?= $hostPhotoUrl ?>" alt="Host" onerror="this.src='/assets/images/logo.png'">
+                                                        <img src="<?= $hostPhotoUrl ?>" alt="Host" onerror="this.src='/assets/images/logo.webp'">
                                                         <span>Host: <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
                                                     <?php else: ?>
                                                         <div class="hms-no-host"></div>
@@ -383,7 +383,7 @@ include 'includes/header.php';
                                 </div>
                                 <!-- São Paulo -->
                                 <div class="swiper-slide">
-                                    <div class="home-city-slide" style="background-image: url('/assets/images/IMG_20250408_174649_714.jpg');">
+                                    <div class="home-city-slide" style="background-image: url('/assets/images/IMG_20250408_174649_714.webp');">
                                         <div class="hcs-overlay">
                                             <span class="hcs-city">São Paulo</span>
                                         </div>
@@ -391,7 +391,7 @@ include 'includes/header.php';
                                 </div>
                                 <!-- Belo Horizonte -->
                                 <div class="swiper-slide">
-                                    <div class="home-city-slide" style="background-image: url('/assets/images/encontrodeidiomas-20250408-0013.jpg'); background-position: center 30%;">
+                                    <div class="home-city-slide" style="background-image: url('/assets/images/encontrodeidiomas-20250408-0013.webp'); background-position: center 30%;">
                                         <div class="hcs-overlay">
                                             <span class="hcs-city">Belo Horizonte</span>
                                         </div>

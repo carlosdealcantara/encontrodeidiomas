@@ -206,7 +206,7 @@ function getUsefulLinks(): array {
  * @return string URL completa ou relativa para a imagem
  */
 function getHostPhotoUrl(?string $fileName): string {
-    $fallback = '/assets/images/HostSemFoto.png';
+    $fallback = '/assets/images/HostSemFoto.webp';
     if (empty($fileName) || $fileName === 'HostSemFoto.png') return $fallback;
     
     $is_admin = (strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false);

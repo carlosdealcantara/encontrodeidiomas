@@ -42,7 +42,7 @@ foreach ($meetings as $m) {
             "@type" => "VirtualLocation",
             "url" => $m['meet_link'] ?? SITE_URL
         ],
-        "image" => SITE_URL . "/assets/images/og_image.png",
+        "image" => SITE_URL . "/assets/images/og_image.webp",
         "organizer" => [
             "@type" => "EducationalOrganization",
             "name" => SITE_NAME,

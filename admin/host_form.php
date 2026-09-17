@@ -288,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php 
                     $photoUrl = getHostPhotoUrl($host['profile_picture'] ?? null);
                 ?>
-                <img src="<?= $photoUrl ?>" class="preview-img" onerror="this.src='../assets/images/HostSemFoto.png'">
+                <img src="<?= $photoUrl ?>" class="preview-img" onerror="this.src='../assets/images/HostSemFoto.webp'">
                 <div>
                     <label>Trocar Foto de Perfil</label>
                     <input type="file" name="photo" accept="image/*">

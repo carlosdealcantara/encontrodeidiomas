@@ -5,6 +5,7 @@ sudo docker run -d --name mentoria-worker \
   --restart always \
   --add-host=host.docker.internal:host-gateway \
   -v /home/ubuntu/encontrodeidiomas/google_service_account.json:/app/google_service_account.json \
+  -v /home/ubuntu/encontrodeidiomas/google_oauth_token_mentoria.json:/app/google_oauth_token_mentoria.json \
   -e DB_HOST=77.37.127.146 \
   -e DB_NAME=u879045076_ei \
   -e DB_USER=u879045076_ei \

@@ -45,12 +45,12 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
         <?php if (!empty($ev['host_name'])): ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
             <?php $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null); ?>
-            <img src="<?= $hostPhotoUrl ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Foto do Host <?= htmlspecialchars($ev['host_name']) ?>" onerror="this.src='/assets/images/logo.png'">
+            <img src="<?= $hostPhotoUrl ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Foto do Host <?= htmlspecialchars($ev['host_name']) ?>" onerror="this.src='/assets/images/logo.webp'">
             <span><?= t('events.host_label') ?> <strong><?= htmlspecialchars($ev['host_name']) ?></strong></span>
         </div>
         <?php else: ?>
         <div class="event-host-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-color); opacity: 0.8;">
-            <div style="width: 24px; height: 24px; border-radius: 50%; background-image: url('/assets/images/logo.png'); background-size: 160%; background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); background-color: #fff;" role="img" aria-label="Logo Encontro de Idiomas"></div>
+            <div style="width: 24px; height: 24px; border-radius: 50%; background-image: url('/assets/images/logo.webp'); background-size: 160%; background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); background-color: #fff;" role="img" aria-label="Logo Encontro de Idiomas"></div>
             <span><strong><?= t('events.free_conversation') ?></strong></span>
         </div>
         <?php endif; ?>
@@ -171,7 +171,7 @@ function renderHostCard($host) {
 
         <div class="host-image-container">
             <img src="<?= $photoUrl ?>" alt="Foto de <?= htmlspecialchars($host['full_name']) ?>" class="host-image"
-                 onerror="this.src='/assets/images/HostSemFoto.png'">
+                 onerror="this.src='/assets/images/HostSemFoto.webp'">
         </div>
 
         <div class="host-info">

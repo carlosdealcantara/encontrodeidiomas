@@ -96,7 +96,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
           "url": "<?= SITE_URL ?>",
           "logo": {
             "@type": "ImageObject",
-            "url": "<?= SITE_URL ?>/assets/images/logo.png?v=6"
+            "url": "<?= SITE_URL ?>/assets/images/logo.webp?v=6"
           },
           "description": "<?= t('meta.seo_org_desc') ?>",
           "sameAs": [
@@ -154,6 +154,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <meta property="og:title"       content="Ei | <?= sanitize($og_title) ?>">
     <meta property="og:description" content="<?= sanitize($og_description) ?>">
     <meta property="og:image"       content="<?= SITE_URL ?>/assets/images/og_preview_elegant.jpg?v=9.0">
+    <meta property="og:image:width"  content="192">
+    <meta property="og:image:height" content="192">
     <meta property="og:url"         content="<?= sanitize($canonical) ?>">
     <meta property="og:site_name"   content="Ei">
     <meta property="og:locale"      content="<?= t('meta.og_locale') ?>">
@@ -177,8 +179,8 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     <title>Ei | <?= sanitize($title) ?><?= $title_suffix ?></title>
 
     <!-- Favicon -->
-    <link rel="icon"             type="image/png" href="/assets/images/favicon.png?v=3">
-    <link rel="apple-touch-icon"                  href="/assets/images/favicon.png?v=3">
+    <link rel="icon"             type="image/webp" href="/assets/images/favicon.webp?v=4">
+    <link rel="apple-touch-icon"                   href="/assets/images/favicon.webp?v=4">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -751,7 +753,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         </script>
         <div class="header-content">
             <div class="logo-container">
-                <img src="/assets/images/logo.png?v=6" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
+                <img src="/assets/images/logo.webp?v=6" alt="Logo Encontro de Idiomas" class="logo" fetchpriority="high">
                 <div>
                     <div class="site-title"><?= SITE_NAME ?></div>
                     <div class="site-description"><?= t('meta.tagline') ?></div>

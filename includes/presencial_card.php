@@ -29,7 +29,7 @@ $cityHref = $citySlugVal
             <?php 
                 $hostPhotoUrl = getHostPhotoUrl($ev['host_photo'] ?? null);
             ?>
-            <img src="<?= $hostPhotoUrl ?>" alt="<?= htmlspecialchars($ev['host_name']) ?>" onerror="this.src='/assets/images/HostSemFoto.png'">
+            <img src="<?= $hostPhotoUrl ?>" alt="<?= htmlspecialchars($ev['host_name']) ?>" onerror="this.src='/assets/images/HostSemFoto.webp'">
             <div>
                 <div class="city-host-name"><?= htmlspecialchars($ev['host_name']) ?></div>
                 <div class="city-host-label"><?= t('events.organizer_label') ?></div>

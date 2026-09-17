@@ -8,6 +8,8 @@ import datetime
 import re
 from dotenv import load_dotenv
 from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from playwright.sync_api import sync_playwright
@@ -29,7 +31,8 @@ DB_USER = os.getenv('DB_USER', '')
 DB_PASS = os.getenv('DB_PASS', '')
 DB_NAME = os.getenv('DB_NAME', '')
 
-GOOGLE_SA_JSON = 'google_service_account.json' 
+GOOGLE_SA_JSON = 'google_service_account.json'
+GOOGLE_OAUTH_TOKEN = 'google_oauth_token_mentoria.json'  # OAuth da conta carlosdealcantarajr@gmail.com
 DRIVE_MENTORIA_FOLDER_ID = os.getenv('DRIVE_MENTORIA_FOLDER_ID')
 DRIVE_MENTORIA_ARCHIVE_FOLDER_ID = os.getenv('DRIVE_MENTORIA_ARCHIVE_FOLDER_ID')
 MENTORIA_ODYSEE_LANGUAGE_ID = os.getenv('MENTORIA_ODYSEE_LANGUAGE_ID', '10')
@@ -45,9 +48,35 @@ def get_db_connection():
     )
 
 def init_drive_service():
+    """Inicializa o serviço do Drive da Mentoria.
+    Prioridade: OAuth token da conta carlosdealcantarajr@gmail.com (google_oauth_token_mentoria.json).
+    Fallback: Service Account (google_service_account.json).
+    """
     scopes = ['https://www.googleapis.com/auth/drive']
-    creds = service_account.Credentials.from_service_account_file(GOOGLE_SA_JSON, scopes=scopes)
-    return build('drive', 'v3', credentials=creds)
+
+    if os.path.exists(GOOGLE_OAUTH_TOKEN):
+        import json
+        with open(GOOGLE_OAUTH_TOKEN) as f:
+            token_data = json.load(f)
+        creds = Credentials(
+            token=token_data.get('token'),
+            refresh_token=token_data.get('refresh_token'),
+            token_uri=token_data.get('token_uri', 'https://oauth2.googleapis.com/token'),
+            client_id=token_data.get('client_id'),
+            client_secret=token_data.get('client_secret'),
+            scopes=token_data.get('scopes', scopes),
+        )
+        if not creds.valid:
+            creds.refresh(Request())
+            token_data['token'] = creds.token
+            with open(GOOGLE_OAUTH_TOKEN, 'w') as f:
+                json.dump(token_data, f, indent=2)
+        logger.info("[DRIVE] Autenticado via OAuth (conta mentoria).")
+        return build('drive', 'v3', credentials=creds)
+    else:
+        logger.warning("[DRIVE] google_oauth_token_mentoria.json nao encontrado. Usando Service Account como fallback.")
+        creds = service_account.Credentials.from_service_account_file(GOOGLE_SA_JSON, scopes=scopes)
+        return build('drive', 'v3', credentials=creds)
 
 def buscar_proxima_tarefa():
     conn = get_db_connection()
@@ -195,6 +224,11 @@ def verificar_video_publicado(channel_name, slug):
     return False
 
 def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
+    """
+    Captura o link ody.sh navegando pela página do próprio vídeo (URL canônica).
+    O owner autenticado consegue acessar a página normalmente mesmo para vídeos Unlisted.
+    Em caso de lentidão pontual do Odysee, tenta até 2 vezes com 15s de espera.
+    """
     share_link = None
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -209,51 +243,62 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             viewport={"width": 1920, "height": 1080}
         )
         page = context.new_page()
-        # CORREÇÃO: timeout curto e isolado para o Passo 7.
-        # Esta função NÃO é um upload demorado — ela só navega e lê um input.
-        # Nunca deve herdar o timeout global de 4h do contexto de upload.
-        page.set_default_timeout(60000)  # 60s máximo para qualquer operação aqui
+        page.set_default_timeout(60000)
         page.set_default_navigation_timeout(60000)
         try:
-            page.goto("https://odysee.com", timeout=60000)
+            page.goto("https://odysee.com", timeout=60000, wait_until="domcontentloaded")
             context.add_cookies([{"name": "auth_token", "value": auth_token, "domain": ".odysee.com", "path": "/"}])
             page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
-            
+
             video_url = f"https://odysee.com/@{channel_name}/{slug}"
             logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
-            page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
-            try:
-                page.wait_for_selector('h1, .video-js, video', timeout=20000)
-            except:
-                pass
-            page.wait_for_timeout(8000)
-            try:
-                page.screenshot(path=f"/app/screenshots_mentoria/07_video_page.png", timeout=15000)
-            except Exception as e:
-                logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
-            
-            clicked = page.evaluate("""
-                () => {
-                    const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
-                    if (btn) { btn.click(); return true; }
-                    return false;
-                }
-            """)
-            if not clicked:
-                share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
-                share_btn.click(force=True, no_wait_after=True)
-            page.wait_for_timeout(2000)
-            
-            share_input = page.locator('input[value*="ody.sh"]').first
-            if not share_input.is_visible():
-                share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-            
-            share_link = share_input.input_value(timeout=10000)
-            if share_link and "ody.sh" in share_link:
-                logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
-            else:
-                logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
-                share_link = None
+
+            # Tenta até 2 vezes para absorver lentidão pontual do Odysee
+            for tentativa in range(2):
+                try:
+                    page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+                    try:
+                        page.wait_for_selector('h1, .video-js, video', timeout=30000)
+                    except:
+                        pass
+                    page.wait_for_timeout(8000)
+
+                    try:
+                        page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                    except Exception as e:
+                        logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+
+                    clicked = page.evaluate("""
+                        () => {
+                            const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                            if (btn) { btn.click(); return true; }
+                            return false;
+                        }
+                    """)
+                    if not clicked:
+                        share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                        share_btn.click(force=True, no_wait_after=True)
+                    page.wait_for_timeout(2000)
+
+                    share_input = page.locator('input[value*="ody.sh"]').first
+                    if not share_input.is_visible():
+                        share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+
+                    val = share_input.input_value(timeout=15000)
+                    if val and "ody.sh" in val:
+                        share_link = val
+                        logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
+                        break  # sucesso
+                    else:
+                        logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
+                        share_link = None
+
+                except Exception as e:
+                    logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
+                    if tentativa == 0:
+                        logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
+                        page.wait_for_timeout(15000)
+
         except Exception as e:
             logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
         finally:
@@ -631,49 +676,62 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             logger.warning("[PASSO 6] Timeout de 4h atingido. O upload pode ter sido concluído mesmo assim.")
         
         # PASSO 7: Capturar o link ody.sh de compartilhamento
+        # Navega pela URL canônica do vídeo (funciona para o owner autenticado, inclusive Unlisted).
+        # Tenta até 2 vezes com 15s de espera para absorver lentidão pontual do Odysee.
         share_link = None
         if upload_ok and channel_name and slug:
             try:
-                # CORREÇÃO: O timeout global de 4h ainda está ativo neste ponto.
-                # Redefine para 60s antes de qualquer operação do Passo 7.
                 page.set_default_timeout(60000)
                 page.set_default_navigation_timeout(60000)
-                
+
                 video_url = f"https://odysee.com/@{channel_name.lstrip('@')}/{slug}"
                 logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
-                page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
-                try:
-                    page.wait_for_selector('h1, .video-js, video', timeout=20000)
-                except:
-                    pass
-                page.wait_for_timeout(8000)
-                try:
-                    page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
-                except Exception as e:
-                    logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
-                
-                clicked = page.evaluate("""
-                    () => {
-                        const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
-                        if (btn) { btn.click(); return true; }
-                        return false;
-                    }
-                """)
-                if not clicked:
-                    share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
-                    share_btn.click(force=True, no_wait_after=True)
-                page.wait_for_timeout(2000)
-                
-                share_input = page.locator('input[value*="ody.sh"]').first
-                if not share_input.is_visible():
-                    share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-                
-                share_link = share_input.input_value(timeout=10000)
-                if share_link and "ody.sh" in share_link:
-                    logger.info(f"[PASSO 7] Link ody.sh capturado: {share_link}")
-                else:
-                    logger.warning(f"[PASSO 7] Link extraído não parece ser ody.sh: {share_link}")
-                    share_link = None
+
+                for tentativa in range(2):
+                    try:
+                        page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+                        try:
+                            page.wait_for_selector('h1, .video-js, video', timeout=30000)
+                        except:
+                            pass
+                        page.wait_for_timeout(8000)
+
+                        try:
+                            page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                        except Exception as e:
+                            logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+
+                        clicked = page.evaluate("""
+                            () => {
+                                const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                                if (btn) { btn.click(); return true; }
+                                return false;
+                            }
+                        """)
+                        if not clicked:
+                            share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                            share_btn.click(force=True, no_wait_after=True)
+                        page.wait_for_timeout(2000)
+
+                        share_input = page.locator('input[value*="ody.sh"]').first
+                        if not share_input.is_visible():
+                            share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+
+                        val = share_input.input_value(timeout=15000)
+                        if val and "ody.sh" in val:
+                            share_link = val
+                            logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
+                            break  # sucesso
+                        else:
+                            logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
+                            share_link = None
+
+                    except Exception as e:
+                        logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
+                        if tentativa == 0:
+                            logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
+                            page.wait_for_timeout(15000)
+
             except Exception as e:
                 logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
 
@@ -689,49 +747,107 @@ def escanear_drive():
     if not DRIVE_MENTORIA_FOLDER_ID:
         logger.error("DRIVE_MENTORIA_FOLDER_ID não configurado.")
         return
-        
+
     try:
         drive_service = init_drive_service()
-        results = drive_service.files().list(
-            q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType contains 'video/' and (name contains 'Mentorship Class' or name contains 'Mentoria')",
-            fields="files(id, name)"
-        ).execute()
-        arquivos = results.get('files', [])
-        
-        if not arquivos: return
-            
+
+        # 1. Descobrir todas as pastas de origem dos vídeos dinamicamente.
+        # O Google Meet agora cria subpastas "Google Meet" > "<evento> (recurring)".
+        # Buscamos essas subpastas dentro da pasta raiz da Mentoria e também
+        # globalmente (para capturar pastas criadas fora da hierarquia esperada).
+        # A pasta raiz também é incluída como fallback para vídeos antigos.
+        folder_ids = [DRIVE_MENTORIA_FOLDER_ID]
+
+        try:
+            logger.info("[SCAN] Buscando subpastas 'Google Meet' dentro da pasta da Mentoria...")
+
+            # Busca pastas "Google Meet" filhas diretas da pasta raiz da Mentoria
+            meet_folders = drive_service.files().list(
+                q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+                fields='files(id, name)'
+            ).execute().get('files', [])
+
+            # Também busca globalmente por "Google Meet" (caso o Google crie fora da hierarquia)
+            meet_folders_global = drive_service.files().list(
+                q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+                fields='files(id, name)'
+            ).execute().get('files', [])
+
+            # Une e remove duplicatas pelo ID
+            seen_ids = {mf['id'] for mf in meet_folders}
+            for mf in meet_folders_global:
+                if mf['id'] not in seen_ids:
+                    meet_folders.append(mf)
+                    seen_ids.add(mf['id'])
+
+            for mf in meet_folders:
+                logger.info(f"[SCAN] Pasta 'Google Meet' encontrada: {mf['id']}")
+                # Busca subpastas "recurring" (padrão do Google Meet para eventos recorrentes)
+                sub_results = drive_service.files().list(
+                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
+                    fields='files(id, name)'
+                ).execute()
+                for sub in sub_results.get('files', []):
+                    logger.info(f"[SCAN] Subpasta recurring encontrada: {sub['name']} ({sub['id']})")
+                    folder_ids.append(sub['id'])
+
+        except Exception as e:
+            logger.warning(f"[SCAN] Erro ao buscar subpastas Google Meet dinamicamente: {e}")
+
+        # 2. Buscar arquivos de vídeo nessas pastas com filtro de nome da Mentoria
+        arquivos = []
+        for i in range(0, len(folder_ids), 10):
+            lote = folder_ids[i:i+10]
+            parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
+            query = (
+                f"({parents_q}) and mimeType contains 'video/' "
+                f"and (name contains 'Mentorship Class' or name contains 'Mentoria') "
+                f"and trashed=false"
+            )
+            results = drive_service.files().list(
+                q=query,
+                fields="files(id, name, size)"
+            ).execute()
+            arquivos.extend(results.get('files', []))
+
+        print(f"Arquivos MENTORIA encontrados no Drive: {len(arquivos)}", flush=True)
+
+        if not arquivos:
+            return
+
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
+
         for arquivo in arquivos:
             file_id = arquivo['id']
             file_name = arquivo['name']
-            
+
             cursor.execute("SELECT id FROM mentoria_odysee_queue WHERE drive_file_id = %s", (file_id,))
-            if cursor.fetchone(): continue
-                
+            if cursor.fetchone():
+                continue
+
             if 'feedback' in file_name.lower():
                 logger.info(f"Arquivo ignorado (Feedback): {file_name}")
                 continue
-                
+
             # Ex: Mentorship Class - 2026/07/01 13:06 GMT-03:00 - Recording.mp4
             titulo_limpo = re.sub(r'\s+\d{2}:\d{2}\s+GMT.*', '', file_name)
             titulo_limpo = titulo_limpo.replace(' - Recording', '').replace('.mp4', '').strip()
-            
+
             date_match = re.search(r'(\d{4})[/\-](\d{2})[/\-](\d{2})\s+(\d{2})', file_name)
             if date_match:
                 slug = f"mentorship_{date_match.group(1)}_{date_match.group(2)}_{date_match.group(3)}_{date_match.group(4)}h"
             else:
                 slug = normalize_text(titulo_limpo).replace(" ", "_")
-                
+
             cursor.execute("""
-                INSERT INTO mentoria_odysee_queue 
-                (drive_file_id, drive_file_name, titulo_final, odysee_slug, status) 
+                INSERT INTO mentoria_odysee_queue
+                (drive_file_id, drive_file_name, titulo_final, odysee_slug, status)
                 VALUES (%s, %s, %s, %s, 'pending')
             """, (file_id, file_name, titulo_limpo, slug))
             conn.commit()
             logger.info(f"Novo vídeo da Mentoria na fila: {file_name} | Slug: {slug}")
-            
+
         cursor.close()
         conn.close()
     except Exception as e:
@@ -879,9 +995,13 @@ def processar_fila():
             url_curta = share_link
             logger.info(f"[SHARE] Usando link ody.sh: {url_curta}")
         else:
-            odysee_url = f"https://odysee.com/{channel_name}/{tarefa['odysee_slug']}"
-            url_curta = encurtar_url(odysee_url)
-            logger.warning(f"[SHARE] Fallback para URL canônica encurtada: {url_curta}")
+            # IMPORTANTE: Para a Mentoria, o link ody.sh é OBRIGATÓRIO pois vídeos
+            # Unlisted não são acessíveis pela URL canônica pelos alunos.
+            # Usar o encurtador russo como fallback geraria um link quebrado.
+            # Forçamos uma Exception aqui para que o sistema de retry automático
+            # tente novamente em 60s — na próxima tentativa o upload já estará
+            # publicado e o worker vai pular direto para capturar o link.
+            raise Exception("[SHARE] Link ody.sh não obtido. Tarefa voltará para pending e será reprocessada automaticamente.")
         # Re-inicializa a conexão do Drive pois uploads longos causam timeout/Broken Pipe
         drive_service = init_drive_service()
         mover_arquivos_mentoria(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
