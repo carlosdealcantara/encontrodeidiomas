@@ -230,7 +230,7 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <div class="swiper-slide">
                                     <div class="photo-card">
-                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.jpg" alt="<?= t('meta.alt_presencial') ?>" fetchpriority="high">
+                                        <img src="/assets/images/encontrodeidiomas-20250407-0001.webp" alt="<?= t('meta.alt_presencial') ?>" fetchpriority="high">
                                         <div class="photo-label"><?= t('home.hero_labels.presencial') ?></div>
                                     </div>
                                 </div>
@@ -375,7 +375,7 @@ include 'includes/header.php';
                             <div class="swiper-wrapper">
                                 <!-- Brasília -->
                                 <div class="swiper-slide">
-                                    <div class="home-city-slide" style="background-image: url('/assets/images/encontrodeidiomas-20250407-0001.jpg');">
+                                    <div class="home-city-slide" style="background-image: url('/assets/images/encontrodeidiomas-20250407-0001.webp');">
                                         <div class="hcs-overlay">
                                             <span class="hcs-city">Brasília</span>
                                         </div>

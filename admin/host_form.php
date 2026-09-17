@@ -56,43 +56,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'youtube'   => $data['youtube'] ?? ''
         ];
         $socialJson = json_encode($socialData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);        // Tratamento de Upload de Foto - Só altera se enviar uma nova
-        $profilePic = $host['profile_picture'] ?? 'HostSemFoto.png';
-        if (!empty($_FILES['photo']['name'])) {
-            $ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
-            $newFileName = str_replace(' ', '_', $data['full_name'] ?? 'host') . '.' . $ext;
-            $targetPath = '../assets/images/' . $newFileName;
+        $profilePic = $host['profile_picture'] ?? 'HostSemFoto.webp';
+        if (!empty($_FILES['photo']['name']) && !empty($_FILES['photo']['tmp_name']) && is_uploaded_file($_FILES['photo']['tmp_name'])) {
+            $baseName = str_replace(' ', '_', $data['full_name'] ?? 'host');
+            $cleanBaseName = preg_replace('/[^A-Za-z0-9_\-]/', '', $baseName);
+            if (empty($cleanBaseName)) {
+                $cleanBaseName = 'host_' . time();
+            }
+            $webpFileName = $cleanBaseName . '.webp';
+            $thumbFileName = $cleanBaseName . '_thumb.webp';
+            $targetPath = '../assets/images/' . $webpFileName;
+            $thumbPath = '../assets/images/' . $thumbFileName;
             
-            if (move_uploaded_file($_FILES['photo']['tmp_name'], $targetPath)) {
-                $profilePic = $newFileName;
+            try {
+                $tmpFile = $_FILES['photo']['tmp_name'];
+                $imgInfo = @getimagesize($tmpFile);
+                $mime = $imgInfo['mime'] ?? '';
                 
-                // --- GERAÇÃO DE THUMBNAIL (Otimização) ---
-                try {
-                    $thumbName = str_replace('.', '_thumb.', $newFileName);
-                    $thumbPath = '../assets/images/' . $thumbName;
-                    
-                    // Carrega a imagem original
-                    $img = null;
-                    if ($ext === 'jpg' || $ext === 'jpeg') $img = @imagecreatefromjpeg($targetPath);
-                    elseif ($ext === 'png') $img = @imagecreatefrompng($targetPath);
-                    elseif ($ext === 'webp') $img = @imagecreatefromwebp($targetPath);
-                    
-                    if ($img) {
-                        $width = imagesx($img);
-                        $height = imagesy($img);
-                        $size = min($width, $height);
-                        $thumb = imagecreatetruecolor(80, 80);
-                        
-                        // Crop centralizado e resize
-                        imagecopyresampled($thumb, $img, 0, 0, ($width-$size)/2, ($height-$size)/2, 80, 80, $size, $size);
-                        
-                        // Salva a miniatura como JPEG para ser bem leve
-                        imagejpeg($thumb, $thumbPath, 80);
-                        imagedestroy($img);
-                        imagedestroy($thumb);
-                    }
-                } catch (Exception $e) {
-                    error_log("Erro ao gerar thumbnail: " . $e->getMessage());
+                $img = null;
+                if ($mime === 'image/jpeg') {
+                    $img = @imagecreatefromjpeg($tmpFile);
+                } elseif ($mime === 'image/png') {
+                    $img = @imagecreatefrompng($tmpFile);
+                } elseif ($mime === 'image/webp') {
+                    $img = @imagecreatefromwebp($tmpFile);
                 }
+                
+                if ($img) {
+                    $width = imagesx($img);
+                    $height = imagesy($img);
+                    
+                    // 1. Imagem Principal: Redimensiona proporcionalmente se exceder 600px
+                    $maxDim = 600;
+                    if ($width > $maxDim || $height > $maxDim) {
+                        $ratio = min($maxDim / $width, $maxDim / $height);
+                        $newW = (int)round($width * $ratio);
+                        $newH = (int)round($height * $ratio);
+                    } else {
+                        $newW = $width;
+                        $newH = $height;
+                    }
+                    
+                    $mainImg = imagecreatetruecolor($newW, $newH);
+                    imagealphablending($mainImg, false);
+                    imagesavealpha($mainImg, true);
+                    imagecopyresampled($mainImg, $img, 0, 0, 0, 0, $newW, $newH, $width, $height);
+                    imagewebp($mainImg, $targetPath, 82);
+                    imagedestroy($mainImg);
+                    
+                    // 2. Thumbnail: 80x80 crop centralizado
+                    $cropSize = min($width, $height);
+                    $thumbImg = imagecreatetruecolor(80, 80);
+                    imagealphablending($thumbImg, false);
+                    imagesavealpha($thumbImg, true);
+                    imagecopyresampled(
+                        $thumbImg, 
+                        $img, 
+                        0, 0, 
+                        (int)(($width - $cropSize) / 2), 
+                        (int)(($height - $cropSize) / 2), 
+                        80, 80, 
+                        $cropSize, $cropSize
+                    );
+                    imagewebp($thumbImg, $thumbPath, 80);
+                    imagedestroy($thumbImg);
+                    imagedestroy($img);
+                    
+                    $profilePic = $webpFileName;
+                }
+            } catch (Exception $e) {
+                error_log("Erro ao processar imagem de host: " . $e->getMessage());
             }
         }
 
