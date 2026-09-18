@@ -93,7 +93,7 @@ $prefill = null;    // Dados para pré-preencher após redirect
 if ($logged_in) {
     try {
         $stmt = $conn->query("
-            SELECT l.id, l.name, l.flag_emoji, l.instagram_link, l.greeting, 
+            SELECT l.id, l.name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, 
                    (SELECT meet_link FROM meetings WHERE language_id = l.id AND active = 1 ORDER BY day_of_week ASC, time_hour ASC LIMIT 1) as meet_link
             FROM languages l
             JOIN (
@@ -299,9 +299,10 @@ function sanitizeOdyseeUrl(string $url): string {
                     <?php foreach ($idiomas_disponiveis as $l): ?>
                         <option value='<?= json_encode([
                             "nome"      => $l['name'],
+                            "name_en"   => !empty($l['name_en']) ? $l['name_en'] : $l['name'],
                             "emoji"     => $l['flag_emoji'],
                             "emojis"    => str_repeat($l['flag_emoji'], 5),
-                            "saudacao"  => $l['greeting'],
+                            "saudacao"  => $l['greeting'] ?: 'Welcome!',
                             "meet_link" => $l['meet_link'],
                             "instagram" => $l['instagram_link']
                         ]) ?>'><?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?></option>
@@ -362,14 +363,31 @@ function sanitizeOdyseeUrl(string $url): string {
         const btnCopy = document.getElementById('btnCopy');
         if (!select.value) { box.style.display = 'none'; btnCopy.style.display = 'none'; return; }
         const data = JSON.parse(select.value);
+
+        // Se for inglês, o nome já é English/Inglês. Para outros, usa o nome em inglês no escopo global.
+        const nomeIdioma = data.name_en || data.nome;
+        const meetLinkLimpo = (data.meet_link || 'Link não definido').replace(/^https?:\/\//, '');
+
         let texto = templateOriginal
-            .replace(/{IDIOMA}/g, data.nome.toUpperCase())
-            .replace(/{idioma}/g, data.nome)
+            .replace(/{SITE_LINK}/g, 'viaEi.com/en/online')
+            .replace(/{IDIOMA}/g, nomeIdioma.toUpperCase())
+            .replace(/{idioma}/g, nomeIdioma)
             .replace(/{EMOJI_FLAG}/g, data.emoji)
             .replace(/{EMOJI_FLAGS}/g, data.emojis)
-            .replace(/{SAUDACAO}/g, data.saudacao)
-            .replace(/{MEET_LINK}/g, data.meet_link || 'Link não definido')
+            .replace(/{EMOJI_REPETIDO_5X}/g, data.emojis)
+            .replace(/{SAUDACAO}/g, data.saudacao || 'Welcome!')
+            .replace(/{BOAS_VINDAS_NATIVAS}/g, '')
+            .replace(/{IDIOMA_BASE}/g, '🗣️ 🇺🇸 EN')
+            .replace(/{HOST_LINK}/g, 'viaEi.com/equipe/')
+            .replace(/{MEET_LINK}/g, meetLinkLimpo)
             .replace(/{INSTAGRAM_LINK}/g, data.instagram || '');
+
+        // Resolução para Global: remove {BR}...{/BR} e preserva o conteúdo de {GLOBAL}...{/GLOBAL}
+        texto = texto.replace(/\{BR\}[\s\S]*?\{\/BR\}/g, '');
+        texto = texto.replace(/\{GLOBAL\}([\s\S]*?)\{\/GLOBAL\}/g, '$1');
+        // Normaliza excesso de quebras de linha residuais
+        texto = texto.replace(/\n{3,}/g, '\n\n').trim();
+
         box.textContent = texto;
         box.style.display = 'block';
         btnCopy.style.display = 'flex';
