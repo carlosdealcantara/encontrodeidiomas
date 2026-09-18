@@ -80,17 +80,39 @@ if (!$templateRow) {
 }
 $textoTemplate = $templateRow['texto'];
 
-// 2. Busca meetings ativados para hoje e esta hora
-$stmtMeetings = $conn->prepare("
-    SELECT m.*, l.name as language_name, l.flag_emoji 
-    FROM meetings m
-    JOIN languages l ON m.language_id = l.id
-    JOIN telegram_bot_slots tbs ON m.id = tbs.meeting_id
-    WHERE m.active = 1 
-      AND m.day_of_week = ? 
-      AND m.time_hour = ?
-      AND tbs.ativo = 1
-");
+// 2. Busca meetings ativados para hoje e esta hora (suporta meeting_sessions com fallback para meetings)
+$hasSessions = false;
+try {
+    $checkSessions = $conn->query("SELECT 1 FROM meeting_sessions LIMIT 1");
+    $hasSessions = ($checkSessions !== false);
+} catch (Exception $e) {
+    $hasSessions = false;
+}
+
+if ($hasSessions) {
+    $stmtMeetings = $conn->prepare("
+        SELECT m.*, ms.id AS session_id, ms.day_of_week, ms.time_hour, l.name as language_name, l.flag_emoji 
+        FROM meetings m
+        JOIN meeting_sessions ms ON ms.meeting_id = m.id AND ms.active = 1
+        JOIN languages l ON m.language_id = l.id
+        JOIN telegram_bot_slots tbs ON m.id = tbs.meeting_id
+        WHERE m.active = 1 
+          AND ms.day_of_week = ? 
+          AND ms.time_hour = ?
+          AND tbs.ativo = 1
+    ");
+} else {
+    $stmtMeetings = $conn->prepare("
+        SELECT m.*, l.name as language_name, l.flag_emoji 
+        FROM meetings m
+        JOIN languages l ON m.language_id = l.id
+        JOIN telegram_bot_slots tbs ON m.id = tbs.meeting_id
+        WHERE m.active = 1 
+          AND m.day_of_week = ? 
+          AND m.time_hour = ?
+          AND tbs.ativo = 1
+    ");
+}
 $stmtMeetings->execute([$diaDaSemanaAtual, $horaAtualReal]);
 $meetings = $stmtMeetings->fetchAll();
 
