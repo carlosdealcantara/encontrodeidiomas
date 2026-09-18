@@ -55,28 +55,64 @@ if (count($templates) === 0) {
 }
 
 // 2. Pega encontros ativos para HOJE, ordenados por horário crescente
-// Usa IFNULL(time_minute, 0) para compatibilidade caso a coluna não exista
+// Suporta tabela meeting_sessions (modelo pai/filho) com fallback para meetings
+$hasSessions = false;
 try {
-    $stmtMeetings = $conn->prepare("
-        SELECT m.*, l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
-               IFNULL(m.time_minute, 0) as time_minute_safe
-        FROM meetings m
-        JOIN languages l ON m.language_id = l.id
-        WHERE m.active = 1 AND m.day_of_week = ?
-        ORDER BY (m.time_hour * 60 + IFNULL(m.time_minute, 0)) ASC
-    ");
-    $stmtMeetings->execute([$diaDaSemanaAtual]);
-} catch (PDOException $e) {
-    // Fallback: coluna time_minute não existe na tabela meetings
-    $stmtMeetings = $conn->prepare("
-        SELECT m.*, l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
-               0 as time_minute_safe
-        FROM meetings m
-        JOIN languages l ON m.language_id = l.id
-        WHERE m.active = 1 AND m.day_of_week = ?
-        ORDER BY m.time_hour ASC
-    ");
-    $stmtMeetings->execute([$diaDaSemanaAtual]);
+    $checkSessions = $conn->query("SELECT 1 FROM meeting_sessions LIMIT 1");
+    $hasSessions = ($checkSessions !== false);
+} catch (Exception $e) {
+    $hasSessions = false;
+}
+
+if ($hasSessions) {
+    try {
+        $stmtMeetings = $conn->prepare("
+            SELECT m.*, ms.id AS session_id, ms.day_of_week, ms.time_hour,
+                   l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
+                   IFNULL(m.time_minute, 0) as time_minute_safe
+            FROM meetings m
+            JOIN meeting_sessions ms ON ms.meeting_id = m.id AND ms.active = 1
+            JOIN languages l ON m.language_id = l.id
+            WHERE m.active = 1 AND ms.day_of_week = ?
+            ORDER BY (ms.time_hour * 60 + IFNULL(m.time_minute, 0)) ASC
+        ");
+        $stmtMeetings->execute([$diaDaSemanaAtual]);
+    } catch (PDOException $e) {
+        $stmtMeetings = $conn->prepare("
+            SELECT m.*, ms.id AS session_id, ms.day_of_week, ms.time_hour,
+                   l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
+                   0 as time_minute_safe
+            FROM meetings m
+            JOIN meeting_sessions ms ON ms.meeting_id = m.id AND ms.active = 1
+            JOIN languages l ON m.language_id = l.id
+            WHERE m.active = 1 AND ms.day_of_week = ?
+            ORDER BY ms.time_hour ASC
+        ");
+        $stmtMeetings->execute([$diaDaSemanaAtual]);
+    }
+} else {
+    try {
+        $stmtMeetings = $conn->prepare("
+            SELECT m.*, l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
+                   IFNULL(m.time_minute, 0) as time_minute_safe
+            FROM meetings m
+            JOIN languages l ON m.language_id = l.id
+            WHERE m.active = 1 AND m.day_of_week = ?
+            ORDER BY (m.time_hour * 60 + IFNULL(m.time_minute, 0)) ASC
+        ");
+        $stmtMeetings->execute([$diaDaSemanaAtual]);
+    } catch (PDOException $e) {
+        // Fallback: coluna time_minute não existe na tabela meetings
+        $stmtMeetings = $conn->prepare("
+            SELECT m.*, l.name as language_name, l.name_en, l.flag_emoji, l.instagram_link, l.greeting, l.welcome_native,
+                   0 as time_minute_safe
+            FROM meetings m
+            JOIN languages l ON m.language_id = l.id
+            WHERE m.active = 1 AND m.day_of_week = ?
+            ORDER BY m.time_hour ASC
+        ");
+        $stmtMeetings->execute([$diaDaSemanaAtual]);
+    }
 }
 $meetings = $stmtMeetings->fetchAll();
 
