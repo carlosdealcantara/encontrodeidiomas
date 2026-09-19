@@ -29,14 +29,20 @@
     .btn-add { background: var(--success); }
     .btn-add:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
     .filter-btn.active { background: var(--accent-red) !important; color: white !important; box-shadow: 0 4px 10px rgba(227, 29, 28, 0.2); }
-    .table-container { background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 20px; background: rgba(0,0,0,0.1); color: var(--text-dim); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+    .table-container { 
+        background: var(--card-bg); 
+        border-radius: 20px; 
+        border: 1px solid rgba(255,255,255,0.05); 
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch; 
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    th { text-align: left; padding: 20px; background: rgba(0,0,0,0.1); color: var(--text-dim); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
     td { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
-    .aluno-name { font-weight: 600; color: var(--white); font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-    .aluno-phone { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; }
-    .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
+    .aluno-name { font-weight: 600; color: var(--white); font-size: 1.1rem; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .aluno-phone { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; white-space: nowrap; }
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; white-space: nowrap; }
     .badge-pago { background: rgba(16, 185, 129, 0.1); color: var(--success); }
     .badge-pendente { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
     .badge-suspenso { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
@@ -45,16 +51,37 @@
     .badge-inativo { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
     .badge-comunidade { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
     .badge-vitalicio { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-    .actions { display: flex; gap: 10px; }
-    .action-btn { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; background: transparent; }
+    .actions { display: flex; gap: 10px; align-items: center; }
+    .action-btn { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; background: transparent; flex-shrink: 0; }
     .btn-edit { color: var(--accent-blue); }
     .btn-edit:hover { background: var(--accent-blue); color: white; }
     .btn-renew { color: var(--success); }
     .btn-renew:hover { background: var(--success); color: white; }
-    .vencimento-hoje { color: var(--warning); font-weight: bold; }
-    .vencimento-atrasado { color: var(--danger); font-weight: bold; }
-    .vencimento-normal { color: var(--text-main); }
-    .vencimento-inativo { color: var(--text-dim); font-style: italic; }
+    .vencimento-hoje { color: var(--warning); font-weight: bold; white-space: nowrap; }
+    .vencimento-atrasado { color: var(--danger); font-weight: bold; white-space: nowrap; }
+    .vencimento-normal { color: var(--text-main); white-space: nowrap; }
+    .vencimento-inativo { color: var(--text-dim); font-style: italic; white-space: nowrap; }
+
+    @media (max-width: 768px) {
+        .filter-group {
+            overflow-x: auto;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px;
+        }
+        .filter-btn {
+            white-space: nowrap;
+            padding: 8px 14px !important;
+            font-size: 0.85rem !important;
+        }
+        .search-group {
+            max-width: 100% !important;
+            width: 100%;
+        }
+        th, td {
+            padding: 14px 15px;
+        }
+    }
 </style>
 
 <div class="table-container">
