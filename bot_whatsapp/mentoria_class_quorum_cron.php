@@ -1,7 +1,9 @@
 <?php
 /**
  * CRON: Cancelamento Classes (Deadline)
- * Frequência: 1x/hora (ex: 19:00 para cancelar aula de 20:00)
+ * Frequência: Quanto mais frequente, melhor (ex: a cada 5 min).
+ * Lógica: Dispara em qualquer run onde o deadline já passou e a aula ainda
+ * não começou. O mentoria_auto_logs é o deduplicador — impede envio duplo.
  */
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
@@ -30,10 +32,13 @@ foreach ($schedules as $s) {
     $deadlineTime = clone $classTime;
     $deadlineTime->modify('-1 hour');
     
-    // Dispara somente no exato momento do deadline ou até 5 minutos DEPOIS (nunca antes).
+    // Dispara se o deadline já passou E a aula ainda não começou (ou se for teste manual).
+    // Não há janela de tempo fixa: o mentoria_auto_logs (tipo='class_cancel') impede envio duplo.
+    // Isso funciona como fila: qualquer run do cron depois do deadline tenta enviar,
+    // mas só o primeiro que ainda não encontrar o log de duplicidade vai de fato disparar.
     $diff = $now->getTimestamp() - $deadlineTime->getTimestamp();
     $isTest = isset($_GET['test_now']);
-    if (($diff >= 0 && $diff <= 300) || $isTest) { // 0 a 5 min após o deadline
+    if (($diff >= 0 && $now < $classTime) || $isTest) { // deadline passou, aula ainda não começou
         
         // Verifica anti-duplicidade para evitar enviar vários cancelamentos
         $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_cancel' AND data_execucao = ? AND membro_jid = ?");
