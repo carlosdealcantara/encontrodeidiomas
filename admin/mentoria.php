@@ -344,6 +344,12 @@ try {
 } catch (Exception $e) {} // Fail gracefully se a tabela não existir
 $days = [1 => 'Segunda-feira', 2 => 'Terça-feira', 3 => 'Quarta-feira', 4 => 'Quinta-feira', 5 => 'Sexta-feira', 6 => 'Sábado', 7 => 'Domingo'];
 
+// Carrega logs de diagnóstico do cron de quórum (tabela criada automaticamente pelo cron)
+$cronDiagLogs = [];
+try {
+    $cronDiagLogs = $conn->query("SELECT * FROM mentoria_cron_execucoes ORDER BY id DESC LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {} // Tabela ainda não existe se o cron nunca rodou
+
 if (isset($_GET['msg'])) $msg = $_GET['msg'];
 ?>
 <!DOCTYPE html>
