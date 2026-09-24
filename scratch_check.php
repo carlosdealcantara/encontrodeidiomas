@@ -17,9 +17,9 @@ foreach($logs as $l) {
 }
 echo "</table>";
 
-echo "<h3>Registros com acao cancel_sent em mentoria_cron_execucoes (últimos 15):</h3>";
+echo "<h3>Registros em mentoria_cron_execucoes entre 14:50 e 15:30 hoje:</h3>";
 try {
-    $stmtCancel = $conn->query("SELECT * FROM mentoria_cron_execucoes WHERE acao = 'cancel_sent' ORDER BY id DESC LIMIT 15");
+    $stmtCancel = $conn->query("SELECT * FROM mentoria_cron_execucoes WHERE executado_em >= '2026-09-24 14:50:00' AND executado_em <= '2026-09-24 15:30:00' ORDER BY id ASC");
     $cancels = $stmtCancel->fetchAll(PDO::FETCH_ASSOC);
     echo "<table border='1' cellpadding='4'><tr><th>ID</th><th>Cron</th><th>Executado Em</th><th>Sched ID</th><th>Acao</th><th>Attendees</th><th>Notas</th></tr>";
     foreach($cancels as $l) {
