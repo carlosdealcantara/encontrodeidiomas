@@ -81,8 +81,27 @@ $current_template = $row ? $row['setting_value'] : "🎬 *Replay:* {bandeira} {t
 // --- LOGIC: FILA ---
 if (isset($_GET['retry']) && is_numeric($_GET['retry'])) {
     $id = (int)$_GET['retry'];
-    $stmt = $conn->prepare("UPDATE odysee_publish_queue SET status = 'pending', retry_count = 0 WHERE id = ?");
-    $stmt->execute([$id]);
+    // Ao retentar, busca se há um título mais recente preenchido pelo host em meetup_replays
+    $stmtQ = $conn->prepare("SELECT language_id, semana, replay_parte FROM odysee_publish_queue WHERE id = ?");
+    $stmtQ->execute([$id]);
+    $item = $stmtQ->fetch();
+    if ($item) {
+        $semana_item = $item['semana'] ?: date('o-\WW');
+        $parte_item = $item['replay_parte'] ?: 1;
+        $stmtR = $conn->prepare("SELECT titulo FROM meetup_replays WHERE language_id = ? AND semana = ? AND parte = ?");
+        $stmtR->execute([$item['language_id'], $semana_item, $parte_item]);
+        $replay = $stmtR->fetch();
+        if ($replay && !empty($replay['titulo'])) {
+            $stmt = $conn->prepare("UPDATE odysee_publish_queue SET status = 'pending', retry_count = 0, titulo_final = ? WHERE id = ?");
+            $stmt->execute([$replay['titulo'], $id]);
+        } else {
+            $stmt = $conn->prepare("UPDATE odysee_publish_queue SET status = 'pending', retry_count = 0 WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+    } else {
+        $stmt = $conn->prepare("UPDATE odysee_publish_queue SET status = 'pending', retry_count = 0 WHERE id = ?");
+        $stmt->execute([$id]);
+    }
     header('Location: odysee.php?tab=fila&msg=' . urlencode('Retrying'));
     exit;
 }
@@ -92,6 +111,26 @@ if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
     $stmt = $conn->prepare("UPDATE odysee_publish_queue SET status = 'error', error_message = 'Cancelled by Admin' WHERE id = ?");
     $stmt->execute([$id]);
     header('Location: odysee.php?tab=fila&msg=' . urlencode('Cancelled'));
+    exit;
+}
+
+if (isset($_GET['sync_titles'])) {
+    $stmtPending = $conn->query("SELECT id, language_id, semana, replay_parte FROM odysee_publish_queue WHERE status IN ('error', 'pending', 'waiting_host')");
+    $items = $stmtPending->fetchAll();
+    $updatedCount = 0;
+    foreach ($items as $it) {
+        $sem = $it['semana'] ?: date('o-\WW');
+        $prt = $it['replay_parte'] ?: 1;
+        $stmtR = $conn->prepare("SELECT titulo FROM meetup_replays WHERE language_id = ? AND semana = ? AND parte = ?");
+        $stmtR->execute([$it['language_id'], $sem, $prt]);
+        $replay = $stmtR->fetch();
+        if ($replay && !empty($replay['titulo'])) {
+            $stmtUpd = $conn->prepare("UPDATE odysee_publish_queue SET titulo_final = ?, status = 'pending', retry_count = 0, error_message = NULL WHERE id = ?");
+            $stmtUpd->execute([$replay['titulo'], $it['id']]);
+            $updatedCount++;
+        }
+    }
+    header('Location: odysee.php?tab=fila&msg=' . urlencode("Sincronização concluída! $updatedCount vídeo(s) atualizados com os títulos dos hosts e reativados."));
     exit;
 }
 
@@ -260,7 +299,8 @@ if (isset($_GET['msg']) && !$msg) {
 
         <!-- ABA 1: FILA DE UPLOADS -->
         <div id="tab-fila" class="main-tab-content <?= $active_tab === 'fila' ? 'active' : '' ?>">
-            <div style="margin-bottom: 20px; text-align: right;">
+            <div style="margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn-sm" style="background: rgba(56, 189, 248, 0.2); color: var(--accent-blue);" onclick="location.href='odysee.php?sync_titles=1'"><i class="fas fa-sync"></i> Sincronizar Títulos dos Hosts</button>
                 <button class="btn-sm" onclick="location.href='odysee.php?tab=fila'"><i class="fas fa-sync-alt"></i> Atualizar Fila</button>
             </div>
             <table class="data-table">
@@ -339,7 +379,7 @@ if (isset($_GET['msg']) && !$msg) {
                             ?>
                         </td>
                         <td><span class="status-badge status-<?= $badge_class ?>"><?= $display_status ?></span></td>
-                        <td><?= $row['retry_count'] ?>/3</td>
+                        <td><?= $row['retry_count'] ?>/5</td>
                         <td style="font-size: 0.85rem; color: var(--text-dim); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?= htmlspecialchars($row['error_message'] ?? '') ?>">
                             <?= htmlspecialchars($row['error_message'] ?? '') ?>
                         </td>

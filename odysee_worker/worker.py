@@ -1158,7 +1158,7 @@ def processar_fila():
         else:
             logger.exception("Erro durante o processamento da fila")
             retry = tarefa['retry_count'] + 1
-            novo_status = 'error' if retry >= 3 else 'pending'
+            novo_status = 'error' if retry >= 5 else 'pending'
             atualizar_status(tarefa['id'], novo_status, error_msg=str(e), retry_count=retry)
     finally:
         if temp_path and os.path.exists(temp_path):
