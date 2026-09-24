@@ -53,10 +53,15 @@ try {
 
 $ontem = (new DateTime())->modify('-1 day')->format('Y-m-d');
 
-$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'ranking_unificado' AND data_execucao = ?");
+$check = $conn->prepare("SELECT id, detalhes FROM mentoria_auto_logs WHERE tipo = 'ranking_unificado' AND data_execucao = ?");
 $check->execute([$ontem]);
-if ($check->rowCount() > 0 && !isset($_GET['force'])) {
-    die("Ranking já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
+$rowCheck = $check->fetch(PDO::FETCH_ASSOC);
+if ($rowCheck && !isset($_GET['force'])) {
+    $det = json_decode($rowCheck['detalhes'] ?? '', true);
+    $status = $det['status'] ?? 'sent';
+    if ($status === 'sent') {
+        die("Ranking já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
+    }
 }
 
 $config = getMentoriaConfig();
@@ -427,15 +432,10 @@ $msg3 = str_replace(
     $tpl3
 );
 
-// Disparo simples (sem mentions de @numero)
-// FIX CRÍTICO: Grava lock de dedup ANTES de enviar para o WhatsApp.
-// Se o PHP sofrer timeout durante os envios, o log já estará gravado
-// e a próxima execução do cron não reenviará as mensagens.
-try {
-    $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_unificado', ?, ?)")
-         ->execute([$ontem, json_encode(['stats' => $memberStats])]);
-} catch (Exception $e) {
-    error_log("ranking_cron: falha ao gravar dedup lock: " . $e->getMessage());
+// 1. PRIMEIRA CONFIRMAÇÃO (Trava Inicial): bloqueia como 'processing' antes de disparar
+$travou = registrarInicioDisparo($conn, 'ranking_unificado', $ontem, null, 15);
+if (!$travou && !isset($_GET['force'])) {
+    die("Ranking unificado já está sendo processado por outra instância ou já foi concluído.");
 }
 
 $result1 = enviarWhatsApp($targetGroup, $msg1, 'mentoria_ranking_student');
@@ -444,12 +444,16 @@ $result2 = enviarWhatsApp($targetGroup, $msg2, 'mentoria_ranking_messenger');
 sleep(1);
 $result3 = enviarWhatsApp($targetGroup, $msg3, 'mentoria_ranking_reactor');
 
-if ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300) {
-    echo "✅ Rankings enviados com sucesso (em 3 mensagens separadas)!";
-} elseif ($result1['httpCode'] === 0) {
-    // Timeout do curl: a mensagem foi enfileirada no Baileys mas a resposta
-    // não chegou no prazo. O lock de dedup já foi gravado acima.
-    echo "⚠️ Timeout ao aguardar confirmação da API, mas o ranking pode ter sido enviado. Lock de dedup gravado.";
+$allSuccessful = ($result1['success'] || ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300));
+
+// 2. SEGUNDA CONFIRMAÇÃO (Conclusão): confirma o envio ou reporta falha para permitir retry
+if ($allSuccessful) {
+    registrarConclusaoDisparo($conn, 'ranking_unificado', $ontem, null, [
+        'stats' => $memberStats,
+        'httpCode' => $result1['httpCode']
+    ]);
+    echo "✅ Rankings enviados com sucesso (em 3 mensagens separadas) e confirmados!";
 } else {
-    echo "❌ Erro ao enviar ranking: HTTP " . $result1['httpCode'];
+    registrarFalhaDisparo($conn, 'ranking_unificado', $ontem, null, $result1['error'] ?? 'HTTP ' . $result1['httpCode']);
+    echo "❌ Erro ao enviar ranking: HTTP " . $result1['httpCode'] . " (" . ($result1['error'] ?? 'desconhecido') . "). Status marcado como failed para retentativa.";
 }

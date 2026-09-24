@@ -214,3 +214,104 @@ function aplicarTagsComunidade(string $texto, string $comunidade = 'brasil'): st
     return trim($texto);
 }
 
+/**
+ * GERENCIADOR DE TRAVA E IDEMPOTÊNCIA PARA CRONS / DISPAROS
+ * Implementa máquina de estados para evitar duplicatas e nunca engolir envios legítimos:
+ * - 'processing': Travado antes do envio. Impede outro cron de disparar em paralelo.
+ * - 'sent': Confirmado após sucesso da API do WhatsApp.
+ * - 'failed': Falha reportada. Permite nova tentativa na próxima execução.
+ * Se ficar preso em 'processing' por mais de $timeoutMinutes (ex: timeout fatal do PHP),
+ * a trava expira e permite retentativa automática.
+ */
+function registrarInicioDisparo(PDO $conn, string $tipo, string $dataExecucao, ?string $identificador = null, int $timeoutMinutes = 15): bool {
+    try {
+        // Limpa bloqueios expirados que ficaram 'processing' por timeout do PHP anterior
+        $stmtClean = $conn->prepare("
+            DELETE FROM mentoria_auto_logs 
+            WHERE tipo = ? 
+              AND data_execucao = ? 
+              AND (membro_jid = ? OR (membro_jid IS NULL AND ? IS NULL))
+              AND detalhes LIKE '%\"status\":\"processing\"%'
+              AND created_at < (NOW() - INTERVAL ? MINUTE)
+        ");
+        $stmtClean->execute([$tipo, $dataExecucao, $identificador, $identificador, $timeoutMinutes]);
+
+        // Verifica se já existe registro
+        $stmtCheck = $conn->prepare("
+            SELECT id, detalhes FROM mentoria_auto_logs 
+            WHERE tipo = ? 
+              AND data_execucao = ? 
+              AND (membro_jid = ? OR (membro_jid IS NULL AND ? IS NULL))
+        ");
+        $stmtCheck->execute([$tipo, $dataExecucao, $identificador, $identificador]);
+        $row = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            $det = json_decode($row['detalhes'] ?? '', true);
+            $status = $det['status'] ?? 'sent'; // Registros legados contam como 'sent'
+            if ($status === 'sent' || $status === 'processing') {
+                return false; // Já enviado ou em processamento ativo
+            }
+        }
+
+        // Tenta adquirir a trava como 'processing'
+        $detalhesInit = json_encode([
+            'status' => 'processing',
+            'started_at' => date('Y-m-d H:i:s')
+        ]);
+
+        $stmtLock = $conn->prepare("
+            INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid, detalhes)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE 
+                detalhes = IF(detalhes LIKE '%\"status\":\"failed\"%', VALUES(detalhes), detalhes)
+        ");
+        $stmtLock->execute([$tipo, $dataExecucao, $identificador, $detalhesInit]);
+
+        return ($stmtLock->rowCount() > 0);
+    } catch (Exception $e) {
+        error_log("registrarInicioDisparo error: " . $e->getMessage());
+        return false;
+    }
+}
+
+function registrarConclusaoDisparo(PDO $conn, string $tipo, string $dataExecucao, ?string $identificador = null, array $extraInfo = []): void {
+    try {
+        $extraInfo['status'] = 'sent';
+        $extraInfo['finished_at'] = date('Y-m-d H:i:s');
+        $detalhesSent = json_encode($extraInfo);
+
+        $stmt = $conn->prepare("
+            UPDATE mentoria_auto_logs 
+            SET detalhes = ? 
+            WHERE tipo = ? 
+              AND data_execucao = ? 
+              AND (membro_jid = ? OR (membro_jid IS NULL AND ? IS NULL))
+        ");
+        $stmt->execute([$detalhesSent, $tipo, $dataExecucao, $identificador, $identificador]);
+    } catch (Exception $e) {
+        error_log("registrarConclusaoDisparo error: " . $e->getMessage());
+    }
+}
+
+function registrarFalhaDisparo(PDO $conn, string $tipo, string $dataExecucao, ?string $identificador = null, string $erro = ''): void {
+    try {
+        $detalhesFailed = json_encode([
+            'status' => 'failed',
+            'error' => $erro,
+            'failed_at' => date('Y-m-d H:i:s')
+        ]);
+
+        $stmt = $conn->prepare("
+            UPDATE mentoria_auto_logs 
+            SET detalhes = ? 
+            WHERE tipo = ? 
+              AND data_execucao = ? 
+              AND (membro_jid = ? OR (membro_jid IS NULL AND ? IS NULL))
+        ");
+        $stmt->execute([$detalhesFailed, $tipo, $dataExecucao, $identificador, $identificador]);
+    } catch (Exception $e) {
+        error_log("registrarFalhaDisparo error: " . $e->getMessage());
+    }
+}
+

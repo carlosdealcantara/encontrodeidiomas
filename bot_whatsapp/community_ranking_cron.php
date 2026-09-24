@@ -90,15 +90,10 @@ if (empty($communityGroups)) {
 
 $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 
-// FIX CRÍTICO: Grava o lock de dedup ANTES de iniciar o processamento.
-// Se o script sofrer timeout no meio do loop, o lock já estará gravado
-// e a próxima execução do cron não reprocessará tudo.
-// O dedup por grupo (abaixo) garante que grupos já enviados não sejam repetidos.
-try {
-    $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('community_ranking_daily', ?, ?)")
-         ->execute([$ontem, json_encode(['processed_groups' => count($communityGroups)])]);
-} catch (Exception $e) {
-    error_log("community_ranking_cron: falha ao gravar dedup lock: " . $e->getMessage());
+// 1. PRIMEIRA CONFIRMAÇÃO (Trava Inicial): bloqueia como 'processing' antes de disparar
+$travouGeral = registrarInicioDisparo($conn, 'community_ranking_daily', $ontem, null, 25);
+if (!$travouGeral && !isset($_GET['force'])) {
+    die("Community ranking já em processamento por outra instância ou já concluído.");
 }
 
 foreach ($communityGroups as $groupKey => $gData) {
@@ -179,48 +174,55 @@ foreach ($communityGroups as $groupKey => $gData) {
     }
     
     if (!empty($msgList)) {
-        // Dedup por grupo: evita reenvio se o script foi interrompido parcialmente
-        $checkGrp = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'community_ranking_msg' AND data_execucao = ? AND membro_jid = ?");
-        $checkGrp->execute([$ontem, $groupJid]);
-        if ($checkGrp->rowCount() === 0 || isset($_GET['force'])) {
-            try {
-                $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('community_ranking_msg', ?, ?)")
-                     ->execute([$ontem, $groupJid]);
-            } catch (Exception $e) {}
+        // Dedup e trava por grupo: 1. Início do envio
+        $travouMsg = registrarInicioDisparo($conn, 'community_ranking_msg', $ontem, $groupJid, 10);
+        if ($travouMsg || isset($_GET['force'])) {
             $msgToSend = str_replace(
                 ['{date}', '{group_name}', '{msg_ranking_list}'],
                 [$enDate, $groupName, rtrim($msgList)],
                 $tplMsg
             );
-            enviarWhatsApp($groupJid, $msgToSend, 'community_ranking_messenger');
-            echo "Ranking de mensagens enviado para $groupName.<br>";
+            $resMsg = enviarWhatsApp($groupJid, $msgToSend, 'community_ranking_messenger');
+            // 2. Confirmação do envio
+            if ($resMsg['success'] || ($resMsg['httpCode'] >= 200 && $resMsg['httpCode'] < 300)) {
+                registrarConclusaoDisparo($conn, 'community_ranking_msg', $ontem, $groupJid, ['httpCode' => $resMsg['httpCode']]);
+                echo "Ranking de mensagens enviado para $groupName.<br>";
+            } else {
+                registrarFalhaDisparo($conn, 'community_ranking_msg', $ontem, $groupJid, $resMsg['error'] ?? 'HTTP ' . $resMsg['httpCode']);
+                echo "❌ Falha ao enviar ranking de mensagens para $groupName. Marcado para retry.<br>";
+            }
             sleep(3);
         } else {
-            echo "Ranking de mensagens já enviado para $groupName (dedup). Pulando.<br>";
+            echo "Ranking de mensagens já enviado/em andamento para $groupName (dedup). Pulando.<br>";
         }
     }
     
     if (!empty($reactList)) {
-        $checkGrpR = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'community_ranking_react' AND data_execucao = ? AND membro_jid = ?");
-        $checkGrpR->execute([$ontem, $groupJid]);
-        if ($checkGrpR->rowCount() === 0 || isset($_GET['force'])) {
-            try {
-                $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('community_ranking_react', ?, ?)")
-                     ->execute([$ontem, $groupJid]);
-            } catch (Exception $e) {}
+        // Dedup e trava por grupo: 1. Início do envio
+        $travouReact = registrarInicioDisparo($conn, 'community_ranking_react', $ontem, $groupJid, 10);
+        if ($travouReact || isset($_GET['force'])) {
             $reactToSend = str_replace(
                 ['{date}', '{group_name}', '{react_ranking_list}'],
                 [$enDate, $groupName, rtrim($reactList)],
                 $tplReact
             );
-            enviarWhatsApp($groupJid, $reactToSend, 'community_ranking_reactor');
-            echo "Ranking de reações enviado para $groupName.<br>";
+            $resReact = enviarWhatsApp($groupJid, $reactToSend, 'community_ranking_reactor');
+            // 2. Confirmação do envio
+            if ($resReact['success'] || ($resReact['httpCode'] >= 200 && $resReact['httpCode'] < 300)) {
+                registrarConclusaoDisparo($conn, 'community_ranking_react', $ontem, $groupJid, ['httpCode' => $resReact['httpCode']]);
+                echo "Ranking de reações enviado para $groupName.<br>";
+            } else {
+                registrarFalhaDisparo($conn, 'community_ranking_react', $ontem, $groupJid, $resReact['error'] ?? 'HTTP ' . $resReact['httpCode']);
+                echo "❌ Falha ao enviar ranking de reações para $groupName. Marcado para retry.<br>";
+            }
             sleep(5);
         } else {
-            echo "Ranking de reações já enviado para $groupName (dedup). Pulando.<br>";
+            echo "Ranking de reações já enviado/em andamento para $groupName (dedup). Pulando.<br>";
         }
     }
 }
+
+registrarConclusaoDisparo($conn, 'community_ranking_daily', $ontem, null, ['groups_count' => count($communityGroups)]);
 
 echo "<hr>✅ Processamento diário da comunidade finalizado.";
 ?>

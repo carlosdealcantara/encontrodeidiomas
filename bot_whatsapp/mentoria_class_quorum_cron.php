@@ -130,16 +130,24 @@ foreach ($schedules as $s) {
         continue;
     }
 
-    // Verifica anti-duplicidade para evitar enviar vários cancelamentos
-    $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_cancel' AND data_execucao = ? AND membro_jid = ?");
-    $check->execute([$hoje, $s['id']]);
-    if ($check->rowCount() > 0 && !isset($_GET['force'])) {
-        logCronExec(
-            $conn, 'quorum', (int)$s['id'], $deadlineTime, $classTime, $diff,
-            true, 'dedup_skipped', null, 'class_cancel ja registrado hoje'
-        );
-        echo "Sessão " . $s['start_time'] . ": cancelamento já enviado anteriormente (dedup).\n";
-        continue;
+    // Verifica anti-duplicidade e adquire trava inicial ('processing')
+    if (!isset($_GET['force'])) {
+        $check = $conn->prepare("SELECT id, detalhes FROM mentoria_auto_logs WHERE tipo = 'class_cancel' AND data_execucao = ? AND membro_jid = ?");
+        $check->execute([$hoje, (string)$s['id']]);
+        $rowCheck = $check->fetch(PDO::FETCH_ASSOC);
+        if ($rowCheck) {
+            $det = json_decode($rowCheck['detalhes'] ?? '', true);
+            $status = $det['status'] ?? 'sent';
+            // Se já foi enviado com sucesso, pula
+            if ($status === 'sent') {
+                logCronExec(
+                    $conn, 'quorum', (int)$s['id'], $deadlineTime, $classTime, $diff,
+                    true, 'dedup_skipped', null, 'class_cancel ja confirmado hoje'
+                );
+                echo "Sessão " . $s['start_time'] . ": cancelamento já enviado e confirmado anteriormente (dedup).\n";
+                continue;
+            }
+        }
     }
 
     // Conta confirmações
@@ -158,33 +166,38 @@ foreach ($schedules as $s) {
         $tpl = $mentoriaConfig['templates'][$tplKey] ?? $defaultTpl;
         $msg = str_replace('{horario}', formatTime12h($classTime), $tpl);
 
-        // FIX CRÍTICO: INSERT ANTES do enviarWhatsApp.
-        // Garante que mesmo que o PHP sofra timeout durante o curl (WhatsApp API),
-        // o lock de dedup já estará gravado no banco. Próxima execução do cron
-        // detectará este registro e não enviará duplicata.
-        // INSERT IGNORE evita falha por UNIQUE KEY se houver race condition.
-        try {
-            $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_cancel', ?, ?)")
-                 ->execute([$hoje, $s['id']]);
-        } catch (Exception $e) {
-            error_log("quorum_cron: falha ao gravar dedup lock: " . $e->getMessage());
+        // 1. PRIMEIRA CONFIRMAÇÃO (Trava Inicial): registra 'processing' para impedir outros crons concorrentes
+        $travou = registrarInicioDisparo($conn, 'class_cancel', $hoje, (string)$s['id'], 15);
+        if (!$travou && !isset($_GET['force'])) {
+            echo "Sessão " . $s['start_time'] . ": disparo em andamento por outro processo ou já concluído. Pulando.\n";
+            continue;
         }
 
-        enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
+        // Executa o envio
+        $resEnvio = enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
 
-        // Deleta as confirmações de presença para que não contabilize pontos na aula cancelada
-        try {
-            $conn->prepare("DELETE FROM class_attendances WHERE schedule_id = ? AND aula_date = ?")->execute([$s['id'], $hoje]);
-        } catch (Exception $e) {
-            error_log("quorum_cron: falha ao deletar presenças: " . $e->getMessage());
+        // 2. SEGUNDA CONFIRMAÇÃO (Conclusão): confirma o envio ou reporta falha
+        if ($resEnvio['success'] || ($resEnvio['httpCode'] >= 200 && $resEnvio['httpCode'] < 300)) {
+            registrarConclusaoDisparo($conn, 'class_cancel', $hoje, (string)$s['id'], ['httpCode' => $resEnvio['httpCode']]);
+            
+            // Deleta as confirmações de presença para que não contabilize pontos na aula cancelada
+            try {
+                $conn->prepare("DELETE FROM class_attendances WHERE schedule_id = ? AND aula_date = ?")->execute([$s['id'], $hoje]);
+            } catch (Exception $e) {
+                error_log("quorum_cron: falha ao deletar presenças: " . $e->getMessage());
+            }
+
+            logCronExec(
+                $conn, 'quorum', (int)$s['id'], $deadlineTime, $classTime, $diff,
+                true, 'cancel_sent', $attendees,
+                "minQuorum=$minQuorum tipo=$sessionType"
+            );
+            echo "Sessão " . $s['start_time'] . " cancelada com sucesso. Mensagem enviada e confirmada.\n";
+        } else {
+            // Falhou de fato na API: marca como 'failed' para permitir que o próximo run tente enviar
+            registrarFalhaDisparo($conn, 'class_cancel', $hoje, (string)$s['id'], $resEnvio['error'] ?? 'HTTP ' . $resEnvio['httpCode']);
+            echo "❌ Erro ao enviar cancelamento da sessão " . $s['start_time'] . ": " . ($resEnvio['error'] ?? 'Erro desconhecido') . ". Marcado para retentativa.\n";
         }
-
-        logCronExec(
-            $conn, 'quorum', (int)$s['id'], $deadlineTime, $classTime, $diff,
-            true, 'cancel_sent', $attendees,
-            "minQuorum=$minQuorum tipo=$sessionType"
-        );
-        echo "Sessão " . $s['start_time'] . " cancelada por falta de quórum (< $minQuorum). Presenças removidas.\n";
 
     } else {
         logCronExec(
