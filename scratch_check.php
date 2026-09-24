@@ -17,10 +17,10 @@ echo "<br>Presenças hoje:<br>";
 foreach($atts as $att) {
     echo "Schedule ID: {$att['schedule_id']} | Nome: {$att['member_name']}<br>";
 }
-$stmt = $conn->prepare("SELECT * FROM mentoria_auto_logs WHERE data_execucao = ?");
-$stmt->execute([$hoje]);
+$stmt = $conn->prepare("SELECT * FROM mentoria_auto_logs ORDER BY id DESC LIMIT 30");
+$stmt->execute();
 $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-echo "<br>Logs de hoje:<br>";
+echo "<br>Últimos 30 logs de mentoria_auto_logs:<br>";
 foreach($logs as $log) {
-    echo "Tipo: {$log['tipo']} | JID (ID da aula): {$log['membro_jid']}<br>";
+    echo "ID: {$log['id']} | Tipo: {$log['tipo']} | Data: {$log['data_execucao']} | Data/Hora: {$log['created_at']} | Membro/JID: {$log['membro_jid']}<br>";
 }
