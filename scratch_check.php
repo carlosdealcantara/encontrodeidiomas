@@ -1,3 +1,6 @@
+<?php
+require_once __DIR__ . '/config.php';
+$conn = connectDB();
 require_once __DIR__ . '/includes/whatsapp_helper.php';
 
 $ontem = (new DateTime())->modify('-1 day')->format('Y-m-d');
