@@ -13,9 +13,16 @@ foreach($logs as $l) {
     echo "ID: {$l['id']} | Created: {$l['created_at']} | Detalhes: {$l['detalhes']}<br>";
 }
 
-// Limpar fila do Baileys para cancelar qualquer disparo pendente em memória
-$resClear = sendBaileysRequest('/clear-queue', null, 'POST');
-echo "Clear queue response:<br>";
-var_dump($resClear);
+echo "<br>Testando chamada direta em getMentoriaConfig...<br>";
+$t0 = microtime(true);
+$cfg = getMentoriaConfig();
+$t1 = microtime(true);
+echo "getMentoriaConfig demorou: " . round($t1 - $t0, 3) . "s<br>";
+
+echo "Testando fetchBaileysActivity...<br>";
+$act = fetchBaileysActivity($ontem);
+$t2 = microtime(true);
+echo "fetchBaileysActivity demorou: " . round($t2 - $t1, 3) . "s<br>";
+
 
 
