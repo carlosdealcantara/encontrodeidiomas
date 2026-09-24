@@ -352,8 +352,11 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         logger.info("[PASSO 1] Token injetado no Cookie e localStorage.")
         
         # Fazemos um reload para garantir que o cookie e o localStorage entrem em vigor na Home
-        page.reload(timeout=60000, wait_until="domcontentloaded")
-        page.wait_for_timeout(3000)
+        try:
+            page.reload(timeout=90000, wait_until="domcontentloaded")
+            page.wait_for_timeout(3000)
+        except Exception as e_reload:
+            logger.warning(f"[PASSO 1] Reload deu timeout ou falhou ({e_reload}). Prosseguindo direto para /$/upload...")
         
         # PASSO 2: Ir para página de upload
         logger.info("[PASSO 2] Navegando para /$/upload...")
