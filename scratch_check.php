@@ -17,18 +17,28 @@ foreach($logs as $l) {
 }
 echo "</table>";
 
-echo "<h3>Últimos 20 registros de mentoria_cron_execucoes:</h3>";
+echo "<h3>Registros com acao cancel_sent em mentoria_cron_execucoes (últimos 15):</h3>";
 try {
-    $stmt2 = $conn->query("SELECT * FROM mentoria_cron_execucoes ORDER BY id DESC LIMIT 20");
-    $logs2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+    $stmtCancel = $conn->query("SELECT * FROM mentoria_cron_execucoes WHERE acao = 'cancel_sent' ORDER BY id DESC LIMIT 15");
+    $cancels = $stmtCancel->fetchAll(PDO::FETCH_ASSOC);
     echo "<table border='1' cellpadding='4'><tr><th>ID</th><th>Cron</th><th>Executado Em</th><th>Sched ID</th><th>Acao</th><th>Attendees</th><th>Notas</th></tr>";
-    foreach($logs2 as $l) {
+    foreach($cancels as $l) {
         echo "<tr><td>{$l['id']}</td><td>{$l['cron_name']}</td><td>{$l['executado_em']}</td><td>{$l['schedule_id']}</td><td>{$l['acao']}</td><td>{$l['attendees_count']}</td><td>" . htmlspecialchars($l['notas'] ?? '') . "</td></tr>";
     }
     echo "</table>";
 } catch(Exception $e) {
-    echo "Erro mentoria_cron_execucoes: " . $e->getMessage() . "<br>";
+    echo "Erro: " . $e->getMessage() . "<br>";
 }
+
+echo "<h3>Detalhes de class_schedule para ID 28 e de hoje:</h3>";
+try {
+    $stmtSched = $conn->query("SELECT * FROM class_schedule WHERE id = 28 OR day_of_week = DAYOFWEEK(CURRENT_DATE())");
+    $scheds = $stmtSched->fetchAll(PDO::FETCH_ASSOC);
+    echo "<pre>" . print_r($scheds, true) . "</pre>";
+} catch(Exception $e) {
+    echo "Erro: " . $e->getMessage() . "<br>";
+}
+
 
 echo "<h3>Últimos 20 registros de meetup_whatsapp_logs:</h3>";
 try {
