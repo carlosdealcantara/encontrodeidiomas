@@ -1019,10 +1019,6 @@ def processar_fila():
             atualizar_status(tarefa['id'], 'no_channel', error_msg="Arquivado em Future Channels. Será publicado quando o canal for configurado.")
             return
         
-        # COM CANAL: organiza arquivos na pasta de destino definitiva e publica.
-        logger.info("Organizando arquivos (video e chat) nas pastas definitivas do Drive...")
-        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
-
         # 3. DOWNLOAD E PUBLICAÇÃO
         temp_path = baixar_video_drive(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
         
@@ -1034,6 +1030,10 @@ def processar_fila():
         
         if not upload_ok:
             raise Exception("Falha no processo de publicação (Timeout ou Erro no Odysee)")
+            
+        # COM CANAL E UPLOAD CONFIRMADO: organiza arquivos na pasta de destino definitiva.
+        logger.info("Upload confirmado no Odysee! Organizando arquivos (vídeo e chat) nas pastas definitivas do Drive...")
+        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
             
         # Odysee final URL (Canonica)
         odysee_url = f"https://odysee.com/{tarefa['odysee_channel_name']}/{tarefa['odysee_slug']}"
