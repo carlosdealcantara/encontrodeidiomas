@@ -90,6 +90,17 @@ if (empty($communityGroups)) {
 
 $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 
+// FIX CRÍTICO: Grava o lock de dedup ANTES de iniciar o processamento.
+// Se o script sofrer timeout no meio do loop, o lock já estará gravado
+// e a próxima execução do cron não reprocessará tudo.
+// O dedup por grupo (abaixo) garante que grupos já enviados não sejam repetidos.
+try {
+    $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('community_ranking_daily', ?, ?)")
+         ->execute([$ontem, json_encode(['processed_groups' => count($communityGroups)])]);
+} catch (Exception $e) {
+    error_log("community_ranking_cron: falha ao gravar dedup lock: " . $e->getMessage());
+}
+
 foreach ($communityGroups as $groupKey => $gData) {
     $groupJid = $gData['jid'];
     $groupName = $gData['name'];
@@ -168,30 +179,48 @@ foreach ($communityGroups as $groupKey => $gData) {
     }
     
     if (!empty($msgList)) {
-        $msgToSend = str_replace(
-            ['{date}', '{group_name}', '{msg_ranking_list}'],
-            [$enDate, $groupName, rtrim($msgList)],
-            $tplMsg
-        );
-        enviarWhatsApp($groupJid, $msgToSend, 'community_ranking_messenger');
-        echo "Ranking de mensagens enviado para $groupName.<br>";
-        sleep(3);
+        // Dedup por grupo: evita reenvio se o script foi interrompido parcialmente
+        $checkGrp = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'community_ranking_msg' AND data_execucao = ? AND membro_jid = ?");
+        $checkGrp->execute([$ontem, $groupJid]);
+        if ($checkGrp->rowCount() === 0 || isset($_GET['force'])) {
+            try {
+                $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('community_ranking_msg', ?, ?)")
+                     ->execute([$ontem, $groupJid]);
+            } catch (Exception $e) {}
+            $msgToSend = str_replace(
+                ['{date}', '{group_name}', '{msg_ranking_list}'],
+                [$enDate, $groupName, rtrim($msgList)],
+                $tplMsg
+            );
+            enviarWhatsApp($groupJid, $msgToSend, 'community_ranking_messenger');
+            echo "Ranking de mensagens enviado para $groupName.<br>";
+            sleep(3);
+        } else {
+            echo "Ranking de mensagens já enviado para $groupName (dedup). Pulando.<br>";
+        }
     }
     
     if (!empty($reactList)) {
-        $reactToSend = str_replace(
-            ['{date}', '{group_name}', '{react_ranking_list}'],
-            [$enDate, $groupName, rtrim($reactList)],
-            $tplReact
-        );
-        enviarWhatsApp($groupJid, $reactToSend, 'community_ranking_reactor');
-        echo "Ranking de reações enviado para $groupName.<br>";
-        sleep(5);
+        $checkGrpR = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'community_ranking_react' AND data_execucao = ? AND membro_jid = ?");
+        $checkGrpR->execute([$ontem, $groupJid]);
+        if ($checkGrpR->rowCount() === 0 || isset($_GET['force'])) {
+            try {
+                $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('community_ranking_react', ?, ?)")
+                     ->execute([$ontem, $groupJid]);
+            } catch (Exception $e) {}
+            $reactToSend = str_replace(
+                ['{date}', '{group_name}', '{react_ranking_list}'],
+                [$enDate, $groupName, rtrim($reactList)],
+                $tplReact
+            );
+            enviarWhatsApp($groupJid, $reactToSend, 'community_ranking_reactor');
+            echo "Ranking de reações enviado para $groupName.<br>";
+            sleep(5);
+        } else {
+            echo "Ranking de reações já enviado para $groupName (dedup). Pulando.<br>";
+        }
     }
 }
-
-$conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('community_ranking_daily', ?, ?)")
-     ->execute([$ontem, json_encode(['processed_groups' => count($communityGroups)])]);
 
 echo "<hr>✅ Processamento diário da comunidade finalizado.";
 ?>

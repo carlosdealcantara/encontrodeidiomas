@@ -428,6 +428,16 @@ $msg3 = str_replace(
 );
 
 // Disparo simples (sem mentions de @numero)
+// FIX CRÍTICO: Grava lock de dedup ANTES de enviar para o WhatsApp.
+// Se o PHP sofrer timeout durante os envios, o log já estará gravado
+// e a próxima execução do cron não reenviará as mensagens.
+try {
+    $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_unificado', ?, ?)")
+         ->execute([$ontem, json_encode(['stats' => $memberStats])]);
+} catch (Exception $e) {
+    error_log("ranking_cron: falha ao gravar dedup lock: " . $e->getMessage());
+}
+
 $result1 = enviarWhatsApp($targetGroup, $msg1, 'mentoria_ranking_student');
 sleep(1);
 $result2 = enviarWhatsApp($targetGroup, $msg2, 'mentoria_ranking_messenger');
@@ -435,9 +445,11 @@ sleep(1);
 $result3 = enviarWhatsApp($targetGroup, $msg3, 'mentoria_ranking_reactor');
 
 if ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300) {
-    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('ranking_unificado', ?, ?)")
-         ->execute([$ontem, json_encode(['stats' => $memberStats])]);
     echo "✅ Rankings enviados com sucesso (em 3 mensagens separadas)!";
+} elseif ($result1['httpCode'] === 0) {
+    // Timeout do curl: a mensagem foi enfileirada no Baileys mas a resposta
+    // não chegou no prazo. O lock de dedup já foi gravado acima.
+    echo "⚠️ Timeout ao aguardar confirmação da API, mas o ranking pode ter sido enviado. Lock de dedup gravado.";
 } else {
     echo "❌ Erro ao enviar ranking: HTTP " . $result1['httpCode'];
 }

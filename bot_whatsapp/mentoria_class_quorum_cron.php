@@ -89,6 +89,15 @@ $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $now = new DateTime();
 
+// Pré-carrega config do Baileys UMA VEZ fora do loop (evita 9s extra por schedule)
+// Se falhar, usa array vazio e os templates padrão serão usados como fallback.
+$mentoriaConfig = [];
+try {
+    $mentoriaConfig = getMentoriaConfig();
+} catch (Exception $e) {
+    error_log("quorum_cron: falha ao carregar getMentoriaConfig: " . $e->getMessage());
+}
+
 // Se não houver nenhum schedule para hoje, registra mesmo assim — confirma que o cron rodou
 if (empty($schedules)) {
     logCronExec($conn, 'quorum', null, null, null, null, false, 'sem_schedule',
@@ -142,19 +151,33 @@ foreach ($schedules as $s) {
     $minQuorum   = ($sessionType === 'student_practice') ? 2 : 1;
 
     if ($attendees < $minQuorum) {
-        $config  = getMentoriaConfig();
         $tplKey  = ($sessionType === 'student_practice') ? 'practice_cancel' : 'class_cancel';
         $defaultTpl = ($sessionType === 'student_practice')
             ? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't get enough confirmations for the {horario} practice session today. Registrations are now closed and the session is cancelled. See you next time! 👋"
             : "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
-        $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
+        $tpl = $mentoriaConfig['templates'][$tplKey] ?? $defaultTpl;
         $msg = str_replace('{horario}', formatTime12h($classTime), $tpl);
 
+        // FIX CRÍTICO: INSERT ANTES do enviarWhatsApp.
+        // Garante que mesmo que o PHP sofra timeout durante o curl (WhatsApp API),
+        // o lock de dedup já estará gravado no banco. Próxima execução do cron
+        // detectará este registro e não enviará duplicata.
+        // INSERT IGNORE evita falha por UNIQUE KEY se houver race condition.
+        try {
+            $conn->prepare("INSERT IGNORE INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_cancel', ?, ?)")
+                 ->execute([$hoje, $s['id']]);
+        } catch (Exception $e) {
+            error_log("quorum_cron: falha ao gravar dedup lock: " . $e->getMessage());
+        }
+
         enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
-        $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_cancel', ?, ?)")->execute([$hoje, $s['id']]);
 
         // Deleta as confirmações de presença para que não contabilize pontos na aula cancelada
-        $conn->prepare("DELETE FROM class_attendances WHERE schedule_id = ? AND aula_date = ?")->execute([$s['id'], $hoje]);
+        try {
+            $conn->prepare("DELETE FROM class_attendances WHERE schedule_id = ? AND aula_date = ?")->execute([$s['id'], $hoje]);
+        } catch (Exception $e) {
+            error_log("quorum_cron: falha ao deletar presenças: " . $e->getMessage());
+        }
 
         logCronExec(
             $conn, 'quorum', (int)$s['id'], $deadlineTime, $classTime, $diff,
