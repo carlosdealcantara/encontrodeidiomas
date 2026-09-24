@@ -88,6 +88,90 @@
     </div>
 </div>
 
+<!-- DIAGNÓSTICO DO CRON DE QUÓRUM -->
+<div class="form-card" style="margin-top: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h3 style="margin: 0; color: #f59e0b;"><i class="fas fa-stethoscope"></i> Diagnóstico: Execuções do Cron de Quórum</h3>
+            <p style="margin: 5px 0 0 0; font-size: 0.88rem; color: var(--text-dim);">
+                Cada run do cron gera uma linha — <strong>mesmo quando não faz nada</strong>.<br>
+                Se não há entradas num horário esperado, o problema é que o cron da Hostinger simplesmente não rodou.
+            </p>
+        </div>
+        <button onclick="location.reload()" style="background: #334155; border: none; padding: 8px 16px; border-radius: 8px; color: white; cursor: pointer; font-size: 0.85rem;">
+            <i class="fas fa-sync"></i> Atualizar
+        </button>
+    </div>
+
+    <?php if (empty($cronDiagLogs)): ?>
+        <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 15px; color: #fca5a5; text-align: center;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Nenhum log encontrado.</strong> A tabela ainda não existe (cron nunca rodou com a nova versão) ou está vazia.
+        </div>
+    <?php else: ?>
+        <div style="overflow-x: auto;">
+        <table style="width:100%; border-collapse:collapse; font-size: 0.82rem;">
+            <thead>
+                <tr style="background: rgba(0,0,0,0.2); color: var(--text-dim); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">
+                    <th style="padding: 10px 12px; text-align:left;">ID</th>
+                    <th style="padding: 10px 12px; text-align:left;">Executado em</th>
+                    <th style="padding: 10px 12px; text-align:left;">Schedule</th>
+                    <th style="padding: 10px 12px; text-align:left;">Deadline</th>
+                    <th style="padding: 10px 12px; text-align:center;">Diff (s)</th>
+                    <th style="padding: 10px 12px; text-align:left;">Ação</th>
+                    <th style="padding: 10px 12px; text-align:center;">Presentes</th>
+                    <th style="padding: 10px 12px; text-align:left;">Notas</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
+            $acaoCores = [
+                'cancel_sent'          => ['#10b981', 'rgba(16,185,129,0.12)', '✅'],
+                'quorum_ok'            => ['#38bdf8', 'rgba(56,189,248,0.12)', '✔️'],
+                'dedup_skipped'        => ['#94a3b8', 'rgba(148,163,184,0.1)', '⏭️'],
+                'deadline_nao_passou'  => ['#64748b', 'rgba(0,0,0,0.15)',      '⏳'],
+                'aula_ja_comecou'      => ['#f97316', 'rgba(249,115,22,0.12)', '🔕'],
+                'sem_schedule'         => ['#6366f1', 'rgba(99,102,241,0.12)', '📭'],
+            ];
+            foreach ($cronDiagLogs as $log):
+                $acao = $log['acao'] ?? 'desconhecido';
+                [$cor, $bg, $icon] = $acaoCores[$acao] ?? ['#e2e8f0', 'transparent', '❓'];
+            ?>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: <?= $bg ?>;">
+                    <td style="padding: 8px 12px; color: var(--text-dim);"><?= $log['id'] ?></td>
+                    <td style="padding: 8px 12px; font-family: monospace; color: #e2e8f0;"><?= htmlspecialchars($log['executado_em']) ?></td>
+                    <td style="padding: 8px 12px; color: var(--text-dim);"><?= $log['schedule_id'] ?? '—' ?></td>
+                    <td style="padding: 8px 12px; font-family: monospace; color: var(--text-dim);">
+                        <?= $log['deadline_time'] ? substr($log['deadline_time'], 11, 5) : '—' ?>
+                    </td>
+                    <td style="padding: 8px 12px; text-align:center; color: var(--text-dim);">
+                        <?= $log['diff_segundos'] !== null ? $log['diff_segundos'] . 's' : '—' ?>
+                    </td>
+                    <td style="padding: 8px 12px;">
+                        <span style="color: <?= $cor ?>; font-weight: 600;"><?= $icon ?> <?= htmlspecialchars($acao) ?></span>
+                    </td>
+                    <td style="padding: 8px 12px; text-align:center; color: var(--text-dim);">
+                        <?= $log['attendees_count'] !== null ? $log['attendees_count'] : '—' ?>
+                    </td>
+                    <td style="padding: 8px 12px; color: var(--text-dim); font-size: 0.78rem; max-width: 220px; word-break: break-word;">
+                        <?= htmlspecialchars($log['notas'] ?? '') ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.78rem; margin-top: 10px;">
+            Mostrando os últimos 100 registros. Legenda:
+            <span style="color:#10b981">✅ cancel_sent</span> |
+            <span style="color:#38bdf8">✔️ quorum_ok</span> |
+            <span style="color:#94a3b8">⏭️ dedup_skipped</span> |
+            <span style="color:#64748b">⏳ deadline_nao_passou</span> |
+            <span style="color:#f97316">🔕 aula_ja_comecou</span>
+        </p>
+    <?php endif; ?>
+</div>
+
 <script>
 async function testarCron(scriptUrl, forcar) {
     const painel = document.getElementById('test-console');

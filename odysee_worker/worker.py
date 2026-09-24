@@ -1000,6 +1000,14 @@ def processar_fila():
     try:
         drive_service = init_drive_service()
         
+        # Se a tarefa foi explicitamente marcada como 'skip_publish' (ex: ignorado pelo painel),
+        # apenas organiza os arquivos no Drive e finaliza sem publicar no Odysee nem disparar WhatsApp.
+        if tarefa.get('status') == 'skip_publish':
+            logger.warning(f"[SKIP_PUBLISH] Tarefa {tarefa['id']} marcada para não publicar. Organizando arquivos e encerrando.")
+            mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
+            atualizar_status(tarefa['id'], 'skipped', error_msg="Publicação ignorada por configuração (skip_publish).")
+            return
+
         # Verifica se o idioma tem canal Odysee configurado
         is_skip_publish = (not tarefa['odysee_auth_token']) or (not tarefa['odysee_channel_name'])
         
@@ -1150,7 +1158,7 @@ def processar_fila():
         else:
             logger.exception("Erro durante o processamento da fila")
             retry = tarefa['retry_count'] + 1
-            novo_status = 'error' if retry >= 3 else 'pending'
+            novo_status = 'error' if retry >= 5 else 'pending'
             atualizar_status(tarefa['id'], novo_status, error_msg=str(e), retry_count=retry)
     finally:
         if temp_path and os.path.exists(temp_path):

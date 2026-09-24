@@ -90,6 +90,12 @@ if (empty($communityGroups)) {
 
 $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 
+// 1. PRIMEIRA CONFIRMAÇÃO (Trava Inicial): bloqueia como 'processing' antes de disparar
+$travouGeral = registrarInicioDisparo($conn, 'community_ranking_daily', $ontem, null, 25);
+if (!$travouGeral && !isset($_GET['force'])) {
+    die("Community ranking já em processamento por outra instância ou já concluído.");
+}
+
 foreach ($communityGroups as $groupKey => $gData) {
     $groupJid = $gData['jid'];
     $groupName = $gData['name'];
@@ -168,30 +174,55 @@ foreach ($communityGroups as $groupKey => $gData) {
     }
     
     if (!empty($msgList)) {
-        $msgToSend = str_replace(
-            ['{date}', '{group_name}', '{msg_ranking_list}'],
-            [$enDate, $groupName, rtrim($msgList)],
-            $tplMsg
-        );
-        enviarWhatsApp($groupJid, $msgToSend, 'community_ranking_messenger');
-        echo "Ranking de mensagens enviado para $groupName.<br>";
-        sleep(3);
+        // Dedup e trava por grupo: 1. Início do envio
+        $travouMsg = registrarInicioDisparo($conn, 'community_ranking_msg', $ontem, $groupJid, 10);
+        if ($travouMsg || isset($_GET['force'])) {
+            $msgToSend = str_replace(
+                ['{date}', '{group_name}', '{msg_ranking_list}'],
+                [$enDate, $groupName, rtrim($msgList)],
+                $tplMsg
+            );
+            $resMsg = enviarWhatsApp($groupJid, $msgToSend, 'community_ranking_messenger');
+            // 2. Confirmação do envio
+            if ($resMsg['success'] || ($resMsg['httpCode'] >= 200 && $resMsg['httpCode'] < 300)) {
+                registrarConclusaoDisparo($conn, 'community_ranking_msg', $ontem, $groupJid, ['httpCode' => $resMsg['httpCode']]);
+                echo "Ranking de mensagens enviado para $groupName.<br>";
+            } else {
+                registrarFalhaDisparo($conn, 'community_ranking_msg', $ontem, $groupJid, $resMsg['error'] ?? 'HTTP ' . $resMsg['httpCode']);
+                echo "❌ Falha ao enviar ranking de mensagens para $groupName. Marcado para retry.<br>";
+            }
+            sleep(3);
+        } else {
+            echo "Ranking de mensagens já enviado/em andamento para $groupName (dedup). Pulando.<br>";
+        }
     }
     
     if (!empty($reactList)) {
-        $reactToSend = str_replace(
-            ['{date}', '{group_name}', '{react_ranking_list}'],
-            [$enDate, $groupName, rtrim($reactList)],
-            $tplReact
-        );
-        enviarWhatsApp($groupJid, $reactToSend, 'community_ranking_reactor');
-        echo "Ranking de reações enviado para $groupName.<br>";
-        sleep(5);
+        // Dedup e trava por grupo: 1. Início do envio
+        $travouReact = registrarInicioDisparo($conn, 'community_ranking_react', $ontem, $groupJid, 10);
+        if ($travouReact || isset($_GET['force'])) {
+            $reactToSend = str_replace(
+                ['{date}', '{group_name}', '{react_ranking_list}'],
+                [$enDate, $groupName, rtrim($reactList)],
+                $tplReact
+            );
+            $resReact = enviarWhatsApp($groupJid, $reactToSend, 'community_ranking_reactor');
+            // 2. Confirmação do envio
+            if ($resReact['success'] || ($resReact['httpCode'] >= 200 && $resReact['httpCode'] < 300)) {
+                registrarConclusaoDisparo($conn, 'community_ranking_react', $ontem, $groupJid, ['httpCode' => $resReact['httpCode']]);
+                echo "Ranking de reações enviado para $groupName.<br>";
+            } else {
+                registrarFalhaDisparo($conn, 'community_ranking_react', $ontem, $groupJid, $resReact['error'] ?? 'HTTP ' . $resReact['httpCode']);
+                echo "❌ Falha ao enviar ranking de reações para $groupName. Marcado para retry.<br>";
+            }
+            sleep(5);
+        } else {
+            echo "Ranking de reações já enviado/em andamento para $groupName (dedup). Pulando.<br>";
+        }
     }
 }
 
-$conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES ('community_ranking_daily', ?, ?)")
-     ->execute([$ontem, json_encode(['processed_groups' => count($communityGroups)])]);
+registrarConclusaoDisparo($conn, 'community_ranking_daily', $ontem, null, ['groups_count' => count($communityGroups)]);
 
 echo "<hr>✅ Processamento diário da comunidade finalizado.";
 ?>
