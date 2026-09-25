@@ -273,48 +273,53 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
                 # Tenta até 2 vezes por URL
                 for tentativa in range(2):
                     try:
-                        page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
-                    try:
-                        page.wait_for_selector('h1, .video-js, video', timeout=30000)
-                    except:
-                        pass
-                    page.wait_for_timeout(8000)
+                        try:
+                            page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+                        except Exception as nav_e:
+                            logger.warning(f"[PASSO 7] Erro ao navegar para {video_url}: {nav_e}")
+                            raise  # propaga para o except externo da tentativa
+                        try:
+                            page.wait_for_selector('h1, .video-js, video', timeout=30000)
+                        except:
+                            pass
+                        page.wait_for_timeout(8000)
 
-                    try:
-                        page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                        try:
+                            page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                        except Exception as e:
+                            logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+
+                        clicked = page.evaluate("""
+                            () => {
+                                const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                                if (btn) { btn.click(); return true; }
+                                return false;
+                            }
+                        """)
+                        if not clicked:
+                            share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                            share_btn.click(force=True, no_wait_after=True)
+                        page.wait_for_timeout(2000)
+
+                        share_input = page.locator('input[value*="ody.sh"]').first
+                        if not share_input.is_visible():
+                            share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+
+                        val = share_input.input_value(timeout=15000)
+                        if val and "ody.sh" in val:
+                            share_link = val
+                            logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
+                            break  # sucesso
+                        else:
+                            logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
+                            share_link = None
+
                     except Exception as e:
-                        logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+                        logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
+                        if tentativa == 0:
+                            logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
+                            page.wait_for_timeout(15000)
 
-                    clicked = page.evaluate("""
-                        () => {
-                            const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
-                            if (btn) { btn.click(); return true; }
-                            return false;
-                        }
-                    """)
-                    if not clicked:
-                        share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
-                        share_btn.click(force=True, no_wait_after=True)
-                    page.wait_for_timeout(2000)
-
-                    share_input = page.locator('input[value*="ody.sh"]').first
-                    if not share_input.is_visible():
-                        share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-
-                    val = share_input.input_value(timeout=15000)
-                    if val and "ody.sh" in val:
-                        share_link = val
-                        logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
-                        break  # sucesso
-                    else:
-                        logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
-                        share_link = None
-
-                except Exception as e:
-                    logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
-                    if tentativa == 0:
-                        logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
-                        page.wait_for_timeout(15000)
 
         except Exception as e:
             logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
@@ -724,49 +729,50 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
 
                     for tentativa in range(2):
-                    try:
-                        page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
                         try:
-                            page.wait_for_selector('h1, .video-js, video', timeout=30000)
-                        except:
-                            pass
-                        page.wait_for_timeout(8000)
+                            page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+                            try:
+                                page.wait_for_selector('h1, .video-js, video', timeout=30000)
+                            except:
+                                pass
+                            page.wait_for_timeout(8000)
 
-                        try:
-                            page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                            try:
+                                page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                            except Exception as e:
+                                logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+
+                            clicked = page.evaluate("""
+                                () => {
+                                    const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                                    if (btn) { btn.click(); return true; }
+                                    return false;
+                                }
+                            """)
+                            if not clicked:
+                                share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                                share_btn.click(force=True, no_wait_after=True)
+                            page.wait_for_timeout(2000)
+
+                            share_input = page.locator('input[value*="ody.sh"]').first
+                            if not share_input.is_visible():
+                                share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+
+                            val = share_input.input_value(timeout=15000)
+                            if val and "ody.sh" in val:
+                                share_link = val
+                                logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
+                                break  # sucesso
+                            else:
+                                logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
+                                share_link = None
+
                         except Exception as e:
-                            logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+                            logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
+                            if tentativa == 0:
+                                logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
+                                page.wait_for_timeout(15000)
 
-                        clicked = page.evaluate("""
-                            () => {
-                                const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
-                                if (btn) { btn.click(); return true; }
-                                return false;
-                            }
-                        """)
-                        if not clicked:
-                            share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
-                            share_btn.click(force=True, no_wait_after=True)
-                        page.wait_for_timeout(2000)
-
-                        share_input = page.locator('input[value*="ody.sh"]').first
-                        if not share_input.is_visible():
-                            share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-
-                        val = share_input.input_value(timeout=15000)
-                        if val and "ody.sh" in val:
-                            share_link = val
-                            logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
-                            break  # sucesso
-                        else:
-                            logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
-                            share_link = None
-
-                    except Exception as e:
-                        logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
-                        if tentativa == 0:
-                            logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
-                            page.wait_for_timeout(15000)
 
             except Exception as e:
                 logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
