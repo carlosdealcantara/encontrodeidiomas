@@ -706,15 +706,24 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         # Navega pela URL canônica do vídeo (funciona para o owner autenticado, inclusive Unlisted).
         # Tenta até 2 vezes com 15s de espera para absorver lentidão pontual do Odysee.
         share_link = None
-        if upload_ok and channel_name and slug:
+        if upload_ok and slug:
             try:
                 page.set_default_timeout(60000)
                 page.set_default_navigation_timeout(60000)
 
-                video_url = f"https://odysee.com/@{channel_name.lstrip('@')}/{slug}"
-                logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+                urls_to_try = []
+                if channel_name:
+                    urls_to_try.append(f"https://odysee.com/@{channel_name.lstrip('@')}/{slug}")
+                urls_to_try.append(f"https://odysee.com/{slug}")
 
-                for tentativa in range(2):
+                logger.info(f"[PASSO 7] URLs candidatas para navegação: {urls_to_try}")
+
+                for video_url in urls_to_try:
+                    if share_link:
+                        break
+                    logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+
+                    for tentativa in range(2):
                     try:
                         page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
                         try:
