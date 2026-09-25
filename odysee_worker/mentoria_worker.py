@@ -208,17 +208,26 @@ def salvar_screenshot(page, nome, tarefa_id):
 
 
 def verificar_video_publicado(channel_name, slug):
+    """Verifica se o vídeo já foi publicado na LBRY.
+    Tenta primeiro com o canal, depois sem canal (para uploads Anonymous).
+    Retorna True se encontrado, False caso contrário.
+    """
+    api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
+    # Testa com canal
+    urls_para_testar = [f"lbry://@{channel_name}/{slug}"]
+    # Fallback: sem canal (caso o upload tenha ficado como Anonymous)
+    urls_para_testar.append(f"lbry://{slug}")
     try:
-        lbry_url = f"lbry://@{channel_name}/{slug}"
-        api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
-        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
+        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": urls_para_testar}}
         res = requests.post(api_url, json=payload, timeout=15)
         if res.status_code == 200:
             data = res.json()
             result = data.get("result", {})
-            entry = result.get(lbry_url, {})
-            if entry and "error" not in entry:
-                return True
+            for lbry_url in urls_para_testar:
+                entry = result.get(lbry_url, {})
+                if entry and "error" not in entry:
+                    logger.info(f"[LBRY] Vídeo encontrado: {lbry_url}")
+                    return True
     except Exception as e:
         logger.warning(f"Erro ao checar API LBRY para {slug}: {e}")
     return False
@@ -250,54 +259,67 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             context.add_cookies([{"name": "auth_token", "value": auth_token, "domain": ".odysee.com", "path": "/"}])
             page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
 
-            video_url = f"https://odysee.com/@{channel_name}/{slug}"
-            logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+            urls_to_try = []
+            if channel_name:
+                urls_to_try.append(f"https://odysee.com/@{channel_name}/{slug}")
+            urls_to_try.append(f"https://odysee.com/{slug}")
 
-            # Tenta até 2 vezes para absorver lentidão pontual do Odysee
-            for tentativa in range(2):
-                try:
-                    page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
-                    try:
-                        page.wait_for_selector('h1, .video-js, video', timeout=30000)
-                    except:
-                        pass
-                    page.wait_for_timeout(8000)
+            logger.info(f"[PASSO 7] URLs candidatas para navegação: {urls_to_try}")
 
+            for video_url in urls_to_try:
+                if share_link:
+                    break
+                logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+                # Tenta até 2 vezes por URL
+                for tentativa in range(2):
                     try:
-                        page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                        try:
+                            page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+                        except Exception as nav_e:
+                            logger.warning(f"[PASSO 7] Erro ao navegar para {video_url}: {nav_e}")
+                            raise  # propaga para o except externo da tentativa
+                        try:
+                            page.wait_for_selector('h1, .video-js, video', timeout=30000)
+                        except:
+                            pass
+                        page.wait_for_timeout(8000)
+
+                        try:
+                            page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                        except Exception as e:
+                            logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+
+                        clicked = page.evaluate("""
+                            () => {
+                                const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                                if (btn) { btn.click(); return true; }
+                                return false;
+                            }
+                        """)
+                        if not clicked:
+                            share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                            share_btn.click(force=True, no_wait_after=True)
+                        page.wait_for_timeout(2000)
+
+                        share_input = page.locator('input[value*="ody.sh"]').first
+                        if not share_input.is_visible():
+                            share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+
+                        val = share_input.input_value(timeout=15000)
+                        if val and "ody.sh" in val:
+                            share_link = val
+                            logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
+                            break  # sucesso
+                        else:
+                            logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
+                            share_link = None
+
                     except Exception as e:
-                        logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+                        logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
+                        if tentativa == 0:
+                            logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
+                            page.wait_for_timeout(15000)
 
-                    clicked = page.evaluate("""
-                        () => {
-                            const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
-                            if (btn) { btn.click(); return true; }
-                            return false;
-                        }
-                    """)
-                    if not clicked:
-                        share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
-                        share_btn.click(force=True, no_wait_after=True)
-                    page.wait_for_timeout(2000)
-
-                    share_input = page.locator('input[value*="ody.sh"]').first
-                    if not share_input.is_visible():
-                        share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-
-                    val = share_input.input_value(timeout=15000)
-                    if val and "ody.sh" in val:
-                        share_link = val
-                        logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
-                        break  # sucesso
-                    else:
-                        logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
-                        share_link = None
-
-                except Exception as e:
-                    logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
-                    if tentativa == 0:
-                        logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
-                        page.wait_for_timeout(15000)
 
         except Exception as e:
             logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
@@ -521,17 +543,120 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
 
             # Atualiza referências após a espera
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
-                        # Aba de Visibilidade (NÃO LISTADO) - ESPECÍFICO DA MENTORIA
+
+            # ── SELEÇÃO DE CANAL (previne postagem como Anônimo) ─────────────────
+            # O Odysee pode defaultar para "Anonymous" se o canal não for selecionado
+            # explicitamente. Tentamos selecionar via dropdown ou lista de canais.
             try:
-                unlisted_option = page.locator('text="Não-listado"').first
-                if not unlisted_option.is_visible():
-                    unlisted_option = page.locator('text="Unlisted"').first
-                if unlisted_option.is_visible():
-                    unlisted_option.click()
-                    logger.info("[VISIBILIDADE] Opção 'Não-listado' selecionada.")
-                    salvar_screenshot(page, "05e_visibility_unlisted", tarefa_id)
+                # Detecta se o seletor de canal está visível na página atual
+                channel_selector_visible = page.locator(
+                    'select[name="channel"], .channel-selector, [class*="channel"] select, '
+                    '.publish__channel select, select[id*="channel"], '
+                    '.channel-selector__dropdown'
+                ).first.is_visible()
+
+                if channel_selector_visible and channel_name:
+                    clean_ch = channel_name.lstrip('@')
+                    sel = page.locator(
+                        'select[name="channel"], .channel-selector, [class*="channel"] select, '
+                        '.publish__channel select, select[id*="channel"]'
+                    ).first
+                    sel.select_option(label=clean_ch)
+                    logger.info(f"[CANAL] Canal '{clean_ch}' selecionado via select dropdown.")
+                    salvar_screenshot(page, "05a_channel_selected", tarefa_id)
+                elif channel_name:
+                    # Fallback: tenta clicar no nome do canal em botões/radio buttons
+                    clean_ch = channel_name.lstrip('@')
+                    ch_btn = page.locator(f'button:has-text("{clean_ch}"), label:has-text("{clean_ch}"), [data-channel="{clean_ch}"]').first
+                    if ch_btn.is_visible():
+                        ch_btn.click()
+                        logger.info(f"[CANAL] Canal '{clean_ch}' selecionado via botão/label.")
+                        salvar_screenshot(page, "05a_channel_selected_btn", tarefa_id)
+                    else:
+                        # Fallback 2: via JavaScript — procura option pelo texto e seleciona
+                        js_result = page.evaluate(f"""
+                            () => {{
+                                const selects = document.querySelectorAll('select');
+                                for (const s of selects) {{
+                                    for (const opt of s.options) {{
+                                        if (opt.text.includes('{clean_ch}') || opt.value.includes('{clean_ch}')) {{
+                                            s.value = opt.value;
+                                            s.dispatchEvent(new Event('change', {{bubbles: true}}));
+                                            return opt.text;
+                                        }}
+                                    }}
+                                }}
+                                return null;
+                            }}
+                        """)
+                        if js_result:
+                            logger.info(f"[CANAL] Canal selecionado via JS: {js_result}")
+                        else:
+                            logger.warning(f"[CANAL] Não foi possível selecionar o canal '{clean_ch}' nesta etapa do wizard — pode ainda não estar visível.")
             except Exception as e:
-                logger.warning(f"[VISIBILIDADE] Erro ao selecionar não-listado: {e}")
+                logger.warning(f"[CANAL] Erro ao tentar selecionar canal: {e}")
+
+            # ── VISIBILIDADE: UNLISTED (previne postagem como Público) ────────────
+            # Tenta via radio button, botão clicável ou JS. Log explícito se falhar.
+            try:
+                unlisted_set = False
+                # Tenta via seletor de radio/label "Não-listado" / "Unlisted"
+                for selector in [
+                    'input[type="radio"][value="unlisted"]',
+                    'input[type="radio"][id*="unlisted"]',
+                    'label:has-text("Não-listado")',
+                    'label:has-text("Unlisted")',
+                    'text="Não-listado"',
+                    'text="Unlisted"',
+                    '[class*="visibility"] label:has-text("Unlisted")',
+                    '[class*="visibility"] label:has-text("Não-listado")',
+                ]:
+                    try:
+                        el = page.locator(selector).first
+                        if el.is_visible(timeout=1000):
+                            el.click()
+                            unlisted_set = True
+                            logger.info(f"[VISIBILIDADE] 'Não-listado/Unlisted' selecionado via: {selector}")
+                            salvar_screenshot(page, "05e_visibility_unlisted", tarefa_id)
+                            break
+                    except:
+                        continue
+
+                if not unlisted_set:
+                    # Fallback JS: procura radio/select com valor "unlisted"
+                    js_vis = page.evaluate("""
+                        () => {
+                            // Tenta radio buttons
+                            const radios = document.querySelectorAll('input[type="radio"]');
+                            for (const r of radios) {
+                                if (r.value === 'unlisted' || r.id.includes('unlisted')) {
+                                    r.click();
+                                    return 'radio:' + r.id;
+                                }
+                            }
+                            // Tenta select
+                            const selects = document.querySelectorAll('select');
+                            for (const s of selects) {
+                                for (const opt of s.options) {
+                                    if (opt.value === 'unlisted' || opt.text.toLowerCase().includes('unlisted') || opt.text.toLowerCase().includes('não-listado')) {
+                                        s.value = opt.value;
+                                        s.dispatchEvent(new Event('change', {bubbles: true}));
+                                        return 'select:' + opt.value;
+                                    }
+                                }
+                            }
+                            return null;
+                        }
+                    """)
+                    if js_vis:
+                        logger.info(f"[VISIBILIDADE] 'Unlisted' definido via JS: {js_vis}")
+                        salvar_screenshot(page, "05e_visibility_unlisted_js", tarefa_id)
+                    else:
+                        logger.warning("[VISIBILIDADE] ATENÇÃO: Não foi possível definir 'Unlisted' nesta etapa — o vídeo pode ficar público!")
+
+            except Exception as e:
+                logger.warning(f"[VISIBILIDADE] Erro ao definir visibilidade: {e}")
+
             publish_btn = page.locator('.button--primary >> text="Publicação", .button--primary >> text="Publish"').first
             if not publish_btn.is_visible():
                 publish_btn = page.locator('form button.button--primary:has-text("Publicação"), form button.button--primary:has-text("Publish"), .publish__actions button.button--primary').first
@@ -635,7 +760,8 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     logger.warning(f"[PASSO 6] Erro ao buscar badge Published: {e}")
             
             # Estratégia 3: API LBRY — mais confiável que o DOM, verifica a cada 2.5 min
-            if ciclo > 2 and ciclo % 5 == 0:
+            # Começa no ciclo 0 para detectar publicações que aconteceram antes do Passo 6
+            if ciclo % 5 == 0:
                 try:
                     # Busca o channel_name do banco de dados já que tarefa não está no escopo
                     conn_check = get_db_connection()
@@ -648,24 +774,33 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     conn_check.close()
                     
                     if row_check:
-                        channel_name = lang_row['odysee_channel_name'].lstrip('@') if lang_row else ''
+                        channel_name_lbry = lang_row['odysee_channel_name'].lstrip('@') if lang_row else ''
                         video_slug = row_check['odysee_slug'] or slug
-                        lbry_url = f"lbry://@{channel_name}/{video_slug}"
+                        # Testa com canal e sem canal (fallback para uploads Anonymous)
+                        lbry_urls_check = [
+                            f"lbry://@{channel_name_lbry}/{video_slug}",
+                            f"lbry://{video_slug}",
+                        ]
                         api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
-                        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
+                        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": lbry_urls_check}}
                         res = requests.post(api_url, json=payload, timeout=15)
-                        logger.info(f"[PASSO 6] API LBRY check | URL: {lbry_url} | HTTP: {res.status_code}")
+                        logger.info(f"[PASSO 6] API LBRY check | URLs: {lbry_urls_check} | HTTP: {res.status_code}")
                         if res.status_code == 200:
                             data = res.json()
                             result = data.get("result", {})
-                            entry = result.get(lbry_url, {})
-                            if entry and "error" not in entry:
-                                logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY — concluído!")
-                                salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
-                                upload_ok = True
+                            found = False
+                            for lbry_url_c in lbry_urls_check:
+                                entry = result.get(lbry_url_c, {})
+                                if entry and "error" not in entry:
+                                    logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY ({lbry_url_c}) — concluído!")
+                                    salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
+                                    upload_ok = True
+                                    found = True
+                                    break
+                            if upload_ok:
                                 break
-                            else:
-                                logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Resposta: {str(entry)[:200]}")
+                            if not found:
+                                logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Verificado: {lbry_urls_check}")
                 except Exception as e:
                     logger.warning(f"[PASSO 6] Erro ao checar API LBRY: {e}")
                     
@@ -679,58 +814,68 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         # Navega pela URL canônica do vídeo (funciona para o owner autenticado, inclusive Unlisted).
         # Tenta até 2 vezes com 15s de espera para absorver lentidão pontual do Odysee.
         share_link = None
-        if upload_ok and channel_name and slug:
+        if upload_ok and slug:
             try:
                 page.set_default_timeout(60000)
                 page.set_default_navigation_timeout(60000)
 
-                video_url = f"https://odysee.com/@{channel_name.lstrip('@')}/{slug}"
-                logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+                urls_to_try = []
+                if channel_name:
+                    urls_to_try.append(f"https://odysee.com/@{channel_name.lstrip('@')}/{slug}")
+                urls_to_try.append(f"https://odysee.com/{slug}")
 
-                for tentativa in range(2):
-                    try:
-                        page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
-                        try:
-                            page.wait_for_selector('h1, .video-js, video', timeout=30000)
-                        except:
-                            pass
-                        page.wait_for_timeout(8000)
+                logger.info(f"[PASSO 7] URLs candidatas para navegação: {urls_to_try}")
 
+                for video_url in urls_to_try:
+                    if share_link:
+                        break
+                    logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+
+                    for tentativa in range(2):
                         try:
-                            page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                            page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+                            try:
+                                page.wait_for_selector('h1, .video-js, video', timeout=30000)
+                            except:
+                                pass
+                            page.wait_for_timeout(8000)
+
+                            try:
+                                page.screenshot(path="/app/screenshots_mentoria/07_video_page.png", timeout=15000)
+                            except Exception as e:
+                                logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+
+                            clicked = page.evaluate("""
+                                () => {
+                                    const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
+                                    if (btn) { btn.click(); return true; }
+                                    return false;
+                                }
+                            """)
+                            if not clicked:
+                                share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
+                                share_btn.click(force=True, no_wait_after=True)
+                            page.wait_for_timeout(2000)
+
+                            share_input = page.locator('input[value*="ody.sh"]').first
+                            if not share_input.is_visible():
+                                share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
+
+                            val = share_input.input_value(timeout=15000)
+                            if val and "ody.sh" in val:
+                                share_link = val
+                                logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
+                                break  # sucesso
+                            else:
+                                logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
+                                share_link = None
+
                         except Exception as e:
-                            logger.warning(f"[PASSO 7] Screenshot opcional falhou (não crítico): {e}")
+                            logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
+                            if tentativa == 0:
+                                logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
+                                page.wait_for_timeout(15000)
 
-                        clicked = page.evaluate("""
-                            () => {
-                                const btn = document.querySelector('button[aria-label="Share"], button[aria-label="Compartilhar"]');
-                                if (btn) { btn.click(); return true; }
-                                return false;
-                            }
-                        """)
-                        if not clicked:
-                            share_btn = page.locator('button[aria-label="Share"], button[aria-label="Compartilhar"]').first
-                            share_btn.click(force=True, no_wait_after=True)
-                        page.wait_for_timeout(2000)
-
-                        share_input = page.locator('input[value*="ody.sh"]').first
-                        if not share_input.is_visible():
-                            share_input = page.locator('.modal input[type="text"], .dialog input[type="text"]').first
-
-                        val = share_input.input_value(timeout=15000)
-                        if val and "ody.sh" in val:
-                            share_link = val
-                            logger.info(f"[PASSO 7] Link ody.sh capturado (tentativa {tentativa+1}): {share_link}")
-                            break  # sucesso
-                        else:
-                            logger.warning(f"[PASSO 7] Valor extraído não parece ody.sh: {val}")
-                            share_link = None
-
-                    except Exception as e:
-                        logger.warning(f"[PASSO 7] Tentativa {tentativa+1} falhou: {e}")
-                        if tentativa == 0:
-                            logger.info("[PASSO 7] Aguardando 15s antes de tentar novamente...")
-                            page.wait_for_timeout(15000)
 
             except Exception as e:
                 logger.warning(f"[PASSO 7] Erro ao capturar link de compartilhamento: {e}")
@@ -1029,7 +1174,7 @@ def processar_fila():
     except Exception as e:
         logger.exception("Erro processando fila mentoria")
         retry = tarefa['retry_count'] + 1
-        novo_status = 'error' if retry >= 3 else 'pending'
+        novo_status = 'error' if retry >= 5 else 'pending'  # 5 tentativas antes de marcar como error
         atualizar_status(tarefa['id'], novo_status, error_msg=str(e), retry_count=retry)
     finally:
         if temp_path and os.path.exists(temp_path):

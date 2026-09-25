@@ -378,7 +378,12 @@ async function handleMessages({ messages, type }) {
 
 async function handleParticipants({ id, participants, action }) {
     if (!sock) return;
-    if (action !== 'add') return;
+    // 'add'            = entrada direta (link de convite)
+    // 'promote'        = aprovação de solicitação via comunidade (WhatsApp Community join request)
+    // 'linked_group_join' = entrada por grupo vinculado à comunidade
+    const WELCOME_ACTIONS = new Set(['add', 'promote', 'linked_group_join']);
+    if (!WELCOME_ACTIONS.has(action)) return;
+    console.log(`[BOT] handleParticipants: action=${action}, group=${id}, participants=${participants.length}`);
 
     const config        = loadConfig();
     const communityConfig = loadCommunityConfig();
@@ -474,4 +479,13 @@ function initRoutes(app, dir) {
 
 function setSock(socket) { sock = socket; }
 
-module.exports = { initRoutes, setSock, handleMessages, handleParticipants };
+/**
+ * Chama a recuperação de boas-vindas pendentes na fila DB.
+ * Deve ser invocado após cada reconexão bem-sucedida do WhatsApp.
+ */
+async function recoverWelcomes() {
+    const communityConfig = loadCommunityConfig();
+    await communityGlobalMod.recoverPendingWelcomes(safeSock, communityConfig);
+}
+
+module.exports = { initRoutes, setSock, handleMessages, handleParticipants, recoverWelcomes };

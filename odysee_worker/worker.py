@@ -352,8 +352,11 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         logger.info("[PASSO 1] Token injetado no Cookie e localStorage.")
         
         # Fazemos um reload para garantir que o cookie e o localStorage entrem em vigor na Home
-        page.reload(timeout=60000, wait_until="domcontentloaded")
-        page.wait_for_timeout(3000)
+        try:
+            page.reload(timeout=90000, wait_until="domcontentloaded")
+            page.wait_for_timeout(3000)
+        except Exception as e_reload:
+            logger.warning(f"[PASSO 1] Reload deu timeout ou falhou ({e_reload}). Prosseguindo direto para /$/upload...")
         
         # PASSO 2: Ir para página de upload
         logger.info("[PASSO 2] Navegando para /$/upload...")
@@ -1019,10 +1022,6 @@ def processar_fila():
             atualizar_status(tarefa['id'], 'no_channel', error_msg="Arquivado em Future Channels. Será publicado quando o canal for configurado.")
             return
         
-        # COM CANAL: organiza arquivos na pasta de destino definitiva e publica.
-        logger.info("Organizando arquivos (video e chat) nas pastas definitivas do Drive...")
-        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
-
         # 3. DOWNLOAD E PUBLICAÇÃO
         temp_path = baixar_video_drive(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'])
         
@@ -1034,6 +1033,10 @@ def processar_fila():
         
         if not upload_ok:
             raise Exception("Falha no processo de publicação (Timeout ou Erro no Odysee)")
+            
+        # COM CANAL E UPLOAD CONFIRMADO: organiza arquivos na pasta de destino definitiva.
+        logger.info("Upload confirmado no Odysee! Organizando arquivos (vídeo e chat) nas pastas definitivas do Drive...")
+        mover_video_e_apagar_chat(drive_service, tarefa['drive_file_id'], tarefa['drive_file_name'], tarefa['language_name'], move_video=True)
             
         # Odysee final URL (Canonica)
         odysee_url = f"https://odysee.com/{tarefa['odysee_channel_name']}/{tarefa['odysee_slug']}"
