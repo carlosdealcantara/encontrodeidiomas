@@ -208,17 +208,26 @@ def salvar_screenshot(page, nome, tarefa_id):
 
 
 def verificar_video_publicado(channel_name, slug):
+    """Verifica se o vídeo já foi publicado na LBRY.
+    Tenta primeiro com o canal, depois sem canal (para uploads Anonymous).
+    Retorna True se encontrado, False caso contrário.
+    """
+    api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
+    # Testa com canal
+    urls_para_testar = [f"lbry://@{channel_name}/{slug}"]
+    # Fallback: sem canal (caso o upload tenha ficado como Anonymous)
+    urls_para_testar.append(f"lbry://{slug}")
     try:
-        lbry_url = f"lbry://@{channel_name}/{slug}"
-        api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
-        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
+        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": urls_para_testar}}
         res = requests.post(api_url, json=payload, timeout=15)
         if res.status_code == 200:
             data = res.json()
             result = data.get("result", {})
-            entry = result.get(lbry_url, {})
-            if entry and "error" not in entry:
-                return True
+            for lbry_url in urls_para_testar:
+                entry = result.get(lbry_url, {})
+                if entry and "error" not in entry:
+                    logger.info(f"[LBRY] Vídeo encontrado: {lbry_url}")
+                    return True
     except Exception as e:
         logger.warning(f"Erro ao checar API LBRY para {slug}: {e}")
     return False
@@ -635,7 +644,8 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     logger.warning(f"[PASSO 6] Erro ao buscar badge Published: {e}")
             
             # Estratégia 3: API LBRY — mais confiável que o DOM, verifica a cada 2.5 min
-            if ciclo > 2 and ciclo % 5 == 0:
+            # Começa no ciclo 0 para detectar publicações que aconteceram antes do Passo 6
+            if ciclo % 5 == 0:
                 try:
                     # Busca o channel_name do banco de dados já que tarefa não está no escopo
                     conn_check = get_db_connection()
@@ -648,24 +658,33 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     conn_check.close()
                     
                     if row_check:
-                        channel_name = lang_row['odysee_channel_name'].lstrip('@') if lang_row else ''
+                        channel_name_lbry = lang_row['odysee_channel_name'].lstrip('@') if lang_row else ''
                         video_slug = row_check['odysee_slug'] or slug
-                        lbry_url = f"lbry://@{channel_name}/{video_slug}"
+                        # Testa com canal e sem canal (fallback para uploads Anonymous)
+                        lbry_urls_check = [
+                            f"lbry://@{channel_name_lbry}/{video_slug}",
+                            f"lbry://{video_slug}",
+                        ]
                         api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
-                        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
+                        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": lbry_urls_check}}
                         res = requests.post(api_url, json=payload, timeout=15)
-                        logger.info(f"[PASSO 6] API LBRY check | URL: {lbry_url} | HTTP: {res.status_code}")
+                        logger.info(f"[PASSO 6] API LBRY check | URLs: {lbry_urls_check} | HTTP: {res.status_code}")
                         if res.status_code == 200:
                             data = res.json()
                             result = data.get("result", {})
-                            entry = result.get(lbry_url, {})
-                            if entry and "error" not in entry:
-                                logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY — concluído!")
-                                salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
-                                upload_ok = True
+                            found = False
+                            for lbry_url_c in lbry_urls_check:
+                                entry = result.get(lbry_url_c, {})
+                                if entry and "error" not in entry:
+                                    logger.info(f"[PASSO 6] Vídeo confirmado pela API LBRY ({lbry_url_c}) — concluído!")
+                                    salvar_screenshot(page, "06_lbry_confirmed", tarefa_id)
+                                    upload_ok = True
+                                    found = True
+                                    break
+                            if upload_ok:
                                 break
-                            else:
-                                logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Resposta: {str(entry)[:200]}")
+                            if not found:
+                                logger.info(f"[PASSO 6] API LBRY: claim ainda não encontrado. Verificado: {lbry_urls_check}")
                 except Exception as e:
                     logger.warning(f"[PASSO 6] Erro ao checar API LBRY: {e}")
                     
@@ -1029,7 +1048,7 @@ def processar_fila():
     except Exception as e:
         logger.exception("Erro processando fila mentoria")
         retry = tarefa['retry_count'] + 1
-        novo_status = 'error' if retry >= 3 else 'pending'
+        novo_status = 'error' if retry >= 5 else 'pending'  # 5 tentativas antes de marcar como error
         atualizar_status(tarefa['id'], novo_status, error_msg=str(e), retry_count=retry)
     finally:
         if temp_path and os.path.exists(temp_path):
