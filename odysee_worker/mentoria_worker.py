@@ -543,17 +543,120 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
 
             # Atualiza referências após a espera
             next_btn = page.locator('button:has-text("Próximo"), button:has-text("Next")').first
-                        # Aba de Visibilidade (NÃO LISTADO) - ESPECÍFICO DA MENTORIA
+
+            # ── SELEÇÃO DE CANAL (previne postagem como Anônimo) ─────────────────
+            # O Odysee pode defaultar para "Anonymous" se o canal não for selecionado
+            # explicitamente. Tentamos selecionar via dropdown ou lista de canais.
             try:
-                unlisted_option = page.locator('text="Não-listado"').first
-                if not unlisted_option.is_visible():
-                    unlisted_option = page.locator('text="Unlisted"').first
-                if unlisted_option.is_visible():
-                    unlisted_option.click()
-                    logger.info("[VISIBILIDADE] Opção 'Não-listado' selecionada.")
-                    salvar_screenshot(page, "05e_visibility_unlisted", tarefa_id)
+                # Detecta se o seletor de canal está visível na página atual
+                channel_selector_visible = page.locator(
+                    'select[name="channel"], .channel-selector, [class*="channel"] select, '
+                    '.publish__channel select, select[id*="channel"], '
+                    '.channel-selector__dropdown'
+                ).first.is_visible()
+
+                if channel_selector_visible and channel_name:
+                    clean_ch = channel_name.lstrip('@')
+                    sel = page.locator(
+                        'select[name="channel"], .channel-selector, [class*="channel"] select, '
+                        '.publish__channel select, select[id*="channel"]'
+                    ).first
+                    sel.select_option(label=clean_ch)
+                    logger.info(f"[CANAL] Canal '{clean_ch}' selecionado via select dropdown.")
+                    salvar_screenshot(page, "05a_channel_selected", tarefa_id)
+                elif channel_name:
+                    # Fallback: tenta clicar no nome do canal em botões/radio buttons
+                    clean_ch = channel_name.lstrip('@')
+                    ch_btn = page.locator(f'button:has-text("{clean_ch}"), label:has-text("{clean_ch}"), [data-channel="{clean_ch}"]').first
+                    if ch_btn.is_visible():
+                        ch_btn.click()
+                        logger.info(f"[CANAL] Canal '{clean_ch}' selecionado via botão/label.")
+                        salvar_screenshot(page, "05a_channel_selected_btn", tarefa_id)
+                    else:
+                        # Fallback 2: via JavaScript — procura option pelo texto e seleciona
+                        js_result = page.evaluate(f"""
+                            () => {{
+                                const selects = document.querySelectorAll('select');
+                                for (const s of selects) {{
+                                    for (const opt of s.options) {{
+                                        if (opt.text.includes('{clean_ch}') || opt.value.includes('{clean_ch}')) {{
+                                            s.value = opt.value;
+                                            s.dispatchEvent(new Event('change', {{bubbles: true}}));
+                                            return opt.text;
+                                        }}
+                                    }}
+                                }}
+                                return null;
+                            }}
+                        """)
+                        if js_result:
+                            logger.info(f"[CANAL] Canal selecionado via JS: {js_result}")
+                        else:
+                            logger.warning(f"[CANAL] Não foi possível selecionar o canal '{clean_ch}' nesta etapa do wizard — pode ainda não estar visível.")
             except Exception as e:
-                logger.warning(f"[VISIBILIDADE] Erro ao selecionar não-listado: {e}")
+                logger.warning(f"[CANAL] Erro ao tentar selecionar canal: {e}")
+
+            # ── VISIBILIDADE: UNLISTED (previne postagem como Público) ────────────
+            # Tenta via radio button, botão clicável ou JS. Log explícito se falhar.
+            try:
+                unlisted_set = False
+                # Tenta via seletor de radio/label "Não-listado" / "Unlisted"
+                for selector in [
+                    'input[type="radio"][value="unlisted"]',
+                    'input[type="radio"][id*="unlisted"]',
+                    'label:has-text("Não-listado")',
+                    'label:has-text("Unlisted")',
+                    'text="Não-listado"',
+                    'text="Unlisted"',
+                    '[class*="visibility"] label:has-text("Unlisted")',
+                    '[class*="visibility"] label:has-text("Não-listado")',
+                ]:
+                    try:
+                        el = page.locator(selector).first
+                        if el.is_visible(timeout=1000):
+                            el.click()
+                            unlisted_set = True
+                            logger.info(f"[VISIBILIDADE] 'Não-listado/Unlisted' selecionado via: {selector}")
+                            salvar_screenshot(page, "05e_visibility_unlisted", tarefa_id)
+                            break
+                    except:
+                        continue
+
+                if not unlisted_set:
+                    # Fallback JS: procura radio/select com valor "unlisted"
+                    js_vis = page.evaluate("""
+                        () => {
+                            // Tenta radio buttons
+                            const radios = document.querySelectorAll('input[type="radio"]');
+                            for (const r of radios) {
+                                if (r.value === 'unlisted' || r.id.includes('unlisted')) {
+                                    r.click();
+                                    return 'radio:' + r.id;
+                                }
+                            }
+                            // Tenta select
+                            const selects = document.querySelectorAll('select');
+                            for (const s of selects) {
+                                for (const opt of s.options) {
+                                    if (opt.value === 'unlisted' || opt.text.toLowerCase().includes('unlisted') || opt.text.toLowerCase().includes('não-listado')) {
+                                        s.value = opt.value;
+                                        s.dispatchEvent(new Event('change', {bubbles: true}));
+                                        return 'select:' + opt.value;
+                                    }
+                                }
+                            }
+                            return null;
+                        }
+                    """)
+                    if js_vis:
+                        logger.info(f"[VISIBILIDADE] 'Unlisted' definido via JS: {js_vis}")
+                        salvar_screenshot(page, "05e_visibility_unlisted_js", tarefa_id)
+                    else:
+                        logger.warning("[VISIBILIDADE] ATENÇÃO: Não foi possível definir 'Unlisted' nesta etapa — o vídeo pode ficar público!")
+
+            except Exception as e:
+                logger.warning(f"[VISIBILIDADE] Erro ao definir visibilidade: {e}")
+
             publish_btn = page.locator('.button--primary >> text="Publicação", .button--primary >> text="Publish"').first
             if not publish_btn.is_visible():
                 publish_btn = page.locator('form button.button--primary:has-text("Publicação"), form button.button--primary:has-text("Publish"), .publish__actions button.button--primary').first
