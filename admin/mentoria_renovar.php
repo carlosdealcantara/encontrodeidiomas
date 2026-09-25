@@ -50,9 +50,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $primeiroNome = trim(explode(' ', $aluno['nome'])[0]);
         $novaDataFormatada = date('d/m/Y', strtotime($novaData));
         
-        // Busca a mensagem de Agradecimento no BD
-        $stmtMsg = $conn->query("SELECT * FROM mentoria_mensagens WHERE cenario = 'Confirmação de Pagamento'");
+        $alunoLang = $aluno['lang_id'] ?? 'en';
+        
+        // Busca a mensagem de Agradecimento no BD para o idioma do aluno
+        $stmtMsg = $conn->prepare("SELECT * FROM mentoria_mensagens WHERE cenario = 'Confirmação de Pagamento' AND lang_id = ? LIMIT 1");
+        $stmtMsg->execute([$alunoLang]);
         $msgConfig = $stmtMsg->fetch();
+        if (!$msgConfig && $alunoLang !== 'en') {
+            $stmtMsg->execute(['en']);
+            $msgConfig = $stmtMsg->fetch();
+        }
         
         $ativo_whats = 1;
         $ativo_telegram = 1;
@@ -63,9 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             $ativo_telegram = isset($msgConfig['ativo_telegram']) ? (int)$msgConfig['ativo_telegram'] : 1;
         } else {
             // Se não existir, cria a mensagem no BD
-            $textoPadrao = "🤖 MENSAGEM AUTOMÁTICA:\n\nFala {nome}! Passando para confirmar que o seu pagamento foi recebido e a sua renovação já está garantida no sistema! 🎉\n\nMuito obrigado por continuar com a gente. Seu próximo vencimento ficou para {data}.\n\nQualquer dúvida, é só me chamar!";
-            $stmtInsert = $conn->prepare("INSERT INTO mentoria_mensagens (cenario, dias_antes, texto, ativo, ativo_telegram) VALUES ('Confirmação de Pagamento', -999, ?, 1, 1)");
-            $stmtInsert->execute([$textoPadrao]);
+            $textoPadrao = ($alunoLang === 'es')
+                ? "🤖 MENSAJE AUTOMÁTICO:\n\n¡Hola {nome}! Pasando para confirmar que recibimos tu pago y tu renovación ya está garantizada en el sistema. 🎉\n\n¡Muchas gracias por seguir con nosotros! Tu próximo vencimiento quedó para el {data}.\n\nCualquier duda, ¡aquí estoy para ayudarte!"
+                : "🤖 MENSAGEM AUTOMÁTICA:\n\nFala {nome}! Passando para confirmar que o seu pagamento foi recebido e a sua renovação já está garantida no sistema! 🎉\n\nMuito obrigado por continuar com a gente. Seu próximo vencimento ficou para {data}.\n\nQualquer dúvida, é só me chamar!";
+            $stmtInsert = $conn->prepare("INSERT INTO mentoria_mensagens (cenario, dias_antes, texto, ativo, ativo_telegram, lang_id) VALUES ('Confirmação de Pagamento', -999, ?, 1, 1, ?)");
+            $stmtInsert->execute([$textoPadrao, $alunoLang]);
             $textoAgradecimento = str_replace(['{nome}', '{data}'], [$primeiroNome, $novaDataFormatada], $textoPadrao);
         }
         
@@ -86,12 +95,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             $masterToggle = (int)getSetting('telegram_cobranca_ativo', '0');
             
             if ($masterToggle === 1 && $telegramToken && $telegramChatId) {
-                $pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
+                $pixKey = ($alunoLang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $alunoLang;
+                $pix_footer = getSetting($pixKey, getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos"));
                 $textoFinalWhats = $textoAgradecimento . "\n\n" . trim($pix_footer);
                 
                 $msgTelegram = "🔔 *AVISO DE COBRANÇA — Relay Manual*\n";
                 $msgTelegram .= "─────────────────────────────\n";
                 $msgTelegram .= "👤 Aluno: *{$aluno['nome']}*\n";
+                $msgTelegram .= "🌐 Mentoria: *" . strtoupper($alunoLang) . "*\n";
                 $msgTelegram .= "📱 WhatsApp: `+{$telefoneLimpo}`\n";
                 $msgTelegram .= "📅 Vencimento: {$novaDataFormatada} (RENOVADO)\n";
                 $msgTelegram .= "📋 Cenário: *Confirmação de Pagamento*\n";
@@ -119,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         }
         // ==========================================
         
-        header('Location: mentoria.php?msg=Pagamento Registrado! O aluno ' . urlencode($aluno['nome']) . ' foi renovado. Novo vencimento: ' . date('d/m/Y', strtotime($novaData)) . '.' . urlencode($mensagemExtra));
+        header('Location: mentoria.php?lang=' . urlencode($alunoLang) . '&msg=Pagamento Registrado! O aluno ' . urlencode($aluno['nome']) . ' foi renovado. Novo vencimento: ' . date('d/m/Y', strtotime($novaData)) . '.' . urlencode($mensagemExtra));
         exit;
     }
 }

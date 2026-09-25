@@ -45,7 +45,7 @@ $conn->exec("
     AND DATEDIFF(proximo_vencimento, CURRENT_DATE) <= 3
 ");
 
-$pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
+$default_pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
 
 $stmtMsgs = $conn->query("SELECT * FROM mentoria_mensagens WHERE ativo = 1");
 $mensagensAtivas = $stmtMsgs->fetchAll();
@@ -53,9 +53,11 @@ if(count($mensagensAtivas) === 0) {
     die("Nenhuma mensagem ativada no painel. Abortando.");
 }
 
+// Mapa organizado por idioma e dias_antes: $mensagensMap[lang_id][dias_antes]
 $mensagensMap = [];
 foreach($mensagensAtivas as $m) {
-    $mensagensMap[$m['dias_antes']] = $m;
+    $lang = !empty($m['lang_id']) ? $m['lang_id'] : 'en';
+    $mensagensMap[$lang][$m['dias_antes']] = $m;
 }
 
 $stmtAlunos = $conn->query("
@@ -82,8 +84,12 @@ foreach ($alunos as $aluno) {
     $diff = $hoje->diff($vencimento);
     $diasFaltando = (int)$diff->format('%R%a'); 
     
-    if (isset($mensagensMap[$diasFaltando])) {
-        $msgConfig = $mensagensMap[$diasFaltando];
+    $alunoLang = !empty($aluno['lang_id']) ? $aluno['lang_id'] : 'en';
+    
+    // Procura mensagem para o idioma do aluno; fallback para 'en' se não existir
+    $msgConfig = $mensagensMap[$alunoLang][$diasFaltando] ?? $mensagensMap['en'][$diasFaltando] ?? null;
+
+    if ($msgConfig) {
         $msgId = $msgConfig['id'];
         $alunoId = $aluno['id'];
         
@@ -91,6 +97,9 @@ foreach ($alunos as $aluno) {
         $stmtCheck->execute([$alunoId, $msgId, $dataDisparo]);
         
         if ($stmtCheck->rowCount() === 0) {
+            $pixKey = ($alunoLang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $alunoLang;
+            $pix_footer = getSetting($pixKey, $default_pix_footer);
+
             $textoFinal = str_replace('{nome}', trim(explode(' ', $aluno['nome'])[0]), $msgConfig['texto']);
             $textoFinal .= "\n\n" . trim($pix_footer);
             
@@ -106,7 +115,7 @@ foreach ($alunos as $aluno) {
             if ($httpcode >= 200 && $httpcode < 300) {
                 $stmtLog = $conn->prepare("INSERT INTO mentoria_logs (aluno_id, mensagem_id, data_disparo) VALUES (?, ?, ?)");
                 $stmtLog->execute([$alunoId, $msgId, $dataDisparo]);
-                echo "<p>✅ Mensagem ({$msgConfig['cenario']}) enviada para {$aluno['nome']} (Status API: {$httpcode})</p>";
+                echo "<p>✅ Mensagem ({$msgConfig['cenario']} - {$alunoLang}) enviada para {$aluno['nome']} (Status API: {$httpcode})</p>";
                 $sucessos++;
             } else {
                 echo "<p>❌ Erro ao enviar para {$aluno['nome']}. API retornou Status: {$httpcode}. Resposta: " . htmlspecialchars($response) . "</p>";

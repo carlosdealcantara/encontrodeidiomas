@@ -159,11 +159,17 @@ foreach ($schedules as $s) {
     $minQuorum   = ($sessionType === 'student_practice') ? 2 : 1;
 
     if ($attendees < $minQuorum) {
+        $lang = !empty($s['lang_id']) ? $s['lang_id'] : 'en';
+        $cfg = ($lang === 'en') ? $mentoriaConfig : getMentoriaConfig($lang);
         $tplKey  = ($sessionType === 'student_practice') ? 'practice_cancel' : 'class_cancel';
-        $defaultTpl = ($sessionType === 'student_practice')
-            ? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't get enough confirmations for the {horario} practice session today. Registrations are now closed and the session is cancelled. See you next time! 👋"
-            : "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋";
-        $tpl = $mentoriaConfig['templates'][$tplKey] ?? $defaultTpl;
+        $defaultTpl = ($lang === 'es')
+            ? (($sessionType === 'student_practice')
+                ? "❌ *Sesión de Práctica Cancelada*\n\nLamentablemente, no alcanzamos el mínimo de confirmaciones para la sesión de práctica de las {horario} hoy. Las inscripciones están cerradas y la sesión queda cancelada. ¡Nos vemos en la próxima! 👋"
+                : "❌ *Clase Cancelada*\n\nLamentablemente, no tuvimos confirmaciones para la clase de las {horario} hoy. Las inscripciones están cerradas y la clase queda cancelada. ¡Nos vemos en la próxima! 👋")
+            : (($sessionType === 'student_practice')
+                ? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't get enough confirmations for the {horario} practice session today. Registrations are now closed and the session is cancelled. See you next time! 👋"
+                : "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} session today. Registrations are now closed and the class is cancelled. See you next time! 👋");
+        $tpl = $cfg['templates'][$tplKey] ?? $defaultTpl;
         $msg = str_replace('{horario}', formatTime12h($classTime), $tpl);
 
         // 1. PRIMEIRA CONFIRMAÇÃO (Trava Inicial): registra 'processing' para impedir outros crons concorrentes

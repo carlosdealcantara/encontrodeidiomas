@@ -20,25 +20,46 @@ $error = null;
 // The active tab for redirecting back correctly
 $active_tab = $_POST['tab'] ?? $_GET['tab'] ?? 'pagamentos';
 
+// --- MULTI-IDIOMA SETUP ---
+$available_langs = [];
+try {
+    $available_langs = $conn->query("SELECT lang_id, nome, bandeira FROM mentoria_langs WHERE ativo = 1 ORDER BY lang_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
+if (empty($available_langs)) {
+    $available_langs = [
+        ['lang_id' => 'en', 'nome' => 'Inglês', 'bandeira' => '🇺🇸'],
+        ['lang_id' => 'es', 'nome' => 'Espanhol', 'bandeira' => '🇪🇸']
+    ];
+}
+$current_lang = $_POST['lang'] ?? $_GET['lang'] ?? 'en';
+$valid_lang_ids = array_column($available_langs, 'lang_id');
+if (!in_array($current_lang, $valid_lang_ids)) {
+    $current_lang = 'en';
+}
+
 // --- LOGIC: PAGAMENTOS E MENSALIDADES ---
 if (isset($_GET['toggle_pagamento']) && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $newStatus = $_GET['toggle_pagamento'] === 'Pago' ? 'Pendente' : 'Pago';
     $stmt = $conn->prepare("UPDATE mentoria_alunos SET status_pagamento = :status WHERE id = :id");
     $stmt->execute(['status' => $newStatus, 'id' => $id]);
-    header('Location: mentoria.php?tab=pagamentos&msg=' . urlencode('Status de pagamento atualizado com sucesso'));
+    header('Location: mentoria.php?lang=' . urlencode($current_lang) . '&tab=pagamentos&msg=' . urlencode('Status de pagamento atualizado com sucesso'));
     exit;
 }
 
 // Salvar mensagens de faturamento
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_cobranca'])) {
     if (isset($_POST['pix_footer'])) {
-        updateSetting('mentoria_pix_footer', $_POST['pix_footer']);
+        $pixSettingKey = ($current_lang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $current_lang;
+        updateSetting($pixSettingKey, $_POST['pix_footer']);
     }
     
-    // Assegura que a coluna ativo_telegram existe
+    // Assegura que a coluna ativo_telegram e lang_id existem
     try {
         $conn->exec("ALTER TABLE mentoria_mensagens ADD COLUMN ativo_telegram TINYINT(1) DEFAULT 1");
+    } catch (Exception $e) {}
+    try {
+        $conn->exec("ALTER TABLE mentoria_mensagens ADD COLUMN lang_id VARCHAR(10) NOT NULL DEFAULT 'en'");
     } catch (Exception $e) {}
 
     if (isset($_POST['msgs']) && is_array($_POST['msgs'])) {
@@ -60,13 +81,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_telegram_relay']
     $msg = "Configurações do Telegram Relay salvas com sucesso!";
 }
 
-$stmt = $conn->query("SELECT * FROM mentoria_alunos ORDER BY CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, proximo_vencimento ASC");
+// Alunos filtrados por idioma
+$stmt = $conn->prepare("SELECT * FROM mentoria_alunos WHERE lang_id = ? ORDER BY CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, proximo_vencimento ASC");
+$stmt->execute([$current_lang]);
 $alunos = $stmt->fetchAll();
 
-// Pega os templates de cobrança para a aba pagamentos
-$stmtMsgs = $conn->query("SELECT * FROM mentoria_mensagens ORDER BY dias_antes DESC");
+// Pega os templates de cobrança para o idioma selecionado
+$stmtMsgs = $conn->prepare("SELECT * FROM mentoria_mensagens WHERE lang_id = ? ORDER BY dias_antes DESC");
+$stmtMsgs->execute([$current_lang]);
 $mensagens_cobranca = $stmtMsgs->fetchAll();
-$pix_footer_atual = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
+// Fallback se não encontrar templates do idioma
+if (empty($mensagens_cobranca) && $current_lang !== 'en') {
+    $stmtMsgs->execute(['en']);
+    $mensagens_cobranca = $stmtMsgs->fetchAll();
+}
+
+$pixSettingKey = ($current_lang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $current_lang;
+$pix_footer_atual = getSetting($pixSettingKey, getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos"));
 $ltv_vitalicios = getSetting('ltv_vitalicios', '5000');
 
 // --- LOGIC: MENSAGENS (Automações do Clube) ---
@@ -132,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     
 
     
-    $res = sendBaileysRequest('/mentoria-config', $newConfig, 'POST');
+    $res = saveMentoriaConfig($newConfig, $current_lang);
     if ($res['success']) {
         // Salva settings de regras de negócio no banco (não vão pro config.json do Baileys)
         updateSetting('ltv_vitalicios', trim($_POST['ltv_vitalicios'] ?? '5000'));
@@ -142,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     }
 }
 
-$config = getMentoriaConfig();
+$config = getMentoriaConfig($current_lang);
 $admin_jid = $config['admin_jid'] ?? '556192666148@s.whatsapp.net';
 $jid_our_classes  = $config['groups']['our_classes']['jid']   ?? '';
 $jid_desafio      = $config['groups']['desafio']['jid']       ?? '';
@@ -273,13 +304,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_schedule'])) {
             $error = "Por favor, configure primeiro o grupo Our Classes na aba de Mensagens.";
         } else {
             if ($action === 'add') {
-                $stmt = $conn->prepare("INSERT INTO class_schedule (group_jid, day_of_week, start_time, meet_link, session_type) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$group_jid, $day_of_week, $start_time, $meet_link, $session_type]);
+                $stmt = $conn->prepare("INSERT INTO class_schedule (group_jid, day_of_week, start_time, meet_link, session_type, lang_id) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$group_jid, $day_of_week, $start_time, $meet_link, $session_type, $current_lang]);
                 $msg = "Horário adicionado com sucesso!";
             } else {
                 $id = (int)$_POST['id'];
-                $stmt = $conn->prepare("UPDATE class_schedule SET day_of_week=?, start_time=?, meet_link=?, session_type=? WHERE id=?");
-                $stmt->execute([$day_of_week, $start_time, $meet_link, $session_type, $id]);
+                $stmt = $conn->prepare("UPDATE class_schedule SET day_of_week=?, start_time=?, meet_link=?, session_type=?, lang_id=? WHERE id=?");
+                $stmt->execute([$day_of_week, $start_time, $meet_link, $session_type, $current_lang, $id]);
                 $msg = "Horário atualizado com sucesso!";
             }
         }
@@ -340,7 +371,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_ebook']) && $_
 
 $schedules = [];
 try {
-    $schedules = $conn->query("SELECT * FROM class_schedule ORDER BY day_of_week ASC, start_time ASC")->fetchAll(PDO::FETCH_ASSOC);
+    $stmtSched = $conn->prepare("SELECT * FROM class_schedule WHERE lang_id = ? ORDER BY day_of_week ASC, start_time ASC");
+    $stmtSched->execute([$current_lang]);
+    $schedules = $stmtSched->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {} // Fail gracefully se a tabela não existir
 $days = [1 => 'Segunda-feira', 2 => 'Terça-feira', 3 => 'Quarta-feira', 4 => 'Quinta-feira', 5 => 'Sexta-feira', 6 => 'Sábado', 7 => 'Domingo'];
 
@@ -408,9 +441,24 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
     <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <main class="main-content">
-        <div style="margin-bottom: 30px;">
-            <h1 style="font-size: 2.2rem; font-weight: 700; color: var(--white);">Hub da Mentoria</h1>
-            <p style="color: var(--text-dim); font-size: 1.05rem;">Gestão centralizada de alunos, pagamentos, automações e agenda de aulas.</p>
+        <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h1 style="font-size: 2.2rem; font-weight: 700; color: var(--white);">Hub da Mentoria</h1>
+                <p style="color: var(--text-dim); font-size: 1.05rem;">Gestão centralizada de alunos, pagamentos, automações e agenda de aulas.</p>
+            </div>
+            <!-- Seletor de Idioma da Mentoria -->
+            <div style="background: var(--sidebar-bg); padding: 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; gap: 6px; align-items: center;">
+                <span style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; padding: 0 10px;">Mentoria:</span>
+                <?php foreach ($available_langs as $l): 
+                    $isActive = ($current_lang === $l['lang_id']);
+                ?>
+                    <a href="mentoria.php?lang=<?= urlencode($l['lang_id']) ?>&tab=<?= urlencode($active_tab) ?>" 
+                       style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.92rem; text-decoration: none; transition: 0.2s; <?= $isActive ? 'background: var(--accent-red); color: white; box-shadow: 0 4px 12px rgba(227,29,28,0.25);' : 'color: var(--text-dim); background: transparent;' ?>">
+                        <span style="font-size: 1.1rem;"><?= $l['bandeira'] ?></span>
+                        <span><?= htmlspecialchars($l['nome']) ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <?php if ($msg): ?><div class="alert"><i class="fas fa-check-circle"></i> <?= htmlspecialchars($msg) ?></div><?php endif; ?>

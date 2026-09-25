@@ -57,7 +57,18 @@ function formatTime($dtObj) {
 
 $dateEn = date('l, F jS'); // Ex: Friday, June 13th
 
+// Cache de configs por idioma
+$configsByLang = [];
+
 foreach ($schedules as $index => $schedule) {
+    $lang = !empty($schedule['lang_id']) ? $schedule['lang_id'] : 'en';
+    if (!isset($configsByLang[$lang])) {
+        $configsByLang[$lang] = getMentoriaConfig($lang);
+    }
+    $cfg = $configsByLang[$lang];
+    $targetJid = $cfg['groups']['our_classes']['jid'] ?? $schedule['group_jid'] ?? $groupJid;
+    if (!$targetJid) continue;
+
     $startTime = $schedule['start_time'];
     $sessionType = $schedule['session_type'] ?? 'teacher_class';
     $position = $index + 1;
@@ -67,12 +78,21 @@ foreach ($schedules as $index => $schedule) {
     $deadlineObj->modify('-1 hour');
 
     $tplKey = ($sessionType === 'student_practice') ? 'practice_aviso' : 'class_aviso';
-    $defaultTpl = "📅 {date}\n\nWe have a session scheduled for {horario}.\nIf you want to participate, please reply with !attend.\n\n⏳ Deadline to confirm your attendance: {deadline}.";
-    $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
+    $defaultTpl = ($lang === 'es')
+        ? "📅 {date}\n\nTenemos una sesión programada para las {horario}.\nSi deseas participar, responde con !attend.\n\n⏳ Plazo límite para confirmar asistencia: {deadline}."
+        : "📅 {date}\n\nWe have a session scheduled for {horario}.\nIf you want to participate, please reply with !attend.\n\n⏳ Deadline to confirm your attendance: {deadline}.";
+    $tpl = $cfg['templates'][$tplKey] ?? $defaultTpl;
+
+    // Formatação de data localizada
+    $diasEs = [1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'];
+    $mesesEs = [1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'];
+    $dateFormatted = ($lang === 'es')
+        ? ($diasEs[(int)$diaSemana] . ', ' . (int)date('j') . ' de ' . $mesesEs[(int)date('n')])
+        : $dateEn;
 
     $msg = str_replace(
         ['{date}', '{horario}', '{deadline}'], 
-        [$dateEn, formatTime($startTimeObj), formatTime($deadlineObj)], 
+        [$dateFormatted, formatTime($startTimeObj), formatTime($deadlineObj)], 
         $tpl
     );
     
@@ -92,7 +112,7 @@ foreach ($schedules as $index => $schedule) {
         continue;
     }
 
-    $res = enviarWhatsApp($groupJid, $msg, 'class_aviso');
+    $res = enviarWhatsApp($targetJid, $msg, 'class_aviso');
     if ($res['success']) {
         $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
         echo "✅ Aviso enfileirado! (jobId: " . ($res['data']['jobId'] ?? 'n/a') . ")\n\n";
