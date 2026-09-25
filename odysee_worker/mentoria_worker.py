@@ -259,13 +259,21 @@ def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
             context.add_cookies([{"name": "auth_token", "value": auth_token, "domain": ".odysee.com", "path": "/"}])
             page.evaluate(f"window.localStorage.setItem('auth_token', '{auth_token}')")
 
-            video_url = f"https://odysee.com/@{channel_name}/{slug}"
-            logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+            urls_to_try = []
+            if channel_name:
+                urls_to_try.append(f"https://odysee.com/@{channel_name}/{slug}")
+            urls_to_try.append(f"https://odysee.com/{slug}")
 
-            # Tenta até 2 vezes para absorver lentidão pontual do Odysee
-            for tentativa in range(2):
-                try:
-                    page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
+            logger.info(f"[PASSO 7] URLs candidatas para navegação: {urls_to_try}")
+
+            for video_url in urls_to_try:
+                if share_link:
+                    break
+                logger.info(f"[PASSO 7] Navegando para a página do vídeo: {video_url}")
+                # Tenta até 2 vezes por URL
+                for tentativa in range(2):
+                    try:
+                        page.goto(video_url, timeout=60000, wait_until="domcontentloaded")
                     try:
                         page.wait_for_selector('h1, .video-js, video', timeout=30000)
                     except:
