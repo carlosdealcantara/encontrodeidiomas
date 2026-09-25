@@ -449,6 +449,8 @@ async function connectToWhatsApp() {
             if (!isProcessingQueue) {
                 processQueue();
             }
+            // Recupera boas-vindas pendentes na fila DB (após 5s para socket estabilizar)
+            setTimeout(() => mentoriaPlugin.recoverWelcomes(), 5000);
         }
     });
 
