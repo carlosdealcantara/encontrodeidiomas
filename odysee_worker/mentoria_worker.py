@@ -149,36 +149,81 @@ def baixar_video_drive(drive_service, file_id, file_name):
             status, done = downloader.next_chunk()
     return temp_path
 
+def obter_ou_criar_pasta_arquivo(drive_service):
+    """Retorna o ID da pasta de arquivo de gravações.
+    Se DRIVE_MENTORIA_ARCHIVE_FOLDER_ID estiver definido, usa ele.
+    Caso contrário, busca no Drive por 'Meet Recordings' ou cria uma se não existir."""
+    if DRIVE_MENTORIA_ARCHIVE_FOLDER_ID:
+        return DRIVE_MENTORIA_ARCHIVE_FOLDER_ID
+        
+    try:
+        # Busca pasta existente
+        res = drive_service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name='Meet Recordings' and trashed=false",
+            fields="files(id, name)"
+        ).execute()
+        pastas = res.get('files', [])
+        if pastas:
+            return pastas[0]['id']
+            
+        # Cria se não existir
+        meta = {
+            'name': 'Meet Recordings',
+            'mimeType': 'application/vnd.google-apps.folder'
+        }
+        nova_pasta = drive_service.files().create(body=meta, fields='id').execute()
+        logger.info(f"[DRIVE] Pasta 'Meet Recordings' criada automaticamente com ID: {nova_pasta['id']}")
+        return nova_pasta['id']
+    except Exception as e:
+        logger.warning(f"[DRIVE] Erro ao obter/criar pasta de arquivo: {e}")
+        return None
+
 def mover_arquivos_mentoria(drive_service, file_id, file_name):
     try:
-        if not DRIVE_MENTORIA_ARCHIVE_FOLDER_ID:
-            logger.warning("[DRIVE] DRIVE_MENTORIA_ARCHIVE_FOLDER_ID não configurado.")
+        pasta_destino_id = obter_ou_criar_pasta_arquivo(drive_service)
+        if not pasta_destino_id:
+            logger.warning("[DRIVE] Pasta de arquivo não encontrada nem criada. Arquivos mantidos no local original.")
             return
 
         # 1. Move o vídeo
         file = drive_service.files().get(fileId=file_id, fields='parents').execute()
-        drive_service.files().update(
-            fileId=file_id,
-            addParents=DRIVE_MENTORIA_ARCHIVE_FOLDER_ID,
-            removeParents=",".join(file.get('parents', []))
-        ).execute()
-        logger.info(f"[DRIVE] Vídeo movido para a pasta de arquivos ({DRIVE_MENTORIA_ARCHIVE_FOLDER_ID})")
+        current_parents = file.get('parents', [])
+        if pasta_destino_id not in current_parents:
+            drive_service.files().update(
+                fileId=file_id,
+                addParents=pasta_destino_id,
+                removeParents=",".join(current_parents)
+            ).execute()
+            logger.info(f"[DRIVE] Vídeo movido para a pasta de arquivos ({pasta_destino_id})")
         
         # 2. Move o chat (mesmo nome base)
         base_name = file_name.replace(' - Recording.mp4', '').replace(' - Recording', '')
-        chat_results = drive_service.files().list(
-            q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='text/plain' and name contains '{base_name}'",
-            fields="files(id, name, parents)"
-        ).execute()
         
-        chats = chat_results.get('files', [])
+        # Busca chat nas pastas de origem e também busca globalmente se não achar
+        chat_queries = []
+        if current_parents:
+            chat_queries.append(f"'{current_parents[0]}' in parents and mimeType='text/plain' and name contains '{base_name}' and trashed=false")
+        if DRIVE_MENTORIA_FOLDER_ID:
+            chat_queries.append(f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='text/plain' and name contains '{base_name}' and trashed=false")
+        chat_queries.append(f"mimeType='text/plain' and name contains '{base_name}' and trashed=false")
+        
+        chats = []
+        for q in chat_queries:
+            chat_results = drive_service.files().list(q=q, fields="files(id, name, parents)").execute()
+            found = chat_results.get('files', [])
+            if found:
+                chats = found
+                break
+        
         for chat in chats:
-            drive_service.files().update(
-                fileId=chat['id'],
-                addParents=DRIVE_MENTORIA_ARCHIVE_FOLDER_ID,
-                removeParents=",".join(chat.get('parents', []))
-            ).execute()
-            logger.info(f"[DRIVE] Chat movido para a pasta de arquivos: {chat['name']}")
+            c_parents = chat.get('parents', [])
+            if pasta_destino_id not in c_parents:
+                drive_service.files().update(
+                    fileId=chat['id'],
+                    addParents=pasta_destino_id,
+                    removeParents=",".join(c_parents)
+                ).execute()
+                logger.info(f"[DRIVE] Chat movido para a pasta de arquivos: {chat['name']}")
                 
     except Exception as e:
         logger.error(f"[DRIVE] Erro ao mover arquivos: {e}")
@@ -890,37 +935,33 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
         return upload_ok, share_link
 
 def escanear_drive():
-    print("Escaneando Drive MENTORIA por novos vídeos...", flush=True)
-    if not DRIVE_MENTORIA_FOLDER_ID:
-        logger.error("DRIVE_MENTORIA_FOLDER_ID não configurado.")
-        return
+    print(f"Escaneando Drive MENTORIA ({MENTORIA_LANG_ID}) por novos vídeos...", flush=True)
 
     try:
         drive_service = init_drive_service()
 
         # 1. Descobrir todas as pastas de origem dos vídeos dinamicamente.
-        # O Google Meet agora cria subpastas "Google Meet" > "<evento> (recurring)".
-        # Buscamos essas subpastas dentro da pasta raiz da Mentoria e também
-        # globalmente (para capturar pastas criadas fora da hierarquia esperada).
-        # A pasta raiz também é incluída como fallback para vídeos antigos.
-        folder_ids = [DRIVE_MENTORIA_FOLDER_ID]
+        # O Google Meet cria subpastas "Google Meet" > "<evento> (recurring)".
+        # Se DRIVE_MENTORIA_FOLDER_ID estiver configurado, usamos como ponto de partida.
+        # Caso contrário, descobrimos todas as pastas do Drive dinamicamente.
+        folder_ids = [DRIVE_MENTORIA_FOLDER_ID] if DRIVE_MENTORIA_FOLDER_ID else []
 
         try:
-            logger.info("[SCAN] Buscando subpastas 'Google Meet' dentro da pasta da Mentoria...")
+            logger.info("[SCAN] Buscando subpastas 'Google Meet' no Drive...")
 
-            # Busca pastas "Google Meet" filhas diretas da pasta raiz da Mentoria
-            meet_folders = drive_service.files().list(
-                q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
-                fields='files(id, name)'
-            ).execute().get('files', [])
+            meet_folders = []
+            if DRIVE_MENTORIA_FOLDER_ID:
+                meet_folders = drive_service.files().list(
+                    q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+                    fields='files(id, name)'
+                ).execute().get('files', [])
 
-            # Também busca globalmente por "Google Meet" (caso o Google crie fora da hierarquia)
+            # Também busca globalmente por "Google Meet"
             meet_folders_global = drive_service.files().list(
                 q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
                 fields='files(id, name)'
             ).execute().get('files', [])
 
-            # Une e remove duplicatas pelo ID
             seen_ids = {mf['id'] for mf in meet_folders}
             for mf in meet_folders_global:
                 if mf['id'] not in seen_ids:
@@ -929,27 +970,43 @@ def escanear_drive():
 
             for mf in meet_folders:
                 logger.info(f"[SCAN] Pasta 'Google Meet' encontrada: {mf['id']}")
-                # Busca subpastas "recurring" (padrão do Google Meet para eventos recorrentes)
+                folder_ids.append(mf['id'])
+                # Busca subpastas (recurring ou com nome do evento)
                 sub_results = drive_service.files().list(
-                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
+                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
                     fields='files(id, name)'
                 ).execute()
                 for sub in sub_results.get('files', []):
-                    logger.info(f"[SCAN] Subpasta recurring encontrada: {sub['name']} ({sub['id']})")
+                    logger.info(f"[SCAN] Subpasta encontrada: {sub['name']} ({sub['id']})")
                     folder_ids.append(sub['id'])
 
         except Exception as e:
             logger.warning(f"[SCAN] Erro ao buscar subpastas Google Meet dinamicamente: {e}")
 
+        # Se não achou nenhuma subpasta, varre a raiz do Drive
+        if not folder_ids:
+            logger.info("[SCAN] Nenhuma subpasta específica encontrada. Varrendo raiz do Drive...")
+
         # 2. Buscar arquivos de vídeo nessas pastas com filtro de nome da Mentoria
         arquivos = []
-        for i in range(0, len(folder_ids), 10):
-            lote = folder_ids[i:i+10]
-            parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
+        if folder_ids:
+            for i in range(0, len(folder_ids), 10):
+                lote = folder_ids[i:i+10]
+                parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
+                query = (
+                    f"({parents_q}) and mimeType contains 'video/' "
+                    f"and (name contains 'Mentorship' or name contains 'Mentoria' or name contains 'Mentoría' or name contains 'Español' or name contains 'Espanhol' or name contains 'Recording') "
+                    f"and trashed=false"
+                )
+                results = drive_service.files().list(
+                    q=query,
+                    fields="files(id, name, size)"
+                ).execute()
+                arquivos.extend(results.get('files', []))
+        else:
+            # Busca global direta por vídeos de gravação
             query = (
-                f"({parents_q}) and mimeType contains 'video/' "
-                f"and (name contains 'Mentorship Class' or name contains 'Mentoria') "
-                f"and trashed=false"
+                "mimeType contains 'video/' and (name contains 'Mentorship' or name contains 'Mentoria' or name contains 'Mentoría' or name contains 'Español' or name contains 'Recording') and trashed=false"
             )
             results = drive_service.files().list(
                 q=query,
@@ -957,7 +1014,7 @@ def escanear_drive():
             ).execute()
             arquivos.extend(results.get('files', []))
 
-        print(f"Arquivos MENTORIA encontrados no Drive: {len(arquivos)}", flush=True)
+        print(f"Arquivos MENTORIA ({MENTORIA_LANG_ID}) encontrados no Drive: {len(arquivos)}", flush=True)
 
         if not arquivos:
             return
