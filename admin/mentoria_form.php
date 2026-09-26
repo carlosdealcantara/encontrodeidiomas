@@ -25,6 +25,19 @@ if (isset($_GET['id'])) {
     $aluno = $stmt->fetch();
 }
 
+$available_langs = [];
+try {
+    $available_langs = $conn->query("SELECT lang_id, nome, bandeira FROM mentoria_langs WHERE ativo = 1 ORDER BY lang_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
+if (empty($available_langs)) {
+    $available_langs = [
+        ['lang_id' => 'en', 'nome' => 'Inglês', 'bandeira' => '🇺🇸'],
+        ['lang_id' => 'es', 'nome' => 'Espanhol', 'bandeira' => '🇪🇸']
+    ];
+}
+
+$selected_lang = $aluno['lang_id'] ?? $_GET['lang'] ?? 'en';
+
 // Lógica de Salvar (Create ou Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'] ?? '';
@@ -40,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $grupo_atual = $_POST['grupo_atual'] ?? 'Our Meetups';
     $observacoes = $_POST['observacoes'] ?? '';
+    $lang_id = $_POST['lang_id'] ?? 'en';
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
     // Remove tudo que não for número do telefone
@@ -52,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 valor_mensalidade = :valor_mensalidade, total_investido = :total_investido,
                 proximo_vencimento = :proximo_vencimento, 
                 data_inicio = :data_inicio, data_nascimento = :data_nascimento, grupo_atual = :grupo_atual, 
-                observacoes = :observacoes 
+                observacoes = :observacoes, lang_id = :lang_id 
                 WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
@@ -60,23 +74,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'proximo_vencimento' => $proximo_vencimento, 
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
-            'observacoes' => $observacoes, 'id' => $id
+            'observacoes' => $observacoes, 'lang_id' => $lang_id, 'id' => $id
         ]);
-        header('Location: mentoria.php?msg=Aluno atualizado com sucesso');
+        header('Location: mentoria.php?lang=' . urlencode($lang_id) . '&msg=Aluno atualizado com sucesso');
         exit;
     } else {
         // INSERT
-        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, valor_mensalidade, total_investido, proximo_vencimento, data_inicio, data_nascimento, grupo_atual, observacoes) 
-                VALUES (:nome, :telefone, :status_aluno, :valor_mensalidade, :total_investido, :proximo_vencimento, :data_inicio, :data_nascimento, :grupo_atual, :observacoes)";
+        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, valor_mensalidade, total_investido, proximo_vencimento, data_inicio, data_nascimento, grupo_atual, observacoes, lang_id) 
+                VALUES (:nome, :telefone, :status_aluno, :valor_mensalidade, :total_investido, :proximo_vencimento, :data_inicio, :data_nascimento, :grupo_atual, :observacoes, :lang_id)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno,
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'proximo_vencimento' => $proximo_vencimento, 
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
-            'observacoes' => $observacoes
+            'observacoes' => $observacoes, 'lang_id' => $lang_id
         ]);
-        header('Location: mentoria.php?msg=Novo aluno cadastrado com sucesso');
+        header('Location: mentoria.php?lang=' . urlencode($lang_id) . '&msg=Novo aluno cadastrado com sucesso');
         exit;
     }
 }
@@ -184,6 +198,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group full">
                         <label>Nome Completo do Aluno</label>
                         <input type="text" name="nome" required value="<?= htmlspecialchars($aluno['nome'] ?? '') ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Idioma da Mentoria</label>
+                        <select name="lang_id" required style="font-weight: 600;">
+                            <?php foreach ($available_langs as $l): ?>
+                                <option value="<?= htmlspecialchars($l['lang_id']) ?>" <?= $selected_lang === $l['lang_id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($l['bandeira'] . ' ' . $l['nome']) ?> (<?= htmlspecialchars($l['lang_id']) ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="obs-hint">Define em qual turma, relatórios e templates o aluno será alocado.</div>
                     </div>
 
                     <div class="form-group">

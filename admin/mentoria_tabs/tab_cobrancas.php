@@ -9,6 +9,7 @@
 
 <form method="POST" action="mentoria.php">
     <input type="hidden" name="tab" value="cobrancas">
+    <input type="hidden" name="lang" value="<?= htmlspecialchars($current_lang ?? 'en') ?>">
     
     <!-- RODAPÉ GLOBAL PIX -->
     <div class="card" style="background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid var(--accent-blue); margin-bottom: 30px;">

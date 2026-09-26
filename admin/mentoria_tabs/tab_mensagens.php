@@ -47,6 +47,7 @@
 
 <form method="POST">
     <input type="hidden" name="tab" value="mensagens">
+    <input type="hidden" name="lang" value="<?= htmlspecialchars($current_lang ?? 'en') ?>">
     
     <!-- SUB TAB GLOBAL -->
     <div id="sub_global" class="sub-tab-pane active">

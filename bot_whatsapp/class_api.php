@@ -26,7 +26,7 @@ try {
     
     // Busca todas as aulas ativas de hoje para este grupo
     $diaSemana = date('N'); // 1 = Segunda, 7 = Domingo
-    $stmt = $conn->prepare("SELECT id, start_time, session_type FROM class_schedule WHERE group_jid = ? AND day_of_week = ? AND is_active = 1 ORDER BY start_time ASC");
+    $stmt = $conn->prepare("SELECT id, start_time, session_type, lang_id FROM class_schedule WHERE group_jid = ? AND day_of_week = ? AND is_active = 1 ORDER BY start_time ASC");
     $stmt->execute([$groupJid, $diaSemana]);
     $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -165,9 +165,11 @@ try {
             }
         }
 
+        $scheduleLang = !empty($schedule['lang_id']) ? $schedule['lang_id'] : 'en';
+
         // Salva a presença
-        $insert = $conn->prepare("INSERT IGNORE INTO class_attendances (schedule_id, member_jid, member_name, aula_date) VALUES (?, ?, ?, ?)");
-        $insert->execute([$scheduleId, $memberJid, $memberName, $hoje]);
+        $insert = $conn->prepare("INSERT IGNORE INTO class_attendances (schedule_id, member_jid, member_name, aula_date, lang_id) VALUES (?, ?, ?, ?, ?)");
+        $insert->execute([$scheduleId, $memberJid, $memberName, $hoje, $scheduleLang]);
         
         // Pega a lista atualizada
         $stmtList->execute([$scheduleId, $hoje]);

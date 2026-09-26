@@ -110,9 +110,15 @@ function statusWhatsApp(): array {
 
 // === FUNÇÕES DA MENTORIA ===
 
-function getMentoriaConfig(): array {
-    $res = sendBaileysRequest('/mentoria-config', null, 'GET');
+function getMentoriaConfig(string $langId = 'en'): array {
+    $endpoint = ($langId === 'en') ? '/mentoria-config' : '/mentoria-config?lang=' . urlencode($langId);
+    $res = sendBaileysRequest($endpoint, null, 'GET');
     return $res['success'] ? ($res['data'] ?? []) : [];
+}
+
+function saveMentoriaConfig(array $config, string $langId = 'en'): array {
+    $endpoint = ($langId === 'en') ? '/mentoria-config' : '/mentoria-config?lang=' . urlencode($langId);
+    return sendBaileysRequest($endpoint, $config, 'POST');
 }
 
 function fetchBaileysActivity(string $date): array {

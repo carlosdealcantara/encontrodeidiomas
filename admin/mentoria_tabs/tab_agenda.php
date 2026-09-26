@@ -79,6 +79,7 @@
                             <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
                             <input type="hidden" name="status" value="<?php echo $s['is_active'] ? 0 : 1; ?>">
                             <input type="hidden" name="tab" value="agenda">
+                            <input type="hidden" name="lang" value="<?php echo htmlspecialchars($current_lang ?? 'en'); ?>">
                             <button type="submit" class="action-btn <?php echo $s['is_active'] ? 'btn-toggle-off' : 'btn-toggle-on'; ?>" title="<?php echo $s['is_active'] ? 'Desativar' : 'Ativar'; ?>">
                                 <i class="fas <?php echo $s['is_active'] ? 'fa-ban' : 'fa-check'; ?>"></i>
                             </button>
@@ -88,6 +89,7 @@
                             <input type="hidden" name="action_schedule" value="delete">
                             <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
                             <input type="hidden" name="tab" value="agenda">
+                            <input type="hidden" name="lang" value="<?php echo htmlspecialchars($current_lang ?? 'en'); ?>">
                             <button type="submit" class="action-btn btn-delete-action" title="Excluir"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
@@ -106,6 +108,7 @@
             <input type="hidden" name="action_schedule" id="formAction" value="add">
             <input type="hidden" name="id" id="formId" value="">
             <input type="hidden" name="tab" value="agenda">
+            <input type="hidden" name="lang" value="<?php echo htmlspecialchars($current_lang ?? 'en'); ?>">
             
             <div class="form-group">
                 <label>Dia da Semana</label>

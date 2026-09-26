@@ -26,12 +26,18 @@ function getActivityFile() {
     return path.join(dataDir, 'activity_log.json');
 }
 
-function getConfigFile() {
-    return path.join(dataDir, 'mentoria_config.json');
+function getConfigFile(langId = 'en') {
+    if (langId === 'en') {
+        return path.join(dataDir, 'mentoria_config.json');
+    }
+    return path.join(dataDir, `mentoria_config_${langId}.json`);
 }
 
-function getConfigBackupFile() {
-    return path.join(dataDir, 'mentoria_config.backup.json');
+function getConfigBackupFile(langId = 'en') {
+    if (langId === 'en') {
+        return path.join(dataDir, 'mentoria_config.backup.json');
+    }
+    return path.join(dataDir, `mentoria_config_${langId}.backup.json`);
 }
 
 // === COMMUNITY MODULE ===
@@ -77,33 +83,33 @@ function saveCommunityActivity(data) {
 }
 // === END COMMUNITY MODULE ===
 
-function loadConfig() {
+function loadConfig(langId = 'en') {
     try {
-        const file = getConfigFile();
+        const file = getConfigFile(langId);
         if (fs.existsSync(file)) {
             const config = JSON.parse(fs.readFileSync(file, 'utf8'));
             // ⚠️ SAFETY CHECK: if groups is empty but backup exists, auto-restore
             const groupCount = Object.keys(config.groups || {}).length;
             const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
             if (groupsWithJid === 0) {
-                const backupFile = getConfigBackupFile();
+                const backupFile = getConfigBackupFile(langId);
                 if (fs.existsSync(backupFile)) {
                     const backup = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
                     const backupGroupCount = Object.values(backup.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
                     if (backupGroupCount > 0) {
-                        console.warn(`[CONFIG] ⚠️ GRUPOS AUSENTES no config principal (${groupCount} entradas, 0 com JID). Restaurando ${backupGroupCount} grupos do backup automaticamente!`);
+                        console.warn(`[CONFIG] ⚠️ GRUPOS AUSENTES no config [${langId}] (${groupCount} entradas, 0 com JID). Restaurando ${backupGroupCount} grupos do backup automaticamente!`);
                         config.groups = backup.groups;
                         // Re-save the restored config
                         fs.writeFileSync(file, JSON.stringify(config, null, 2));
                     }
-                } else {
+                } else if (langId === 'en') {
                     console.warn('[CONFIG] ⚠️ ATENÇÃO: Nenhum grupo cadastrado e nenhum backup disponível. O bot vai IGNORAR todas as mensagens! Acesse o painel admin > Mensagens e Grupos > Salvar Configurações.');
                 }
             }
             return config;
         }
     } catch (e) {
-        console.error('Error loading mentoria config:', e);
+        console.error(`Error loading mentoria config [${langId}]:`, e);
     }
     // Default fallback
     return {
@@ -113,7 +119,7 @@ function loadConfig() {
     };
 }
 
-function saveConfig(config) {
+function saveConfig(config, langId = 'en') {
     // SAFETY: Nunca deixa entrar grupos da comunidade global no config da mentoria
     const cleanGroups = {};
     for (const [key, val] of Object.entries(config.groups || {})) {
@@ -121,12 +127,12 @@ function saveConfig(config) {
     }
     config.groups = cleanGroups;
 
-    fs.writeFileSync(getConfigFile(), JSON.stringify(config, null, 2));
+    fs.writeFileSync(getConfigFile(langId), JSON.stringify(config, null, 2));
     // ✅ Always keep a backup of the last config that had groups configured
     const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
     if (groupsWithJid > 0) {
-        fs.writeFileSync(getConfigBackupFile(), JSON.stringify(config, null, 2));
-        console.log(`[CONFIG] Backup salvo com ${groupsWithJid} grupos configurados.`);
+        fs.writeFileSync(getConfigBackupFile(langId), JSON.stringify(config, null, 2));
+        console.log(`[CONFIG] Backup [${langId}] salvo com ${groupsWithJid} grupos configurados.`);
     }
 }
 
@@ -478,11 +484,27 @@ async function handleMessages({ messages, type }) {
             }
         }
 
-        // Determina a qual módulo este grupo pertence
-        const mentoriaGroups = Object.values(config.groups || {}).map(g => g.jid);
+        // Determina a qual módulo este grupo pertence (suporte multi-idioma)
+        const configES = loadConfig('es');
+        const mentoriaGroupsEN = Object.values(config.groups || {}).map(g => g.jid);
+        const mentoriaGroupsES = Object.values(configES.groups || {}).map(g => g.jid);
+        
+        let activeLang = 'en';
+        let isMentoriaGroup = false;
+        let groupConfig = config;
+
+        if (mentoriaGroupsEN.includes(groupJid)) {
+            isMentoriaGroup = true;
+            activeLang = 'en';
+            groupConfig = config;
+        } else if (mentoriaGroupsES.includes(groupJid)) {
+            isMentoriaGroup = true;
+            activeLang = 'es';
+            groupConfig = configES;
+        }
+
         const communityConfig = loadCommunityConfig();
         const communityGroups = Object.values(communityConfig.groups || {}).map(g => g.jid);
-        const isMentoriaGroup = mentoriaGroups.includes(groupJid);
         const isCommunityGroup = communityGroups.includes(groupJid);
 
         // Ignora grupos não reconhecidos por nenhum módulo
@@ -626,20 +648,30 @@ async function handleMessages({ messages, type }) {
                         
                         if (data.success) {
                             let reactEmoji = '🙌';
-                            let replyMsg = `🙌 Way to go! Good effort. (+${points} pt${points !== 1 ? 's' : ''})`;
+                            let replyMsg = (activeLang === 'es')
+                                ? `🙌 ¡Muy bien! Buen esfuerzo. (+${points} pt${points !== 1 ? 's' : ''})`
+                                : `🙌 Way to go! Good effort. (+${points} pt${points !== 1 ? 's' : ''})`;
                             
                             if (points >= 20) {
                                 reactEmoji = '🚀';
-                                replyMsg = `🚀 Stellar! Taking it to the next level! (+${points} pts)`;
+                                replyMsg = (activeLang === 'es')
+                                    ? `🚀 ¡Extraordinario! ¡Alcanzando el siguiente nivel! (+${points} pts)`
+                                    : `🚀 Stellar! Taking it to the next level! (+${points} pts)`;
                             } else if (points >= 15) {
                                 reactEmoji = '⚡';
-                                replyMsg = `⚡ Outstanding! Pure energy! (+${points} pts)`;
+                                replyMsg = (activeLang === 'es')
+                                    ? `⚡ ¡Impresionante! ¡Pura energía! (+${points} pts)`
+                                    : `⚡ Outstanding! Pure energy! (+${points} pts)`;
                             } else if (points >= 10) {
                                 reactEmoji = '🔥';
-                                replyMsg = `🔥 Awesome work! You're on fire! (+${points} pts)`;
+                                replyMsg = (activeLang === 'es')
+                                    ? `🔥 ¡Increíble trabajo! ¡Estás en racha! (+${points} pts)`
+                                    : `🔥 Awesome work! You're on fire! (+${points} pts)`;
                             } else if (points >= 5) {
                                 reactEmoji = '🎉';
-                                replyMsg = `🎉 Great job! Keep it going! (+${points} pts)`;
+                                replyMsg = (activeLang === 'es')
+                                    ? `🎉 ¡Excelente trabajo! ¡Sigue así! (+${points} pts)`
+                                    : `🎉 Great job! Keep it going! (+${points} pts)`;
                             }
                             
                             // React to the student's message
@@ -753,7 +785,7 @@ async function handleMessages({ messages, type }) {
             }
 
             // If it's the Our Classes group, log the booking
-            const ourClassesGroup = config.groups?.our_classes?.jid;
+            const ourClassesGroup = groupConfig.groups?.our_classes?.jid;
             if (groupJid === ourClassesGroup) {
                 try {
                     const reqBody = {
@@ -795,9 +827,7 @@ async function handleMessages({ messages, type }) {
                     let sessionsBlock = buildSessionsBlock(data.daily_summary);
 
                     if (data.success) {
-                        await sock.sendMessage(groupJid, { react: { text: '✅', key: msg.key } });
-                        
-                        let tpl = config.templates?.daily_summary_header || `✅ Attendance confirmed for @{name}!\n\n📅 *Today's Schedule — {date}*\n{sessionsBlock}`;
+                        let tpl = groupConfig.templates?.daily_summary_header || (activeLang === 'es' ? `✅ ¡Asistencia confirmada para @{name}!\n\n📅 *Agenda de Hoy — {date}*\n{sessionsBlock}` : `✅ Attendance confirmed for @{name}!\n\n📅 *Today's Schedule — {date}*\n{sessionsBlock}`);
                         let msgTxt = tpl
                             .replace('{name}', senderJid.split('@')[0])
                             .replace('{date}', dStr)
@@ -806,9 +836,12 @@ async function handleMessages({ messages, type }) {
                         
                         await sock.sendMessage(groupJid, { text: msgTxt, mentions: [senderJid] });
                     } else if (data.reason === 'deadline_passed') {
+                        let lateGoodDefault = (activeLang === 'es') ? `⏰ El plazo límite ha finalizado, @{name}.\n\n✅ *Buenas noticias:* ¡La clase está confirmada y se realizará de todas formas!\n{sessionsBlock}` : `⏰ The deadline has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!\n{sessionsBlock}`;
+                        let lateBadDefault = (activeLang === 'es') ? `⏰ El plazo límite ha finalizado, @{name}.\n\n❌ *Aviso:* La sesión fue cancelada por falta de quórum.` : `⏰ The deadline has passed, @{name}.\n\n❌ *Bad news:* The session was already cancelled due to lack of attendees.`;
+
                         let msgTxt = data.class_confirmed 
-                            ? (config.templates?.attend_late_good || `⏰ The deadline has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!\n{sessionsBlock}`)
-                            : (config.templates?.attend_late_bad || `⏰ The deadline has passed, @{name}.\n\n❌ *Bad news:* The session was already cancelled due to lack of attendees.`);
+                            ? (groupConfig.templates?.attend_late_good || lateGoodDefault)
+                            : (groupConfig.templates?.attend_late_bad || lateBadDefault);
                         
                         msgTxt = msgTxt
                             .replace('{name}', senderJid.split('@')[0])
@@ -1142,11 +1175,13 @@ function initRoutes(app, dir) {
 
     // Config endpoints
     app.get('/mentoria-config', (req, res) => {
-        res.json(loadConfig());
+        const lang = req.query.lang || 'en';
+        res.json(loadConfig(lang));
     });
 
     app.post('/mentoria-config', (req, res) => {
-        saveConfig(req.body);
+        const lang = req.query.lang || req.body.lang || 'en';
+        saveConfig(req.body, lang);
         res.json({ success: true });
     });
 

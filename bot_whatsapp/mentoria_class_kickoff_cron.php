@@ -55,11 +55,16 @@ foreach ($schedules as $s) {
             // Remove o https:// caso exista no banco
             $cleanLink = str_replace(['https://', 'http://'], '', $s['meet_link']);
             
-            $config = getMentoriaConfig();
+            $lang = !empty($s['lang_id']) ? $s['lang_id'] : 'en';
+            $config = getMentoriaConfig($lang);
             $tplKey = ($sessionType === 'student_practice') ? 'practice_kickoff' : 'class_kickoff';
-            $defaultTpl = ($sessionType === 'student_practice') 
-                ? "🎉 *The Practice Session is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great conversation! 🗣️"
-                : "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️";
+            $defaultTpl = ($lang === 'es')
+                ? (($sessionType === 'student_practice') 
+                    ? "🎉 *¡La sesión de práctica está comenzando AHORA!*\n\nIngresa a la sala aquí: {link}\n\n¡Que tengan una excelente conversación! 🗣️"
+                    : "🎉 *¡La clase con el profesor está comenzando AHORA!*\n\nIngresa a la sala aquí: {link}\n\n¡Que tengan una excelente sesión! 🗣️")
+                : (($sessionType === 'student_practice') 
+                    ? "🎉 *The Practice Session is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great conversation! 🗣️"
+                    : "🎉 *The Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 🗣️");
             $tpl = $config['templates'][$tplKey] ?? $defaultTpl;
             $msg = str_replace('{link}', $cleanLink, $tpl);
             $msg = str_replace('{horario}', formatTime12h($classTime), $msg);

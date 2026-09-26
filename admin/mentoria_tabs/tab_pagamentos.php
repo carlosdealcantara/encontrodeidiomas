@@ -4,7 +4,7 @@
         <p>Gestão financeira e de acessos automáticos.</p>
     </div>
     <div class="header-actions" style="display: flex; gap: 15px;">
-        <a href="mentoria_form.php" class="btn-action btn-add">
+        <a href="mentoria_form.php?lang=<?= urlencode($current_lang ?? 'en') ?>" class="btn-action btn-add">
             <i class="fas fa-plus"></i> Novo Aluno
         </a>
     </div>
@@ -173,7 +173,7 @@
                             <i class="fas fa-gem"></i>
                         </span>
                         <?php endif; ?>
-                        <a href="mentoria_form.php?id=<?= $aluno['id'] ?>" class="action-btn btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
+                        <a href="mentoria_form.php?id=<?= $aluno['id'] ?>&lang=<?= urlencode($current_lang ?? 'en') ?>" class="action-btn btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
                     </div>
                 </td>
             </tr>
