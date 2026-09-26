@@ -1,15 +1,16 @@
 <?php
-// Salva template da mensagem WhatsApp do pipeline Odysee
+// Salva template da mensagem WhatsApp do pipeline Odysee por idioma
+$wppSettingKey = ($current_lang === 'en') ? 'mentoria_odysee_wpp_template' : 'mentoria_odysee_wpp_template_' . $current_lang;
 if (isset($_POST['save_odysee_wpp_template'])) {
-    updateSetting('mentoria_odysee_wpp_template', $_POST['odysee_wpp_template'] ?? '');
-    echo "<script>window.location.href='mentoria.php?tab=odysee&msg=Template+salvo+com+sucesso!';</script>";
+    updateSetting($wppSettingKey, $_POST['odysee_wpp_template'] ?? '');
+    echo "<script>window.location.href='mentoria.php?tab=odysee&lang=" . urlencode($current_lang) . "&msg=Template+salvo+com+sucesso!';</script>";
     exit;
 }
-$odysee_wpp_template = getSetting('mentoria_odysee_wpp_template', "🎓 *{titulo}*\n\n🔗 {url}");
+$odysee_wpp_template = getSetting($wppSettingKey, getSetting('mentoria_odysee_wpp_template', "🎓 *{titulo}*\n\n🔗 {url}"));
 ?>
 
 <div class="card" style="background: var(--card-bg); border-radius: 16px; padding: 25px; margin-bottom: 25px; border: 1px solid rgba(56,189,248,0.2);">
-    <h3 style="color: var(--accent-blue); margin-bottom: 6px;"><i class="fa-brands fa-whatsapp"></i> Mensagem WhatsApp — Pipeline Odysee</h3>
+    <h3 style="color: var(--accent-blue); margin-bottom: 6px;"><i class="fa-brands fa-whatsapp"></i> Mensagem WhatsApp — Pipeline Odysee (<?= htmlspecialchars($langName) ?> <?= $langFlag ?>)</h3>
     <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 18px;">
         Texto enviado ao grupo <strong>Our Classes</strong> após cada publicação no Odysee.<br>
         Variáveis disponíveis: <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{titulo}</code> — título do vídeo &nbsp;|&nbsp;
@@ -20,7 +21,7 @@ $odysee_wpp_template = getSetting('mentoria_odysee_wpp_template', "🎓 *{titulo
         <textarea name="odysee_wpp_template" rows="4" style="width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: 'Outfit', sans-serif; font-size: 0.95rem; resize: vertical;"><?= htmlspecialchars($odysee_wpp_template) ?></textarea>
         <div style="margin-top: 12px; display: flex; align-items: center; gap: 15px;">
             <button type="submit" name="save_odysee_wpp_template" style="background: var(--accent-blue); color: #0f172a; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-save"></i> Salvar Template
+                <i class="fas fa-save"></i> Salvar Template (<?= htmlspecialchars($langName) ?>)
             </button>
             <span style="color: var(--text-dim); font-size: 0.85rem;">💡 A alteração reflete na próxima publicação processada pelo worker.</span>
         </div>
@@ -29,7 +30,7 @@ $odysee_wpp_template = getSetting('mentoria_odysee_wpp_template', "🎓 *{titulo
 
 <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
     <div>
-        <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 5px;">Odysee Pipeline (Mentoria)</h2>
+        <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 5px;">Odysee Pipeline (Mentoria - <?= htmlspecialchars($langName) ?> <?= $langFlag ?>)</h2>
         <p style="color: var(--text-dim);">Fila de vídeos da mentoria sendo publicados como "Não-listados" e enviados para o grupo Our Meetups.</p>
     </div>
 </div>
@@ -41,42 +42,48 @@ if (isset($_GET['retry']) && is_numeric($_GET['retry'])) {
     $id = (int)$_GET['retry'];
     $stmt = $conn->prepare("UPDATE mentoria_odysee_queue SET status = 'pending', retry_count = 0 WHERE id = ?");
     $stmt->execute([$id]);
-    echo "<script>window.location.href='mentoria.php?tab=odysee';</script>";
+    echo "<script>window.location.href='mentoria.php?tab=odysee&lang=" . urlencode($current_lang) . "';</script>";
     exit;
 }
 if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
     $id = (int)$_GET['cancel'];
     $stmt = $conn->prepare("UPDATE mentoria_odysee_queue SET status = 'error', error_message = 'Cancelado pelo Admin' WHERE id = ?");
     $stmt->execute([$id]);
-    echo "<script>window.location.href='mentoria.php?tab=odysee';</script>";
+    echo "<script>window.location.href='mentoria.php?tab=odysee&lang=" . urlencode($current_lang) . "';</script>";
     exit;
 }
 
-$stmt = $conn->query("
+$stmt = $conn->prepare("
     SELECT *
     FROM mentoria_odysee_queue
+    WHERE lang_id = ?
     ORDER BY odysee_slug DESC LIMIT 100
 ");
+$stmt->execute([$current_lang]);
 $queue = $stmt->fetchAll();
 
 // Diagnóstico (screenshot mais recente)
 $screenshots = [];
-$active = $conn->query("
+$stmtScr = $conn->prepare("
     SELECT id, titulo_final, status, last_screenshot, last_screenshot_time
     FROM mentoria_odysee_queue
-    WHERE status = 'processing' AND last_screenshot IS NOT NULL
+    WHERE status = 'processing' AND last_screenshot IS NOT NULL AND lang_id = ?
     ORDER BY last_screenshot_time DESC LIMIT 1
-")->fetchAll();
+");
+$stmtScr->execute([$current_lang]);
+$active = $stmtScr->fetchAll();
 
 if (!empty($active)) {
     $screenshots = $active;
 } else {
-    $screenshots = $conn->query("
+    $stmtScrFallback = $conn->prepare("
         SELECT id, titulo_final, status, last_screenshot, last_screenshot_time
         FROM mentoria_odysee_queue
-        WHERE last_screenshot IS NOT NULL
+        WHERE last_screenshot IS NOT NULL AND lang_id = ?
         ORDER BY last_screenshot_time DESC LIMIT 1
-    ")->fetchAll();
+    ");
+    $stmtScrFallback->execute([$current_lang]);
+    $screenshots = $stmtScrFallback->fetchAll();
 }
 ?>
 

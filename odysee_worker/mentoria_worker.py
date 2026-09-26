@@ -32,10 +32,12 @@ DB_PASS = os.getenv('DB_PASS', '')
 DB_NAME = os.getenv('DB_NAME', '')
 
 GOOGLE_SA_JSON = 'google_service_account.json'
-GOOGLE_OAUTH_TOKEN = 'google_oauth_token_mentoria.json'  # OAuth da conta carlosdealcantarajr@gmail.com
+GOOGLE_OAUTH_TOKEN = os.getenv('GOOGLE_OAUTH_TOKEN_FILE', 'google_oauth_token_mentoria.json')
 DRIVE_MENTORIA_FOLDER_ID = os.getenv('DRIVE_MENTORIA_FOLDER_ID')
 DRIVE_MENTORIA_ARCHIVE_FOLDER_ID = os.getenv('DRIVE_MENTORIA_ARCHIVE_FOLDER_ID')
 MENTORIA_ODYSEE_LANGUAGE_ID = os.getenv('MENTORIA_ODYSEE_LANGUAGE_ID', '10')
+MENTORIA_LANG_ID = os.getenv('MENTORIA_LANG_ID', 'en')
+
 
 def get_db_connection():
     print("Tentando conectar ao banco de dados...", flush=True)
@@ -85,9 +87,9 @@ def buscar_proxima_tarefa():
         cursor.execute('''
             SELECT *
             FROM mentoria_odysee_queue
-            WHERE status = "pending"
+            WHERE status = "pending" AND lang_id = %s
             ORDER BY titulo_final ASC LIMIT 1
-        ''')
+        ''', (MENTORIA_LANG_ID,))
         return cursor.fetchone()
     finally:
         cursor.close()
@@ -987,11 +989,11 @@ def escanear_drive():
 
             cursor.execute("""
                 INSERT INTO mentoria_odysee_queue
-                (drive_file_id, drive_file_name, titulo_final, odysee_slug, status)
-                VALUES (%s, %s, %s, %s, 'pending')
-            """, (file_id, file_name, titulo_limpo, slug))
+                (drive_file_id, drive_file_name, titulo_final, odysee_slug, status, lang_id)
+                VALUES (%s, %s, %s, %s, 'pending', %s)
+            """, (file_id, file_name, titulo_limpo, slug, MENTORIA_LANG_ID))
             conn.commit()
-            logger.info(f"Novo vídeo da Mentoria na fila: {file_name} | Slug: {slug}")
+            logger.info(f"Novo vídeo da Mentoria ({MENTORIA_LANG_ID}) na fila: {file_name} | Slug: {slug}")
 
         cursor.close()
         conn.close()
@@ -1035,9 +1037,13 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
     try:
         conn_t = get_db_connection()
         cursor_t = conn_t.cursor(dictionary=True)
-        cursor_t.execute("SELECT setting_value FROM settings WHERE setting_key = 'mentoria_odysee_wpp_template' LIMIT 1")
+        setting_key_lang = f"mentoria_odysee_wpp_template_{MENTORIA_LANG_ID}"
+        cursor_t.execute("SELECT setting_value FROM settings WHERE setting_key = %s LIMIT 1", (setting_key_lang,))
         row = cursor_t.fetchone()
-        if row and row['setting_value']:
+        if not row or not row.get('setting_value'):
+            cursor_t.execute("SELECT setting_value FROM settings WHERE setting_key = 'mentoria_odysee_wpp_template' LIMIT 1")
+            row = cursor_t.fetchone()
+        if row and row.get('setting_value'):
             template = row['setting_value']
         cursor_t.close()
         conn_t.close()
@@ -1050,7 +1056,7 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
     grupos_alvo = []
     try:
         resp = requests.get(
-            "http://host.docker.internal:3000/mentoria-config",
+            f"http://host.docker.internal:3000/mentoria-config?lang={MENTORIA_LANG_ID}",
             headers={"apikey": "SenhaMeetups2026"},
             timeout=5
         )
@@ -1186,7 +1192,7 @@ def cleanup_zombies():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("UPDATE mentoria_odysee_queue SET status='pending', error_message='[RESTART] Worker reiniciado no meio do processo — retry automático' WHERE status='processing'")
+        cursor.execute("UPDATE mentoria_odysee_queue SET status='pending', error_message='[RESTART] Worker reiniciado no meio do processo — retry automático' WHERE status='processing' AND lang_id = %s", (MENTORIA_LANG_ID,))
         affected = cursor.rowcount
         conn.commit()
         cursor.close()
