@@ -10,6 +10,22 @@ header('Content-Type: text/plain; charset=utf-8');
 
 $hoje = date('Y-m-d');
 
+if (isset($_GET['do_sync'])) {
+    echo "=== EXECUTANDO SYNC DE GRUPOS ===\n";
+    $res = sendBaileysRequest('/groups', null, 'GET');
+    echo "Success? " . ($res['success'] ? 'SIM' : 'NÃO') . "\n";
+    echo "HTTP Code: " . ($res['httpCode'] ?? 'N/A') . "\n";
+    if (!$res['success']) {
+        echo "Error: " . ($res['error'] ?? 'N/A') . "\n";
+    } else {
+        echo "Grupos retornados: " . count($res['data']) . "\n";
+        $cacheFile = __DIR__ . '/groups_cache.json';
+        file_put_contents($cacheFile, json_encode($res['data'], JSON_UNESCAPED_UNICODE));
+        echo "Salvo em groups_cache.json com sucesso!\n";
+    }
+    echo "\n";
+}
+
 $cacheFile = __DIR__ . '/groups_cache.json';
 echo "=== URL BAILEYS USADA PELA HOSTINGER ===\n";
 echo "  URL: " . getBestBaileysUrl() . "\n";
