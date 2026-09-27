@@ -26,6 +26,11 @@ $action = $input['action'];
 $hoje   = date('Y-m-d');
 $conn   = connectDB();
 
+// Lê o idioma selecionado no painel (passado via ?lang=)
+$langId = $_GET['lang'] ?? $input['lang'] ?? 'en';
+$validLangs = ['en', 'es', 'fr', 'de', 'it', 'pt'];
+if (!in_array($langId, $validLangs)) $langId = 'en';
+
 // Nomes amigáveis para os grupos
 const GROUP_LABELS = [
     'our_classes'   => 'Our Classes',
@@ -44,8 +49,31 @@ try {
     // ACTION: load
     // ────────────────────────────────────────────────────
     if ($action === 'load') {
-        $config   = getMentoriaConfig();
+        $config   = getMentoriaConfig($langId);
         $adminJid = $config['admin_jid'] ?? '';
+
+        // Carrega os telefones dos alunos cadastrados neste idioma para filtragem
+        $stmtAlunos = $conn->prepare("SELECT telefone FROM mentoria_alunos WHERE lang_id = ? AND status_aluno = 'Ativo'");
+        $stmtAlunos->execute([$langId]);
+        $alunoPhones = $stmtAlunos->fetchAll(PDO::FETCH_COLUMN, 0);
+        // Normaliza: remove não-dígitos, guarda só os últimos 11 dígitos
+        $alunoPhoneSet = [];
+        foreach ($alunoPhones as $phone) {
+            $clean = preg_replace('/\D/', '', $phone);
+            $alunoPhoneSet[] = $clean;
+            // Também aceita com DDI 55 na frente
+            if (strlen($clean) === 11) $alunoPhoneSet[] = '55' . $clean;
+            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $alunoPhoneSet[] = substr($clean, 2);
+        }
+        $alunoPhoneSet = array_unique($alunoPhoneSet);
+
+        // Helper: verifica se um JID pertence a um aluno deste idioma
+        $isAlunoDoIdioma = function(string $jid) use ($alunoPhoneSet): bool {
+            $phoneOnly = preg_replace('/\D/', '', explode('@', $jid)[0]);
+            // Remove :device suffix se houver
+            $phoneOnly = preg_replace('/:\d+$/', '', $phoneOnly);
+            return in_array($phoneOnly, $alunoPhoneSet, true);
+        };
 
         // Monta lista ordenada de grupos com JID e nome amigável
         $groupsOrdered = [];
@@ -90,6 +118,9 @@ try {
             foreach ($members as $memberJid => $stats) {
                 if ($memberJid === $adminJid) continue;
                 if (str_ends_with($memberJid, '@g.us')) continue;
+
+                // Filtra apenas alunos do idioma selecionado
+                if (!$isAlunoDoIdioma($memberJid)) continue;
 
                 $name = $stats['name'] ?? 'Unknown';
                 if ($name === 'Unknown' || trim($name) === '') {

@@ -179,7 +179,10 @@
 
     // ── Fetch ──────────────────────────────────────────
     function loadScoreEditor() {
-        fetch('mentoria_score_edit_api.php?action=load')
+        // Passa o lang atual da URL para a API respeitar o idioma selecionado no painel
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || 'en';
+        fetch('mentoria_score_edit_api.php?action=load&lang=' + encodeURIComponent(lang))
             .then(r => r.json())
             .then(data => {
                 if (!data.success) { showError('rpActivities', data.error); return; }

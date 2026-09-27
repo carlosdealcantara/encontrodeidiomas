@@ -447,14 +447,28 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
                 <p style="color: var(--text-dim); font-size: 1.05rem;">Gestão centralizada de alunos, pagamentos, automações e agenda de aulas.</p>
             </div>
             <!-- Seletor de Idioma da Mentoria -->
+            <?php
+            // Mapeia lang_id para código de bandeira do country-flag-icons
+            $flagMap = [
+                'en' => 'US',
+                'es' => 'ES',
+                'fr' => 'FR',
+                'de' => 'DE',
+                'it' => 'IT',
+                'pt' => 'BR',
+            ];
+            ?>
             <div style="background: var(--sidebar-bg); padding: 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; gap: 6px; align-items: center;">
                 <span style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; padding: 0 10px;">Mentoria:</span>
-                <?php foreach ($available_langs as $l): 
+                <?php foreach ($available_langs as $l):
                     $isActive = ($current_lang === $l['lang_id']);
+                    $flagCode = $flagMap[$l['lang_id']] ?? strtoupper($l['lang_id']);
+                    $flagSrc  = 'https://flagcdn.com/w40/' . strtolower($flagCode) . '.png';
                 ?>
-                    <a href="mentoria.php?lang=<?= urlencode($l['lang_id']) ?>&tab=<?= urlencode($active_tab) ?>" 
-                       style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.92rem; text-decoration: none; transition: 0.2s; <?= $isActive ? 'background: var(--accent-red); color: white; box-shadow: 0 4px 12px rgba(227,29,28,0.25);' : 'color: var(--text-dim); background: transparent;' ?>">
-                        <span style="font-size: 1.1rem;"><?= $l['bandeira'] ?></span>
+                    <a href="mentoria.php?lang=<?= urlencode($l['lang_id']) ?>&tab=<?= urlencode($active_tab) ?>"
+                       style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.92rem; text-decoration: none; transition: all 0.2s; <?= $isActive ? 'background: var(--accent-red); color: white; box-shadow: 0 4px 12px rgba(227,29,28,0.3);' : 'color: var(--text-dim); background: transparent;' ?>">
+                        <img src="<?= $flagSrc ?>" alt="<?= htmlspecialchars($flagCode) ?>"
+                             style="width: 22px; height: 15px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 4px rgba(0,0,0,0.4); flex-shrink: 0;">
                         <span><?= htmlspecialchars($l['nome']) ?></span>
                     </a>
                 <?php endforeach; ?>
