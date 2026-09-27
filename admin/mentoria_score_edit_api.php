@@ -52,27 +52,27 @@ try {
         $config   = getMentoriaConfig($langId);
         $adminJid = $config['admin_jid'] ?? '';
 
-        // Carrega os telefones dos alunos cadastrados neste idioma para filtragem
-        $stmtAlunos = $conn->prepare("SELECT telefone FROM mentoria_alunos WHERE lang_id = ? AND status_aluno = 'Ativo'");
-        $stmtAlunos->execute([$langId]);
-        $alunoPhones = $stmtAlunos->fetchAll(PDO::FETCH_COLUMN, 0);
-        // Normaliza: remove não-dígitos, guarda só os últimos 11 dígitos
-        $alunoPhoneSet = [];
-        foreach ($alunoPhones as $phone) {
+        // Carrega os telefones de alunos cadastrados em OUTROS idiomas (para excluí-los do ranking atual)
+        // Lógica: NÃO filtramos por whitelist — mostramos todos os membros ativos do grupo,
+        // EXCETO quem está cadastrado explicitamente em outro idioma.
+        $stmtOutros = $conn->prepare("SELECT telefone FROM mentoria_alunos WHERE lang_id != ?");
+        $stmtOutros->execute([$langId]);
+        $outrosPhones = $stmtOutros->fetchAll(PDO::FETCH_COLUMN, 0);
+        // Normaliza: remove não-dígitos e gera variações com/sem DDI 55
+        $outrosPhoneSet = [];
+        foreach ($outrosPhones as $phone) {
             $clean = preg_replace('/\D/', '', $phone);
-            $alunoPhoneSet[] = $clean;
-            // Também aceita com DDI 55 na frente
-            if (strlen($clean) === 11) $alunoPhoneSet[] = '55' . $clean;
-            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $alunoPhoneSet[] = substr($clean, 2);
+            $outrosPhoneSet[] = $clean;
+            if (strlen($clean) === 11) $outrosPhoneSet[] = '55' . $clean;
+            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $outrosPhoneSet[] = substr($clean, 2);
         }
-        $alunoPhoneSet = array_unique($alunoPhoneSet);
+        $outrosPhoneSet = array_unique($outrosPhoneSet);
 
-        // Helper: verifica se um JID pertence a um aluno deste idioma
-        $isAlunoDoIdioma = function(string $jid) use ($alunoPhoneSet): bool {
+        // Helper: retorna TRUE se o JID deve ser EXCLUÍDO (pertence a outro idioma)
+        $isAlunoDeOutroIdioma = function(string $jid) use ($outrosPhoneSet): bool {
             $phoneOnly = preg_replace('/\D/', '', explode('@', $jid)[0]);
-            // Remove :device suffix se houver
-            $phoneOnly = preg_replace('/:\d+$/', '', $phoneOnly);
-            return in_array($phoneOnly, $alunoPhoneSet, true);
+            $phoneOnly = preg_replace('/:\d+$/', '', $phoneOnly); // Remove sufixo :device se houver
+            return in_array($phoneOnly, $outrosPhoneSet, true);
         };
 
         // Monta lista ordenada de grupos com JID e nome amigável
@@ -119,8 +119,8 @@ try {
                 if ($memberJid === $adminJid) continue;
                 if (str_ends_with($memberJid, '@g.us')) continue;
 
-                // Filtra apenas alunos do idioma selecionado
-                if (!$isAlunoDoIdioma($memberJid)) continue;
+                // Filtra: pula quem está cadastrado em OUTRO idioma (não o atual)
+                if ($isAlunoDeOutroIdioma($memberJid)) continue;
 
                 $name = $stats['name'] ?? 'Unknown';
                 if ($name === 'Unknown' || trim($name) === '') {
