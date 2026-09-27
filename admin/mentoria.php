@@ -285,10 +285,17 @@ function renderGroupSelect($name, $currentValue, $groups) {
     $found = false;
     foreach ($groups as $g) {
         $id = htmlspecialchars($g['id']);
-        $subj = htmlspecialchars($g['subject'] ?? 'Sem Nome');
+        $rawSubj = $g['subject'] ?? 'Sem Nome';
+        $subj = htmlspecialchars($rawSubj);
+        
+        // Transforma caracteres unicode matemáticos/estilizados em letras normais no backend
+        $cleanSubj = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', Normalizer::normalize($rawSubj, Normalizer::FORM_KD));
+        if (!$cleanSubj) $cleanSubj = $rawSubj;
+        $cleanSubj = htmlspecialchars($cleanSubj);
+
         $sel = (trim(strtolower($id)) === trim(strtolower($currentValue))) ? 'selected' : '';
         if ($sel) $found = true;
-        $html .= "<option value=\"$id\" $sel>$subj  |  $id</option>";
+        $html .= "<option value=\"$id\" data-clean=\"$cleanSubj\" $sel>$subj  |  $id</option>";
     }
     if ($currentValue && !$found) {
         $val = htmlspecialchars($currentValue);
@@ -616,9 +623,10 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
                     const termNorm = normalizeSearchText(params.term);
                     const textNorm = normalizeSearchText(data.text);
                     const idNorm   = normalizeSearchText(data.id || '');
+                    const cleanNorm = normalizeSearchText($(data.element).data('clean') || '');
 
-                    // Compara termo normalizado contra o texto normalizado e contra o JID
-                    if (textNorm.indexOf(termNorm) > -1 || idNorm.indexOf(termNorm) > -1) {
+                    // Compara termo normalizado contra o texto normalizado, data-clean e JID
+                    if (textNorm.indexOf(termNorm) > -1 || cleanNorm.indexOf(termNorm) > -1 || idNorm.indexOf(termNorm) > -1) {
                         return data;
                     }
 
