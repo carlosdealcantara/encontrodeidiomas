@@ -185,66 +185,74 @@ $jid_games        = $config['groups']['games']['jid']         ?? '';
 $jid_homework     = $config['groups']['homework']['jid']      ?? '';
 $jid_protocolo_1001 = $config['groups']['protocolo_1001']['jid'] ?? '';
 
-$tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
-$tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome}!* 🎉\n\nToday is a special day — one of our amazing Mentorship members is celebrating their birthday! 🥳\n\nWe hope this new year of life brings you lots of growth, joy, and of course... fluency! 🌟\n\nDrop a 🎂 or send a birthday message to make {nome}'s day even more special! 💬 @{numero}";
-$tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
-$tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
-$tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
-$tpl_ranking_student   = $config['templates']['ranking_student'] ?? "📅 {date}\n\n⭐ *STUDENT OF THE DAY*\n\n{student_of_the_day}\n\n*Other students:*\n{other_students}\n\n📖 *Legend:*\n{legend}";
-$tpl_ranking_legend    = $config['templates']['ranking_legend'] ?? "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (5 pts)\n📒 New word! (1 pt)";
-$tpl_ranking_messenger = $config['templates']['ranking_messenger'] ?? "📅 {date}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{top_messenger_list}";
-$tpl_ranking_reactor   = $config['templates']['ranking_reactor']   ?? "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
+if ($current_lang === 'es') {
+    $tpl_welcome = $config['templates']['welcome'] ?? "¡Hola, @{name}! 👋\n¡Bienvenido/a a *El Rincón*! 🎉\n¡Preséntate al grupo!";
+    $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *¡Feliz Cumpleaños, {nome}!* 🎉\n\nHoy es un día muy especial: ¡uno de nuestros increíbles miembros de la Mentoría está de cumpleaños! 🥳\n\n¡Te deseamos un nuevo año lleno de aprendizajes, alegrías y mucha fluidez! 🌟\n\n¡Deja un 🎂 o un mensaje para felicitar a {nome}! 💬 @{numero}";
+    $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Recordatorio de Clase*\n¡No olvides agendar tu clase de hoy!";
+    $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *¡Alerta de Desafío!*\n¡Tienes hasta la medianoche para enviar la foto de tu actividad! ⏳";
+    $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} ha sido removido/a por no cumplir con la actividad diaria.";
+    $tpl_ranking_student   = $config['templates']['ranking_student'] ?? "📅 {date}\n\n⭐ *ESTUDIANTE DEL DÍA*\n\n{student_of_the_day}\n\n*Otros estudiantes:*\n{other_students}\n\n📖 *Leyenda:*\n{legend}";
+    $tpl_ranking_legend    = $config['templates']['ranking_legend'] ?? "🖥️ Asistió a Clase (20 pts)\n📚 Desafío Diario (5 pts)\n👏 Compromiso con la sesión (5 pts)";
+    $tpl_ranking_messenger = $config['templates']['ranking_messenger'] ?? "📅 {date}\n\n💬 *TOP MENSAJES*\n_¿Quién envió más mensajes hoy?_\n\n{top_messenger_list}";
+    $tpl_ranking_reactor   = $config['templates']['ranking_reactor']   ?? "📅 {date}\n\n❤️ *TOP REACCIONES*\n_¿Quién dio más reacciones hoy?_\n\n{top_reactor_list}";
 
-$_sep = '━━━━━━━━━━━━━━━━━━━━━━';
-$tpl_ranking_weekly  = $config['templates']['ranking_weekly']  ?? "🗓️🗓️🗓️ *RANKING SEMANAL* 🗓️🗓️🗓️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE WEEK*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DA SEMANA*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DA SEMANA*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n✨ *A new week has just begun!*\n_Keep showing up, keep practicing, keep standing out. Next week's podium is still up for grabs — will it be yours?_ 💪";
-$tpl_ranking_monthly = $config['templates']['ranking_monthly'] ?? "🗃️🗃️🗃️ *RANKING MENSAL* 🗃️🗃️🗃️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE MONTH*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO MÊS*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO MÊS*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌙 *A new month begins!*\n_Can you beat your score from last month? Push yourself a little further — every message, every reaction, every class gets you closer to the top. Go for it!_ 🏆";
-$tpl_ranking_yearly  = $config['templates']['ranking_yearly']  ?? "🏅🏅🏅 *RANKING ANUAL* 🏅🏅🏅\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE YEAR*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO ANO*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO ANO*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌅 *The year has turned. The journey continues.*\n_The English you learn, nobody can take from you. In this new year, may every new word be one more step towards your growth — and greater fluency for those who are already there. Happy New Year! 🎉_";
-$tpl_class_aviso = $config['templates']['class_aviso'] ?? "👨‍🏫 *Teacher Class — {date}*
+    $_sep = '━━━━━━━━━━━━━━━━━━━━━━';
+    $tpl_ranking_weekly  = $config['templates']['ranking_weekly']  ?? "🗓️🗓️🗓️ *RANKING SEMANAL* 🗓️🗓️🗓️\n📅 _{period_date}_\n{sep}\n\n🌟 *ESTUDIANTE DE LA SEMANA*\n{students}\n\n{sep}\n\n💬 *MENSAJES DE LA SEMANA*\n{messages}\n\n{sep}\n\n❤️ *REACCIONES DE LA SEMANA*\n{reactions}\n\n{sep}\n\n✨ *¡Una nueva semana acaba de comenzar!*\n_Sigue practicando y destacándote._ 💪";
+    $tpl_ranking_monthly = $config['templates']['ranking_monthly'] ?? "🗃️🗃️🗃️ *RANKING MENSUAL* 🗃️🗃️🗃️\n📅 _{period_date}_\n{sep}\n\n🌟 *ESTUDIANTE DEL MES*\n{students}\n\n{sep}\n\n💬 *MENSAJES DEL MES*\n{messages}\n\n{sep}\n\n❤️ *REACCIONES DEL MES*\n{reactions}\n\n{sep}\n\n🌙 *¡Comienza un nuevo mes!*\n_¡Vamos por más!_ 🏆";
+    $tpl_ranking_yearly  = $config['templates']['ranking_yearly']  ?? "🏅🏅🏅 *RANKING ANUAL* 🏅🏅🏅\n📅 _{period_date}_\n{sep}\n\n🌟 *ESTUDIANTE DEL AÑO*\n{students}\n\n{sep}\n\n💬 *MENSAJES DEL AÑO*\n{messages}\n\n{sep}\n\n❤️ *REACCIONES DEL AÑO*\n{reactions}\n\n{sep}\n\n🌅 *¡Feliz Año Nuevo! 🎉*";
+    $tpl_class_aviso = $config['templates']['class_aviso'] ?? "👨‍🏫 *Clase con el Profesor — {date}*\n\nTenemos una clase programada para las *{horario}*.\nSi deseas participar, responde con `!attend`.\n\n⏳ Plazo para confirmar: *{deadline}*.";
+    $tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Clase Cancelada*\n\nLamentablemente, no tuvimos confirmaciones para la clase de las {horario}. ¡Nos vemos en la próxima! 👋";
+    $tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "👨‍🏫 *¡La clase comienza AHORA!*\n\nIngresa a la sala aquí: {link}\n\n¡Buena sesión! 💪";
 
-We have a class with the teacher scheduled for *{horario}*.
-If you want to participate, please reply with `!attend`.
+    $tpl_practice_aviso = $config['templates']['practice_aviso'] ?? "🗣️ *Práctica entre Estudiantes — {date}*\n\nUna sesión de conversación está programada para las *{horario}*.\n_Sin profesor: ¡ustedes practicando juntos!_\n\nPara unirte, responde con `!attend`.\n\n⏳ Plazo: *{deadline}*. _(Mínimo 2 estudiantes)_";
+    $tpl_practice_cancel = $config['templates']['practice_cancel'] ?? "❌ *Sesión Cancelada*\n\nNo alcanzamos el mínimo de 2 estudiantes para la práctica de las {horario}. ¡Hasta la próxima! 👋";
+    $tpl_practice_kickoff = $config['templates']['practice_kickoff'] ?? "🗣️ *¡La práctica comienza AHORA!*\n\nEnlace: {link}\n\n¡Buena conversación! 🚀";
 
-⏳ Deadline to confirm: *{deadline}*.";
-$tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*
+    $tpl_daily_summary_header = $config['templates']['daily_summary_header'] ?? "✅ ¡Asistencia confirmada para @{name}!\n\n📅 *Horario de hoy — {date}*\n{sessionsBlock}";
+    $tpl_attend_confirm = $tpl_daily_summary_header;
+    $tpl_attend_late_good = $config['templates']['attend_late_good'] ?? "⏰ El plazo para confirmar ya pasó, @{name}.\n\n✅ *Buenas noticias:* ¡La clase está confirmada y se realizará!{listText}";
+    $tpl_attend_late_bad = $config['templates']['attend_late_bad'] ?? "⏰ El plazo para confirmar ya pasó, @{name}.\n\n❌ *Malas noticias:* La clase ya había sido cancelada por falta de confirmaciones.";
+    $tpl_unattend_confirm = $config['templates']['unattend_confirm'] ?? "🗑️ Inscripción cancelada para @{name}.{listText}";
+    $tpl_unattend_cancelled_now = $config['templates']['unattend_cancelled_now'] ?? "🚨 *CLASE CANCELADA*\n\nComo ya no quedan alumnos confirmados, la clase de hoy ha sido cancelada.";
+    $tpl_class_status = $config['templates']['class_status'] ?? "📋 *Estado de la Clase — {class_info}*\n\n*Confirmados:*\n{attendees}\n\nPlazo para confirmar: {deadline_info}";
+    $tpl_streak_confirm = $config['templates']['streak_confirm'] ?? "✅ ¡Imagen registrada, @{name}! ¡Tienes una racha de {streak} días seguidos! 🔥";
+    $tpl_streak_milestone = $config['templates']['streak_milestone'] ?? "🎉 ¡FELICITACIONES! @{name} acaba de alcanzar {streak} días seguidos de racha! 🏆";
+    $tpl_streak_leaderboard = $config['templates']['streak_leaderboard'] ?? "🏆 *Récords Históricos de Racha*\n\n{allTimeList}\n🔥 *Rachas Activas Hoy*\n\n{activeList}";
+} else {
+    $tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
+    $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome}!* 🎉\n\nToday is a special day — one of our amazing Mentorship members is celebrating their birthday! 🥳\n\nWe hope this new year of life brings you lots of growth, joy, and of course... fluency! 🌟\n\nDrop a 🎂 or send a birthday message to make {nome}'s day even more special! 💬 @{numero}";
+    $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
+    $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";
+    $tpl_kick_desafio = $config['templates']['kick_desafio'] ?? "⚠️ @{name} has been removed for missing the daily activity.";
+    $tpl_ranking_student   = $config['templates']['ranking_student'] ?? "📅 {date}\n\n⭐ *STUDENT OF THE DAY*\n\n{student_of_the_day}\n\n*Other students:*\n{other_students}\n\n📖 *Legend:*\n{legend}";
+    $tpl_ranking_legend    = $config['templates']['ranking_legend'] ?? "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (5 pts)\n📒 New word! (1 pt)";
+    $tpl_ranking_messenger = $config['templates']['ranking_messenger'] ?? "📅 {date}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{top_messenger_list}";
+    $tpl_ranking_reactor   = $config['templates']['ranking_reactor']   ?? "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
 
-Unfortunately, we didn't get any confirmations for the {horario} class today. See you next time! 👋";
-$tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "👨‍🏫 *Teacher Class is starting NOW!*
+    $_sep = '━━━━━━━━━━━━━━━━━━━━━━';
+    $tpl_ranking_weekly  = $config['templates']['ranking_weekly']  ?? "🗓️🗓️🗓️ *RANKING SEMANAL* 🗓️🗓️🗓️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE WEEK*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DA SEMANA*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DA SEMANA*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n✨ *A new week has just begun!*\n_Keep showing up, keep practicing, keep standing out. Next week's podium is still up for grabs — will it be yours?_ 💪";
+    $tpl_ranking_monthly = $config['templates']['ranking_monthly'] ?? "🗃️🗃️🗃️ *RANKING MENSAL* 🗃️🗃️🗃️\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE MONTH*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO MÊS*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO MÊS*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌙 *A new month begins!*\n_Can you beat your score from last month? Push yourself a little further — every message, every reaction, every class gets you closer to the top. Go for it!_ 🏆";
+    $tpl_ranking_yearly  = $config['templates']['ranking_yearly']  ?? "🏅🏅🏅 *RANKING ANUAL* 🏅🏅🏅\n📅 _{period_date}_\n{sep}\n\n🌟 *STUDENT OF THE YEAR*\n{students}\n\n{sep}\n\n💬 *WORD SLINGERS DO ANO*\n_Who sent the most messages?_\n{messages}\n\n{sep}\n\n❤️ *EMOJI GANG DO ANO*\n_Who gave the most reactions?_\n{reactions}\n\n{sep}\n\n🌅 *The year has turned. The journey continues.*\n_The English you learn, nobody can take from you. In this new year, may every new word be one more step towards your growth — and greater fluency for those who are already there. Happy New Year! 🎉_";
+    $tpl_class_aviso = $config['templates']['class_aviso'] ?? "👨‍🏫 *Teacher Class — {date}*\n\nWe have a class with the teacher scheduled for *{horario}*.\nIf you want to participate, please reply with `!attend`.\n\n⏳ Deadline to confirm: *{deadline}*.";
+    $tpl_class_cancel = $config['templates']['class_cancel'] ?? "❌ *Class Cancelled*\n\nUnfortunately, we didn't get any confirmations for the {horario} class today. See you next time! 👋";
+    $tpl_class_kickoff = $config['templates']['class_kickoff'] ?? "👨‍🏫 *Teacher Class is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great session! 💪";
 
-Join the room here: {link}
+    $tpl_practice_aviso = $config['templates']['practice_aviso'] ?? "🗣️ *Students Practice — {date}*\n\nA students-only conversation session is scheduled for *{horario}*.\n_No teacher — just you practicing together!_\n\nIf you want to join, reply with `!attend`.\n\n⏳ Deadline to confirm: *{deadline}*. _(Minimum 2 students required)_";
+    $tpl_practice_cancel = $config['templates']['practice_cancel'] ?? "❌ *Practice Session Cancelled*\n\nUnfortunately, we didn't reach the minimum of 2 students for the {horario} practice session today. See you next time! 👋";
+    $tpl_practice_kickoff = $config['templates']['practice_kickoff'] ?? "🗣️ *Practice Session is starting NOW!*\n\nJoin the room here: {link}\n\nHave a great conversation! 🚀";
 
-Have a great session! 💪";
+    $tpl_daily_summary_header = $config['templates']['daily_summary_header'] ?? "✅ Attendance confirmed for @{name}!\n\n📅 *Today’s Schedule — {date}*\n{sessionsBlock}";
 
-$tpl_practice_aviso = $config['templates']['practice_aviso'] ?? "🗣️ *Students Practice — {date}*
-
-A students-only conversation session is scheduled for *{horario}*.
-_No teacher — just you practicing together!_
-
-If you want to join, reply with `!attend`.
-
-⏳ Deadline to confirm: *{deadline}*. _(Minimum 2 students required)_";
-$tpl_practice_cancel = $config['templates']['practice_cancel'] ?? "❌ *Practice Session Cancelled*
-
-Unfortunately, we didn't reach the minimum of 2 students for the {horario} practice session today. See you next time! 👋";
-$tpl_practice_kickoff = $config['templates']['practice_kickoff'] ?? "🗣️ *Practice Session is starting NOW!*
-
-Join the room here: {link}
-
-Have a great conversation! 🚀";
-
-$tpl_daily_summary_header = $config['templates']['daily_summary_header'] ?? "✅ Attendance confirmed for @{name}!
-
-📅 *Today’s Schedule — {date}*
-{sessionsBlock}";
-
-$tpl_attend_confirm = $tpl_daily_summary_header;
-$tpl_attend_late_good = $config['templates']['attend_late_good'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}";
-$tpl_attend_late_bad = $config['templates']['attend_late_bad'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n❌ *Bad news:* The class was already cancelled due to lack of attendees.";
-$tpl_unattend_confirm = $config['templates']['unattend_confirm'] ?? "🗑️ Registration cancelled for @{name}.{listText}";
-$tpl_unattend_cancelled_now = $config['templates']['unattend_cancelled_now'] ?? "🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.";
-$tpl_class_status = $config['templates']['class_status'] ?? "📋 *Class Status — {class_info}*\n\n*Confirmed Attendees:*\n{attendees}\n\nDeadline to confirm: {deadline_info}";
-$tpl_streak_confirm = $config['templates']['streak_confirm'] ?? "✅ Image computed, @{name}! You are on a {streak}-day streak! 🔥";
-$tpl_streak_milestone = $config['templates']['streak_milestone'] ?? "🎉 CONGRATULATIONS! @{name} just hit a {streak}-day streak! Legend! 🏆";
-$tpl_streak_leaderboard = $config['templates']['streak_leaderboard'] ?? "🏆 *All-Time Streak Records*\n\n{allTimeList}\n🔥 *Active Streaks Today*\n\n{activeList}";
+    $tpl_attend_confirm = $tpl_daily_summary_header;
+    $tpl_attend_late_good = $config['templates']['attend_late_good'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n✅ *Good news:* The class is confirmed and will happen anyway!{listText}";
+    $tpl_attend_late_bad = $config['templates']['attend_late_bad'] ?? "⏰ The deadline to confirm attendance has passed, @{name}.\n\n❌ *Bad news:* The class was already cancelled due to lack of attendees.";
+    $tpl_unattend_confirm = $config['templates']['unattend_confirm'] ?? "🗑️ Registration cancelled for @{name}.{listText}";
+    $tpl_unattend_cancelled_now = $config['templates']['unattend_cancelled_now'] ?? "🚨 *CLASS CANCELLED*\n\nSince there are no more students confirmed, today's class is now cancelled.";
+    $tpl_class_status = $config['templates']['class_status'] ?? "📋 *Class Status — {class_info}*\n\n*Confirmed Attendees:*\n{attendees}\n\nDeadline to confirm: {deadline_info}";
+    $tpl_streak_confirm = $config['templates']['streak_confirm'] ?? "✅ Image computed, @{name}! You are on a {streak}-day streak! 🔥";
+    $tpl_streak_milestone = $config['templates']['streak_milestone'] ?? "🎉 CONGRATULATIONS! @{name} just hit a {streak}-day streak! Legend! 🏆";
+    $tpl_streak_leaderboard = $config['templates']['streak_leaderboard'] ?? "🏆 *All-Time Streak Records*\n\n{allTimeList}\n🔥 *Active Streaks Today*\n\n{activeList}";
+}
 
 $cache_file = __DIR__ . '/groups_cache.json';
 $available_groups = [];
@@ -568,15 +576,61 @@ if (isset($_GET['msg'])) $msg = $_GET['msg'];
             const url = new URL(window.location);
             url.searchParams.set('tab', tabId);
             window.history.replaceState({}, '', url);
+
+            // Re-sincroniza largura do Select2 caso tenha sido aberto dentro de aba oculta
+            $('.select2-groups').each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+            });
+            initSelect2Groups();
+        }
+
+        // Função universal para desconstruir fontes estilizadas do WhatsApp (Unicode Math Bold/Italic/Sans) e acentos
+        function normalizeSearchText(text) {
+            if (!text) return '';
+            return text
+                .normalize('NFKD') // Normaliza caracteres Unicode matemáticos e compatibilidade (ex: 𝗘𝗹 -> El, 𝗿𝗶𝗻𝗰𝗼𝗻 -> rincon)
+                .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                .toLowerCase()
+                .trim();
+        }
+
+        function initSelect2Groups() {
+            $('.select2-groups').select2({
+                placeholder: "Busque pelo nome do grupo ou JID...",
+                allowClear: true,
+                dropdownParent: $(document.body),
+                width: '100%',
+                matcher: function(params, data) {
+                    // Se não tiver termo digitado, retorna todos
+                    if ($.trim(params.term) === '') {
+                        return data;
+                    }
+
+                    // Se não tiver texto ou id na opção, ignora
+                    if (typeof data.text === 'undefined') {
+                        return null;
+                    }
+
+                    const termNorm = normalizeSearchText(params.term);
+                    const textNorm = normalizeSearchText(data.text);
+                    const idNorm   = normalizeSearchText(data.id || '');
+
+                    // Compara termo normalizado contra o texto normalizado e contra o JID
+                    if (textNorm.indexOf(termNorm) > -1 || idNorm.indexOf(termNorm) > -1) {
+                        return data;
+                    }
+
+                    return null;
+                },
+                language: { noResults: function() { return "Nenhum grupo encontrado"; } }
+            });
         }
 
         $(document).ready(function() {
-            $('.select2-groups').select2({
-                placeholder: "Busque pelo nome do grupo...",
-                allowClear: true,
-                dropdownParent: $(document.body),
-                language: { noResults: function() { return "Nenhum grupo encontrado"; } }
-            });
+            initSelect2Groups();
+
             $(document).on('select2:open', function() {
                 setTimeout(function() {
                     const field = document.querySelector('.select2-container--open .select2-search__field');

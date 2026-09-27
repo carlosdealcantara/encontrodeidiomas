@@ -31,11 +31,17 @@
     .section-title { font-size: 1.2rem; color: #38bdf8; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 </style>
 
+<?php
+$isEs = ($current_lang === 'es');
+$labelLounge = $isEs ? '☕ El Rincón (Lounge)' : '☕ The Lounge';
+$labelDesafio = $isEs ? '🔥 El Reto (Desafio)' : '🔥 Desafio Diário';
+$labelClasses = $isEs ? '📚 El Aula (Classes)' : '📹 Our Classes';
+?>
 <div class="sub-tabs-container">
     <button class="sub-tab-btn active" onclick="openSubTab('sub_global')"><i class="fas fa-globe"></i> Configuração Global</button>
-    <button class="sub-tab-btn" onclick="openSubTab('sub_thelounge')"><i class="fas fa-coffee"></i> The Lounge</button>
-    <button class="sub-tab-btn" onclick="openSubTab('sub_desafio')"><i class="fas fa-fire"></i> Desafio Diário</button>
-    <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><i class="fas fa-video"></i> Our Classes</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_thelounge')"><?= $labelLounge ?></button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_desafio')"><?= $labelDesafio ?></button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><?= $labelClasses ?></button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_pronunciation')">🗣️ Reading out loud</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_music')">🎶 Music Lab</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_vocabulary')">📒 New word!</button>
@@ -332,6 +338,13 @@
             if (targetBtn) targetBtn.classList.add('active');
         }
         localStorage.setItem('active_mentoria_sub_tab', tabId);
+
+        // Garante que o Select2 calcule a largura 100% corretamente ao exibir a sub-aba
+        if (typeof initSelect2Groups === 'function') {
+            setTimeout(function() {
+                initSelect2Groups();
+            }, 50);
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
