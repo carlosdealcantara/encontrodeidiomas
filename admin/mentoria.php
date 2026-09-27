@@ -293,9 +293,11 @@ function renderGroupSelect($name, $currentValue, $groups) {
         if (!$cleanSubj) $cleanSubj = $rawSubj;
         $cleanSubj = htmlspecialchars($cleanSubj);
 
+        $label = ($cleanSubj !== $rawSubj && !empty(trim($cleanSubj))) ? "$subj ($cleanSubj)  |  $id" : "$subj  |  $id";
+
         $sel = (trim(strtolower($id)) === trim(strtolower($currentValue))) ? 'selected' : '';
         if ($sel) $found = true;
-        $html .= "<option value=\"$id\" data-clean=\"$cleanSubj\" $sel>$subj  |  $id</option>";
+        $html .= "<option value=\"$id\" data-clean=\"$cleanSubj\" $sel>$label</option>";
     }
     if ($currentValue && !$found) {
         $val = htmlspecialchars($currentValue);
