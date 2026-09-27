@@ -11,6 +11,12 @@ header('Content-Type: text/plain; charset=utf-8');
 $hoje = date('Y-m-d');
 
 $cacheFile = __DIR__ . '/groups_cache.json';
+echo "=== URL BAILEYS USADA PELA HOSTINGER ===\n";
+echo "  URL: " . getBestBaileysUrl() . "\n";
+echo "  Direct OK? " . (checkWhatsAppConnection(BAILEYS_API_URL_DIRECT) ? 'SIM' : 'NÃO') . "\n";
+$mtime = file_exists($cacheFile) ? date('Y-m-d H:i:s', filemtime($cacheFile)) : 'N/A';
+echo "  Cache modificado em: {$mtime}\n\n";
+
 echo "=== GROUPS_CACHE.JSON ===\n";
 if (file_exists($cacheFile)) {
     $raw = file_get_contents($cacheFile);
