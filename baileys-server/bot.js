@@ -37,11 +37,11 @@ function getTodayDate() {
     return formatter.format(new Date()); // YYYY-MM-DD
 }
 
-function getActivityFile()          { return path.join(dataDir, 'activity_log.json'); }
-function getConfigFile()            { return path.join(dataDir, 'mentoria_config.json'); }
-function getConfigBackupFile()      { return path.join(dataDir, 'mentoria_config.backup.json'); }
-function getCommunityConfigFile()   { return path.join(dataDir, 'community_config.json'); }
-function getCommunityActivityFile() { return path.join(dataDir, 'community_activity_log.json'); }
+function getActivityFile()                   { return path.join(dataDir, 'activity_log.json'); }
+function getConfigFile(langId = 'en')        { return langId === 'en' ? path.join(dataDir, 'mentoria_config.json') : path.join(dataDir, `mentoria_config_${langId}.json`); }
+function getConfigBackupFile(langId = 'en')  { return langId === 'en' ? path.join(dataDir, 'mentoria_config.backup.json') : path.join(dataDir, `mentoria_config_${langId}.backup.json`); }
+function getCommunityConfigFile()            { return path.join(dataDir, 'community_config.json'); }
+function getCommunityActivityFile()          { return path.join(dataDir, 'community_activity_log.json'); }
 
 function loadCommunityConfig() {
     try {
@@ -67,46 +67,46 @@ function saveCommunityActivity(data) {
     fs.writeFileSync(getCommunityActivityFile(), JSON.stringify(data, null, 2));
 }
 
-function loadConfig() {
+function loadConfig(langId = 'en') {
     try {
-        const file = getConfigFile();
+        const file = getConfigFile(langId);
         if (fs.existsSync(file)) {
             const config = JSON.parse(fs.readFileSync(file, 'utf8'));
             // ⚠️ SAFETY CHECK: se groups está vazio mas existe backup, auto-restaura
             const groupCount    = Object.keys(config.groups || {}).length;
             const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
             if (groupsWithJid === 0) {
-                const backupFile = getConfigBackupFile();
+                const backupFile = getConfigBackupFile(langId);
                 if (fs.existsSync(backupFile)) {
                     const backup = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
                     const backupGroupCount = Object.values(backup.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
                     if (backupGroupCount > 0) {
-                        console.warn(`[CONFIG] ⚠️ GRUPOS AUSENTES no config principal (${groupCount} entradas, 0 com JID). Restaurando ${backupGroupCount} grupos do backup automaticamente!`);
+                        console.warn(`[CONFIG] ⚠️ GRUPOS AUSENTES no config [${langId}] (${groupCount} entradas, 0 com JID). Restaurando ${backupGroupCount} grupos do backup automaticamente!`);
                         config.groups = backup.groups;
                         fs.writeFileSync(file, JSON.stringify(config, null, 2));
                     }
-                } else {
+                } else if (langId === 'en') {
                     console.warn('[CONFIG] ⚠️ ATENÇÃO: Nenhum grupo cadastrado e nenhum backup disponível. O bot vai IGNORAR todas as mensagens!');
                 }
             }
             return config;
         }
-    } catch (e) { console.error('Error loading mentoria config:', e); }
+    } catch (e) { console.error(`Error loading mentoria config [${langId}]:`, e); }
     return { admin_jid: '556192666148@s.whatsapp.net', groups: {}, templates: {} };
 }
 
-function saveConfig(config) {
+function saveConfig(config, langId = 'en') {
     // SAFETY: nunca deixa grupos da comunidade entrarem no config da mentoria
     const cleanGroups = {};
     for (const [key, val] of Object.entries(config.groups || {})) {
         if (!val.is_community_group) cleanGroups[key] = val;
     }
     config.groups = cleanGroups;
-    fs.writeFileSync(getConfigFile(), JSON.stringify(config, null, 2));
+    fs.writeFileSync(getConfigFile(langId), JSON.stringify(config, null, 2));
     const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
     if (groupsWithJid > 0) {
-        fs.writeFileSync(getConfigBackupFile(), JSON.stringify(config, null, 2));
-        console.log(`[CONFIG] Backup salvo com ${groupsWithJid} grupos configurados.`);
+        fs.writeFileSync(getConfigBackupFile(langId), JSON.stringify(config, null, 2));
+        console.log(`[CONFIG] Backup [${langId}] salvo com ${groupsWithJid} grupos configurados.`);
     }
 }
 
@@ -281,11 +281,16 @@ async function handleMessages({ messages, type }) {
         await adminCmds.handle({ sock, msg, groupJid, globalText, globalRealMsg, isMasterAdmin, msgId, processedMessageIds, dataDir });
 
         // ─── ROTEAMENTO ───────────────────────────────────────────────────────
-        const mentoriaGroups  = Object.values(config.groups || {}).map(g => g.jid);
-        const communityConfig = loadCommunityConfig();
-        const communityGroups = Object.values(communityConfig.groups || {}).map(g => g.jid);
-        const isMentoriaGroup  = mentoriaGroups.includes(groupJid);
+        // Suporte multi-idioma: verifica grupos de todos os langs registrados
+        const mentoriaGroupsEN = Object.values(config.groups || {}).map(g => g.jid);
+        const configES         = loadConfig('es');
+        const mentoriaGroupsES = Object.values(configES.groups || {}).map(g => g.jid);
+        const communityConfig  = loadCommunityConfig();
+        const communityGroups  = Object.values(communityConfig.groups || {}).map(g => g.jid);
+        const isMentoriaGroup  = mentoriaGroupsEN.includes(groupJid) || mentoriaGroupsES.includes(groupJid);
         const isCommunityGroup = communityGroups.includes(groupJid);
+        // Determina qual config usar para o módulo da mentoria
+        const activeMentoriaConfig = mentoriaGroupsES.includes(groupJid) ? configES : config;
 
         // Ignora grupos não reconhecidos por nenhum módulo
         if (!isMentoriaGroup && !isCommunityGroup) continue;
@@ -366,7 +371,7 @@ async function handleMessages({ messages, type }) {
             sock: safeSock, msg, groupJid, senderJid, senderName,
             text, realMsg, isVisual,
             isAdmin, isGroupAdmin, isGlobalAdmin,
-            msgId, config, communityConfig
+            msgId, config: activeMentoriaConfig, communityConfig
         };
 
         if (isMentoriaGroup)  await mentoriaMod.handleMessage(moduleCtx);
@@ -448,8 +453,15 @@ function initRoutes(app, dir) {
         } catch (e) { res.status(500).json({ error: e.message }); }
     });
 
-    app.get('/mentoria-config',  (req, res) => res.json(loadConfig()));
-    app.post('/mentoria-config', (req, res) => { saveConfig(req.body); res.json({ success: true }); });
+    app.get('/mentoria-config',  (req, res) => {
+        const lang = req.query.lang || 'en';
+        res.json(loadConfig(lang));
+    });
+    app.post('/mentoria-config', (req, res) => {
+        const lang = req.query.lang || req.body.lang || 'en';
+        saveConfig(req.body, lang);
+        res.json({ success: true });
+    });
 
     app.get('/community-config',  (req, res) => res.json(loadCommunityConfig()));
     app.post('/community-config', (req, res) => { saveCommunityConfig(req.body); res.json({ success: true }); });
