@@ -290,6 +290,10 @@ function renderGroupSelect($name, $currentValue, $groups) {
         
         // Transforma caracteres unicode matemáticos/estilizados em letras normais no backend
         $cleanSubj = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', Normalizer::normalize($rawSubj, Normalizer::FORM_KD));
+        if ($cleanSubj) {
+            // Remove qualquer caractere que não pôde ser convertido para ASCII (como emojis que viraram ?)
+            $cleanSubj = trim(preg_replace('/[?]/', '', $cleanSubj));
+        }
         if (!$cleanSubj) $cleanSubj = $rawSubj;
         $cleanSubj = htmlspecialchars($cleanSubj);
 
