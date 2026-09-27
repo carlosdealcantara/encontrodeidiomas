@@ -163,15 +163,21 @@ try {
             }
         }
 
-        // Busca pontos manuais
-        $stmtPts = $conn->prepare("
-            SELECT member_jid, member_name, group_key, SUM(points) as group_pts
-            FROM mentoria_dedicated_pts
-            WHERE date = ?
-            GROUP BY member_jid, group_key
-        ");
-        $stmtPts->execute([$hoje]);
-        $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
+        // Busca pontos manuais apenas dos grupos cadastrados neste idioma
+        $manualPoints = [];
+        $validGroupKeys = array_keys($config['groups'] ?? []);
+        if (!empty($validGroupKeys)) {
+            $inPlaceholders = implode(',', array_fill(0, count($validGroupKeys), '?'));
+            $params = array_merge([$hoje], $validGroupKeys);
+            $stmtPts = $conn->prepare("
+                SELECT member_jid, member_name, group_key, SUM(points) as group_pts
+                FROM mentoria_dedicated_pts
+                WHERE date = ? AND group_key IN ($inPlaceholders)
+                GROUP BY member_jid, group_key
+            ");
+            $stmtPts->execute($params);
+            $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
+        }
 
         foreach ($manualPoints as $row) {
             $jid = $row['member_jid'];
@@ -183,9 +189,9 @@ try {
 
             if (!isset($students[$jid])) {
                 if ($mName === 'Unknown') {
-                    $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? LIMIT 1");
+                    $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND lang_id = ? LIMIT 1");
                     $phoneOnly = preg_replace('/\D/', '', explode('@', $jid)[0]);
-                    $stmtName->execute([$phoneOnly]);
+                    $stmtName->execute([$phoneOnly, $langId]);
                     $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
                     if ($rowName) $mName = $rowName['nome'];
                 }
