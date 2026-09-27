@@ -52,27 +52,53 @@ try {
         $config   = getMentoriaConfig($langId);
         $adminJid = $config['admin_jid'] ?? '';
 
-        // Carrega os telefones de alunos cadastrados em OUTROS idiomas (para excluí-los do ranking atual)
-        // Lógica: NÃO filtramos por whitelist — mostramos todos os membros ativos do grupo,
-        // EXCETO quem está cadastrado explicitamente em outro idioma.
-        $stmtOutros = $conn->prepare("SELECT telefone FROM mentoria_alunos WHERE lang_id != ?");
-        $stmtOutros->execute([$langId]);
-        $outrosPhones = $stmtOutros->fetchAll(PDO::FETCH_COLUMN, 0);
-        // Normaliza: remove não-dígitos e gera variações com/sem DDI 55
-        $outrosPhoneSet = [];
-        foreach ($outrosPhones as $phone) {
-            $clean = preg_replace('/\D/', '', $phone);
-            $outrosPhoneSet[] = $clean;
-            if (strlen($clean) === 11) $outrosPhoneSet[] = '55' . $clean;
-            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $outrosPhoneSet[] = substr($clean, 2);
-        }
-        $outrosPhoneSet = array_unique($outrosPhoneSet);
+        // Carrega os telefones de alunos ativos do idioma selecionado (whitelist)
+        // Status considerados ativos: Ativo, Vitalício, Comunidade
+        $stmtAlunos = $conn->prepare(
+            "SELECT telefone FROM mentoria_alunos WHERE lang_id = ? AND status_aluno IN ('Ativo','Vitalício','Comunidade')"
+        );
+        $stmtAlunos->execute([$langId]);
+        $alunosPhones = $stmtAlunos->fetchAll(PDO::FETCH_COLUMN, 0);
 
-        // Helper: retorna TRUE se o JID deve ser EXCLUÍDO (pertence a outro idioma)
-        $isAlunoDeOutroIdioma = function(string $jid) use ($outrosPhoneSet): bool {
-            $phoneOnly = preg_replace('/\D/', '', explode('@', $jid)[0]);
-            $phoneOnly = preg_replace('/:\d+$/', '', $phoneOnly); // Remove sufixo :device se houver
-            return in_array($phoneOnly, $outrosPhoneSet, true);
+        // Normaliza: gera variações com e sem DDI 55 (padrão do sistema)
+        $whitelistPhones = [];
+        foreach ($alunosPhones as $phone) {
+            $clean = preg_replace('/\D/', '', $phone);
+            $whitelistPhones[] = $clean;
+            if (strlen($clean) === 11) $whitelistPhones[] = '55' . $clean;              // 11 dígitos → adiciona DDI
+            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $whitelistPhones[] = substr($clean, 2); // 13 dígitos → remove DDI
+        }
+        $whitelistPhones = array_unique($whitelistPhones);
+
+        // Carrega também todos os telefones cadastrados em QUALQUER idioma
+        // para identificar quem é de outro idioma (e excluí-lo)
+        $stmtTodos = $conn->prepare("SELECT telefone, lang_id FROM mentoria_alunos WHERE status_aluno IN ('Ativo','Vitalício','Comunidade')");
+        $stmtTodos->execute();
+        $todosAlunos = $stmtTodos->fetchAll(PDO::FETCH_ASSOC);
+        $outrosPhones = [];
+        foreach ($todosAlunos as $row) {
+            if ($row['lang_id'] === $langId) continue; // pula os do idioma atual
+            $clean = preg_replace('/\D/', '', $row['telefone']);
+            $outrosPhones[] = $clean;
+            if (strlen($clean) === 11) $outrosPhones[] = '55' . $clean;
+            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $outrosPhones[] = substr($clean, 2);
+        }
+        $outrosPhones = array_unique($outrosPhones);
+
+        // Helper: extrai número limpo de um JID
+        $phoneFromJid = function(string $jid): string {
+            $p = preg_replace('/\D/', '', explode('@', $jid)[0]);
+            return preg_replace('/:\d+$/', '', $p); // remove sufixo :device se houver
+        };
+
+        // Helper: decide se inclui o membro no ranking atual
+        // Regra: inclui se pertence à whitelist do idioma atual,
+        //        OU se não está cadastrado em nenhum idioma (membro de grupo não registrado)
+        $deveIncluir = function(string $jid) use ($whitelistPhones, $outrosPhones, $phoneFromJid): bool {
+            $phone = $phoneFromJid($jid);
+            if (in_array($phone, $outrosPhones, true)) return false; // é de outro idioma
+            // É da whitelist do idioma atual OU não está cadastrado em nenhum lugar
+            return true;
         };
 
         // Monta lista ordenada de grupos com JID e nome amigável
@@ -119,8 +145,8 @@ try {
                 if ($memberJid === $adminJid) continue;
                 if (str_ends_with($memberJid, '@g.us')) continue;
 
-                // Filtra: pula quem está cadastrado em OUTRO idioma (não o atual)
-                if ($isAlunoDeOutroIdioma($memberJid)) continue;
+                // Inclui apenas membros do idioma atual (whitelist) ou não cadastrados em nenhum idioma
+                if (!$deveIncluir($memberJid)) continue;
 
                 $name = $stats['name'] ?? 'Unknown';
                 if ($name === 'Unknown' || trim($name) === '') {
