@@ -76,6 +76,19 @@ try {
         $jidGames   = $config['groups']['games']['jid']         ?? '';
         $jidVocab   = $config['groups']['vocabulary']['jid']    ?? '';
 
+        // Se o idioma não tiver nenhum grupo com JID cadastrado, retorna vazio imediatamente
+        if (empty($langGroupJids)) {
+            echo json_encode([
+                'success'        => true,
+                'today'          => $hoje,
+                'students'       => [],
+                'groups_ordered' => [],
+                'social'         => [],
+                'no_groups'      => true
+            ]);
+            exit;
+        }
+
         $activity = fetchBaileysActivity($hoje);
 
         // Presença na aula: conta quantas sessões cada aluno confirmou (filtrado por lang_id via schedule)

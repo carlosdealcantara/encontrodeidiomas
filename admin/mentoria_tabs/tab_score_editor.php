@@ -179,9 +179,8 @@
 
     // ── Fetch ──────────────────────────────────────────
     function loadScoreEditor() {
-        // Passa o lang atual da URL para a API respeitar o idioma selecionado no painel
-        const urlParams = new URLSearchParams(window.location.search);
-        const lang = urlParams.get('lang') || 'en';
+        // Usa a variável PHP $current_lang renderizada no painel como fonte prioritária
+        const lang = '<?= htmlspecialchars($current_lang ?? "") ?>' || (new URLSearchParams(window.location.search)).get('lang') || 'en';
         fetch('mentoria_score_edit_api.php?action=load&lang=' + encodeURIComponent(lang))
             .then(r => r.json())
             .then(data => {
