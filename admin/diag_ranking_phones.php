@@ -13,13 +13,19 @@ $hoje = date('Y-m-d');
 $cacheFile = __DIR__ . '/groups_cache.json';
 echo "=== GROUPS_CACHE.JSON ===\n";
 if (file_exists($cacheFile)) {
-    $cData = json_decode(file_get_contents($cacheFile), true);
-    echo "  Total no cache: " . count($cData) . "\n";
-    foreach ($cData as $g) {
-        $subj = $g['subject'] ?? '';
-        if (preg_match('/(rincon|reto|aula|mentoria|espanhol)/ui', $subj) || strpos($subj, '120363414986456733') !== false) {
-            echo "  MATCH: " . $g['id'] . " | " . $subj . "\n";
+    $raw = file_get_contents($cacheFile);
+    $raw = preg_replace('/^[\xef\xbb\xbf]+/', '', $raw);
+    $cData = json_decode($raw, true);
+    if (is_array($cData)) {
+        echo "  Total no cache: " . count($cData) . "\n";
+        foreach ($cData as $g) {
+            $subj = $g['subject'] ?? '';
+            if (preg_match('/(rincon|reto|aula|mentoria|espanhol|adventuring)/ui', $subj) || strpos($subj, '120363414986456733') !== false) {
+                echo "  MATCH: " . $g['id'] . " | " . $subj . "\n";
+            }
         }
+    } else {
+        echo "  Cache existe mas json_decode retornou erro: " . json_last_error_msg() . "\n";
     }
 } else {
     echo "  Arquivo não existe!\n";
