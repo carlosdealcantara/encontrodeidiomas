@@ -6,6 +6,7 @@
     <div>
         <form method="POST" style="display: inline-block;">
             <input type="hidden" name="tab" value="mensagens">
+            <input type="hidden" name="lang" value="<?= htmlspecialchars($current_lang ?? 'en') ?>">
             <button type="submit" name="sync_groups" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white;">
                 <i class="fas fa-sync-alt"></i> Sincronizar Grupos
             </button>
