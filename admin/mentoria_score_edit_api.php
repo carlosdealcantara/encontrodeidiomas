@@ -52,101 +52,57 @@ try {
         $config   = getMentoriaConfig($langId);
         $adminJid = $config['admin_jid'] ?? '';
 
-        // Carrega os telefones de alunos ativos do idioma selecionado (whitelist)
-        // Status considerados ativos: Ativo, Vitalício, Comunidade
-        $stmtAlunos = $conn->prepare(
-            "SELECT telefone FROM mentoria_alunos WHERE lang_id = ? AND status_aluno IN ('Ativo','Vitalício','Comunidade')"
-        );
-        $stmtAlunos->execute([$langId]);
-        $alunosPhones = $stmtAlunos->fetchAll(PDO::FETCH_COLUMN, 0);
-
-        // Normaliza: gera variações com e sem DDI 55 (padrão do sistema)
-        $whitelistPhones = [];
-        foreach ($alunosPhones as $phone) {
-            $clean = preg_replace('/\D/', '', $phone);
-            $whitelistPhones[] = $clean;
-            if (strlen($clean) === 11) $whitelistPhones[] = '55' . $clean;              // 11 dígitos → adiciona DDI
-            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $whitelistPhones[] = substr($clean, 2); // 13 dígitos → remove DDI
-        }
-        $whitelistPhones = array_unique($whitelistPhones);
-
-        // Carrega também todos os telefones cadastrados em QUALQUER idioma
-        // para identificar quem é de outro idioma (e excluí-lo)
-        $stmtTodos = $conn->prepare("SELECT telefone, lang_id FROM mentoria_alunos WHERE status_aluno IN ('Ativo','Vitalício','Comunidade')");
-        $stmtTodos->execute();
-        $todosAlunos = $stmtTodos->fetchAll(PDO::FETCH_ASSOC);
-        $outrosPhones = [];
-        foreach ($todosAlunos as $row) {
-            if ($row['lang_id'] === $langId) continue; // pula os do idioma atual
-            $clean = preg_replace('/\D/', '', $row['telefone']);
-            $outrosPhones[] = $clean;
-            if (strlen($clean) === 11) $outrosPhones[] = '55' . $clean;
-            if (strlen($clean) === 13 && str_starts_with($clean, '55')) $outrosPhones[] = substr($clean, 2);
-        }
-        $outrosPhones = array_unique($outrosPhones);
-
-        // Helper: extrai número limpo de um JID
-        $phoneFromJid = function(string $jid): string {
-            $p = preg_replace('/\D/', '', explode('@', $jid)[0]);
-            return preg_replace('/:\d+$/', '', $p); // remove sufixo :device se houver
-        };
-
-        // Helper: decide se inclui o membro no ranking atual
-        // Regra: inclui se pertence à whitelist do idioma atual,
-        //        OU se não está cadastrado em nenhum idioma (membro de grupo não registrado)
-        $deveIncluir = function(string $jid) use ($whitelistPhones, $outrosPhones, $phoneFromJid): bool {
-            $phone = $phoneFromJid($jid);
-            if (in_array($phone, $outrosPhones, true)) return false; // é de outro idioma
-            // É da whitelist do idioma atual OU não está cadastrado em nenhum lugar
-            return true;
-        };
-
-        // Monta lista ordenada de grupos com JID e nome amigável
+        // Monta o set de JIDs de grupos do idioma atual.
+        // FILTRO PRINCIPAL: só membros ativos em grupos DESTE idioma aparecem no ranking.
+        // Isso funciona independentemente do formato do JID (inclusive @lid).
         $groupsOrdered = [];
+        $langGroupJids = []; // set de JIDs para filtragem
         foreach ($config['groups'] ?? [] as $key => $gData) {
             if (!empty($gData['jid'])) {
+                $jid = $gData['jid'];
                 $groupsOrdered[] = [
-                    'jid'  => $gData['jid'],
+                    'jid'  => $jid,
                     'key'  => $key,
                     'name' => GROUP_LABELS[$key] ?? ucfirst(str_replace('_', ' ', $key)),
                 ];
+                $langGroupJids[$jid] = true;
             }
         }
 
         // JIDs para a seção de Atividades
-        $jidPronun = $config['groups']['pronunciation']['jid'] ?? '';
-        $jidDesafio = $config['groups']['desafio']['jid']      ?? '';
+        $jidPronun  = $config['groups']['pronunciation']['jid'] ?? '';
+        $jidDesafio = $config['groups']['desafio']['jid']       ?? '';
         $jidMusic   = $config['groups']['music']['jid']         ?? '';
         $jidGames   = $config['groups']['games']['jid']         ?? '';
         $jidVocab   = $config['groups']['vocabulary']['jid']    ?? '';
 
         $activity = fetchBaileysActivity($hoje);
 
-        // Presença na aula: conta quantas sessões cada aluno confirmou
+        // Presença na aula: conta quantas sessões cada aluno confirmou (filtrado por lang_id via schedule)
         $stmt = $conn->prepare("
-            SELECT member_jid, member_name, COUNT(*) as session_count
-            FROM class_attendances
-            WHERE aula_date = ?
-            GROUP BY member_jid
+            SELECT ca.member_jid, ca.member_name, COUNT(*) as session_count
+            FROM class_attendances ca
+            JOIN class_schedule cs ON cs.id = ca.schedule_id
+            WHERE ca.aula_date = ? AND cs.lang_id = ?
+            GROUP BY ca.member_jid
         ");
-        $stmt->execute([$hoje]);
+        $stmt->execute([$hoje, $langId]);
         $attendeesRaw = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // Map jid -> count
         $attendeeCount = [];
         foreach ($attendeesRaw as $row) {
             $attendeeCount[$row['member_jid']] = (int)$row['session_count'];
         }
 
-        $students = [];  // seção Atividades
+        $students  = [];  // seção Atividades
         $socialMap = []; // seção Social (por membro → por grupo)
 
         foreach ($activity as $groupJid => $members) {
+            // Ignora grupos que não pertencem ao idioma selecionado
+            if (!isset($langGroupJids[$groupJid])) continue;
+
             foreach ($members as $memberJid => $stats) {
                 if ($memberJid === $adminJid) continue;
                 if (str_ends_with($memberJid, '@g.us')) continue;
-
-                // Inclui apenas membros do idioma atual (whitelist) ou não cadastrados em nenhum idioma
-                if (!$deveIncluir($memberJid)) continue;
 
                 $name = $stats['name'] ?? 'Unknown';
                 if ($name === 'Unknown' || trim($name) === '') {
