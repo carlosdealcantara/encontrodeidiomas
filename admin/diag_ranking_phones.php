@@ -42,8 +42,11 @@ if (file_exists($cacheFile)) {
         echo "  Total no cache: " . count($cData) . "\n";
         foreach ($cData as $g) {
             $subj = $g['subject'] ?? '';
-            if (preg_match('/(rincon|reto|aula|mentoria|espanhol|adventuring)/ui', $subj) || strpos($subj, '120363414986456733') !== false) {
-                echo "  MATCH: " . $g['id'] . " | " . $subj . "\n";
+            $id = $g['id'] ?? '';
+            if (in_array($id, ['120363414986456733@g.us', '120363428724246184@g.us', '120363410841883654@g.us'])) {
+                echo "  ES_TRIO: " . $id . " | " . $subj . "\n";
+            } elseif (preg_match('/(mentoria|espanhol)/ui', $subj)) {
+                echo "  MATCH: " . $id . " | " . $subj . "\n";
             }
         }
     } else {
