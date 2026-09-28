@@ -19,6 +19,11 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
+$dry_run = isset($_GET['dry_run']) && $_GET['dry_run'] == '1';
+if ($dry_run) {
+    echo "🔍 MODO DRY-RUN ATIVADO: Nenhuma mensagem será disparada no WhatsApp.\n\n";
+}
+
 $conn = connectDB();
 
 $period = 'weekly';
@@ -79,11 +84,11 @@ foreach ($langs as $lang) {
         continue;
     }
 
-    // Anti-duplicidade por idioma e período
+    // Anti-duplicidade por idioma e período (ignorado em modo dry_run)
     $logType = "ranking_{$period}_{$lang}";
     $check   = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = ? AND data_execucao = ?");
     $check->execute([$logType, $endDate]);
-    if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+    if ($check->rowCount() > 0 && !isset($_GET['force']) && !$dry_run) {
         echo "  ⏭️ Ranking {$period} [{$lang}] já postado para a data final ($endDate). Use &force=1 para forçar.\n";
         continue;
     }
@@ -220,6 +225,11 @@ foreach ($langs as $lang) {
         [$titleDateStr, $sep, rtrim($studentStr), rtrim($msgList), rtrim($reactList)],
         $template
     );
+
+    if ($dry_run) {
+        echo "  [DRY-RUN] Ranking {$periodTitle} [{$lang}] seria enviado para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg}\n" . str_repeat('-', 40) . "\n";
+        continue;
+    }
 
     // Disparo único
     $result1 = enviarWhatsApp($targetGroup, $msg, "mentoria_ranking_{$period}_{$lang}");

@@ -18,6 +18,11 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
+$dry_run = isset($_GET['dry_run']) && $_GET['dry_run'] == '1';
+if ($dry_run) {
+    echo "🔍 MODO DRY-RUN ATIVADO: Nenhuma mensagem será disparada no WhatsApp e logs não serão marcados como enviados.\n\n";
+}
+
 $conn = connectDB();
 
 $conn->exec("
@@ -77,12 +82,12 @@ $activity = fetchBaileysActivity($ontem);
 foreach ($langs as $lang) {
     echo "\n🌐 Processando ranking para idioma: [{$lang}]\n";
 
-    // Anti-duplicidade por idioma
+    // Anti-duplicidade por idioma (ignorado em modo dry_run)
     $logType = 'ranking_unificado_' . $lang;
     $check   = $conn->prepare("SELECT id, detalhes FROM mentoria_auto_logs WHERE tipo = ? AND data_execucao = ?");
     $check->execute([$logType, $ontem]);
     $rowCheck = $check->fetch(PDO::FETCH_ASSOC);
-    if ($rowCheck && !isset($_GET['force'])) {
+    if ($rowCheck && !isset($_GET['force']) && !$dry_run) {
         $det    = json_decode($rowCheck['detalhes'] ?? '', true);
         $status = $det['status'] ?? 'sent';
         if ($status === 'sent') {
@@ -228,21 +233,17 @@ foreach ($langs as $lang) {
     // Obtém todos os JIDs dos grupos deste idioma para filtrar
     $langGroupJids = array_values(array_filter(array_column($config['groups'] ?? [], 'jid')));
 
-    $stmtPts = $conn->prepare("
-        SELECT member_jid, member_name, group_key, SUM(points) as group_pts
-        FROM mentoria_dedicated_pts
-        WHERE date = ? AND group_jid IN (" . implode(',', array_fill(0, max(1, count($langGroupJids)), '?')) . ")
-        GROUP BY member_jid, group_key
-    ");
-    $paramsManual = array_merge([$ontem], $langGroupJids ?: ['']);
-    $stmtPts->execute($paramsManual);
-    $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
-
-    // Fallback: se a tabela não tem group_jid, busca por lang sem filtro de grupo
-    if (empty($manualPoints) && !empty($langGroupJids)) {
-        $stmtPts2 = $conn->prepare("SELECT member_jid, member_name, group_key, SUM(points) as group_pts FROM mentoria_dedicated_pts WHERE date = ? GROUP BY member_jid, group_key");
-        $stmtPts2->execute([$ontem]);
-        $manualPoints = $stmtPts2->fetchAll(PDO::FETCH_ASSOC);
+    $manualPoints = [];
+    if (!empty($langGroupJids)) {
+        $stmtPts = $conn->prepare("
+            SELECT member_jid, member_name, group_key, SUM(points) as group_pts
+            FROM mentoria_dedicated_pts
+            WHERE date = ? AND group_jid IN (" . implode(',', array_fill(0, count($langGroupJids), '?')) . ")
+            GROUP BY member_jid, group_key
+        ");
+        $paramsManual = array_merge([$ontem], $langGroupJids);
+        $stmtPts->execute($paramsManual);
+        $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
     }
 
     foreach ($manualPoints as $row) {
@@ -467,6 +468,25 @@ foreach ($langs as $lang) {
         $tpl3
     );
 
+    // Verifica se há mensagens sociais reais para enviar (evita mandar mensagens vazias como "Sin mensajes ayer")
+    $hasMsgs   = !empty($top5Msgs);
+    $hasReacts = !empty($top5Reacts);
+
+    if ($dry_run) {
+        echo "  [DRY-RUN] Mensagem 1 (Estudante do Dia) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg1}\n" . str_repeat('-', 40) . "\n";
+        if ($hasMsgs) {
+            echo "  [DRY-RUN] Mensagem 2 (Top Mensagens) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg2}\n" . str_repeat('-', 40) . "\n";
+        } else {
+            echo "  ℹ️ [DRY-RUN] Mensagem 2 (Top Mensagens) ignorada pois não houve mensagens ontem.\n";
+        }
+        if ($hasReacts) {
+            echo "  [DRY-RUN] Mensagem 3 (Top Reações) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg3}\n" . str_repeat('-', 40) . "\n";
+        } else {
+            echo "  ℹ️ [DRY-RUN] Mensagem 3 (Top Reações) ignorada pois não houve reações ontem.\n";
+        }
+        continue;
+    }
+
     // Trava inicial antes de disparar
     $travou = registrarInicioDisparo($conn, $logType, $ontem, null, 15);
     if (!$travou && !isset($_GET['force'])) {
@@ -474,21 +494,36 @@ foreach ($langs as $lang) {
         continue;
     }
 
+    $sentCount = 0;
     $result1 = enviarWhatsApp($targetGroup, $msg1, "mentoria_ranking_student_{$lang}");
-    sleep(1);
-    $result2 = enviarWhatsApp($targetGroup, $msg2, "mentoria_ranking_messenger_{$lang}");
-    sleep(1);
-    $result3 = enviarWhatsApp($targetGroup, $msg3, "mentoria_ranking_reactor_{$lang}");
+    $sentCount++;
+
+    if ($hasMsgs) {
+        sleep(1);
+        $result2 = enviarWhatsApp($targetGroup, $msg2, "mentoria_ranking_messenger_{$lang}");
+        $sentCount++;
+    } else {
+        echo "  ℹ️ Mensagem 2 (Top Mensagens) ignorada: sem mensagens ontem no idioma [{$lang}].\n";
+    }
+
+    if ($hasReacts) {
+        sleep(1);
+        $result3 = enviarWhatsApp($targetGroup, $msg3, "mentoria_ranking_reactor_{$lang}");
+        $sentCount++;
+    } else {
+        echo "  ℹ️ Mensagem 3 (Top Reações) ignorada: sem reações ontem no idioma [{$lang}].\n";
+    }
 
     $allSuccessful = ($result1['success'] || ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300));
 
     if ($allSuccessful) {
         registrarConclusaoDisparo($conn, $logType, $ontem, null, [
-            'stats'    => $memberStats,
-            'httpCode' => $result1['httpCode'],
-            'lang'     => $lang
+            'stats'     => $memberStats,
+            'httpCode'  => $result1['httpCode'],
+            'lang'      => $lang,
+            'messages_sent' => $sentCount
         ]);
-        echo "  ✅ Rankings [{$lang}] enviados com sucesso (3 mensagens)!\n";
+        echo "  ✅ Rankings [{$lang}] enviados com sucesso ({$sentCount} mensagem(ns))!\n";
     } else {
         registrarFalhaDisparo($conn, $logType, $ontem, null, $result1['error'] ?? 'HTTP ' . $result1['httpCode']);
         echo "  ❌ Erro ao enviar ranking [{$lang}]: HTTP " . $result1['httpCode'] . " (" . ($result1['error'] ?? 'desconhecido') . ")\n";
