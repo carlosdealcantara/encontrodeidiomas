@@ -940,74 +940,51 @@ def escanear_drive():
     try:
         drive_service = init_drive_service()
 
-        # 1. Descobrir todas as pastas de origem dos vídeos dinamicamente.
-        # O Google Meet cria subpastas "Google Meet" > "<evento> (recurring)".
-        # Se DRIVE_MENTORIA_FOLDER_ID estiver configurado, usamos como ponto de partida.
-        # Caso contrário, descobrimos todas as pastas do Drive dinamicamente.
-        folder_ids = [DRIVE_MENTORIA_FOLDER_ID] if DRIVE_MENTORIA_FOLDER_ID else []
-
-        try:
-            logger.info("[SCAN] Buscando subpastas 'Google Meet' no Drive...")
-
-            meet_folders = []
-            if DRIVE_MENTORIA_FOLDER_ID:
+        # 1. Descobrir subpastas EXCLUSIVAMENTE dentro da pasta da Mentoria configurada.
+        folder_ids = []
+        if DRIVE_MENTORIA_FOLDER_ID:
+            folder_ids.append(DRIVE_MENTORIA_FOLDER_ID)
+            try:
+                # Busca subpastas dentro da pasta da Mentoria
                 meet_folders = drive_service.files().list(
-                    q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+                    q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
                     fields='files(id, name)'
                 ).execute().get('files', [])
 
-            # Também busca globalmente por "Google Meet"
-            meet_folders_global = drive_service.files().list(
-                q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
-                fields='files(id, name)'
-            ).execute().get('files', [])
-
-            seen_ids = {mf['id'] for mf in meet_folders}
-            for mf in meet_folders_global:
-                if mf['id'] not in seen_ids:
-                    meet_folders.append(mf)
-                    seen_ids.add(mf['id'])
-
-            for mf in meet_folders:
-                logger.info(f"[SCAN] Pasta 'Google Meet' encontrada: {mf['id']}")
-                folder_ids.append(mf['id'])
-                # Busca subpastas (recurring ou com nome do evento)
-                sub_results = drive_service.files().list(
-                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
-                    fields='files(id, name)'
-                ).execute()
-                for sub in sub_results.get('files', []):
-                    logger.info(f"[SCAN] Subpasta encontrada: {sub['name']} ({sub['id']})")
-                    folder_ids.append(sub['id'])
-
-        except Exception as e:
-            logger.warning(f"[SCAN] Erro ao buscar subpastas Google Meet dinamicamente: {e}")
-
-        # Se não achou nenhuma subpasta, varre a raiz do Drive
-        if not folder_ids:
-            logger.info("[SCAN] Nenhuma subpasta específica encontrada. Varrendo raiz do Drive...")
-
-        # 2. Buscar arquivos de vídeo nessas pastas com filtro de nome da Mentoria
-        arquivos = []
-        if folder_ids:
-            for i in range(0, len(folder_ids), 10):
-                lote = folder_ids[i:i+10]
-                parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
-                query = (
-                    f"({parents_q}) and mimeType contains 'video/' "
-                    f"and (name contains 'Mentorship' or name contains 'Mentoria' or name contains 'Mentoría' or name contains 'Español' or name contains 'Espanhol' or name contains 'Recording') "
-                    f"and trashed=false"
-                )
-                results = drive_service.files().list(
-                    q=query,
-                    fields="files(id, name, size)"
-                ).execute()
-                arquivos.extend(results.get('files', []))
+                for mf in meet_folders:
+                    folder_ids.append(mf['id'])
+                    # Busca subpastas de segundo nível
+                    sub_results = drive_service.files().list(
+                        q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+                        fields='files(id, name)'
+                    ).execute()
+                    for sub in sub_results.get('files', []):
+                        # Só aceita subpastas que sejam de mentoria
+                        sub_name_low = sub['name'].lower()
+                        if any(k in sub_name_low for k in ['mentorship', 'mentoria', 'mentoría']):
+                            logger.info(f"[SCAN] Subpasta de mentoria encontrada: {sub['name']} ({sub['id']})")
+                            folder_ids.append(sub['id'])
+                        else:
+                            logger.info(f"[SCAN] Subpasta ignorada (não é mentoria): {sub['name']}")
+            except Exception as e:
+                logger.warning(f"[SCAN] Erro ao buscar subpastas: {e}")
         else:
-            # Busca global direta por vídeos de gravação
-            query = (
-                "mimeType contains 'video/' and (name contains 'Mentorship' or name contains 'Mentoria' or name contains 'Mentoría' or name contains 'Español' or name contains 'Recording') and trashed=false"
-            )
+            logger.error("[SCAN] DRIVE_MENTORIA_FOLDER_ID não está configurado! Abortando scan para proteger arquivos pessoais.")
+            return
+
+        # 2. Buscar arquivos de vídeo estritamente de Mentoria
+        arquivos = []
+        termos_mentoria = ["mentorship", "mentoria", "mentoría"]
+        if MENTORIA_LANG_ID == 'es':
+            termos_mentoria.extend(["español", "espanhol"])
+
+        for i in range(0, len(folder_ids), 10):
+            lote = folder_ids[i:i+10]
+            parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
+            # Exige 'Mentorship' ou 'Mentoria' no nome — NUNCA apenas 'Recording'
+            name_filters = " or ".join([f"name contains '{termo}'" for termo in ['Mentorship', 'Mentoria', 'Mentoría']])
+            query = f"({parents_q}) and mimeType contains 'video/' and ({name_filters}) and trashed=false"
+            
             results = drive_service.files().list(
                 q=query,
                 fields="files(id, name, size)"
@@ -1025,13 +1002,21 @@ def escanear_drive():
         for arquivo in arquivos:
             file_id = arquivo['id']
             file_name = arquivo['name']
+            file_name_low = file_name.lower()
 
             cursor.execute("SELECT id FROM mentoria_odysee_queue WHERE drive_file_id = %s", (file_id,))
             if cursor.fetchone():
                 continue
 
-            if 'feedback' in file_name.lower():
+            if 'feedback' in file_name_low:
                 logger.info(f"Arquivo ignorado (Feedback): {file_name}")
+                continue
+
+            # FILTRO DE SEGURANÇA ESTRITO:
+            # O nome do arquivo DEVE conter 'mentorship', 'mentoria' ou 'mentoría'.
+            # Aulas particulares ou outros eventos NUNCA devem entrar na fila.
+            if not any(k in file_name_low for k in termos_mentoria):
+                logger.warning(f"[SCAN] Arquivo ignorado por segurança (não contém termo de mentoria): {file_name}")
                 continue
 
             # Ex: Mentorship Class - 2026/07/01 13:06 GMT-03:00 - Recording.mp4
@@ -1183,7 +1168,29 @@ def processar_fila():
     
     tarefa = buscar_proxima_tarefa()
     if not tarefa: return
-        
+
+    # ── GUARDA-CHUVA DE SEGURANÇA ──────────────────────────────────────────────
+    # Segunda camada de proteção independente do filtro de scan.
+    # Se o nome do arquivo não contiver um termo de mentoria, recusa processar.
+    # Isso protege contra arquivos inseridos manualmente ou por bug de versão
+    # anterior do código (como aconteceu com "Franklin's Class" em 2026-09-29).
+    termos_validos = ['mentorship', 'mentoria', 'mentoría']
+    if MENTORIA_LANG_ID == 'es':
+        termos_validos += ['español', 'espanhol']
+    nome_arquivo = tarefa.get('drive_file_name', '').lower()
+    if not any(k in nome_arquivo for k in termos_validos):
+        logger.error(
+            f"[SEGURANÇA] Tarefa {tarefa['id']} REJEITADA: o arquivo '{tarefa['drive_file_name']}' "
+            f"não contém nenhum termo de mentoria. Publicação abortada para proteger conteúdo pessoal."
+        )
+        atualizar_status(
+            tarefa['id'], '',
+            error_msg=f"Cancelado: arquivo indevido na fila (não é uma aula de mentoria). "
+                      f"Arquivo: '{tarefa['drive_file_name']}'"
+        )
+        return
+    # ──────────────────────────────────────────────────────────────────────────
+
     logger.info(f"Processando mentoria: {tarefa['titulo_final']} (Status: {tarefa['status']})")
     atualizar_status(tarefa['id'], 'processing')
     
