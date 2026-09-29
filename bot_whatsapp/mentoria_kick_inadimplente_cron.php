@@ -21,7 +21,8 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
-@ini_set('display_errors', 0);
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 $token_secreto = '83x9aZ2pLQw1';
 $is_cli = (php_sapi_name() === 'cli');
@@ -31,7 +32,8 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
-$conn = connectDB();
+try {
+    $conn = connectDB();
 
 // Garante que a tabela de logs exista
 try {
@@ -305,6 +307,9 @@ try {
     echo "⚠️ Erro ao registrar log global: " . $e->getMessage() . "\n";
 }
 
-echo "═══════════════════════════════════════\n";
-echo "🏁 Concluído! Total removidos do Our Classes hoje: {$totalKicked}.\n";
+} catch (Throwable $e) {
+    http_response_code(200);
+    echo "\n\n💥 ERRO FATAL / EXCEÇÃO: " . $e->getMessage() . "\n";
+    echo "Arquivo: " . $e->getFile() . " Linha: " . $e->getLine() . "\n";
+}
 ?>
