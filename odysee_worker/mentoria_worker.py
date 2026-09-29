@@ -1109,33 +1109,39 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
 
     mensagem = template.replace('{titulo}', titulo).replace('{url}', url_curta)
 
-    # --- Busca o JID do Our Classes direto do Baileys (fonte de verdade única) ---
+    # --- Busca o JID do Our Classes direto do Baileys (fonte de verdade única) com retries ---
     grupos_alvo = []
-    try:
-        resp = requests.get(
-            f"http://host.docker.internal:3000/mentoria-config?lang={MENTORIA_LANG_ID}",
-            headers={"apikey": "SenhaMeetups2026"},
-            timeout=5
-        )
-        if resp.status_code == 200:
-            conf = resp.json()
-            jid = conf.get("groups", {}).get("our_classes", {}).get("jid")
-            if jid and jid.strip():
-                grupos_alvo = [jid]
-                logger.info(f"[WHATSAPP] Grupo alvo Our Classes: {jid}")
+    max_tentativas = 3
+    for tentativa in range(1, max_tentativas + 1):
+        try:
+            resp = requests.get(
+                f"http://host.docker.internal:3000/mentoria-config?lang={MENTORIA_LANG_ID}",
+                headers={"apikey": "SenhaMeetups2026"},
+                timeout=15
+            )
+            if resp.status_code == 200:
+                conf = resp.json()
+                jid = conf.get("groups", {}).get("our_classes", {}).get("jid")
+                if jid and jid.strip():
+                    grupos_alvo = [jid]
+                    logger.info(f"[WHATSAPP] Grupo alvo Our Classes: {jid} (obtido na tentativa {tentativa})")
+                    break
+                else:
+                    logger.error(
+                        "[WHATSAPP] FALHA: our_classes.jid está vazio ou ausente no mentoria-config. "
+                        "A mensagem NÃO será enviada. Verifique o painel Mentoria > Configurações."
+                    )
+                    break
             else:
-                # ERRO EXPLÍCITO: JID ausente é um problema de configuração, não um aviso
-                logger.error(
-                    "[WHATSAPP] FALHA: our_classes.jid está vazio ou ausente no mentoria-config. "
-                    "A mensagem NÃO será enviada. Verifique o painel Mentoria > Configurações."
-                )
-        else:
-            logger.error(f"[WHATSAPP] FALHA: Baileys retornou HTTP {resp.status_code} ao buscar mentoria-config. Mensagem NÃO enviada.")
-    except Exception as e:
-        logger.error(f"[WHATSAPP] FALHA CRÍTICA ao buscar mentoria-config do Baileys: {e}. Mensagem NÃO será enviada.")
+                logger.warning(f"[WHATSAPP] Tentativa {tentativa}/{max_tentativas}: Baileys retornou HTTP {resp.status_code}")
+        except Exception as e:
+            logger.warning(f"[WHATSAPP] Tentativa {tentativa}/{max_tentativas} falhou ao conectar no Baileys: {e}")
+        
+        if tentativa < max_tentativas:
+            time.sleep(3)
 
     if not grupos_alvo:
-        logger.error("[WHATSAPP] Nenhum grupo alvo encontrado. Abortando envio da notificação.")
+        logger.error("[WHATSAPP] Nenhum grupo alvo encontrado após tentativas. Abortando envio da notificação.")
         return mensagem, False
 
     link_preview_data = {
@@ -1148,17 +1154,25 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
 
     wpp_ok = False
     for grupo_id in grupos_alvo:
-        try:
-            requests.post("http://host.docker.internal:3000/send", json={
-                "to": grupo_id,
-                "message": mensagem,
-                "source": "mentoria_pipeline",
-                "linkPreview": link_preview_data
-            }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
-            logger.info(f"[WHATSAPP] Notificação enviada para {grupo_id}")
-            wpp_ok = True
-        except Exception as e:
-            logger.error(f"[WHATSAPP] Erro ao notificar {grupo_id}: {e}")
+        for tentativa_envio in range(1, max_tentativas + 1):
+            try:
+                r_send = requests.post("http://host.docker.internal:3000/send", json={
+                    "to": grupo_id,
+                    "message": mensagem,
+                    "source": "mentoria_pipeline",
+                    "linkPreview": link_preview_data
+                }, headers={"apikey": "SenhaMeetups2026"}, timeout=20)
+                if r_send.status_code == 200:
+                    logger.info(f"[WHATSAPP] Notificação enviada para {grupo_id} (tentativa {tentativa_envio})")
+                    wpp_ok = True
+                    break
+                else:
+                    logger.warning(f"[WHATSAPP] Envio para {grupo_id} retornou HTTP {r_send.status_code} na tentativa {tentativa_envio}")
+            except Exception as e:
+                logger.warning(f"[WHATSAPP] Erro ao notificar {grupo_id} na tentativa {tentativa_envio}: {e}")
+            
+            if tentativa_envio < max_tentativas:
+                time.sleep(3)
 
     return mensagem, wpp_ok
 
