@@ -468,12 +468,34 @@ foreach ($langs as $lang) {
         $tpl3
     );
 
-    // Verifica se há mensagens sociais reais para enviar (evita mandar mensagens vazias como "Sin mensajes ayer")
-    $hasMsgs   = !empty($top5Msgs);
-    $hasReacts = !empty($top5Reacts);
+    // -------------------------------------------------------
+    // DISPARO DAS MENSAGENS (COM SUPRESSÃO DE TUDO QUE ESTIVER VAZIO)
+    // -------------------------------------------------------
+    $hasStudents = !empty($memberStats);
+    $hasMsgs     = !empty($top5Msgs);
+    $hasReacts   = !empty($top5Reacts);
+
+    // Se NÃO houve NENHUMA atividade no idioma ontem (sem estudantes, sem mensagens e sem reações),
+    // NÃO ENVIA NADA para o grupo (evita poluir a comunidade com mensagens de "Sin participantes")
+    if (!$hasStudents && !$hasMsgs && !$hasReacts) {
+        echo "  ℹ️ Nenhuma atividade ontem para o idioma [{$lang}] (sem estudantes, mensagens ou reações). Disparo cancelado.\n";
+        // Registra log para não tentar novamente no mesmo dia
+        if (!$dry_run) {
+            registrarConclusaoDisparo($conn, $logType, $ontem, null, [
+                'status'        => 'skipped_empty',
+                'lang'          => $lang,
+                'messages_sent' => 0
+            ]);
+        }
+        continue;
+    }
 
     if ($dry_run) {
-        echo "  [DRY-RUN] Mensagem 1 (Estudante do Dia) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg1}\n" . str_repeat('-', 40) . "\n";
+        if ($hasStudents) {
+            echo "  [DRY-RUN] Mensagem 1 (Estudante do Dia) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg1}\n" . str_repeat('-', 40) . "\n";
+        } else {
+            echo "  ℹ️ [DRY-RUN] Mensagem 1 (Estudante do Dia) ignorada pois não houve participantes ontem.\n";
+        }
         if ($hasMsgs) {
             echo "  [DRY-RUN] Mensagem 2 (Top Mensagens) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg2}\n" . str_repeat('-', 40) . "\n";
         } else {
@@ -495,38 +517,53 @@ foreach ($langs as $lang) {
     }
 
     $sentCount = 0;
-    $result1 = enviarWhatsApp($targetGroup, $msg1, "mentoria_ranking_student_{$lang}");
-    $sentCount++;
+    $errors = [];
+
+    if ($hasStudents) {
+        $result1 = enviarWhatsApp($targetGroup, $msg1, "mentoria_ranking_student_{$lang}");
+        if ($result1['success'] || ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300)) {
+            $sentCount++;
+        } else {
+            $errors[] = "Estudante do Dia: HTTP " . $result1['httpCode'];
+        }
+    } else {
+        echo "  ℹ️ Mensagem 1 (Estudante do Dia) ignorada: sem participantes ontem no idioma [{$lang}].\n";
+    }
 
     if ($hasMsgs) {
-        sleep(1);
+        if ($sentCount > 0) sleep(1);
         $result2 = enviarWhatsApp($targetGroup, $msg2, "mentoria_ranking_messenger_{$lang}");
-        $sentCount++;
+        if ($result2['success'] || ($result2['httpCode'] >= 200 && $result2['httpCode'] < 300)) {
+            $sentCount++;
+        } else {
+            $errors[] = "Top Mensagens: HTTP " . $result2['httpCode'];
+        }
     } else {
         echo "  ℹ️ Mensagem 2 (Top Mensagens) ignorada: sem mensagens ontem no idioma [{$lang}].\n";
     }
 
     if ($hasReacts) {
-        sleep(1);
+        if ($sentCount > 0) sleep(1);
         $result3 = enviarWhatsApp($targetGroup, $msg3, "mentoria_ranking_reactor_{$lang}");
-        $sentCount++;
+        if ($result3['success'] || ($result3['httpCode'] >= 200 && $result3['httpCode'] < 300)) {
+            $sentCount++;
+        } else {
+            $errors[] = "Top Reações: HTTP " . $result3['httpCode'];
+        }
     } else {
         echo "  ℹ️ Mensagem 3 (Top Reações) ignorada: sem reações ontem no idioma [{$lang}].\n";
     }
 
-    $allSuccessful = ($result1['success'] || ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300));
-
-    if ($allSuccessful) {
+    if (empty($errors)) {
         registrarConclusaoDisparo($conn, $logType, $ontem, null, [
-            'stats'     => $memberStats,
-            'httpCode'  => $result1['httpCode'],
-            'lang'      => $lang,
+            'stats'         => $memberStats,
+            'lang'          => $lang,
             'messages_sent' => $sentCount
         ]);
         echo "  ✅ Rankings [{$lang}] enviados com sucesso ({$sentCount} mensagem(ns))!\n";
     } else {
-        registrarFalhaDisparo($conn, $logType, $ontem, null, $result1['error'] ?? 'HTTP ' . $result1['httpCode']);
-        echo "  ❌ Erro ao enviar ranking [{$lang}]: HTTP " . $result1['httpCode'] . " (" . ($result1['error'] ?? 'desconhecido') . ")\n";
+        registrarFalhaDisparo($conn, $logType, $ontem, null, implode('; ', $errors));
+        echo "  ❌ Erro ao enviar ranking [{$lang}]: " . implode('; ', $errors) . "\n";
     }
 }
 

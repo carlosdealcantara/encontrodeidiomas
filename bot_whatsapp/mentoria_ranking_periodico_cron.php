@@ -119,6 +119,16 @@ foreach ($langs as $lang) {
         if ($r['total_reacts'] > 0) $reacts[]     = $r;
     }
 
+    // Se NÃO houver NENHUM dado para este idioma no período, não envia nada
+    if (empty($dedication) && empty($msgs) && empty($reacts)) {
+        echo "  ℹ️ Nenhuma pontuação registrada para o idioma [{$lang}] no período ({$startDate} a {$endDate}). Disparo cancelado.\n";
+        if (!$dry_run) {
+            $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES (?, ?, ?)")
+                 ->execute([$logType, $endDate, json_encode(['period' => $period, 'lang' => $lang, 'status' => 'skipped_empty'])]);
+        }
+        continue;
+    }
+
     usort($dedication, fn($a, $b) => $b['total_ded']    <=> $a['total_ded']);
     usort($msgs,       fn($a, $b) => $b['total_msgs']   <=> $a['total_msgs']);
     usort($reacts,     fn($a, $b) => $b['total_reacts'] <=> $a['total_reacts']);
