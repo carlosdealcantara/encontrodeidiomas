@@ -201,24 +201,26 @@ foreach ($langs as $lang) {
             continue;
         }
 
-        // Verifica se a mensagem dias_antes=0 foi enviada hoje
+        // Verifica se a mensagem de aviso (dias_antes=0) já foi previamente enviada para este aluno
         $stmtCheck = $conn->prepare("
-            SELECT id FROM mentoria_logs
-            WHERE aluno_id = ? AND mensagem_id = ? AND data_disparo = ?
+            SELECT id, data_disparo FROM mentoria_logs
+            WHERE aluno_id = ? AND mensagem_id = ?
+            ORDER BY data_disparo DESC LIMIT 1
         ");
-        $stmtCheck->execute([$alunoId, $msgRow['id'], $hoje]);
-        $mensagemEnviadaHoje = ($stmtCheck->rowCount() > 0);
+        $stmtCheck->execute([$alunoId, $msgRow['id']]);
+        $logAviso = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+        $mensagemEnviada = !empty($logAviso);
 
-        if (!$mensagemEnviadaHoje && !$forcar) {
-            echo "      ⏳ Mensagem de suspensão (ID={$msgRow['id']}) ainda NÃO foi enviada hoje.\n";
-            echo "         O cron de cobrança precisa rodar antes. Pulando.\n\n";
+        if (!$mensagemEnviada && !$forcar) {
+            echo "      ⏳ Mensagem de suspensão/aviso (ID={$msgRow['id']}) ainda NÃO consta como enviada para este aluno.\n";
+            echo "         O kick requer que o aviso prévio tenha sido disparado. Pulando.\n\n";
             continue;
         }
 
-        if ($mensagemEnviadaHoje) {
-            echo "      ✅ Aviso de suspensão confirmado no log (enviado hoje).\n";
+        if ($mensagemEnviada) {
+            echo "      ✅ Aviso de suspensão confirmado no histórico (disparado em {$logAviso['data_disparo']}).\n";
         } else {
-            echo "      ⚡ Modo FORCE: pulando verificação de mensagem.\n";
+            echo "      ⚡ Modo FORCE: pulando exigência de histórico do aviso prévio.\n";
         }
 
         echo "      🚪 Chamando removerDoGrupo({$ourClassesJid}, [{$alunoJid}])...\n";
