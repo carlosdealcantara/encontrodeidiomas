@@ -86,6 +86,9 @@ if ($horaAtual === 0) {
     rodarSubCron('mentoria_desafio_kick_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_aniversario_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('community_ranking_cron.php', $baseUrl, $token_secreto);
+    rodarSubCron('mentoria_cobranca_cron.php', $baseUrl, $token_secreto);
+    rodarSubCron('mentoria_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
+    rodarSubCron('mentoria_kick_inadimplente_cron.php', $baseUrl, $token_secreto);
     echo "</ul>";
 }
 
