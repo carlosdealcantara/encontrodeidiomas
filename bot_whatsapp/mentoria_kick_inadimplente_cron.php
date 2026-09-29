@@ -70,15 +70,19 @@ echo "📅 Data de referência: {$hoje}\n";
 echo "⚙️  Modo: " . ($forcar ? "FORÇADO (ignora logs anteriores)" : "Normal") . "\n\n";
 
 // ----------------------------------------------------------------
-// Diagnóstico: mostra alunos que poderiam ser kickados (sem filtro de status)
+// Diagnóstico: mostra alunos candidatos (Ativos, não pagos)
+// Convenção do sistema: dias_faltando = DATEDIFF(vencimento, HOJE)
+// > 0: faltam dias para vencer
+// = 0: vence hoje
+// < 0: atrasado (ex: -1 = 1 dia vencido)
 // ----------------------------------------------------------------
 $stmtDiag = $conn->query("
     SELECT nome, status_aluno, status_pagamento, proximo_vencimento,
-           DATEDIFF(CURRENT_DATE, proximo_vencimento) AS dias_atrasados
+           DATEDIFF(proximo_vencimento, CURRENT_DATE) AS dias_faltando
     FROM mentoria_alunos
     WHERE status_aluno = 'Ativo'
       AND status_pagamento <> 'Pago'
-    ORDER BY dias_atrasados DESC
+    ORDER BY dias_faltando ASC
 ");
 $diagAlunos = $stmtDiag->fetchAll(PDO::FETCH_ASSOC);
 
@@ -87,9 +91,9 @@ if (empty($diagAlunos)) {
     echo "   — Nenhum aluno ativo inadimplente no momento.\n";
 } else {
     foreach ($diagAlunos as $d) {
-        $atraso = (int)$d['dias_atrasados'];
-        $icone  = $atraso >= 0 ? "⏰" : "🔜";
-        echo "   {$icone} {$d['nome']} | status_pag={$d['status_pagamento']} | vence={$d['proximo_vencimento']} | atraso={$atraso}d\n";
+        $df = (int)$d['dias_faltando'];
+        $icone = ($df <= -1) ? "⏰" : (($df === 0) ? "⚠️" : "🔜");
+        echo "   {$icone} {$d['nome']} | status_pag={$d['status_pagamento']} | vence={$d['proximo_vencimento']} | dias_faltando={$df}\n";
     }
 }
 echo "\n";
@@ -111,19 +115,19 @@ foreach ($langs as $lang) {
     // ----------------------------------------------------------------
     // Busca alunos elegíveis para kick neste idioma:
     // - Ativos, não pagos
-    // - Vencimento JÁ PASSOU (>= 1 dia de atraso)
-    //   NOTA: no dia do vencimento (dias_atrasados = 0) apenas o aviso é enviado.
-    //   O kick só ocorre na virada de meia-noite do dia seguinte (dias_atrasados >= 1).
+    // - Vencimento JÁ PASSOU (dias_faltando <= -1 ou DATEDIFF(vencimento, HOJE) <= -1)
+    //   NOTA: no dia do vencimento (dias_faltando = 0) apenas o aviso de suspensão é enviado.
+    //   O kick só ocorre na virada de meia-noite seguinte (dias_faltando <= -1).
     // ----------------------------------------------------------------
-    // Busca alunos com atraso >= 1 e filtra idioma no PHP
+    // Busca alunos vencidos e filtra idioma no PHP
     // ----------------------------------------------------------------
     $stmtTodos = $conn->query("
         SELECT ma.*,
-               DATEDIFF(CURRENT_DATE, ma.proximo_vencimento) AS dias_em_atraso
+               DATEDIFF(ma.proximo_vencimento, CURRENT_DATE) AS dias_faltando
         FROM mentoria_alunos ma
         WHERE ma.status_aluno = 'Ativo'
           AND ma.status_pagamento <> 'Pago'
-          AND DATEDIFF(CURRENT_DATE, ma.proximo_vencimento) >= 1
+          AND DATEDIFF(ma.proximo_vencimento, CURRENT_DATE) <= -1
     ");
     $todosAtrasados = $stmtTodos->fetchAll(PDO::FETCH_ASSOC);
 
@@ -139,7 +143,8 @@ foreach ($langs as $lang) {
 
     echo "   👥 " . count($alunos) . " aluno(s) elegível(is):\n";
     foreach ($alunos as $a) {
-        echo "      → {$a['nome']} (pag={$a['status_pagamento']}, atraso={$a['dias_em_atraso']}d)\n";
+        $df = (int)$a['dias_faltando'];
+        echo "      → {$a['nome']} (pag={$a['status_pagamento']}, dias_faltando={$df})\n";
     }
 
     // ----------------------------------------------------------------
@@ -194,17 +199,17 @@ foreach ($langs as $lang) {
     // Processa cada aluno
     // ----------------------------------------------------------------
     foreach ($alunos as $aluno) {
-        $alunoId   = $aluno['id'];
-        $alunoNome = $aluno['nome'];
-        $atraso    = (int)$aluno['dias_em_atraso'];
-        $telefone  = preg_replace('/\D/', '', $aluno['telefone'] ?? '');
+        $alunoId       = $aluno['id'];
+        $alunoNome     = $aluno['nome'];
+        $diasFaltando  = (int)$aluno['dias_faltando'];
+        $telefone      = preg_replace('/\D/', '', $aluno['telefone'] ?? '');
         if (strlen($telefone) <= 11) {
             $telefone = "55" . $telefone;
         }
         $alunoJid = $telefone . '@s.whatsapp.net';
         $logTipo  = 'kick_inadimplente_' . $lang;
 
-        echo "   👤 Avaliando: {$alunoNome} | JID: {$alunoJid}\n";
+        echo "   👤 Avaliando: {$alunoNome} | JID: {$alunoJid} | dias_faltando={$diasFaltando}\n";
 
         // Anti-duplicidade por aluno
         $checkAluno = $conn->prepare("
@@ -269,7 +274,7 @@ foreach ($langs as $lang) {
                         'lang'           => $lang,
                         'grupo'          => 'our_classes',
                         'grupo_jid'      => $ourClassesJid,
-                        'dias_em_atraso' => $atraso,
+                        'dias_faltando'  => $diasFaltando,
                         'http_code'      => $httpCode,
                         'finished_at'    => date('Y-m-d H:i:s'),
                     ])
