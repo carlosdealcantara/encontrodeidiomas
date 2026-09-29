@@ -115,20 +115,22 @@ foreach ($langs as $lang) {
     //   NOTA: no dia do vencimento (dias_atrasados = 0) apenas o aviso é enviado.
     //   O kick só ocorre na virada de meia-noite do dia seguinte (dias_atrasados >= 1).
     // ----------------------------------------------------------------
-    $stmtAlunos = $conn->prepare("
+    // Busca alunos com atraso >= 1 e filtra idioma no PHP
+    // ----------------------------------------------------------------
+    $stmtTodos = $conn->query("
         SELECT ma.*,
                DATEDIFF(CURRENT_DATE, ma.proximo_vencimento) AS dias_em_atraso
         FROM mentoria_alunos ma
         WHERE ma.status_aluno = 'Ativo'
           AND ma.status_pagamento <> 'Pago'
           AND DATEDIFF(CURRENT_DATE, ma.proximo_vencimento) >= 1
-          AND (
-              ma.lang_id = ? COLLATE utf8mb4_unicode_ci
-              OR (? = 'en' AND (ma.lang_id IS NULL OR ma.lang_id = ''))
-          )
     ");
-    $stmtAlunos->execute([$lang, $lang]);
-    $alunos = $stmtAlunos->fetchAll(PDO::FETCH_ASSOC);
+    $todosAtrasados = $stmtTodos->fetchAll(PDO::FETCH_ASSOC);
+
+    $alunos = array_values(array_filter($todosAtrasados, function($a) use ($lang) {
+        $aLang = !empty($a['lang_id']) ? $a['lang_id'] : 'en';
+        return ($aLang === $lang);
+    }));
 
     if (empty($alunos)) {
         echo "   ✅ Nenhum aluno elegível para kick em [{$lang}].\n\n";
@@ -143,15 +145,27 @@ foreach ($langs as $lang) {
     // ----------------------------------------------------------------
     // Busca a mensagem dias_antes=0 para confirmar que o aviso foi enviado
     // ----------------------------------------------------------------
-    $stmtMsg = $conn->prepare("
-        SELECT id, cenario FROM mentoria_mensagens
+    $stmtMsgsAll = $conn->query("
+        SELECT id, cenario, lang_id FROM mentoria_mensagens
         WHERE dias_antes = 0 AND ativo = 1
-          AND (lang_id = ? COLLATE utf8mb4_unicode_ci OR lang_id = 'en')
-        ORDER BY CASE WHEN lang_id = ? COLLATE utf8mb4_unicode_ci THEN 0 ELSE 1 END ASC
-        LIMIT 1
     ");
-    $stmtMsg->execute([$lang, $lang]);
-    $msgRow = $stmtMsg->fetch(PDO::FETCH_ASSOC);
+    $allMsgs0 = $stmtMsgsAll->fetchAll(PDO::FETCH_ASSOC);
+
+    $msgRow = null;
+    foreach ($allMsgs0 as $m) {
+        if (!empty($m['lang_id']) && $m['lang_id'] === $lang) {
+            $msgRow = $m;
+            break;
+        }
+    }
+    if (!$msgRow) {
+        foreach ($allMsgs0 as $m) {
+            if (empty($m['lang_id']) || $m['lang_id'] === 'en') {
+                $msgRow = $m;
+                break;
+            }
+        }
+    }
 
     if (!$msgRow) {
         echo "   ⚠️  Nenhuma mensagem com dias_antes=0 ativa encontrada para [{$lang}].\n";
