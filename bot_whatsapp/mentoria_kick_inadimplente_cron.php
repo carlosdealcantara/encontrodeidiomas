@@ -123,7 +123,7 @@ foreach ($langs as $lang) {
           AND ma.status_pagamento <> 'Pago'
           AND DATEDIFF(CURRENT_DATE, ma.proximo_vencimento) >= 1
           AND (
-              ma.lang_id = ?
+              ma.lang_id = ? COLLATE utf8mb4_unicode_ci
               OR (? = 'en' AND (ma.lang_id IS NULL OR ma.lang_id = ''))
           )
     ");
@@ -146,8 +146,8 @@ foreach ($langs as $lang) {
     $stmtMsg = $conn->prepare("
         SELECT id, cenario FROM mentoria_mensagens
         WHERE dias_antes = 0 AND ativo = 1
-          AND (lang_id = ? OR lang_id = 'en')
-        ORDER BY CASE WHEN lang_id = ? THEN 0 ELSE 1 END ASC
+          AND (lang_id = ? COLLATE utf8mb4_unicode_ci OR lang_id = 'en')
+        ORDER BY CASE WHEN lang_id = ? COLLATE utf8mb4_unicode_ci THEN 0 ELSE 1 END ASC
         LIMIT 1
     ");
     $stmtMsg->execute([$lang, $lang]);
