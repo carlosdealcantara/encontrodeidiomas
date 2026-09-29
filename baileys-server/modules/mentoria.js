@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Módulo da Mentoria (exclusivo para alunos pagantes).
  * Chamado por bot.js somente quando isMentoriaGroup === true.
  *
@@ -68,10 +68,10 @@ const STRINGS_I18N = {
         multipleSessions:  '❓ ¡Tenemos *varias sesiones hoy!*\n\nEspecifica a cuál deseas ir:\n\n{options}\n¿A cuál {verb}?',
         verbJoining:       'te unes',
         verbLeaving:       'te retiras',
-        labelPractice:     '🗣️ *!attend {N}* / *!confirmar {N}* — Práctica de Estudiantes',
-        labelTeacher:      '👨‍🏫 *!attend {N}* / *!confirmar {N}* — Clase con Profesor',
-        labelPracticeUn:   '🗣️ *!unattend {N}* / *!cancelar {N}* — Práctica de Estudiantes',
-        labelTeacherUn:    '👨‍🏫 *!unattend {N}* / *!cancelar {N}* — Clase con Profesor',
+        labelPractice:     '🗣️ *!confirmar {N}* — Práctica de Estudiantes',
+        labelTeacher:      '👨‍🏫 *!confirmar {N}* — Clase con Profesor',
+        labelPracticeUn:   '🗣️ *!cancelar {N}* — Práctica de Estudiantes',
+        labelTeacherUn:    '👨‍🏫 *!cancelar {N}* — Clase con Profesor',
         attendOk:          '✅ ¡Asistencia confirmada para @{name}!\n\n📅 *Agenda de Hoy — {date}*\n{sessionsBlock}',
         attendLateGood:    '⏰ El plazo ha finalizado, @{name}.\n\n✅ *Buenas noticias:* ¡La clase está confirmada y se realizará de todas formas!\n{sessionsBlock}',
         attendLateBad:     '⏰ El plazo ha finalizado, @{name}.\n\n❌ *Aviso:* La sesión fue cancelada por falta de quórum.',

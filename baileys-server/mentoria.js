@@ -820,15 +820,23 @@ async function handleMessages({ messages, type }) {
                         let optionsTxt = '';
                         if (data.schedules && data.schedules.length > 0) {
                             data.schedules.forEach((s, idx) => {
-                                let label = s.session_type === 'student_practice' ? '🗣️ *!attend ' + (idx + 1) + '* — Students Practice' : '👨‍🏫 *!attend ' + (idx + 1) + '* — Teacher Class';
+                                let label = (activeLang === 'es')
+                                    ? (s.session_type === 'student_practice' ? '🗣️ *!confirmar ' + (idx + 1) + '* — Práctica de Estudiantes' : '👨‍🏫 *!confirmar ' + (idx + 1) + '* — Clase con Profesor')
+                                    : (s.session_type === 'student_practice' ? '🗣️ *!attend ' + (idx + 1) + '* — Students Practice' : '👨‍🏫 *!attend ' + (idx + 1) + '* — Teacher Class');
                                 optionsTxt += label + '\n';
                             });
                         } else {
-                            optionsTxt = "👨‍🏫 *!attend 1* — Teacher Class\n🗣️ *!attend 2* — Students Practice\n";
+                            optionsTxt = (activeLang === 'es')
+                                ? "👨‍🏫 *!confirmar 1* — Clase con Profesor\n🗣️ *!confirmar 2* — Práctica de Estudiantes\n"
+                                : "👨‍🏫 *!attend 1* — Teacher Class\n🗣️ *!attend 2* — Students Practice\n";
                         }
 
+                        let promptTxt = (activeLang === 'es')
+                            ? `❓ ¡Tenemos *varias sesiones hoy!*\n\nEspecifica a cuál deseas ir:\n\n${optionsTxt}¿A cuál te unes?`
+                            : `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n${optionsTxt}Which one are you joining?`;
+
                         await sock.sendMessage(groupJid, { 
-                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n${optionsTxt}\nWhich one are you joining?`,
+                            text: promptTxt,
                             mentions: [senderJid]
                         });
                         return;
@@ -897,15 +905,23 @@ async function handleMessages({ messages, type }) {
                         let optionsTxt = '';
                         if (data.schedules && data.schedules.length > 0) {
                             data.schedules.forEach((s, idx) => {
-                                let label = s.session_type === 'student_practice' ? '🗣️ *!unattend ' + (idx + 1) + '* — Students Practice' : '👨‍🏫 *!unattend ' + (idx + 1) + '* — Teacher Class';
+                                let label = (activeLang === 'es')
+                                    ? (s.session_type === 'student_practice' ? '🗣️ *!cancelar ' + (idx + 1) + '* — Práctica de Estudiantes' : '👨‍🏫 *!cancelar ' + (idx + 1) + '* — Clase con Profesor')
+                                    : (s.session_type === 'student_practice' ? '🗣️ *!unattend ' + (idx + 1) + '* — Students Practice' : '👨‍🏫 *!unattend ' + (idx + 1) + '* — Teacher Class');
                                 optionsTxt += label + '\n';
                             });
                         } else {
-                            optionsTxt = "👨‍🏫 *!unattend 1* — Teacher Class\n🗣️ *!unattend 2* — Students Practice\n";
+                            optionsTxt = (activeLang === 'es')
+                                ? "👨‍🏫 *!cancelar 1* — Clase con Profesor\n🗣️ *!cancelar 2* — Práctica de Estudiantes\n"
+                                : "👨‍🏫 *!unattend 1* — Teacher Class\n🗣️ *!unattend 2* — Students Practice\n";
                         }
 
+                        let promptTxt = (activeLang === 'es')
+                            ? `❓ ¡Tenemos *varias sesiones hoy!*\n\nEspecifica de cuál deseas salir:\n\n${optionsTxt}¿De cuál te retiras?`
+                            : `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n${optionsTxt}Which one are you leaving?`;
+
                         await sock.sendMessage(groupJid, { 
-                            text: `❓ We have *multiple sessions today!*\n\nPlease specify which one:\n\n${optionsTxt}\nWhich one are you leaving?`,
+                            text: promptTxt,
                             mentions: [senderJid]
                         });
                         return;
