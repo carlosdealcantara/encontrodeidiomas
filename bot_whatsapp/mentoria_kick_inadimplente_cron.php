@@ -17,6 +17,10 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
+// Garante output imediato para debugging
+@ob_end_clean();
+@ini_set('display_errors', 0);
+
 $token_secreto = '83x9aZ2pLQw1';
 $is_cli = (php_sapi_name() === 'cli');
 
@@ -87,11 +91,12 @@ foreach ($langs as $lang) {
     }
 
     // Busca a mensagem de "Suspensão" (dias_antes = 0) para verificar se foi enviada
+    // Prioriza o idioma do aluno, fallback para 'en'
     $stmtMsg = $conn->prepare("
         SELECT id FROM mentoria_mensagens
         WHERE dias_antes = 0 AND ativo = 1
           AND (lang_id = ? OR lang_id = 'en')
-        ORDER BY lang_id = ? DESC
+        ORDER BY CASE WHEN lang_id = ? THEN 0 ELSE 1 END ASC
         LIMIT 1
     ");
     $stmtMsg->execute([$lang, $lang]);
@@ -201,7 +206,9 @@ try {
         $hoje,
         json_encode(['total_kickados' => $totalKicked, 'finished_at' => date('Y-m-d H:i:s')])
     ]);
-} catch (Exception $e) {}
+} catch (Exception $e) {
+    echo "⚠️ Erro ao registrar log global: " . $e->getMessage() . "\n";
+}
 
 echo "\n🏁 Auto-kick de Inadimplentes concluído! Total removidos do Our Classes: {$totalKicked}.\n";
 ?>
