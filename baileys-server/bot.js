@@ -95,6 +95,24 @@ function loadConfig(langId = 'en') {
     return { admin_jid: '556192666148@s.whatsapp.net', groups: {}, templates: {} };
 }
 
+/**
+ * Auto-descobre todos os langs registrados escaneando mentoria_config_*.json no dataDir.
+ * Retorna um mapa { langId: configObject } para todos os idiomas encontrados.
+ * Adicionar um novo idioma = criar mentoria_config_{lang}.json. Zero mudança de código.
+ */
+function loadAllMentoriaConfigs() {
+    const configs = { en: loadConfig('en') };
+    try {
+        if (dataDir && fs.existsSync(dataDir)) {
+            fs.readdirSync(dataDir).forEach(f => {
+                const m = f.match(/^mentoria_config_(\w+)\.json$/);
+                if (m && m[1] !== 'en') configs[m[1]] = loadConfig(m[1]);
+            });
+        }
+    } catch (e) { console.error('[LANG-DISCOVERY] Erro ao escanear configs de idioma:', e); }
+    return configs;
+}
+
 function saveConfig(config, langId = 'en') {
     // SAFETY: nunca deixa grupos da comunidade entrarem no config da mentoria
     const cleanGroups = {};
@@ -281,16 +299,22 @@ async function handleMessages({ messages, type }) {
         await adminCmds.handle({ sock, msg, groupJid, globalText, globalRealMsg, isMasterAdmin, msgId, processedMessageIds, dataDir });
 
         // ─── ROTEAMENTO ───────────────────────────────────────────────────────
-        // Suporte multi-idioma: verifica grupos de todos os langs registrados
-        const mentoriaGroupsEN = Object.values(config.groups || {}).map(g => g.jid);
-        const configES         = loadConfig('es');
-        const mentoriaGroupsES = Object.values(configES.groups || {}).map(g => g.jid);
-        const communityConfig  = loadCommunityConfig();
-        const communityGroups  = Object.values(communityConfig.groups || {}).map(g => g.jid);
-        const isMentoriaGroup  = mentoriaGroupsEN.includes(groupJid) || mentoriaGroupsES.includes(groupJid);
-        const isCommunityGroup = communityGroups.includes(groupJid);
-        // Determina qual config usar para o módulo da mentoria
-        const activeMentoriaConfig = mentoriaGroupsES.includes(groupJid) ? configES : config;
+        // Suporte multi-idioma dinâmico: descobre todos os langs via filesystem.
+        // Para adicionar um novo idioma (ex: fr), basta criar mentoria_config_fr.json.
+        const allMentoriaConfigs = loadAllMentoriaConfigs();
+        const communityConfig    = loadCommunityConfig();
+        const communityGroups    = Object.values(communityConfig.groups || {}).map(g => g.jid);
+
+        // Constrói mapa reverso groupJid → langId a partir de todos os configs
+        const groupToLang = {};
+        for (const [langId, cfg] of Object.entries(allMentoriaConfigs)) {
+            Object.values(cfg.groups || {}).forEach(g => { if (g.jid) groupToLang[g.jid] = langId; });
+        }
+
+        const activeLang           = groupToLang[groupJid] || null;
+        const isMentoriaGroup      = activeLang !== null;
+        const isCommunityGroup     = communityGroups.includes(groupJid);
+        const activeMentoriaConfig = isMentoriaGroup ? allMentoriaConfigs[activeLang] : config;
 
         // Ignora grupos não reconhecidos por nenhum módulo
         if (!isMentoriaGroup && !isCommunityGroup) continue;
@@ -371,7 +395,10 @@ async function handleMessages({ messages, type }) {
             sock: safeSock, msg, groupJid, senderJid, senderName,
             text, realMsg, isVisual,
             isAdmin, isGroupAdmin, isGlobalAdmin,
-            msgId, config: activeMentoriaConfig, communityConfig
+            msgId,
+            config: activeMentoriaConfig,
+            lang: activeLang || 'en',   // ← idioma resolvido para o grupo atual
+            communityConfig
         };
 
         if (isMentoriaGroup)  await mentoriaMod.handleMessage(moduleCtx);

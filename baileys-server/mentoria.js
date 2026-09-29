@@ -707,8 +707,9 @@ async function handleMessages({ messages, type }) {
                         
                         // Se atingiu milestone, envia o relatório
                         if (data.is_milestone) {
-                            // Ignoramos o template antigo da config para forçar o novo design detalhado
-                            let msTemplate = `🎉 *MILESTONE REACHED!* 🏆\nCongratulations {name}! You just hit a *{streak}-day streak*! 🔥\n\n📊 *Your Challenge Stats:*\n• Current Streak: {streak} days\n• Personal Record: {longest_streak} days\n• Total Days Completed: {total_completions} days\n\nKeep building the habit! 🚀`;
+                            let msTemplate = (activeLang === 'es')
+                                ? `🎉 *¡META ALCANZADA!* 🏆\n¡Felicidades {name}! ¡Alcanzaste una racha de *{streak} días*! 🔥\n\n📊 *Tus Estadísticas del Desafío:*\n• Racha actual: {streak} días\n• Récord personal: {longest_streak} días\n• Total de días completados: {total_completions} días\n\n¡Sigue construyendo el hábito! 🚀`
+                                : `🎉 *MILESTONE REACHED!* 🏆\nCongratulations {name}! You just hit a *{streak}-day streak*! 🔥\n\n📊 *Your Challenge Stats:*\n• Current Streak: {streak} days\n• Personal Record: {longest_streak} days\n• Total Days Completed: {total_completions} days\n\nKeep building the habit! 🚀`;
                             
                             let milestoneMsg = msTemplate
                                 .replace('{name}', nameToUse)
@@ -740,39 +741,49 @@ async function handleMessages({ messages, type }) {
 
         function buildSessionsBlock(dailySummary) {
             if (!dailySummary || dailySummary.length === 0) return '';
+            const i18n = {
+                en: {
+                    practice: 'Students Practice', practiceSubtitle: 'Students only \u2014 no teacher',
+                    teacherClass: 'Teacher Class', noOne: 'No one yet.',
+                    quorumNeed2: '\u26a0\ufe0f 2 students needed \u2014 be the first!',
+                    quorumNeed1: '\u26a0\ufe0f 1 more student needed to confirm this session.',
+                    quorumOk: '\u2705 Quorum reached! Session is confirmed.',
+                },
+                es: {
+                    practice: 'Pr\u00e1ctica de Estudiantes', practiceSubtitle: 'Solo estudiantes \u2014 sin profesor',
+                    teacherClass: 'Clase con Profesor', noOne: 'Nadie todav\u00eda.',
+                    quorumNeed2: '\u26a0\ufe0f Se necesitan 2 estudiantes \u2014 \u00a1s\u00e9 el primero!',
+                    quorumNeed1: '\u26a0\ufe0f Se necesita 1 estudiante m\u00e1s para confirmar la sesi\u00f3n.',
+                    quorumOk: '\u2705 \u00a1Qu\u00f3rum alcanzado! La sesi\u00f3n est\u00e1 confirmada.',
+                },
+            };
+            const s = i18n[activeLang] || i18n['en'];
             let block = '';
             dailySummary.forEach(summary => {
                 let isPractice = summary.session_type === 'student_practice';
                 let tStr = formatSessionTime(summary.start_time);
-                
                 if (isPractice) {
-                    block += `\n━━━━━━━━━━━━━━━━━━`;
-                    block += `\n🗣️ *Students Practice — ${tStr}*`;
-                    block += `\n_Students only — no teacher_`;
+                    block += `\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`;
+                    block += `\n\ud83d\udde3\ufe0f *${s.practice} \u2014 ${tStr}*`;
+                    block += `\n_${s.practiceSubtitle}_`;
                 } else {
-                    block += `\n━━━━━━━━━━━━━━━━━━`;
-                    block += `\n👨‍🏫 *Teacher Class — ${tStr}*`;
+                    block += `\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`;
+                    block += `\n\ud83d\udc68\u200d\ud83c\udfeb *${s.teacherClass} \u2014 ${tStr}*`;
                 }
                 block += `\n`;
-
                 let count = summary.attendees ? summary.attendees.length : 0;
                 if (count > 0) {
                     summary.attendees.forEach((name, i) => block += `  ${i+1}. ${name}\n`);
                 } else {
-                    block += `  _No one yet._\n`;
+                    block += `  _${s.noOne}_\n`;
                 }
-
                 if (isPractice) {
-                    if (count === 0) {
-                        block += `  _⚠️ 2 students needed — be the first!_\n`;
-                    } else if (count === 1) {
-                        block += `  _⚠️ 1 more student needed to confirm this session._\n`;
-                    } else {
-                        block += `  _✅ Quorum reached! Session is confirmed._\n`;
-                    }
+                    if (count === 0)      block += `  _${s.quorumNeed2}_\n`;
+                    else if (count === 1) block += `  _${s.quorumNeed1}_\n`;
+                    else                  block += `  _${s.quorumOk}_\n`;
                 }
             });
-            block += `\n━━━━━━━━━━━━━━━━━━`;
+            block += `\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`;
             return block;
         }
 
@@ -944,15 +955,16 @@ async function handleMessages({ messages, type }) {
                     if (data.success) {
                         let dStr = data.class_date_en || data.class_date;
                         let sessionsBlock = buildSessionsBlock(data.daily_summary);
-                        
-                        let msg = config.templates?.class_status || `📋 *Today's Schedule — {date}*\n{attendees}`;
+                        let listFallback = (activeLang === 'es')
+                            ? `📋 *Agenda de Hoy — {date}*\n{attendees}`
+                            : `📋 *Today's Schedule — {date}*\n{attendees}`;
+                        let msg = groupConfig.templates?.class_status || listFallback;
                         msg = msg
                             .replace('{class_info}', dStr)
                             .replace('{class_date}', dStr)
                             .replace('{date}', dStr)
                             .replace('{attendees}', sessionsBlock.trim())
                             .replace('{deadline_info}', '');
-
                         await sock.sendMessage(groupJid, { text: msg });
                     } else {
                         await sock.sendMessage(groupJid, { text: `❌ ${data.message || 'Error fetching status.'}` });
@@ -971,33 +983,38 @@ async function handleMessages({ messages, type }) {
                         let allTimeList = '';
                         let activeList = '';
                         const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                        const days = (activeLang === 'es') ? 'días' : 'days';
+                        const noRecords = (activeLang === 'es') ? 'Aún no hay registros.\n' : 'No records yet.\n';
+                        const noActive  = (activeLang === 'es') ? 'Sin rachas activas ahora.\n' : 'No active streaks right now.\n';
 
                         if (data.allTime && data.allTime.length > 0) {
                             data.allTime.forEach((item, i) => {
                                 const name = item.member_name || item.member_jid.split('@')[0];
-                                allTimeList += `${medals[i] || '🏅'} @${name} — ${item.longest_streak} days\n`;
+                                allTimeList += `${medals[i] || '🏅'} @${name} — ${item.longest_streak} ${days}\n`;
                             });
                         } else {
-                            allTimeList = 'No records yet.\n';
+                            allTimeList = noRecords;
                         }
 
                         if (data.active && data.active.length > 0) {
                             data.active.forEach((item, i) => {
                                 const name = item.member_name || item.member_jid.split('@')[0];
-                                activeList += `${i+1}. @${name} — ${item.current_streak} days\n`;
+                                activeList += `${i+1}. @${name} — ${item.current_streak} ${days}\n`;
                             });
                         } else {
-                            activeList = 'No active streaks right now.\n';
+                            activeList = noActive;
                         }
 
-                        let msgTemplate = config.templates?.streak_leaderboard || `🏆 *All-Time Streak Records*\n\n{allTimeList}\n🔥 *Active Streaks Today*\n\n{activeList}`;
+                        const leaderboardFallback = (activeLang === 'es')
+                            ? `🏆 *Récords de Racha Histórica*\n\n{allTimeList}\n🔥 *Rachas Activas Hoy*\n\n{activeList}`
+                            : `🏆 *All-Time Streak Records*\n\n{allTimeList}\n🔥 *Active Streaks Today*\n\n{activeList}`;
+                        let msgTemplate = config.templates?.streak_leaderboard || leaderboardFallback;
                         let replyMsg = msgTemplate.replace('{allTimeList}', allTimeList).replace('{activeList}', activeList);
 
-                        // Coletar as menções necessárias
                         let mentions = [];
                         if (data.allTime) data.allTime.forEach(m => mentions.push(m.member_jid));
                         if (data.active) data.active.forEach(m => mentions.push(m.member_jid));
-                        mentions = [...new Set(mentions)]; // Remover duplicatas
+                        mentions = [...new Set(mentions)];
 
                         await sock.sendMessage(groupJid, { 
                             text: replyMsg,
