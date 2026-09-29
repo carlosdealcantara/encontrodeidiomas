@@ -108,7 +108,10 @@ foreach ($langs as $lang) {
 
     // ----------------------------------------------------------------
     // Busca alunos elegíveis para kick neste idioma:
-    // - Ativos, não pagos, com vencimento <= hoje
+    // - Ativos, não pagos
+    // - Vencimento JÁ PASSOU (>= 1 dia de atraso)
+    //   NOTA: no dia do vencimento (dias_atrasados = 0) apenas o aviso é enviado.
+    //   O kick só ocorre na virada de meia-noite do dia seguinte (dias_atrasados >= 1).
     // ----------------------------------------------------------------
     $stmtAlunos = $conn->prepare("
         SELECT ma.*,
@@ -116,7 +119,7 @@ foreach ($langs as $lang) {
         FROM mentoria_alunos ma
         WHERE ma.status_aluno = 'Ativo'
           AND ma.status_pagamento <> 'Pago'
-          AND DATEDIFF(CURRENT_DATE, ma.proximo_vencimento) >= 0
+          AND DATEDIFF(CURRENT_DATE, ma.proximo_vencimento) >= 1
           AND (
               ma.lang_id = ?
               OR (? = 'en' AND (ma.lang_id IS NULL OR ma.lang_id = ''))
