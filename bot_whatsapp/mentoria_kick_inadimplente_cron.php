@@ -317,9 +317,8 @@ try {
         $logTipoGlobal, $hoje,
         json_encode(['total_kickados' => $totalKicked, 'finished_at' => date('Y-m-d H:i:s')])
     ]);
-} catch (Exception $e) {
-    echo "⚠️ Erro ao registrar log global: " . $e->getMessage() . "\n";
-}
+    echo "═══════════════════════════════════════\n";
+    echo "🏁 Concluído! Total removidos do Our Classes hoje: {$totalKicked}.\n";
 
 } catch (Throwable $e) {
     http_response_code(200);
