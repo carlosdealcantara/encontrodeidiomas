@@ -263,7 +263,64 @@ async function handleMessages({ messages, type }) {
     }
 
     for (const msg of messages) {
-        const groupJid = msg.key.remoteJid;
+        const remoteJid = msg.key.remoteJid;
+
+        // ─── TRATAMENTO DE DM (PRIVADO): RECEPÇÃO DE COMPROVANTES ───
+        if (!remoteJid?.endsWith('@g.us') && !msg.key.fromMe) {
+            const senderJid = remoteJid.replace(/:\d+@/, '@');
+            const msgId = msg.key.id;
+
+            if (processedMessageIds.has(msgId)) continue;
+
+            const dmMsg = msg.message?.ephemeralMessage?.message ||
+                          msg.message?.viewOnceMessageV2?.message ||
+                          msg.message?.viewOnceMessage?.message ||
+                          msg.message;
+            const dmDoc = dmMsg?.documentWithCaptionMessage?.message?.documentMessage || dmMsg?.documentMessage;
+            const isImage = !!(dmMsg?.imageMessage || (dmDoc && (dmDoc.mimetype || '').startsWith('image/')));
+
+            if (isImage) {
+                processedMessageIds.add(msgId);
+                console.log(`[DM-COMPROVANTE] Imagem recebida no privado de ${senderJid}. Consultando API...`);
+
+                try {
+                    const resp = await fetch('https://dev.viaEi.com/bot_whatsapp/mentoria_comprovante_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sender_jid: senderJid,
+                            sender_name: msg.pushName || 'Aluno'
+                        })
+                    });
+                    const data = await resp.json();
+
+                    if (data.success && data.reply_text) {
+                        console.log(`[DM-COMPROVANTE] Aluno identificado: ${data.aluno_nome}. Reagindo e respondendo...`);
+                        
+                        // Reage à mensagem da imagem com emoji 📄
+                        try {
+                            await sock.sendMessage(remoteJid, {
+                                react: { text: '📄', key: msg.key }
+                            });
+                        } catch (reactErr) {
+                            console.error('[DM-COMPROVANTE] Erro ao reagir:', reactErr.message);
+                        }
+
+                        // Envia mensagem de confirmação
+                        await sock.sendMessage(remoteJid, {
+                            text: data.reply_text
+                        });
+                    } else {
+                        console.log(`[DM-COMPROVANTE] Não elegível para comprovante (${data.reason || 'ignorado'}).`);
+                    }
+                } catch (apiErr) {
+                    console.error('[DM-COMPROVANTE] Erro ao chamar mentoria_comprovante_api:', apiErr.message);
+                }
+            }
+            continue; // Finaliza processamento de mensagens no privado
+        }
+
+        const groupJid = remoteJid;
         if (!groupJid?.endsWith('@g.us')) continue; // Só grupos
 
         // === DEBUG LOG (temporário) ===

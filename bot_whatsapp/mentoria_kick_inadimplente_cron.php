@@ -114,19 +114,17 @@ foreach ($langs as $lang) {
 
     // ----------------------------------------------------------------
     // Busca alunos elegíveis para kick neste idioma:
-    // - Ativos, não pagos
+    // - Ativos, não pagos e que NÃO enviaram comprovante recentemente
     // - Vencimento JÁ PASSOU (dias_faltando <= -1 ou DATEDIFF(vencimento, HOJE) <= -1)
-    //   NOTA: no dia do vencimento (dias_faltando = 0) apenas o aviso de suspensão é enviado.
+    //   NOTA: no dia do vencimento (dias_faltando = 0) apenas o aviso de vencimento é enviado.
     //   O kick só ocorre na virada de meia-noite seguinte (dias_faltando <= -1).
-    // ----------------------------------------------------------------
-    // Busca alunos vencidos e filtra idioma no PHP
     // ----------------------------------------------------------------
     $stmtTodos = $conn->query("
         SELECT ma.*,
                DATEDIFF(ma.proximo_vencimento, CURRENT_DATE) AS dias_faltando
         FROM mentoria_alunos ma
         WHERE ma.status_aluno = 'Ativo'
-          AND ma.status_pagamento <> 'Pago'
+          AND ma.status_pagamento NOT IN ('Pago', 'Comprovante Enviado')
           AND DATEDIFF(ma.proximo_vencimento, CURRENT_DATE) <= -1
     ");
     $todosAtrasados = $stmtTodos->fetchAll(PDO::FETCH_ASSOC);
@@ -178,7 +176,29 @@ foreach ($langs as $lang) {
         continue;
     }
 
-    echo "   📨 Mensagem de referência: ID={$msgRow['id']} cenário=\"{$msgRow['cenario']}\"\n";
+    echo "   📨 Mensagem de referência (vencimento): ID={$msgRow['id']} cenário=\"{$msgRow['cenario']}\"\n";
+
+    // Busca o template de Mensagem de Suspensão (dias_antes = -1) para envio no privado pós-kick
+    $stmtSuspensao = $conn->query("
+        SELECT id, cenario, texto, lang_id FROM mentoria_mensagens
+        WHERE dias_antes = -1 AND ativo = 1
+    ");
+    $allMsgsSuspensao = $stmtSuspensao->fetchAll(PDO::FETCH_ASSOC);
+    $msgSuspensaoRow = null;
+    foreach ($allMsgsSuspensao as $ms) {
+        if (!empty($ms['lang_id']) && $ms['lang_id'] === $lang) {
+            $msgSuspensaoRow = $ms;
+            break;
+        }
+    }
+    if (!$msgSuspensaoRow) {
+        foreach ($allMsgsSuspensao as $ms) {
+            if (empty($ms['lang_id']) || $ms['lang_id'] === 'en') {
+                $msgSuspensaoRow = $ms;
+                break;
+            }
+        }
+    }
 
     // ----------------------------------------------------------------
     // Busca o JID do Our Classes para este idioma via API Baileys
@@ -261,7 +281,7 @@ foreach ($langs as $lang) {
                     UPDATE mentoria_alunos SET status_aluno = 'Comunidade' WHERE id = ?
                 ")->execute([$alunoId]);
 
-                // Registra no log
+                // Registra no log do auto-kick
                 $conn->prepare("
                     INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid, detalhes)
                     VALUES (?, ?, ?, ?)
@@ -279,6 +299,33 @@ foreach ($langs as $lang) {
                         'finished_at'    => date('Y-m-d H:i:s'),
                     ])
                 ]);
+
+                // --------------------------------------------------------
+                // Envia imediatamente a mensagem de Suspensão no privado
+                // --------------------------------------------------------
+                if ($msgSuspensaoRow) {
+                    $default_pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
+                    $pixKey = ($lang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $lang;
+                    $pix_footer = getSetting($pixKey, $default_pix_footer);
+
+                    $primeiroNome = trim(explode(' ', $alunoNome)[0]);
+                    $textoSuspensao = str_replace('{nome}', $primeiroNome, $msgSuspensaoRow['texto']);
+                    $textoSuspensao .= "\n\n" . trim($pix_footer);
+
+                    echo "      💬 Disparando mensagem de suspensão no privado para {$alunoNome}...\n";
+                    $resWhats = enviarWhatsApp($telefone, $textoSuspensao, 'mentoria_kick_privado');
+                    $whatsCode = $resWhats['httpCode'] ?? 0;
+
+                    if ($whatsCode >= 200 && $whatsCode < 300) {
+                        $conn->prepare("
+                            INSERT INTO mentoria_logs (aluno_id, mensagem_id, data_disparo) 
+                            VALUES (?, ?, ?)
+                        ")->execute([$alunoId, $msgSuspensaoRow['id'], $hoje]);
+                        echo "      ✅ Mensagem de suspensão enviada com sucesso no privado (HTTP {$whatsCode}).\n";
+                    } else {
+                        echo "      ⚠️ Falha ao entregar mensagem no privado (HTTP {$whatsCode}).\n";
+                    }
+                }
 
                 $totalKicked++;
                 echo "      ✅ REMOVIDO com sucesso. status_aluno atualizado para 'Comunidade'.\n\n";

@@ -59,10 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Remove tudo que não for número do telefone
     $telefone_limpo = preg_replace('/\D/', '', $telefone);
 
+    $status_pagamento = $_POST['status_pagamento'] ?? 'Pago';
     if ($id > 0) {
         // UPDATE
         $sql = "UPDATE mentoria_alunos SET 
-                nome = :nome, telefone = :telefone, status_aluno = :status_aluno, 
+                nome = :nome, telefone = :telefone, status_aluno = :status_aluno, status_pagamento = :status_pagamento,
                 valor_mensalidade = :valor_mensalidade, total_investido = :total_investido,
                 proximo_vencimento = :proximo_vencimento, 
                 data_inicio = :data_inicio, data_nascimento = :data_nascimento, grupo_atual = :grupo_atual, 
@@ -70,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
-            'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno,
+            'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno, 'status_pagamento' => $status_pagamento,
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'proximo_vencimento' => $proximo_vencimento, 
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
@@ -80,11 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     } else {
         // INSERT
-        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, valor_mensalidade, total_investido, proximo_vencimento, data_inicio, data_nascimento, grupo_atual, observacoes, lang_id) 
-                VALUES (:nome, :telefone, :status_aluno, :valor_mensalidade, :total_investido, :proximo_vencimento, :data_inicio, :data_nascimento, :grupo_atual, :observacoes, :lang_id)";
+        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, status_pagamento, valor_mensalidade, total_investido, proximo_vencimento, data_inicio, data_nascimento, grupo_atual, observacoes, lang_id) 
+                VALUES (:nome, :telefone, :status_aluno, :status_pagamento, :valor_mensalidade, :total_investido, :proximo_vencimento, :data_inicio, :data_nascimento, :grupo_atual, :observacoes, :lang_id)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
-            'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno,
+            'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno, 'status_pagamento' => $status_pagamento,
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'proximo_vencimento' => $proximo_vencimento, 
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
@@ -224,6 +225,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <option value="Inativo" <?= ($aluno['status_aluno']??'') === 'Inativo' ? 'selected' : '' ?>>Inativo</option>
                             <option value="Comunidade" <?= ($aluno['status_aluno']??'') === 'Comunidade' ? 'selected' : '' ?>>Comunidade</option>
                             <option value="Vitalício" <?= ($aluno['status_aluno']??'') === 'Vitalício' ? 'selected' : '' ?>>Vitalício</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status do Pagamento</label>
+                        <select name="status_pagamento" required>
+                            <option value="Pago" <?= ($aluno['status_pagamento']??'Pago') === 'Pago' ? 'selected' : '' ?>>Pago</option>
+                            <option value="Pendente" <?= ($aluno['status_pagamento']??'') === 'Pendente' ? 'selected' : '' ?>>Pendente</option>
+                            <option value="Comprovante Enviado" <?= ($aluno['status_pagamento']??'') === 'Comprovante Enviado' ? 'selected' : '' ?>>Comprovante Enviado</option>
+                            <option value="Suspenso" <?= ($aluno['status_pagamento']??'') === 'Suspenso' ? 'selected' : '' ?>>Suspenso</option>
+                            <option value="Isento" <?= ($aluno['status_pagamento']??'') === 'Isento' ? 'selected' : '' ?>>Isento</option>
                         </select>
                     </div>
 

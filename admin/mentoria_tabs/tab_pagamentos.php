@@ -45,6 +45,7 @@
     .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; white-space: nowrap; }
     .badge-pago { background: rgba(16, 185, 129, 0.1); color: var(--success); }
     .badge-pendente { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .badge-comprovante { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
     .badge-suspenso { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
     .badge-isento { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
     .badge-ativo { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); }
@@ -155,6 +156,7 @@
                         $badgeClass = 'badge-isento';
                         if($aluno['status_pagamento'] === 'Pago') $badgeClass = 'badge-pago';
                         if($aluno['status_pagamento'] === 'Pendente') $badgeClass = 'badge-pendente';
+                        if($aluno['status_pagamento'] === 'Comprovante Enviado') $badgeClass = 'badge-comprovante';
                         if($aluno['status_pagamento'] === 'Suspenso') $badgeClass = 'badge-suspenso';
                     ?>
                     <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($aluno['status_pagamento']) ?></span>
