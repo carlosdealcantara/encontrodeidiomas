@@ -139,7 +139,9 @@ if (!empty($active)) {
     $stmtScrFallback = $conn->prepare("
         SELECT id, titulo_final, status, last_screenshot, last_screenshot_time
         FROM mentoria_odysee_queue
-        WHERE last_screenshot IS NOT NULL AND lang_id = ?
+        WHERE last_screenshot IS NOT NULL 
+          AND lang_id = ?
+          AND status IN ('processing', 'pending', 'done', 'error')
         ORDER BY last_screenshot_time DESC LIMIT 1
     ");
     $stmtScrFallback->execute([$current_lang]);

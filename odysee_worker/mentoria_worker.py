@@ -934,55 +934,110 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             
         return upload_ok, share_link
 
+def limpar_pastas_vazias_mentoria(drive_service):
+    """
+    Limpa o Drive movendo para a lixeira as subpastas 'recurring' de mentoria 
+    que ficaram completamente vazias após os arquivos serem processados e movidos.
+    """
+    try:
+        meet_folders = drive_service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+            fields='files(id, name)'
+        ).execute().get('files', [])
+        
+        termos_mentoria = ["mentorship", "mentoria", "mentoría"]
+        if MENTORIA_LANG_ID == 'es':
+            termos_mentoria.extend(["español", "espanhol"])
+
+        for mf in meet_folders:
+            subs = drive_service.files().list(
+                q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
+                fields='files(id, name)'
+            ).execute().get('files', [])
+            
+            for sub in subs:
+                sub_name_low = sub['name'].lower()
+                # Só limpa se for pasta de mentoria deste idioma
+                if not any(k in sub_name_low for k in termos_mentoria):
+                    continue
+                contents = drive_service.files().list(
+                    q=f"'{sub['id']}' in parents and trashed=false",
+                    fields='files(id)'
+                ).execute().get('files', [])
+                if not contents:
+                    logger.info(f"[LIXEIRA] Removendo subpasta de mentoria vazia: {sub['name']} ({sub['id']})")
+                    drive_service.files().update(fileId=sub['id'], body={'trashed': True}).execute()
+    except Exception as e:
+        logger.error(f"[LIXEIRA] Erro ao limpar pastas vazias de mentoria: {e}")
+
 def escanear_drive():
     print(f"Escaneando Drive MENTORIA ({MENTORIA_LANG_ID}) por novos vídeos...", flush=True)
 
     try:
         drive_service = init_drive_service()
 
-        # 1. Descobrir subpastas EXCLUSIVAMENTE dentro da pasta da Mentoria configurada.
+        # Limpeza automática de pastas vazias residuais da execução anterior
+        limpar_pastas_vazias_mentoria(drive_service)
+
+        # 1. Descobrir todas as pastas de ORIGEM dos vídeos dinamicamente.
+        # Regra: buscamos APENAS subpastas "recurring" dentro das pastas "Google Meet",
+        # pois são essas que contêm as novas gravações geradas pelo Google Meet.
+        # As pastas de DESTINO/ARQUIVO (Meet Recordings / Publicados) NUNCA devem ser escaneadas.
         folder_ids = []
-        if DRIVE_MENTORIA_FOLDER_ID:
-            folder_ids.append(DRIVE_MENTORIA_FOLDER_ID)
-            try:
-                # Busca subpastas dentro da pasta da Mentoria
-                meet_folders = drive_service.files().list(
-                    q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
-                    fields='files(id, name)'
-                ).execute().get('files', [])
 
-                for mf in meet_folders:
-                    folder_ids.append(mf['id'])
-                    # Busca subpastas de segundo nível
-                    sub_results = drive_service.files().list(
-                        q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
-                        fields='files(id, name)'
-                    ).execute()
-                    for sub in sub_results.get('files', []):
-                        # Só aceita subpastas que sejam de mentoria
-                        sub_name_low = sub['name'].lower()
-                        if any(k in sub_name_low for k in ['mentorship', 'mentoria', 'mentoría']):
-                            logger.info(f"[SCAN] Subpasta de mentoria encontrada: {sub['name']} ({sub['id']})")
-                            folder_ids.append(sub['id'])
-                        else:
-                            logger.info(f"[SCAN] Subpasta ignorada (não é mentoria): {sub['name']}")
-            except Exception as e:
-                logger.warning(f"[SCAN] Erro ao buscar subpastas: {e}")
-        else:
-            logger.error("[SCAN] DRIVE_MENTORIA_FOLDER_ID não está configurado! Abortando scan para proteger arquivos pessoais.")
-            return
-
-        # 2. Buscar arquivos de vídeo estritamente de Mentoria
-        arquivos = []
         termos_mentoria = ["mentorship", "mentoria", "mentoría"]
         if MENTORIA_LANG_ID == 'es':
             termos_mentoria.extend(["español", "espanhol"])
 
+        try:
+            logger.info("Buscando pastas 'Google Meet' raiz no Drive...")
+            meet_folders = drive_service.files().list(
+                q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+                fields='files(id, name)'
+            ).execute().get('files', [])
+
+            for mf in meet_folders:
+                # Busca subpastas que contêm 'recurring'
+                sub_results = drive_service.files().list(
+                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
+                    fields='files(id, name)'
+                ).execute()
+                for sub in sub_results.get('files', []):
+                    sub_name_low = sub['name'].lower()
+                    # Filtra pastas de mentoria do idioma
+                    if any(k in sub_name_low for k in termos_mentoria):
+                        logger.info(f"[SCAN] Pasta de origem de mentoria encontrada: {sub['name']} ({sub['id']})")
+                        folder_ids.append(sub['id'])
+                    else:
+                        logger.info(f"[SCAN] Subpasta ignorada (não é de mentoria {MENTORIA_LANG_ID}): {sub['name']}")
+
+            # Se DRIVE_MENTORIA_FOLDER_ID for configurado como uma pasta específica de gravações (que NÃO seja Meet Recordings)
+            if DRIVE_MENTORIA_FOLDER_ID:
+                try:
+                    f_info = drive_service.files().get(fileId=DRIVE_MENTORIA_FOLDER_ID, fields='id, name').execute()
+                    f_name = f_info.get('name', '').lower()
+                    if 'recordings' not in f_name and 'publicados' not in f_name:
+                        if DRIVE_MENTORIA_FOLDER_ID not in folder_ids:
+                            folder_ids.append(DRIVE_MENTORIA_FOLDER_ID)
+                except Exception as e:
+                    logger.warning(f"[SCAN] Não foi possível verificar DRIVE_MENTORIA_FOLDER_ID: {e}")
+
+        except Exception as e:
+            logger.warning(f"[SCAN] Erro ao buscar subpastas Google Meet dinamicamente: {e}")
+
+        print(f"[SCAN] Pastas ativas monitoradas para Mentoria ({MENTORIA_LANG_ID}): {len(folder_ids)}", flush=True)
+
+        if not folder_ids:
+            logger.info(f"[SCAN] Nenhuma pasta de origem com gravações recorrentes de mentoria encontrada no momento.")
+            return
+
+        # 2. Buscar arquivos de vídeo estritamente de Mentoria nessas pastas de origem
+        arquivos = []
+        name_filters = " or ".join([f"name contains '{termo}'" for termo in ['Mentorship', 'Mentoria', 'Mentoría', 'español', 'espanhol']])
+
         for i in range(0, len(folder_ids), 10):
             lote = folder_ids[i:i+10]
             parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
-            # Exige 'Mentorship' ou 'Mentoria' no nome — NUNCA apenas 'Recording'
-            name_filters = " or ".join([f"name contains '{termo}'" for termo in ['Mentorship', 'Mentoria', 'Mentoría']])
             query = f"({parents_q}) and mimeType contains 'video/' and ({name_filters}) and trashed=false"
             
             results = drive_service.files().list(
