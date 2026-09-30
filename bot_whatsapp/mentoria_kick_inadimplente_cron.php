@@ -13,7 +13,7 @@
  *
  * Ações:
  *  - Remove do grupo Our Classes via API Baileys
- *  - Atualiza status_aluno para 'Suspenso' no banco
+ *  - Atualiza status_aluno para 'Comunidade' no banco
  *  - Registra tudo em mentoria_auto_logs (com detalhes verbosos)
  *  - Logs no output mostrando CADA passo (nenhuma ação silenciosa)
  */
@@ -256,9 +256,9 @@ foreach ($langs as $lang) {
             echo "      📡 Resposta API: HTTP {$httpCode} | success=" . ($success ? 'true' : 'false') . "\n";
 
             if ($success) {
-                // Atualiza status do aluno para 'Suspenso'
+                // Atualiza status do aluno para 'Comunidade' (mantém acesso aos grupos abertos e comunidade, apenas perde Our Classes)
                 $conn->prepare("
-                    UPDATE mentoria_alunos SET status_aluno = 'Suspenso' WHERE id = ?
+                    UPDATE mentoria_alunos SET status_aluno = 'Comunidade' WHERE id = ?
                 ")->execute([$alunoId]);
 
                 // Registra no log
@@ -281,7 +281,7 @@ foreach ($langs as $lang) {
                 ]);
 
                 $totalKicked++;
-                echo "      ✅ REMOVIDO com sucesso. status_aluno atualizado para 'Suspenso'.\n\n";
+                echo "      ✅ REMOVIDO com sucesso. status_aluno atualizado para 'Comunidade'.\n\n";
 
             } else {
                 // Registra falha

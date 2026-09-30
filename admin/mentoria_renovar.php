@@ -27,12 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         // Incrementa o valor total investido
         $novoTotal = (float)$aluno['total_investido'] + (float)$aluno['valor_mensalidade'];
         
-        // Checa se virou Vitalício
+        // Checa se virou Vitalício ou volta a ser Ativo
         $novoStatusAluno = $aluno['status_aluno'];
         $mensagemExtra = "";
         if ($novoStatusAluno !== 'Vitalício' && $novoTotal >= $ltv_vitalicios) {
             $novoStatusAluno = 'Vitalício';
             $mensagemExtra = " 🏆 PARABÉNS! O aluno atingiu R$ " . number_format($ltv_vitalicios, 0, ',', '.') . " e virou VITALÍCIO!";
+        } elseif ($novoStatusAluno !== 'Vitalício') {
+            // Qualquer aluno (Comunidade, Inativo, Suspenso ou já Ativo) com pagamento confirmado volta/permanece como Ativo
+            $novoStatusAluno = 'Ativo';
         }
         
         $statusPagamento = ($novoStatusAluno === 'Vitalício') ? 'Isento' : 'Pago';

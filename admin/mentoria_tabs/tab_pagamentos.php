@@ -13,9 +13,9 @@
 <div class="controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; flex-wrap: wrap;">
     <div class="filter-group" style="display: flex; gap: 5px; background: var(--sidebar-bg); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
         <button class="filter-btn active" data-status="Ativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Ativos</button>
-        <button class="filter-btn" data-status="Inativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Inativos</button>
         <button class="filter-btn" data-status="Comunidade" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Comunidade</button>
         <button class="filter-btn" data-status="Vitalício" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Vitalícios</button>
+        <button class="filter-btn" data-status="Inativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Inativos</button>
         <button class="filter-btn" data-status="all" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Todos</button>
     </div>
     <div class="search-group" style="position: relative; flex: 1; max-width: 400px;">
@@ -161,7 +161,7 @@
                 </td>
                 <td>
                     <div class="actions">
-                        <?php if ($aluno['status_aluno'] !== 'Vitalício' && $aluno['status_aluno'] !== 'Comunidade'): ?>
+                        <?php if ($aluno['status_aluno'] !== 'Vitalício'): ?>
                         <form action="mentoria_renovar.php" method="POST" style="display:inline;">
                             <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
                             <button type="submit" class="action-btn btn-renew" title="Registrar Pagamento" onclick="return confirm('Registrar pagamento de <?= htmlspecialchars($aluno['nome']) ?>?');">

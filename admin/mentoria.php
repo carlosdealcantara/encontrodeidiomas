@@ -17,6 +17,11 @@ $conn = connectDB();
 $msg = null;
 $error = null;
 
+// Garante migração de qualquer status legado 'Suspenso' para 'Comunidade'
+try {
+    $conn->exec("UPDATE mentoria_alunos SET status_aluno = 'Comunidade' WHERE status_aluno = 'Suspenso'");
+} catch (Exception $e) {}
+
 // The active tab for redirecting back correctly
 $active_tab = $_POST['tab'] ?? $_GET['tab'] ?? 'pagamentos';
 
