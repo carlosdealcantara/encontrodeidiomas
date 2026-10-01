@@ -87,6 +87,22 @@ try {
     $stmtUp = $conn->prepare("UPDATE mentoria_alunos SET status_pagamento = 'Comprovante Enviado' WHERE id = ?");
     $stmtUp->execute([$alunoId]);
 
+    // 1b. Se este aluno é um TITULAR, atualiza também os seus DEPENDENTES
+    $dependentesNomes = [];
+    try {
+        $stmtDep = $conn->prepare("
+            SELECT id, nome FROM mentoria_alunos
+            WHERE responsavel_financeiro_id = ? AND status_aluno = 'Ativo'
+        ");
+        $stmtDep->execute([$alunoId]);
+        $dependentes = $stmtDep->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($dependentes as $dep) {
+            $conn->prepare("UPDATE mentoria_alunos SET status_pagamento = 'Comprovante Enviado' WHERE id = ?")
+                 ->execute([$dep['id']]);
+            $dependentesNomes[] = $dep['nome'];
+        }
+    } catch (Exception $e) { /* falha silenciosa */ }
+
     // 2. Busca template de confirmação de comprovante
     $stmtTpl = $conn->prepare("
         SELECT texto FROM mentoria_mensagens 
@@ -117,6 +133,9 @@ try {
         $msgTelegram .= "💰 Mensalidade: *R$ {$valorFmt}*\n";
         $msgTelegram .= "📅 Vencimento cadastrado: *{$dataVencFormatada}*\n";
         $msgTelegram .= "🕒 Recebido às: *{$horaAtual} BRT*\n";
+        if (!empty($dependentesNomes)) {
+            $msgTelegram .= "👨‍👩‍👧 Dependentes atualizados: *" . implode(', ', $dependentesNomes) . "*\n";
+        }
         $msgTelegram .= "─────────────────────────────\n";
         $msgTelegram .= "🛡️ *Status alterado para:* `Comprovante Enviado`\n";
         $msgTelegram .= "💡 _O aluno NÃO será removido pelo auto-kick da meia-noite._\n\n";

@@ -126,6 +126,7 @@ foreach ($langs as $lang) {
         WHERE ma.status_aluno = 'Ativo'
           AND ma.status_pagamento NOT IN ('Pago', 'Comprovante Enviado')
           AND DATEDIFF(ma.proximo_vencimento, CURRENT_DATE) <= -1
+          AND ma.responsavel_financeiro_id IS NULL
     ");
     $todosAtrasados = $stmtTodos->fetchAll(PDO::FETCH_ASSOC);
 

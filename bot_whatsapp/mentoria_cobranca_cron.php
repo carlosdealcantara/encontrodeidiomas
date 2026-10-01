@@ -43,6 +43,7 @@ $conn->exec("
     WHERE status_aluno = 'Ativo' 
     AND status_pagamento = 'Pago' 
     AND DATEDIFF(proximo_vencimento, CURRENT_DATE) <= 3
+    AND responsavel_financeiro_id IS NULL
 ");
 
 $default_pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
@@ -74,6 +75,13 @@ $dataDisparo = $hoje->format('Y-m-d');
 $sucessos = 0;
 
 foreach ($alunos as $aluno) {
+    // Dependentes financeiros não recebem cobrança direta.
+    // Quem cobra é o responsavel financeiro (titular).
+    if (!empty($aluno['responsavel_financeiro_id'])) {
+        echo "<p>⏭️ Pulando {$aluno['nome']}: aluno dependente de responsavel ID={$aluno['responsavel_financeiro_id']}.</p>";
+        continue;
+    }
+
     if(strpos($aluno['proximo_vencimento'], '-0001') !== false || substr($aluno['proximo_vencimento'], 0, 4) == '1900') {
         continue;
     }

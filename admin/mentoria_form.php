@@ -38,10 +38,20 @@ if (empty($available_langs)) {
 
 $selected_lang = $aluno['lang_id'] ?? $_GET['lang'] ?? 'en';
 
+// Carrega lista de alunos para o campo "Responsável Financeiro"
+$alunos_para_responsavel = [];
+try {
+    $stmtResp = $conn->query("SELECT id, nome, lang_id FROM mentoria_alunos WHERE responsavel_financeiro_id IS NULL ORDER BY nome ASC");
+    $alunos_para_responsavel = $stmtResp->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
+
 // Lógica de Salvar (Create ou Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'] ?? '';
     $telefone = $_POST['telefone'] ?? '';
+    $cpf = preg_replace('/\D/', '', $_POST['cpf'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $responsavel_financeiro_id = !empty($_POST['responsavel_financeiro_id']) ? (int)$_POST['responsavel_financeiro_id'] : null;
     $status_aluno = $_POST['status_aluno'] ?? 'Ativo';
     $valor_mensalidade = str_replace(',', '.', $_POST['valor_mensalidade'] ?? '0');
     $total_investido = str_replace(',', '.', $_POST['total_investido'] ?? '0');
@@ -60,10 +70,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $telefone_limpo = preg_replace('/\D/', '', $telefone);
 
     $status_pagamento = $_POST['status_pagamento'] ?? 'Pago';
+
+    // Se tem responsável financeiro, herda o status de pagamento e data do responsável
+    if ($responsavel_financeiro_id) {
+        try {
+            $stmtRespData = $conn->prepare("SELECT status_pagamento, proximo_vencimento FROM mentoria_alunos WHERE id = ?");
+            $stmtRespData->execute([$responsavel_financeiro_id]);
+            $respData = $stmtRespData->fetch();
+            if ($respData) {
+                $status_pagamento = $respData['status_pagamento'];
+                $proximo_vencimento = $respData['proximo_vencimento'];
+            }
+        } catch (Exception $e) {}
+    }
+
     if ($id > 0) {
         // UPDATE
         $sql = "UPDATE mentoria_alunos SET 
-                nome = :nome, telefone = :telefone, status_aluno = :status_aluno, status_pagamento = :status_pagamento,
+                nome = :nome, telefone = :telefone, cpf = :cpf, email = :email,
+                responsavel_financeiro_id = :responsavel_financeiro_id,
+                status_aluno = :status_aluno, status_pagamento = :status_pagamento,
                 valor_mensalidade = :valor_mensalidade, total_investido = :total_investido,
                 proximo_vencimento = :proximo_vencimento, 
                 data_inicio = :data_inicio, data_nascimento = :data_nascimento, grupo_atual = :grupo_atual, 
@@ -71,7 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
-            'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno, 'status_pagamento' => $status_pagamento,
+            'nome' => $nome, 'telefone' => $telefone_limpo, 'cpf' => $cpf ?: null, 'email' => $email ?: null,
+            'responsavel_financeiro_id' => $responsavel_financeiro_id,
+            'status_aluno' => $status_aluno, 'status_pagamento' => $status_pagamento,
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'proximo_vencimento' => $proximo_vencimento, 
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
@@ -81,11 +109,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     } else {
         // INSERT
-        $sql = "INSERT INTO mentoria_alunos (nome, telefone, status_aluno, status_pagamento, valor_mensalidade, total_investido, proximo_vencimento, data_inicio, data_nascimento, grupo_atual, observacoes, lang_id) 
-                VALUES (:nome, :telefone, :status_aluno, :status_pagamento, :valor_mensalidade, :total_investido, :proximo_vencimento, :data_inicio, :data_nascimento, :grupo_atual, :observacoes, :lang_id)";
+        $sql = "INSERT INTO mentoria_alunos (nome, telefone, cpf, email, responsavel_financeiro_id, status_aluno, status_pagamento, valor_mensalidade, total_investido, proximo_vencimento, data_inicio, data_nascimento, grupo_atual, observacoes, lang_id) 
+                VALUES (:nome, :telefone, :cpf, :email, :responsavel_financeiro_id, :status_aluno, :status_pagamento, :valor_mensalidade, :total_investido, :proximo_vencimento, :data_inicio, :data_nascimento, :grupo_atual, :observacoes, :lang_id)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
-            'nome' => $nome, 'telefone' => $telefone_limpo, 'status_aluno' => $status_aluno, 'status_pagamento' => $status_pagamento,
+            'nome' => $nome, 'telefone' => $telefone_limpo, 'cpf' => $cpf ?: null, 'email' => $email ?: null,
+            'responsavel_financeiro_id' => $responsavel_financeiro_id,
+            'status_aluno' => $status_aluno, 'status_pagamento' => $status_pagamento,
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'proximo_vencimento' => $proximo_vencimento, 
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
@@ -216,6 +246,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label>Telefone WhatsApp (Com DDD)</label>
                         <input type="text" name="telefone" required value="<?= htmlspecialchars($aluno['telefone'] ?? '') ?>" placeholder="Brasil: 11999998888 | Internacional: 818030606423">
+                    </div>
+
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="text" name="cpf" value="<?= htmlspecialchars($aluno['cpf'] ?? '') ?>" placeholder="Somente números: 12345678901" maxlength="14">
+                        <div class="obs-hint">Opcional. Usado para identificação e controle financeiro.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" name="email" value="<?= htmlspecialchars($aluno['email'] ?? '') ?>" placeholder="aluno@email.com">
+                        <div class="obs-hint">Opcional. Para comunicações fora do WhatsApp.</div>
+                    </div>
+
+                    <div class="form-group full" id="grupo_responsavel_financeiro">
+                        <label>💳 Responsável Financeiro</label>
+                        <div class="obs-hint" style="margin-bottom: 8px;">Deixe em branco se o próprio aluno é o pagador. Se este aluno é <strong>dependente</strong> de outra pessoa (ex: esposa/marido, filho), selecione o <strong>pagador titular</strong> abaixo. O sistema não cobrará este aluno nem o removerá caso o responsável esteja em dia.</div>
+                        <select name="responsavel_financeiro_id">
+                            <option value="">— Sem responsável (aluno paga por conta própria) —</option>
+                            <?php foreach ($alunos_para_responsavel as $ar): ?>
+                                <?php if ($ar['id'] === ($aluno['id'] ?? 0)) continue; // Não pode ser responsável de si mesmo ?>
+                                <option value="<?= (int)$ar['id'] ?>" <?= ((int)($aluno['responsavel_financeiro_id'] ?? 0)) === (int)$ar['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($ar['nome']) ?> (<?= strtoupper(htmlspecialchars($ar['lang_id'])) ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="form-group">
