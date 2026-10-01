@@ -18,7 +18,7 @@ try {
             'lang_id' => 'en',
             'cenario' => 'Comprovante Recebido',
             'dias_antes' => -999,
-            'texto' => "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Fique tranquilo que o seu acesso segue normalmente! 👍",
+            'texto' => "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Pode relaxar, seu acesso segue normalmente! 👍",
             'ativo' => 1,
             'ativo_telegram' => 1
         ],
@@ -26,7 +26,7 @@ try {
             'lang_id' => 'es',
             'cenario' => 'Comprovante Recebido',
             'dias_antes' => -999,
-            'texto' => "¡Recibido, {nome}! 📄 Muchas gracias por enviar el comprobante. Nuestro sistema registró la entrega y pronto confirmaremos tu renovación. ¡Quédate tranquilo que tu acceso sigue normalmente! 👍",
+            'texto' => "¡Recibido, {nome}! 📄 Muchas gracias por enviar el comprobante. Nuestro sistema registró la entrega y pronto confirmaremos tu renovación. ¡No te preocupes, tu acceso sigue normalmente! 👍",
             'ativo' => 1,
             'ativo_telegram' => 1
         ]

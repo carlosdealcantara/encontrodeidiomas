@@ -96,7 +96,7 @@ try {
     $stmtTpl->execute([$alunoLang, $alunoLang]);
     $tplRow = $stmtTpl->fetch(PDO::FETCH_ASSOC);
 
-    $defaultResposta = "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Fique tranquilo que o seu acesso segue normalmente! 👍";
+    $defaultResposta = "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Pode relaxar, seu acesso segue normalmente! 👍";
     $textoResposta = $tplRow ? $tplRow['texto'] : $defaultResposta;
     $textoRespostaFinal = str_replace('{nome}', $primeiroNome, $textoResposta);
 
