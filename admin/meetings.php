@@ -95,6 +95,10 @@ function getDayLabel($day) {
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
+        /* Botão de Ação Principal */
+        .btn-add { background: var(--accent-red); color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; white-space: nowrap; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(227, 29, 28, 0.3); color: white; }
+
         /* Table Style */
         .table-container { 
             background: var(--card-bg); 
