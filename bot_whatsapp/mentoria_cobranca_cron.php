@@ -46,6 +46,16 @@ $conn->exec("
     AND responsavel_financeiro_id IS NULL
 ");
 
+// Sincroniza o status_pagamento e proximo_vencimento dos dependentes com seus respectivos titulares
+$conn->exec("
+    UPDATE mentoria_alunos dep
+    JOIN mentoria_alunos tit ON dep.responsavel_financeiro_id = tit.id
+    SET dep.status_pagamento   = tit.status_pagamento,
+        dep.proximo_vencimento = tit.proximo_vencimento
+    WHERE dep.responsavel_financeiro_id IS NOT NULL
+      AND dep.status_aluno = 'Ativo'
+");
+
 $default_pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
 
 $stmtMsgs = $conn->query("SELECT * FROM mentoria_mensagens WHERE ativo = 1");

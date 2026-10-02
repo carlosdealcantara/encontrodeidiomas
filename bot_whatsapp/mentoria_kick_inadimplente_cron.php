@@ -329,7 +329,85 @@ foreach ($langs as $lang) {
                 }
 
                 $totalKicked++;
-                echo "      ✅ REMOVIDO com sucesso. status_aluno atualizado para 'Comunidade'.\n\n";
+                echo "      ✅ REMOVIDO com sucesso. status_aluno atualizado para 'Comunidade'.\n";
+
+                // --------------------------------------------------------
+                // Cascata para DEPENDENTES deste titular
+                // --------------------------------------------------------
+                $stmtDeps = $conn->prepare("
+                    SELECT id, nome, lang_id, telefone, status_aluno, status_pagamento 
+                    FROM mentoria_alunos 
+                    WHERE responsavel_financeiro_id = ?
+                ");
+                $stmtDeps->execute([$alunoId]);
+                $dependentes = $stmtDeps->fetchAll(PDO::FETCH_ASSOC);
+
+                if (!empty($dependentes)) {
+                    echo "      👨‍👩‍👧 Encontrado(s) " . count($dependentes) . " dependente(s) deste titular. Processando cascata...\n";
+
+                    foreach ($dependentes as $dep) {
+                        $depId   = (int)$dep['id'];
+                        $depNome = $dep['nome'];
+                        $depLang = !empty($dep['lang_id']) ? $dep['lang_id'] : $lang;
+
+                        // Atualiza status do dependente no banco para Comunidade / Suspenso
+                        $conn->prepare("
+                            UPDATE mentoria_alunos 
+                            SET status_aluno = 'Comunidade', 
+                                status_pagamento = 'Suspenso' 
+                            WHERE id = ?
+                        ")->execute([$depId]);
+
+                        // Busca o JID do Our Classes do idioma específico do dependente
+                        $depConfig = ($depLang === $lang) ? $config : getMentoriaConfig($depLang);
+                        $depOurClassesJid = $depConfig['groups']['our_classes']['jid'] ?? null;
+
+                        $depTel = preg_replace('/\D/', '', $dep['telefone'] ?? '');
+                        if (strlen($depTel) <= 11 && strlen($depTel) > 0) {
+                            $depTel = "55" . $depTel;
+                        }
+                        $depJid = !empty($depTel) ? ($depTel . '@s.whatsapp.net') : null;
+
+                        if ($depOurClassesJid && $depJid) {
+                            echo "         🚪 Removendo dependente {$depNome} ({$depLang}) do Our Classes ({$depOurClassesJid})...\n";
+                            try {
+                                $resDepRemove = removerDoGrupo($depOurClassesJid, [$depJid]);
+                                $depHttp = $resDepRemove['httpCode'] ?? 0;
+                                $depOk   = ($resDepRemove['success'] ?? false) || $depHttp === 200;
+
+                                $conn->prepare("
+                                    INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid, detalhes)
+                                    VALUES (?, ?, ?, ?)
+                                ")->execute([
+                                    'kick_dependente_' . $depLang, $hoje, $depJid,
+                                    json_encode([
+                                        'status'         => $depOk ? 'kicked' : 'failed',
+                                        'dependente_id'  => $depId,
+                                        'dependente_nome'=> $depNome,
+                                        'titular_id'     => $alunoId,
+                                        'titular_nome'   => $alunoNome,
+                                        'lang'           => $depLang,
+                                        'grupo_jid'      => $depOurClassesJid,
+                                        'http_code'      => $depHttp,
+                                        'finished_at'    => date('Y-m-d H:i:s'),
+                                    ])
+                                ]);
+
+                                if ($depOk) {
+                                    $totalKicked++;
+                                    echo "         ✅ Dependente {$depNome} removido do grupo da aula com sucesso.\n";
+                                } else {
+                                    echo "         ⚠️ Falha ao remover dependente {$depNome} do grupo (HTTP {$depHttp}). Status no banco já foi atualizado para Comunidade.\n";
+                                }
+                            } catch (Exception $eDep) {
+                                echo "         💥 Exceção ao remover dependente: " . $eDep->getMessage() . "\n";
+                            }
+                        } else {
+                            echo "         ℹ️ Dependente {$depNome}: status atualizado para Comunidade (sem JID ou grupo configurado para remoção).\n";
+                        }
+                    }
+                }
+                echo "\n";
 
             } else {
                 // Registra falha
