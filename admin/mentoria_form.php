@@ -134,7 +134,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title><?= $aluno ? 'Editar Aluno' : 'Novo Aluno' ?> | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <style>
+        /* Select2 dark theme override */
+        .select2-container--default .select2-selection--single { background-color: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; height: 46px; }
+        .select2-container--default .select2-selection--single .select2-selection__rendered { color: #f1f5f9; line-height: 46px; padding-left: 15px; }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 46px; }
+        .select2-dropdown { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #f1f5f9; z-index: 99999; }
+        .select2-search--dropdown .select2-search__field { background-color: #0f172a; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 8px 12px; }
+        .select2-results__option { padding: 10px 14px; color: #f1f5f9; font-size: 0.9rem; }
+        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable { background-color: #e31d1c !important; color: white !important; }
+        .select2-container--default .select2-results__option[aria-selected="true"] { background-color: rgba(255,255,255,0.1) !important; }
+        .select2-container { width: 100% !important; }
+        .resp-flag { width: 18px; height: 12px; object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
         :root {
             --primary-bg: #0f172a;
             --sidebar-bg: #1e293b;
@@ -263,12 +275,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group full" id="grupo_responsavel_financeiro">
                         <label>💳 Responsável Financeiro</label>
                         <div class="obs-hint" style="margin-bottom: 8px;">Deixe em branco se o próprio aluno é o pagador. Se este aluno é <strong>dependente</strong> de outra pessoa (ex: esposa/marido, filho), selecione o <strong>pagador titular</strong> abaixo. O sistema não cobrará este aluno nem o removerá caso o responsável esteja em dia.</div>
-                        <select name="responsavel_financeiro_id">
+                        <?php
+                        $flagMapForm = ['en' => 'us', 'es' => 'es', 'fr' => 'fr', 'de' => 'de', 'it' => 'it', 'pt' => 'br'];
+                        ?>
+                        <select name="responsavel_financeiro_id" id="select_responsavel" class="select2-responsavel">
                             <option value="">— Sem responsável (aluno paga por conta própria) —</option>
                             <?php foreach ($alunos_para_responsavel as $ar): ?>
-                                <?php if ($ar['id'] === ($aluno['id'] ?? 0)) continue; // Não pode ser responsável de si mesmo ?>
-                                <option value="<?= (int)$ar['id'] ?>" <?= ((int)($aluno['responsavel_financeiro_id'] ?? 0)) === (int)$ar['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($ar['nome']) ?> (<?= strtoupper(htmlspecialchars($ar['lang_id'])) ?>)
+                                <?php if ((int)$ar['id'] === (int)($aluno['id'] ?? 0)) continue; ?>
+                                <?php
+                                    $arFlag = $flagMapForm[$ar['lang_id']] ?? strtolower($ar['lang_id']);
+                                    $arFlagUrl = 'https://flagcdn.com/w20/' . $arFlag . '.png';
+                                    $arLangLabel = strtoupper($ar['lang_id']);
+                                ?>
+                                <option value="<?= (int)$ar['id'] ?>"
+                                    data-flag="<?= htmlspecialchars($arFlagUrl) ?>"
+                                    data-lang="<?= htmlspecialchars($arLangLabel) ?>"
+                                    <?= ((int)($aluno['responsavel_financeiro_id'] ?? 0)) === (int)$ar['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($ar['nome']) ?> · <?= $arLangLabel ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -336,28 +359,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </main>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         const statusSelect = document.querySelector("select[name='status_aluno']");
         const proximoVencimento = document.getElementById("grupo_proximo_vencimento");
         const valorMensalidade = document.getElementById("grupo_valor_mensalidade");
-        
         const inputProx = document.getElementById("proximo_vencimento");
 
         function toggleFields() {
-            if (statusSelect.value === 'Vitalício' || statusSelect.value === 'Comunidade') {
-                proximoVencimento.style.display = 'none';
-                valorMensalidade.style.display = 'none';
-                inputProx.removeAttribute("required");
-            } else {
-                proximoVencimento.style.display = 'block';
-                valorMensalidade.style.display = 'block';
-                inputProx.setAttribute("required", "required");
-            }
+            const v = statusSelect.value;
+            const isSpecial = (v === 'Vitalício' || v === 'Comunidade');
+            proximoVencimento.style.display = isSpecial ? 'none' : 'block';
+            valorMensalidade.style.display  = isSpecial ? 'none' : 'block';
+            isSpecial ? inputProx.removeAttribute("required") : inputProx.setAttribute("required", "required");
         }
-        
         statusSelect.addEventListener("change", toggleFields);
         toggleFields();
+    });
+
+    // Select2: Responsável Financeiro com bandeirinha
+    $(document).ready(function() {
+        function formatRespOption(option) {
+            if (!option.id) {
+                return $('<span style="color:#94a3b8;">' + option.text + '</span>');
+            }
+            var flagUrl  = $(option.element).data('flag')  || '';
+            var langCode = $(option.element).data('lang')  || '';
+            var name     = option.text.split(' · ')[0] || option.text;
+            var $el = $('<span></span>');
+            if (flagUrl) {
+                $el.append('<img src="' + flagUrl + '" class="resp-flag" onerror="this.style.display=\'none\'"> ');
+            }
+            $el.append('<strong>' + name + '</strong>');
+            if (langCode) {
+                $el.append(' <span style="font-size:0.78rem;color:#94a3b8;font-weight:400;">· ' + langCode + '</span>');
+            }
+            return $el;
+        }
+        function formatRespSelection(option) {
+            if (!option.id) return option.text;
+            var name = option.text.split(' · ')[0] || option.text;
+            return name;
+        }
+
+        $('#select_responsavel').select2({
+            placeholder: 'Digite o nome para buscar...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('body'),
+            templateResult:    formatRespOption,
+            templateSelection: formatRespSelection,
+            language: { noResults: function() { return 'Nenhum aluno encontrado'; } }
+        });
     });
     </script>
 </body>

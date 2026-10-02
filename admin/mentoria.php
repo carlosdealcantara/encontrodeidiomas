@@ -86,10 +86,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_telegram_relay']
     $msg = "Configurações do Telegram Relay salvas com sucesso!";
 }
 
-// Alunos filtrados por idioma
-$stmt = $conn->prepare("SELECT * FROM mentoria_alunos WHERE lang_id = ? ORDER BY CASE WHEN status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC, proximo_vencimento ASC");
+// Alunos filtrados por idioma, com nome do responsavel financeiro
+$stmt = $conn->prepare("
+    SELECT a.*, r.nome AS responsavel_nome
+    FROM mentoria_alunos a
+    LEFT JOIN mentoria_alunos r ON a.responsavel_financeiro_id = r.id
+    WHERE a.lang_id = ?
+    ORDER BY
+        CASE WHEN a.status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC,
+        a.proximo_vencimento ASC
+");
 $stmt->execute([$current_lang]);
 $alunos = $stmt->fetchAll();
+
+// Monta mapa: titular_id => lista de nomes de dependentes
+$dependentesMap = [];
+foreach ($alunos as $a) {
+    if (!empty($a['responsavel_financeiro_id'])) {
+        $depNome = trim(explode(' ', $a['nome'])[0]);
+        $dependentesMap[(int)$a['responsavel_financeiro_id']][] = $depNome;
+    }
+}
 
 // Pega os templates de cobrança para o idioma selecionado
 $stmtMsgs = $conn->prepare("SELECT * FROM mentoria_mensagens WHERE lang_id = ? ORDER BY dias_antes DESC");
