@@ -80,13 +80,14 @@ function sendBaileysRequest($endpoint, $payload = null, $method = 'POST') {
  * Se for Bulk (array), usa /send-bulk.
  * Se for Unitário, usa /send.
  */
-function enviarWhatsApp($to, string $message, string $source = 'sistema', ?array $linkPreview = null): array {
+function enviarWhatsApp($to, string $message, string $source = 'sistema', ?array $linkPreview = null, string $priority = 'normal'): array {
     if (is_array($to)) {
         // Bulk
         $payload = [
             'groups' => $to,
             'textMessage' => ['text' => $message],
-            'source' => $source
+            'source' => $source,
+            'priority' => $priority
         ];
         return sendBaileysRequest('/send-bulk', $payload);
     } else {
@@ -94,7 +95,8 @@ function enviarWhatsApp($to, string $message, string $source = 'sistema', ?array
         $payload = [
             'to' => $to,
             'message' => $message,
-            'source' => $source
+            'source' => $source,
+            'priority' => $priority
         ];
         if ($linkPreview !== null) {
             $payload['linkPreview'] = $linkPreview;

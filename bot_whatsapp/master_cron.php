@@ -65,12 +65,13 @@ function rodarSubCron($arquivo, $baseUrl, $token_secreto) {
 // =========================================================================
 // 1. ROTINAS HORÁRIAS
 // (Rodam todas as horas, e decidem internamente se é hora de enviar algo)
+// AVISOS DA MENTORIA TÊM PRIORIDADE: rodam antes para garantir pontualidade
 // =========================================================================
 echo "<h2>>>> Crons Horários <<<</h2><ul>";
+rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
+rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('ei_meetups_hourly.php', $baseUrl, $token_secreto);
 rodarSubCron('ei_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
-rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
-rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
 echo "</ul>";
 
 // =========================================================================
