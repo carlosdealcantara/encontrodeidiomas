@@ -9,16 +9,16 @@
 </div>
 
 <style>
-    .table-container { background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
+    .table-container { background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); white-space: nowrap; }
     th { background: rgba(0,0,0,0.1); color: var(--text-dim); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
     .status-active { color: #10b981; font-weight: 600; }
     .status-inactive { color: var(--text-dim); }
     
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
     .modal.active { display: flex; }
-    .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin: 15px; }
     
     /* Action Buttons Style (Padronizado) */
     .actions-cell { display: flex; gap: 8px; align-items: center; }
@@ -31,6 +31,12 @@
     .btn-toggle-off:hover { background: #94a3b8; color: white; border-color: #94a3b8; }
     .btn-delete-action { color: #ef4444; }
     .btn-delete-action:hover { background: #ef4444; color: white; border-color: #ef4444; }
+
+    @media (max-width: 768px) {
+        .header-actions { flex-direction: column; align-items: stretch; gap: 15px; }
+        .header-actions .btn { width: 100%; justify-content: center; }
+        .table-container { padding: 12px 8px; }
+    }
 </style>
 
 <div class="table-container">

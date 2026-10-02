@@ -149,7 +149,14 @@ if (!empty($active)) {
 }
 ?>
 
-<div style="display: grid; grid-template-columns: 1fr 400px; gap: 20px;">
+<style>
+    .odysee-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+    @media (max-width: 900px) {
+        .odysee-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="odysee-grid">
     <!-- Tabela da Fila -->
     <div class="card" style="background: var(--card-bg); border-radius: 16px; padding: 25px;">
         <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-list-ul"></i> Fila de Processamento</h3>

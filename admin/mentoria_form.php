@@ -200,6 +200,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); }
         
         .obs-hint { font-size: 0.75rem; color: var(--text-dim); font-weight: 400; margin-top: -5px; }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; gap: 15px; }
+            .form-card { padding: 20px 15px; border-radius: 16px; width: 100%; }
+            .form-grid { grid-template-columns: 1fr; gap: 15px; }
+            .form-group.full { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>

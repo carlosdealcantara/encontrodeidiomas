@@ -119,6 +119,7 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Resumo Semanal | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -143,8 +144,9 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
         
         .card { background: var(--card-bg); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
         th { color: var(--text-dim); font-size: 0.9rem; }
         
         input[type="text"] { width: 100%; padding: 8px 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-family: inherit; }
@@ -155,7 +157,13 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
         .btn-success { background: var(--success); }
         .btn-outline { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); }
         
-        .actions-bar { display: flex; gap: 15px; margin-top: 20px; }
+        .actions-bar { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+
+        @media (max-width: 768px) {
+            .actions-bar { flex-direction: column; }
+            .actions-bar .btn, .actions-bar form, .actions-bar form button { width: 100%; justify-content: center; }
+            .card { padding: 18px 14px; }
+        }
     </style>
 </head>
 <body>
@@ -184,6 +192,7 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
 
             <form method="POST" id="formReplays">
                 <input type="hidden" name="action" value="save_all">
+                <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
@@ -225,6 +234,7 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                </div>
                 <button type="submit" class="btn"><i class="fas fa-save"></i> Salvar Alterações</button>
             </form>
         </div>

@@ -32,6 +32,11 @@
     .ebook-badge-ativo { background: rgba(129,140,248,0.2); color: #818cf8; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: bold; }
     #ebookInlinePlayer { width: 100%; margin-top: 8px; }
     .ebook-no-results { grid-column: 1/-1; color: var(--text-dim); text-align: center; padding: 30px 0; }
+
+    @media (max-width: 768px) {
+        .ebook-stats-grid { grid-template-columns: 1fr; gap: 10px; }
+        .ebook-grid { grid-template-columns: repeat(2, 1fr); }
+    }
 </style>
 
 <?php

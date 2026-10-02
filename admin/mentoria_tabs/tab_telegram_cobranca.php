@@ -73,23 +73,25 @@ try {
     <?php if (empty($historico)): ?>
         <p style="color: var(--text-dim); text-align: center; padding: 20px;">Nenhum aviso foi enviado ainda.</p>
     <?php else: ?>
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);">Data/Hora</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);">Aluno</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);">Tipo de Aviso</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($historico as $h): ?>
-                <tr>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);"><?= date('d/m/Y H:i', strtotime($h['created_at'])) ?></td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 600; color: white;"><?= htmlspecialchars($h['nome']) ?></td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);"><span class="badge" style="background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); padding: 5px 10px; border-radius: 8px;"><?= htmlspecialchars($h['cenario']) ?></span></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 450px;">
+                <thead>
+                    <tr>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); white-space: nowrap;">Data/Hora</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); white-space: nowrap;">Aluno</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); white-space: nowrap;">Tipo de Aviso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($historico as $h): ?>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap;"><?= date('d/m/Y H:i', strtotime($h['created_at'])) ?></td>
+                        <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 600; color: white;"><?= htmlspecialchars($h['nome']) ?></td>
+                        <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);"><span class="badge" style="background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); padding: 5px 10px; border-radius: 8px;"><?= htmlspecialchars($h['cenario']) ?></span></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     <?php endif; ?>
 </div>

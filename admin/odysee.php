@@ -274,6 +274,18 @@ if (isset($_GET['msg']) && !$msg) {
         .info-box { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; font-size: 0.9rem; color: #bae6fd; }
         .auto-refresh { display: inline-flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-dim); }
         .countdown { font-weight: 700; color: var(--accent-blue); }
+
+        .data-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; margin-bottom: 20px; }
+        .data-table { min-width: 750px; }
+        .config-table { min-width: 600px; }
+
+        @media (max-width: 768px) {
+            .page-header { flex-direction: column; align-items: stretch; gap: 15px; }
+            .main-tabs-nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 5px; }
+            .main-tab-btn { padding: 10px 15px; font-size: 0.95rem; flex-shrink: 0; }
+            .bulk-card { padding: 15px; border-radius: 16px; }
+            .btn-save { width: 100%; text-align: center; }
+        }
     </style>
 </head>
 <body>
@@ -303,6 +315,7 @@ if (isset($_GET['msg']) && !$msg) {
                 <button class="btn-sm" style="background: rgba(56, 189, 248, 0.2); color: var(--accent-blue);" onclick="location.href='odysee.php?sync_titles=1'"><i class="fas fa-sync"></i> Sincronizar Títulos dos Hosts</button>
                 <button class="btn-sm" onclick="location.href='odysee.php?tab=fila'"><i class="fas fa-sync-alt"></i> Atualizar Fila</button>
             </div>
+            <div class="data-table-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -409,6 +422,7 @@ if (isset($_GET['msg']) && !$msg) {
                     <?php endif; ?>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- ABA 2: CONFIGURAÇÕES -->

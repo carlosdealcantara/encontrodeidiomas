@@ -112,17 +112,18 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
-        .sidebar { width: 280px; background: var(--sidebar-bg); padding: 30px; border-right: 1px solid rgba(255,255,255,0.05); }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: var(--text-dim); text-decoration: none; border-radius: 12px; margin-bottom: 8px; transition: 0.3s; }
-        .nav-item.active { background: var(--accent-red); color: white; }
-
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .bulk-card { 
+            background: var(--card-bg); 
+            border-radius: 24px; 
+            padding: 30px; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            width: 100%;
+        }
         
-        .bulk-card { background: var(--card-bg); border-radius: 24px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { text-align: left; padding: 15px; color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
         td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         
         input { background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: white; width: 100%; transition: 0.3s; }
@@ -144,6 +145,13 @@ $languages = $conn->query("SELECT * FROM languages ORDER BY name ASC")->fetchAll
         }
         input:checked + .slider { background: var(--success); }
         input:checked + .slider:before { transform: translateX(20px); }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; gap: 15px; margin-bottom: 25px; }
+            .header > div[style*="display: flex"] { flex-direction: column; gap: 10px; width: 100%; }
+            .btn-save { width: 100%; text-align: center; }
+            .bulk-card { padding: 15px; border-radius: 16px; }
+        }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>

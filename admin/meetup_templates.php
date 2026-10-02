@@ -165,6 +165,13 @@ try {
         .template-status { font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; }
         .status-on { background: rgba(16, 185, 129, 0.2); color: var(--success); }
         .status-off { background: rgba(255, 255, 255, 0.1); color: var(--text-dim); }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; gap: 20px; }
+            .card { padding: 18px 14px; }
+            .template-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .btn { width: 100%; text-align: center; }
+        }
     </style>
 </head>
 <body>

@@ -222,6 +222,16 @@ try {
         .progress-bar-container { background: var(--input-bg); border-radius: 10px; height: 10px; width: 100%; overflow: hidden; margin-top: 5px; }
         .progress-bar { background: var(--info); height: 100%; transition: width 0.3s ease; }
         .progress-bar.done { background: var(--success); }
+
+        .broadcast-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-responsive table { min-width: 480px; }
+
+        @media (max-width: 768px) {
+            .broadcast-grid { grid-template-columns: 1fr; gap: 20px; }
+            .card { padding: 18px 14px; }
+            .btn { width: 100%; text-align: center; }
+        }
     </style>
 </head>
 <body>
@@ -243,7 +253,7 @@ try {
             <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div class="broadcast-grid">
             <div class="card">
                 <h3>Compor Mensagem</h3>
                 <form method="POST" style="margin-top: 20px;">
@@ -305,6 +315,7 @@ try {
                 <?php if (empty($historico)): ?>
                     <p style="color: var(--text-dim); margin-top: 15px;">Nenhum disparo na fila.</p>
                 <?php else: ?>
+                    <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
@@ -352,6 +363,7 @@ try {
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
