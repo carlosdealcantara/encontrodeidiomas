@@ -289,9 +289,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 ?>
                                 <option value="<?= (int)$ar['id'] ?>"
                                     data-flag="<?= htmlspecialchars($arFlagUrl) ?>"
-                                    data-lang="<?= htmlspecialchars($arLangLabel) ?>"
                                     <?= ((int)($aluno['responsavel_financeiro_id'] ?? 0)) === (int)$ar['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($ar['nome']) ?> · <?= $arLangLabel ?>
+                                    <?= htmlspecialchars($ar['nome']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -385,23 +384,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!option.id) {
                 return $('<span style="color:#94a3b8;">' + option.text + '</span>');
             }
-            var flagUrl  = $(option.element).data('flag')  || '';
-            var langCode = $(option.element).data('lang')  || '';
-            var name     = option.text.split(' · ')[0] || option.text;
+            var flagUrl = $(option.element).data('flag') || '';
+            var name    = option.text.trim();
             var $el = $('<span></span>');
             if (flagUrl) {
                 $el.append('<img src="' + flagUrl + '" class="resp-flag" onerror="this.style.display=\'none\'"> ');
             }
             $el.append('<strong>' + name + '</strong>');
-            if (langCode) {
-                $el.append(' <span style="font-size:0.78rem;color:#94a3b8;font-weight:400;">· ' + langCode + '</span>');
-            }
             return $el;
         }
         function formatRespSelection(option) {
-            if (!option.id) return option.text;
-            var name = option.text.split(' · ')[0] || option.text;
-            return name;
+            return option.text.trim();
         }
 
         $('#select_responsavel').select2({
