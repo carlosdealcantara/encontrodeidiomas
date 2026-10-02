@@ -18,7 +18,7 @@ try {
             'lang_id' => 'en',
             'cenario' => 'Comprovante Recebido',
             'dias_antes' => -999,
-            'texto' => "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Pode relaxar, seu acesso segue normalmente! 👍",
+            'texto' => "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Tudo certo, seu acesso segue normalmente! 👍",
             'ativo' => 1,
             'ativo_telegram' => 1
         ],
@@ -35,7 +35,8 @@ try {
     foreach ($templatesNovos as $tpl) {
         $stmtCheck = $conn->prepare("SELECT id FROM mentoria_mensagens WHERE cenario = ? AND lang_id = ?");
         $stmtCheck->execute([$tpl['cenario'], $tpl['lang_id']]);
-        if ($stmtCheck->rowCount() === 0) {
+        $rowExist = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+        if (!$rowExist) {
             $stmtIns = $conn->prepare("
                 INSERT INTO mentoria_mensagens (lang_id, cenario, dias_antes, texto, ativo, ativo_telegram)
                 VALUES (:lang_id, :cenario, :dias_antes, :texto, :ativo, :ativo_telegram)
@@ -43,7 +44,9 @@ try {
             $stmtIns->execute($tpl);
             echo "<p>✅ Template <b>{$tpl['cenario']}</b> ({$tpl['lang_id']}) inserido com sucesso!</p>";
         } else {
-            echo "<p>ℹ️ Template <b>{$tpl['cenario']}</b> ({$tpl['lang_id']}) já existe no banco.</p>";
+            $stmtUp = $conn->prepare("UPDATE mentoria_mensagens SET texto = ? WHERE id = ?");
+            $stmtUp->execute([$tpl['texto'], $rowExist['id']]);
+            echo "<p>ℹ️ Template <b>{$tpl['cenario']}</b> ({$tpl['lang_id']}) atualizado com novo texto!</p>";
         }
     }
 

@@ -112,7 +112,7 @@ try {
     $stmtTpl->execute([$alunoLang, $alunoLang]);
     $tplRow = $stmtTpl->fetch(PDO::FETCH_ASSOC);
 
-    $defaultResposta = "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Pode relaxar, seu acesso segue normalmente! 👍";
+    $defaultResposta = "Recebido, {nome}! 📄 Muito obrigado pelo envio do comprovante. Nosso sistema registrou a entrega e em breve daremos baixa na sua renovação. Tudo certo, seu acesso segue normalmente! 👍";
     $textoResposta = $tplRow ? $tplRow['texto'] : $defaultResposta;
     $textoRespostaFinal = str_replace('{nome}', $primeiroNome, $textoResposta);
 
@@ -139,6 +139,8 @@ try {
         $msgTelegram .= "─────────────────────────────\n";
         $msgTelegram .= "🛡️ *Status alterado para:* `Comprovante Enviado`\n";
         $msgTelegram .= "💡 _O aluno NÃO será removido pelo auto-kick da meia-noite._\n\n";
+        $msgTelegram .= "💬 *Resposta automática enviada ao aluno:*\n";
+        $msgTelegram .= "```\n" . $textoRespostaFinal . "\n```\n\n";
         $msgTelegram .= "🔗 [Abrir Chat de {$primeiroNome}](https://wa.me/{$aluno['telefone']})";
 
         $url = "https://api.telegram.org/bot{$telegramToken}/sendMessage";

@@ -323,6 +323,38 @@ foreach ($langs as $lang) {
                             VALUES (?, ?, ?)
                         ")->execute([$alunoId, $msgSuspensaoRow['id'], $hoje]);
                         echo "      ✅ Mensagem de suspensão enviada com sucesso no privado (HTTP {$whatsCode}).\n";
+
+                        // Notifica Telegram com cópia da mensagem enviada
+                        $telegramToken = $_ENV['TELEGRAM_COBRANCA_BOT_TOKEN'] ?? getenv('TELEGRAM_COBRANCA_BOT_TOKEN');
+                        $telegramChatId = $_ENV['TELEGRAM_COBRANCA_CHAT_ID'] ?? getenv('TELEGRAM_COBRANCA_CHAT_ID');
+                        if ($telegramToken && $telegramChatId) {
+                            $msgTelegram = "🚫 *ALUNO REMOVIDO (SUSPENSÃO DE ACESSO)*\n";
+                            $msgTelegram .= "─────────────────────────────\n";
+                            $msgTelegram .= "👤 Aluno: *{$alunoNome}*\n";
+                            $msgTelegram .= "🌐 Mentoria: *" . strtoupper($lang) . "*\n";
+                            $msgTelegram .= "📱 WhatsApp: `+{$telefone}`\n";
+                            $msgTelegram .= "📋 Cenário: *Suspensão de Acesso*\n";
+                            $msgTelegram .= "─────────────────────────────\n";
+                            $msgTelegram .= "*Mensagem disparada no privado:*\n\n";
+                            $msgTelegram .= "```\n" . $textoSuspensao . "\n```\n";
+                            $msgTelegram .= "─────────────────────────────\n";
+                            $msgTelegram .= "🔗 [Abrir Chat de {$primeiroNome}](https://wa.me/{$telefone})";
+
+                            $urlTel = "https://api.telegram.org/bot{$telegramToken}/sendMessage";
+                            $chTel = curl_init($urlTel);
+                            curl_setopt($chTel, CURLOPT_POST, 1);
+                            curl_setopt($chTel, CURLOPT_POSTFIELDS, http_build_query([
+                                'chat_id' => $telegramChatId,
+                                'text' => $msgTelegram,
+                                'parse_mode' => 'Markdown',
+                                'disable_web_page_preview' => true
+                            ]));
+                            curl_setopt($chTel, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($chTel, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($chTel, CURLOPT_TIMEOUT, 5);
+                            curl_exec($chTel);
+                            curl_close($chTel);
+                        }
                     } else {
                         echo "      ⚠️ Falha ao entregar mensagem no privado (HTTP {$whatsCode}).\n";
                     }
