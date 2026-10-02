@@ -13,6 +13,28 @@ Este arquivo é lido automaticamente pelo Antigravity ao iniciar qualquer conver
 
 Aja com autonomia total. Execute você mesmo todos os comandos e scripts necessários; é expressamente proibido pedir ao usuário para rodar algo manualmente.
 
+## Autonomia Operacional e Git Workflow
+
+1. **Commit e Push Automáticos em Dev:** Sempre que a IA **executar** alterações de código (criar, editar ou excluir arquivos do projeto), ela deve OBRIGATORIAMENTE, ao final da tarefa, realizar `git add`, `git commit` com mensagem semântica em português e `git push origin dev`. É PROIBIDO encerrar o turno pedindo para o usuário subir as alterações ou rodar comandos git manualmente.
+2. **Exceção Única — Modo Análise:** A regra acima NÃO se aplica quando o usuário solicitar **explicitamente** apenas uma avaliação, análise, revisão ou planejamento sem execução. Nesses casos, nenhum commit ou push deve ser feito.
+3. **Verificação de Branch Obrigatória:** Antes de qualquer `git commit`, execute `git branch --show-current` e confirme que está na branch `dev`. Se não estiver, execute `git checkout dev` antes de prosseguir. NUNCA faça commit direto na `main`.
+4. **Granularidade:** Se a tarefa envolver múltiplos arquivos ou etapas, um único commit ao final é o suficiente, a menos que o usuário peça commits separados.
+
+## Autonomia de Infraestrutura Remota (VPS / Docker / Baileys)
+
+1. **Permissão Permanente:** A IA possui autorização permanente para acessar a VPS via SSH e executar comandos de manutenção (pull, restart de containers Docker, verificação de logs) quando a tarefa em andamento exigir. NÃO é necessário pedir permissão ao usuário para essas operações de rotina.
+2. **Quando Atuar:** Sempre que uma alteração de código afetar o bot do WhatsApp (Baileys) ou serviços hospedados na VPS, a IA deve, após o `git push origin dev`, realizar autonomamente o `git pull` na VPS e reiniciar o serviço/container afetado conforme documentado no KI operacional do Baileys.
+3. **Princípio da Necessidade:** Essa autonomia existe para eliminar passos manuais, NÃO para executar operações desnecessárias. Só acione a VPS/Docker se a tarefa concretamente demandar. Alterações puramente no site (PHP/HTML/CSS/JS servidos pela Hostinger) não requerem ação na VPS.
+4. **Registro de Ações:** Ao executar operações na VPS, informe brevemente ao usuário o que foi feito (ex: "Fiz pull e restart do container baileys-bot na VPS").
+
+## Restrições de Ferramentas e Otimização de Cota
+
+1. **Proibição do Browser Subagent:** É expressamente proibido o uso da ferramenta de automação visual de navegador (`browser_subagent`) para qualquer finalidade — login, navegação em painéis, leitura de telas, testes visuais ou validação de deploy. Essa ferramenta consome tokens massivamente (15.000–40.000 por sessão), é propensa a falhas de autenticação e gera loops improdutivos.
+2. **Alternativas Obrigatórias:**
+   - Para validar se uma página está respondendo: use `curl`, `Invoke-WebRequest` ou a ferramenta `read_url_content` via terminal.
+   - Para rodar scripts PHP de migração, alimentação de tabelas ou endpoints administrativos: forneça ao usuário a URL completa e pronta para clicar, ou dispare via requisição HTTP direta de terminal quando não exigir interação visual.
+   - Para verificar conteúdo de páginas: use `read_url_content` (fetch HTTP com conversão para markdown).
+
 ## Fluxo de Trabalho e Segurança de Ambientes
 
 1. **Ambientes e URLs:**
@@ -34,7 +56,7 @@ Aja com autonomia total. Execute você mesmo todos os comandos e scripts necess�
 ## Robustez e Segurança de Código
 
 1. **Tratamento de Erros (Try/Catch):** É OBRIGATÓRIO envolver consultas ao banco de dados e operações críticas em blocos `try/catch` ou verificações robustas (como `num_rows` ou `isset`). Um erro de banco ou uma coluna ausente NUNCA deve resultar em Erro 500; o código deve falhar silenciosamente ou exibir um fallback amigável.
-2. **Validação Pós-Deploy:** Após qualquer push ou deploy (especialmente em produção), o modelo deve verificar a URL correspondente (usando a ferramenta de browser) para confirmar que a alteração está ativa e que a página carrega corretamente. Não confie apenas na mensagem de "Success" do painel de deploy.
+2. **Validação Pós-Deploy:** Após qualquer push ou deploy (especialmente em produção), o modelo deve verificar a URL correspondente usando `read_url_content` ou requisição HTTP via terminal (`curl` / `Invoke-WebRequest`) para confirmar que a página responde com HTTP 200. NUNCA utilize a ferramenta de browser para essa verificação.
 
 ## Knowledge Items
 
