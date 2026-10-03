@@ -21,7 +21,7 @@ try {
         FROM meetup_replays r 
         JOIN languages l ON r.language_id = l.id 
         WHERE l.name LIKE '%Franc%' OR l.name_en LIKE '%French%' 
-        ORDER BY r.id DESC LIMIT 15
+        ORDER BY r.semana DESC, r.parte DESC LIMIT 15
     ");
     $replays = $stmtReplays->fetchAll(PDO::FETCH_ASSOC);
 
