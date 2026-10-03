@@ -474,11 +474,13 @@ async function handleParticipants({ id, participants, action }) {
     if (!WELCOME_ACTIONS.has(action)) return;
     console.log(`[BOT] handleParticipants: action=${action}, group=${id}, participants=${participants.length}`);
 
-    const config        = loadConfig();
-    const communityConfig = loadCommunityConfig();
+    const allMentoriaConfigs = loadAllMentoriaConfigs();
+    const communityConfig    = loadCommunityConfig();
 
-    // Mentoria: welcome no The Lounge (legado)
-    await mentoriaMod.handleParticipant(safeSock, id, participants, config);
+    // Mentoria: welcome no The Lounge / El Rincón de todos os idiomas configurados
+    for (const [langId, langConfig] of Object.entries(allMentoriaConfigs)) {
+        await mentoriaMod.handleParticipant(safeSock, id, participants, langConfig);
+    }
 
     // Comunidade Global: welcome com intros + perguntas
     await communityGlobalMod.handleParticipant(safeSock, id, participants, communityConfig);
