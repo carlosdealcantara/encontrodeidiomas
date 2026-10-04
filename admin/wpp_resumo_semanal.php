@@ -68,19 +68,28 @@ if (isset($_GET['toggle_ignore_lang'])) {
     exit;
 }
 
-// Fetch all languages with their replays for the CURRENT WEEK only, ordered by their first meeting in the week
+// Busca idiomas com replays da semana atual, ordenados pelo dia real de cada sessão.
+// ROW_NUMBER() mapeia parte→sessão (parte=1 = 1ª sessão do idioma na semana, parte=2 = 2ª, etc.)
+// para que o 2º encontro do Francês apareça no dia correto e não colado na Segunda.
 $stmt = $conn->prepare("
     SELECT l.id as language_id, l.name, l.flag_emoji, l.ignore_next_video, r.parte, r.numero, r.link, r.titulo 
     FROM languages l 
     LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
     LEFT JOIN (
         SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
-        FROM meetings 
-        WHERE active = 1 
-        GROUP BY language_id
+        FROM meetings WHERE active = 1 GROUP BY language_id
     ) m ON l.id = m.language_id
+    LEFT JOIN (
+        SELECT m2.language_id, ms2.day_of_week, ms2.time_hour,
+               ROW_NUMBER() OVER (PARTITION BY m2.language_id ORDER BY ms2.day_of_week ASC, ms2.time_hour ASC) as parte_num
+        FROM meetings m2
+        JOIN meeting_sessions ms2 ON ms2.meeting_id = m2.id AND ms2.active = 1
+        WHERE m2.active = 1
+    ) sess ON sess.language_id = l.id AND sess.parte_num = r.parte
     WHERE l.active = 1 
-    ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC, r.parte ASC
+    ORDER BY COALESCE(sess.day_of_week, m.first_day, 9) ASC, 
+             COALESCE(sess.time_hour, m.first_hour, 99) ASC, 
+             l.name ASC, r.parte ASC
 ");
 $stmt->execute([$semana_atual]);
 $replays = $stmt->fetchAll();

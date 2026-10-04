@@ -77,7 +77,7 @@ if ($logged_in && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 
 
         // Chama a função centralizada para gerar e notificar a atualização
         require_once dirname(__DIR__) . '/includes/hosts_notification.php';
-        notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, "atualizou dados");
+        notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, "atualizou dados", $parte);
         
         header('Location: index.php?saved=1&lang_id=' . $lang_id);
         exit;
@@ -105,6 +105,28 @@ if ($logged_in) {
             ORDER BY m.first_day ASC, m.first_hour ASC, l.name ASC
         ");
         $idiomas_disponiveis = $stmt->fetchAll();
+
+        // Sessões por idioma: detecta multi-sessão (ex: Francês com 2 encontros semanais)
+        $sessionsPerLang = [];
+        try {
+            $stmtSL = $conn->query("
+                SELECT m.language_id, ms.day_of_week, ms.time_hour,
+                       ROW_NUMBER() OVER (PARTITION BY m.language_id ORDER BY ms.day_of_week ASC, ms.time_hour ASC) as session_num
+                FROM meetings m
+                JOIN meeting_sessions ms ON ms.meeting_id = m.id AND ms.active = 1
+                WHERE m.active = 1
+                ORDER BY m.language_id ASC, ms.day_of_week ASC, ms.time_hour ASC
+            ");
+            foreach ($stmtSL->fetchAll() as $srow) {
+                $sessionsPerLang[(int)$srow['language_id']][] = [
+                    'num'  => (int)$srow['session_num'],
+                    'day'  => (int)$srow['day_of_week'],
+                    'hour' => (int)$srow['time_hour'],
+                ];
+            }
+        } catch (Exception $e) {
+            // Sem meeting_sessions: trata tudo como 1 sessão
+        }
 
         $stmtT = $conn->query("SELECT template_texto FROM meetup_whatsapp_templates WHERE minutos_antes = 0 AND ativo = 1 LIMIT 1");
         $template_db = $stmtT->fetchColumn() ?: "Template padrão não configurado.";
@@ -199,6 +221,15 @@ function sanitizeOdyseeUrl(string $url): string {
         .separator { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0; }
         .logout-link { text-align: center; margin-top: 20px; }
         .logout-link a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; }
+
+        /* Multi-sessão */
+        .session-label { font-weight: 700; font-size: 0.88rem; color: var(--text-dim); padding: 6px 0 10px; display: none; }
+        .session-label.visible { display: block; }
+        .session-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 22px 0 16px; }
+        .split-link-wrapper { margin-top: 14px; }
+        .split-link { color: var(--text-dim); font-size: 0.75rem; text-decoration: none; opacity: 0.6; }
+        .split-link:hover { opacity: 1; color: var(--text-main); }
+        .split-info { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); padding: 10px 12px; border-radius: 8px; margin-top: 8px; font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -233,61 +264,95 @@ function sanitizeOdyseeUrl(string $url): string {
             <!-- === ABA PRINCIPAL: Replay Semanal === -->
             <div id="tab-replay" class="tab-content active">
                 <p class="subtitle">Preencha os dados do encontro desta semana. Você pode voltar para editar antes do disparo de domingo.</p>
-                <form method="POST" id="formReplay">
-                    <input type="hidden" name="action" value="save_replay">
 
-                    <div class="form-group">
-                        <label>Seu Idioma</label>
-                        <select name="idioma_replay" id="idiomaReplaySelect" onchange="carregarDadosSemana()" required>
-                            <option value="">-- Selecione seu idioma --</option>
-                            <?php foreach ($idiomas_disponiveis as $l):
-                                $saved = $dados_semana[$l['id']] ?? null;
-                            ?>
-                                <option value='<?= json_encode(["id" => $l['id'], "nome" => $l['name'], "emoji" => $l['flag_emoji']]) ?>'
-                                        data-saved='<?= json_encode($saved) ?>'
-                                        <?= ($prefill && $prefill['lang_id'] === $l['id']) ? 'selected' : '' ?>>
-                                    <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
-                                    <?php 
-                                    if ($saved && isset($saved[1])) {
-                                        $s1 = $saved[1];
-                                        $is_complete = !empty($s1['numero']) && !empty($s1['titulo']);
-                                        if ($is_complete) {
-                                            echo '<span> (Pronto ✅)</span>';
-                                        } else {
-                                            echo '<span> (Incompleto ⏳)</span>';
-                                        }
+                <!-- Seleção de idioma — fora dos formulários, direciona os blocos abaixo -->
+                <div class="form-group">
+                    <label>Seu Idioma</label>
+                    <select id="idiomaReplaySelect" onchange="carregarDadosSemana()">
+                        <option value="">-- Selecione seu idioma --</option>
+                        <?php foreach ($idiomas_disponiveis as $l):
+                            $saved        = $dados_semana[$l['id']] ?? null;
+                            $langSessions = $sessionsPerLang[$l['id']] ?? [];
+                            $totalSess    = max(1, count($langSessions));
+                            $allComplete  = false;
+                            if ($saved) {
+                                $allDone = true;
+                                for ($sp = 1; $sp <= $totalSess; $sp++) {
+                                    if (!isset($saved[$sp]) || empty($saved[$sp]['numero']) || empty($saved[$sp]['titulo'])) {
+                                        $allDone = false; break;
                                     }
-                                    ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                                }
+                                $allComplete = $allDone;
+                            }
+                        ?>
+                        <option value='<?= json_encode(["id" => $l['id'], "nome" => $l['name'], "emoji" => $l['flag_emoji']]) ?>'
+                                data-saved='<?= json_encode($saved) ?>'
+                                data-sessions='<?= json_encode(array_values($langSessions)) ?>'
+                                <?= ($prefill && $prefill['lang_id'] == $l['id']) ? 'selected' : '' ?>>
+                            <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
+                            <?= $saved ? ($allComplete ? ' (Pronto ✅)' : ' (Incompleto ⏳)') : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                    <div class="form-group" id="groupReplayParte" style="display:none;">
-                        <label>Qual encontro é este?</label>
-                        <select name="replay_parte" id="replayParteSelect" onchange="carregarDadosSemana()">
-                            <option value="1">Encontro Principal (Parte 1)</option>
-                            <option value="2">Encontro Extra (Parte 2)</option>
-                            <option value="3">Encontro Extra 2 (Parte 3)</option>
-                        </select>
-                    </div>
+                <!-- Formulário: 1º Encontro -->
+                <form method="POST" id="formReplay1" style="display:none;">
+                    <input type="hidden" name="action" value="save_replay">
+                    <input type="hidden" name="idioma_replay" id="idioma_replay_f1" value="">
+                    <input type="hidden" name="replay_parte" value="1">
+
+                    <div class="session-label" id="sessionLabel1"></div>
 
                     <div class="form-group">
                         <label>Nº (Máx. Participantes Simultâneos)</label>
-                        <input type="text" name="replay_numero" id="replay_numero"
-                               value="<?= htmlspecialchars($prefill['numero'] ?? '') ?>"
-                               placeholder="Ex: 12">
+                        <input type="text" name="replay_numero" id="replay_numero_1" placeholder="Ex: 12">
                     </div>
-
-
                     <div class="form-group">
                         <label>Título (Clickbait Honesto)</label>
-                        <input type="text" name="replay_titulo" id="replay_titulo"
-                               value="<?= htmlspecialchars($prefill['titulo'] ?? '') ?>"
+                        <input type="text" name="replay_titulo" id="replay_titulo_1"
                                placeholder='Ex: "Ela disse que aprendeu isso em 40 minutos!"' required>
                     </div>
-
                     <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Salvar e Notificar Grupo</button>
+                    <div class="split-link-wrapper">
+                        <a href="#" class="split-link" onclick="toggleSplitInfo(1); return false;">
+                            <i class="fas fa-cut"></i> A gravação foi dividida em partes no mesmo dia?
+                        </a>
+                        <div class="split-info" id="splitInfo1" style="display:none;">
+                            Se este encontro teve 2 gravações separadas no mesmo dia, entre em contato com o administrador para registrar a segunda parte manualmente.
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Formulário: 2º Encontro (apenas para idiomas com 2 sessões semanais) -->
+                <form method="POST" id="formReplay2" style="display:none;">
+                    <input type="hidden" name="action" value="save_replay">
+                    <input type="hidden" name="idioma_replay" id="idioma_replay_f2" value="">
+                    <input type="hidden" name="replay_parte" value="2">
+
+                    <hr class="session-divider">
+                    <div class="session-label visible" id="sessionLabel2"></div>
+
+                    <div class="form-group">
+                        <label>Nº (Máx. Participantes Simultâneos)</label>
+                        <input type="text" name="replay_numero" id="replay_numero_2" placeholder="Ex: 12">
+                    </div>
+                    <div class="form-group">
+                        <label>Título (Clickbait Honesto)</label>
+                        <input type="text" name="replay_titulo" id="replay_titulo_2"
+                               placeholder='Ex: "Ela disse que aprendeu isso em 40 minutos!"' required>
+                    </div>
+                    <button type="submit" class="btn" style="background: rgba(56,189,248,0.85);">
+                        <i class="fas fa-paper-plane"></i> Salvar 2º Encontro
+                    </button>
+                    <div class="split-link-wrapper">
+                        <a href="#" class="split-link" onclick="toggleSplitInfo(2); return false;">
+                            <i class="fas fa-cut"></i> A gravação foi dividida em partes no mesmo dia?
+                        </a>
+                        <div class="split-info" id="splitInfo2" style="display:none;">
+                            Se este encontro teve 2 gravações separadas no mesmo dia, entre em contato com o administrador para registrar a segunda parte manualmente.
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -331,27 +396,56 @@ function sanitizeOdyseeUrl(string $url): string {
         document.getElementById('tab-btn-' + tab).classList.add('active');
     }
 
-    // Carrega dados já salvos desta semana quando muda o idioma
+    // Nomes dos dias da semana
+    const DAY_NAMES = {1:'Segunda-feira', 2:'Terça-feira', 3:'Quarta-feira', 4:'Quinta-feira', 5:'Sexta-feira', 6:'Sábado', 7:'Domingo'};
+
+    // Carrega dados salvos e exibe 1 ou 2 formulários conforme as sessões do idioma
     function carregarDadosSemana() {
         const select = document.getElementById('idiomaReplaySelect');
-        const parteSelect = document.getElementById('replayParteSelect');
-        const groupParte = document.getElementById('groupReplayParte');
-        const opt = select.options[select.selectedIndex];
-        
+        const opt    = select.options[select.selectedIndex];
+        const form1  = document.getElementById('formReplay1');
+        const form2  = document.getElementById('formReplay2');
+
         if (!select.value) {
-            groupParte.style.display = 'none';
-            document.getElementById('replay_numero').value = '';
-            document.getElementById('replay_titulo').value = '';
+            form1.style.display = 'none';
+            form2.style.display = 'none';
             return;
         }
-        
-        groupParte.style.display = 'block';
-        const parte = parteSelect.value;
-        const savedAllParts = JSON.parse(opt.dataset.saved || '{}');
-        const saved = savedAllParts ? savedAllParts[parte] : null;
 
-        document.getElementById('replay_numero').value = saved?.numero || '';
-        document.getElementById('replay_titulo').value = saved?.titulo || '';
+        const idiomaJson    = opt.value;
+        const savedAllParts = JSON.parse(opt.dataset.saved || 'null') || {};
+        const sessions      = JSON.parse(opt.dataset.sessions || '[]') || [];
+
+        // --- Formulário 1 (sempre visível após selecionar idioma) ---
+        document.getElementById('idioma_replay_f1').value    = idiomaJson;
+        document.getElementById('replay_numero_1').value     = savedAllParts[1]?.numero || '';
+        document.getElementById('replay_titulo_1').value     = savedAllParts[1]?.titulo || '';
+        const lbl1 = document.getElementById('sessionLabel1');
+        if (sessions.length >= 2) {
+            lbl1.textContent = '📅 1º Encontro — ' + (DAY_NAMES[sessions[0]?.day] || '');
+            lbl1.classList.add('visible');
+        } else {
+            lbl1.textContent = '';
+            lbl1.classList.remove('visible');
+        }
+        form1.style.display = 'block';
+
+        // --- Formulário 2 (apenas para idiomas com 2 sessões semanais) ---
+        if (sessions.length >= 2) {
+            document.getElementById('idioma_replay_f2').value = idiomaJson;
+            document.getElementById('replay_numero_2').value  = savedAllParts[2]?.numero || '';
+            document.getElementById('replay_titulo_2').value  = savedAllParts[2]?.titulo || '';
+            const lbl2 = document.getElementById('sessionLabel2');
+            lbl2.textContent = '📅 2º Encontro — ' + (DAY_NAMES[sessions[1]?.day] || '');
+            form2.style.display = 'block';
+        } else {
+            form2.style.display = 'none';
+        }
+    }
+
+    function toggleSplitInfo(n) {
+        const el = document.getElementById('splitInfo' + n);
+        el.style.display = (el.style.display === 'none') ? 'block' : 'none';
     }
 
 

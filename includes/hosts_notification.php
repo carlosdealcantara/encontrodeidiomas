@@ -2,7 +2,7 @@
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/includes/whatsapp_helper.php';
 
-function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = "atualizou dados") {
+function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = "atualizou dados", $parte_salva = 0) {
     // ============================================================
     // RATE-LIMIT: evita disparos duplicados em sequência rápida.
     // Múltiplos gatilhos (worker, reshorten, manual_resolve, portal)
@@ -11,7 +11,8 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
     // de 5 minutos. Usa a tabela settings como mutex leve.
     // ============================================================
     $tipo = ($acao_desc === "atualizou dados") ? 'portal' : 'webhook';
-    $rateKey = 'hosts_notif_last_' . $tipo . '_' . (int)$lang_id;
+    $parteKey = ($parte_salva > 0) ? '_p' . (int)$parte_salva : '';
+    $rateKey = 'hosts_notif_last_' . $tipo . '_' . (int)$lang_id . $parteKey;
     $RATE_LIMIT_SECONDS = 300; // 5 minutos
 
     try {
@@ -47,8 +48,10 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
 
     if ($acao_desc === "atualizou dados") {
         // Mensagem inicial de atualização pelo portal
-        $stmtThisLang = $conn->prepare("SELECT titulo, numero FROM meetup_replays WHERE language_id = ? AND semana = ?");
-        $stmtThisLang->execute([$lang_id, $semana_atual]);
+        // Busca a parte específica que acabou de ser salva (ou parte 1 como fallback)
+        $targetParte = ($parte_salva > 0) ? (int)$parte_salva : 1;
+        $stmtThisLang = $conn->prepare("SELECT titulo, numero FROM meetup_replays WHERE language_id = ? AND semana = ? AND parte = ?");
+        $stmtThisLang->execute([$lang_id, $semana_atual, $targetParte]);
         $rowThisLang = $stmtThisLang->fetch(PDO::FETCH_ASSOC);
         $titulo_preenchido = $rowThisLang && !empty($rowThisLang['titulo']) ? $rowThisLang['titulo'] : "(vazio)";
         $numero_preenchido = $rowThisLang && !empty($rowThisLang['numero']) ? $rowThisLang['numero'] : "(vazio)";
@@ -77,19 +80,27 @@ function notificarAtualizacaoHosts($conn, $lang_id, $semana_atual, $acao_desc = 
         return;
     }
 
-    // Caso contrário (ação final do bot), envia a prévia consolidada da semana
+    // Caso contrário (ação final do bot), envia a prévia consolidada da semana.
+    // ROW_NUMBER() mapeia parte→sessão para ordenar cada entrada pelo dia real do encontro.
     $stmtAll = $conn->prepare("
         SELECT l.id, l.name, l.flag_emoji, r.numero, r.link, r.titulo 
         FROM languages l 
         LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
         LEFT JOIN (
             SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
-            FROM meetings 
-            WHERE active = 1 
-            GROUP BY language_id
+            FROM meetings WHERE active = 1 GROUP BY language_id
         ) m ON l.id = m.language_id
+        LEFT JOIN (
+            SELECT m2.language_id, ms2.day_of_week, ms2.time_hour,
+                   ROW_NUMBER() OVER (PARTITION BY m2.language_id ORDER BY ms2.day_of_week ASC, ms2.time_hour ASC) as parte_num
+            FROM meetings m2
+            JOIN meeting_sessions ms2 ON ms2.meeting_id = m2.id AND ms2.active = 1
+            WHERE m2.active = 1
+        ) sess ON sess.language_id = l.id AND sess.parte_num = r.parte
         WHERE l.active = 1 
-        ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC
+        ORDER BY COALESCE(sess.day_of_week, m.first_day, 9) ASC,
+                 COALESCE(sess.time_hour, m.first_hour, 99) ASC,
+                 l.name ASC, r.parte ASC
     ");
     $stmtAll->execute([$semana_atual]);
     
