@@ -179,7 +179,9 @@
 
     // ── Fetch ──────────────────────────────────────────
     function loadScoreEditor() {
-        fetch('mentoria_score_edit_api.php?action=load')
+        // Usa a variável PHP $current_lang renderizada no painel como fonte prioritária
+        const lang = '<?= htmlspecialchars($current_lang ?? "") ?>' || (new URLSearchParams(window.location.search)).get('lang') || 'en';
+        fetch('mentoria_score_edit_api.php?action=load&lang=' + encodeURIComponent(lang))
             .then(r => r.json())
             .then(data => {
                 if (!data.success) { showError('rpActivities', data.error); return; }

@@ -52,16 +52,6 @@ $events = $conn->query("
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: var(--sidebar-bg); padding: 30px; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
-        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 50px; padding: 0 10px; }
-        .brand-logo { width: 35px; height: 35px; background: var(--accent-red); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
-        .brand-name { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; }
-        .nav-menu { flex: 1; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: var(--text-dim); text-decoration: none; border-radius: 12px; margin-bottom: 8px; transition: all 0.3s ease; font-weight: 500; }
-        .nav-item:hover { background: rgba(227, 29, 28, 0.1); color: var(--white); }
-        .nav-item.active { background: var(--accent-red); color: white; }
-        .nav-logout { margin-top: auto; color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.2); }
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
         .header-title h2 { font-size: 1.8rem; font-weight: 700; }
         .header-title p { color: var(--text-dim); margin-top: 4px; }
@@ -76,9 +66,16 @@ $events = $conn->query("
         .icon-green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .stat-info h3 { font-size: 1.6rem; font-weight: 700; }
         .stat-info p { color: var(--text-dim); font-size: 0.85rem; margin-top: 2px; }
-        .table-container { background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 20px; background: rgba(0,0,0,0.1); color: var(--text-dim); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .table-container { 
+            background: var(--card-bg); 
+            border-radius: 20px; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            width: 100%;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { text-align: left; padding: 20px; background: rgba(0,0,0,0.1); color: var(--text-dim); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
         td { padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         .city-tag { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
@@ -98,10 +95,18 @@ $events = $conn->query("
         .empty-state { text-align: center; padding: 60px; color: var(--text-dim); }
         .empty-state i { font-size: 3rem; margin-bottom: 20px; opacity: 0.2; display: block; }
         .controls { display: flex; gap: 15px; align-items: center; margin-bottom: 25px; flex-wrap: wrap; }
-        .search-group { position: relative; flex: 1; max-width: 400px; }
+        .search-group { position: relative; flex: 1; max-width: 400px; width: 100%; }
         .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
         .search-group input { width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 15px 12px 45px; color: var(--text-main); outline: none; transition: all 0.3s ease; }
         .search-group input:focus { border-color: var(--accent-red); }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; gap: 15px; margin-bottom: 25px; }
+            .btn-add { width: 100%; justify-content: center; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .search-group { max-width: 100%; }
+            td, th { padding: 12px 14px; }
+        }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">
 </head>

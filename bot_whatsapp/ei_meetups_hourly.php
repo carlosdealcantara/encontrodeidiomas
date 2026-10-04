@@ -154,11 +154,13 @@ foreach ($meetings as $m) {
         $diffMin = $totalMinAtual - $totalMinAlvo;
 
         // Janela de tolerância para cron de 5 em 5 minutos:
-        // Se o template é para o momento de início (minutos_antes <= 0, ex: "Começando Agora"),
-        // JAMAIS deve disparar adiantado (diffMin deve ser >= 0 e até 4 minutos após).
-        // Se for lembrete antecipado (ex: 30 minutos antes), aceita tolerância de -1 a +3 min para compensar oscilações de segundos da VPS.
+        // Se o template é para o momento de início (minutos_antes <= 0, ex: "Aviso de Início"),
+        // aceita até 2 minutos antes do horário alvo — a mensagem chega levemente adiantada,
+        // o que é aceitável e até desejável. Janela efetiva: [-2, +3] = 6 minutos.
+        // Se for lembrete antecipado (ex: 30 minutos antes), aceita tolerância de -1 a +3 min
+        // para compensar oscilações de segundos da VPS.
         if ($minutosAntes <= 0) {
-            if ($diffMin < 0 || $diffMin > 4) continue;
+            if ($diffMin < -2 || $diffMin > 3) continue;
         } else {
             if ($diffMin < -1 || $diffMin > 3) continue;
         }
@@ -298,8 +300,9 @@ if (!empty($templatesDiario)) {
         $diffMin = $totalMinAtual - $totalMinAlvo;
 
         // Janela de tolerância para cron de 5 em 5 minutos
+        // Mesma lógica do Bloco A: [-2, +3] para início, [-1, +3] para lembretes
         if ($minutosAntes <= 0) {
-            if ($diffMin < 0 || $diffMin > 4) continue;
+            if ($diffMin < -2 || $diffMin > 3) continue;
         } else {
             if ($diffMin < -1 || $diffMin > 3) continue;
         }

@@ -26,6 +26,11 @@ $action = $input['action'];
 $hoje   = date('Y-m-d');
 $conn   = connectDB();
 
+// Lê o idioma selecionado no painel (passado via ?lang=)
+$langId = $_GET['lang'] ?? $input['lang'] ?? 'en';
+$validLangs = ['en', 'es', 'fr', 'de', 'it', 'pt'];
+if (!in_array($langId, $validLangs)) $langId = 'en';
+
 // Nomes amigáveis para os grupos
 const GROUP_LABELS = [
     'our_classes'   => 'Our Classes',
@@ -44,49 +49,70 @@ try {
     // ACTION: load
     // ────────────────────────────────────────────────────
     if ($action === 'load') {
-        $config   = getMentoriaConfig();
+        $config   = getMentoriaConfig($langId);
         $adminJid = $config['admin_jid'] ?? '';
 
-        // Monta lista ordenada de grupos com JID e nome amigável
+        // Monta o set de JIDs de grupos do idioma atual.
+        // FILTRO PRINCIPAL: só membros ativos em grupos DESTE idioma aparecem no ranking.
+        // Isso funciona independentemente do formato do JID (inclusive @lid).
         $groupsOrdered = [];
+        $langGroupJids = []; // set de JIDs para filtragem
         foreach ($config['groups'] ?? [] as $key => $gData) {
             if (!empty($gData['jid'])) {
+                $jid = $gData['jid'];
                 $groupsOrdered[] = [
-                    'jid'  => $gData['jid'],
+                    'jid'  => $jid,
                     'key'  => $key,
                     'name' => GROUP_LABELS[$key] ?? ucfirst(str_replace('_', ' ', $key)),
                 ];
+                $langGroupJids[$jid] = true;
             }
         }
 
         // JIDs para a seção de Atividades
-        $jidPronun = $config['groups']['pronunciation']['jid'] ?? '';
-        $jidDesafio = $config['groups']['desafio']['jid']      ?? '';
+        $jidPronun  = $config['groups']['pronunciation']['jid'] ?? '';
+        $jidDesafio = $config['groups']['desafio']['jid']       ?? '';
         $jidMusic   = $config['groups']['music']['jid']         ?? '';
         $jidGames   = $config['groups']['games']['jid']         ?? '';
         $jidVocab   = $config['groups']['vocabulary']['jid']    ?? '';
 
+        // Se o idioma não tiver nenhum grupo com JID cadastrado, retorna vazio imediatamente
+        if (empty($langGroupJids)) {
+            echo json_encode([
+                'success'        => true,
+                'today'          => $hoje,
+                'students'       => [],
+                'groups_ordered' => [],
+                'social'         => [],
+                'no_groups'      => true
+            ]);
+            exit;
+        }
+
         $activity = fetchBaileysActivity($hoje);
 
-        // Presença na aula: conta quantas sessões cada aluno confirmou
+        // Presença na aula: conta quantas sessões cada aluno confirmou (filtrado por lang_id via schedule)
         $stmt = $conn->prepare("
-            SELECT member_jid, member_name, COUNT(*) as session_count
-            FROM class_attendances
-            WHERE aula_date = ?
-            GROUP BY member_jid
+            SELECT ca.member_jid, ca.member_name, COUNT(*) as session_count
+            FROM class_attendances ca
+            JOIN class_schedule cs ON cs.id = ca.schedule_id
+            WHERE ca.aula_date = ? AND cs.lang_id = ?
+            GROUP BY ca.member_jid
         ");
-        $stmt->execute([$hoje]);
+        $stmt->execute([$hoje, $langId]);
         $attendeesRaw = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // Map jid -> count
         $attendeeCount = [];
         foreach ($attendeesRaw as $row) {
             $attendeeCount[$row['member_jid']] = (int)$row['session_count'];
         }
 
-        $students = [];  // seção Atividades
+        $students  = [];  // seção Atividades
         $socialMap = []; // seção Social (por membro → por grupo)
 
         foreach ($activity as $groupJid => $members) {
+            // Ignora grupos que não pertencem ao idioma selecionado
+            if (!isset($langGroupJids[$groupJid])) continue;
+
             foreach ($members as $memberJid => $stats) {
                 if ($memberJid === $adminJid) continue;
                 if (str_ends_with($memberJid, '@g.us')) continue;
@@ -150,15 +176,21 @@ try {
             }
         }
 
-        // Busca pontos manuais
-        $stmtPts = $conn->prepare("
-            SELECT member_jid, member_name, group_key, SUM(points) as group_pts
-            FROM mentoria_dedicated_pts
-            WHERE date = ?
-            GROUP BY member_jid, group_key
-        ");
-        $stmtPts->execute([$hoje]);
-        $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
+        // Busca pontos manuais apenas dos grupos cadastrados neste idioma
+        $manualPoints = [];
+        $validGroupKeys = array_keys($config['groups'] ?? []);
+        if (!empty($validGroupKeys)) {
+            $inPlaceholders = implode(',', array_fill(0, count($validGroupKeys), '?'));
+            $params = array_merge([$hoje], $validGroupKeys);
+            $stmtPts = $conn->prepare("
+                SELECT member_jid, member_name, group_key, SUM(points) as group_pts
+                FROM mentoria_dedicated_pts
+                WHERE date = ? AND group_key IN ($inPlaceholders)
+                GROUP BY member_jid, group_key
+            ");
+            $stmtPts->execute($params);
+            $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
+        }
 
         foreach ($manualPoints as $row) {
             $jid = $row['member_jid'];
@@ -170,9 +202,9 @@ try {
 
             if (!isset($students[$jid])) {
                 if ($mName === 'Unknown') {
-                    $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? LIMIT 1");
+                    $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND lang_id = ? LIMIT 1");
                     $phoneOnly = preg_replace('/\D/', '', explode('@', $jid)[0]);
-                    $stmtName->execute([$phoneOnly]);
+                    $stmtName->execute([$phoneOnly, $langId]);
                     $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
                     if ($rowName) $mName = $rowName['nome'];
                 }

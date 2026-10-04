@@ -13,9 +13,9 @@
 <div class="controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; flex-wrap: wrap;">
     <div class="filter-group" style="display: flex; gap: 5px; background: var(--sidebar-bg); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
         <button class="filter-btn active" data-status="Ativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Ativos</button>
-        <button class="filter-btn" data-status="Inativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Inativos</button>
         <button class="filter-btn" data-status="Comunidade" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Comunidade</button>
         <button class="filter-btn" data-status="Vitalício" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Vitalícios</button>
+        <button class="filter-btn" data-status="Inativo" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Inativos</button>
         <button class="filter-btn" data-status="all" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; font-size: 0.9rem;">Todos</button>
     </div>
     <div class="search-group" style="position: relative; flex: 1; max-width: 400px;">
@@ -45,6 +45,7 @@
     .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; white-space: nowrap; }
     .badge-pago { background: rgba(16, 185, 129, 0.1); color: var(--success); }
     .badge-pendente { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .badge-comprovante { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
     .badge-suspenso { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
     .badge-isento { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
     .badge-ativo { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); }
@@ -142,6 +143,25 @@
                         <span class="badge <?= $badgeStClass ?>"><?= htmlspecialchars($aluno['status_aluno']) ?></span>
                     </div>
                     <div class="aluno-phone"><i class="fab fa-whatsapp"></i> <?= htmlspecialchars($aluno['telefone']) ?></div>
+                    <?php
+                    // Exibe dependentes vinculados a este titular
+                    $alunoId = (int)$aluno['id'];
+                    if (!empty($dependentesMap[$alunoId])): ?>
+                        <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px;">
+                            <?php foreach($dependentesMap[$alunoId] as $depNome): ?>
+                                <span style="background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.25); border-radius:8px; padding:2px 8px; font-size:0.72rem; font-weight:600; white-space:nowrap;">
+                                    <i class="fas fa-link" style="font-size:0.65rem;"></i> <?= htmlspecialchars($depNome) ?>
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (!empty($aluno['responsavel_nome'])): ?>
+                        <div style="margin-top:6px;">
+                            <span style="background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:2px 10px; font-size:0.72rem; font-weight:600; white-space:nowrap;">
+                                <i class="fas fa-credit-card" style="font-size:0.65rem;"></i> Pago por <?= htmlspecialchars(trim(explode(' ', $aluno['responsavel_nome'])[0])) ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <div style="font-weight:600;">R$ <?= number_format($aluno['valor_mensalidade'], 2, ',', '.') ?></div>
@@ -155,13 +175,19 @@
                         $badgeClass = 'badge-isento';
                         if($aluno['status_pagamento'] === 'Pago') $badgeClass = 'badge-pago';
                         if($aluno['status_pagamento'] === 'Pendente') $badgeClass = 'badge-pendente';
+                        if($aluno['status_pagamento'] === 'Comprovante Enviado') $badgeClass = 'badge-comprovante';
                         if($aluno['status_pagamento'] === 'Suspenso') $badgeClass = 'badge-suspenso';
                     ?>
                     <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($aluno['status_pagamento']) ?></span>
                 </td>
                 <td>
                     <div class="actions">
-                        <?php if ($aluno['status_aluno'] !== 'Vitalício' && $aluno['status_aluno'] !== 'Comunidade'): ?>
+                        <?php if (!empty($aluno['responsavel_financeiro_id'])): ?>
+                            <!-- Dependente: sem botão de renovar -->
+                            <span class="action-btn" style="background:rgba(245,158,11,0.1); color:#f59e0b; border-color:rgba(245,158,11,0.3); cursor:default; width:auto; padding:0 10px; font-size:0.72rem; font-weight:700; white-space:nowrap;" title="Renovado automaticamente junto com o responsável financeiro">
+                                <i class="fas fa-link"></i> Auto-renovado
+                            </span>
+                        <?php elseif ($aluno['status_aluno'] !== 'Vitalício'): ?>
                         <form action="mentoria_renovar.php" method="POST" style="display:inline;">
                             <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
                             <button type="submit" class="action-btn btn-renew" title="Registrar Pagamento" onclick="return confirm('Registrar pagamento de <?= htmlspecialchars($aluno['nome']) ?>?');">

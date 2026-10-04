@@ -731,9 +731,9 @@ def escanear_drive():
         
         # 1. Descobrir todas as pastas de origem dos vídeos dinamicamente
         # Regra: buscamos APENAS subpastas "recurring" dentro das pastas "Google Meet",
-        # pois são essas que contêm os vídeos novos. As pastas de DESTINO (Meet Recordings > Idioma)
-        # NÃO devem ser escaneadas para evitar reprocessar vídeos já arquivados.
-        folder_ids = [PASTA_RAIZ_DRIVE]
+        # pois são essas que contêm os vídeos novos gerados automaticamente pelo Meet.
+        # As pastas de DESTINO (Meet Recordings) NÃO devem ser escaneadas para evitar reprocessar vídeos já arquivados.
+        folder_ids = []
         
         # Pastas extras compartilhadas explicitamente (ex: novas pastas criadas pelo Google)
         PASTAS_EXTRAS = os.getenv('DRIVE_EXTRA_FOLDER_IDS', '').split(',')
@@ -996,6 +996,19 @@ def processar_fila():
     if not tarefa:
         return
         
+    # Guarda-chuva de segurança: Encontros públicos precisam conter o padrão de encontro oficial
+    nome_low = tarefa.get('drive_file_name', '').lower()
+    if 'encontro online' not in nome_low and 'online meeting' not in nome_low:
+        logger.error(
+            f"[SEGURANÇA] Tarefa pública {tarefa['id']} REJEITADA: o arquivo '{tarefa['drive_file_name']}' "
+            f"não contém padrão de encontro aberto ('Encontro Online'). Abortado para proteger arquivos pessoais."
+        )
+        atualizar_status(
+            tarefa['id'], 'skipped',
+            error_msg=f"Ignorado por segurança: não é um encontro aberto oficial ('{tarefa['drive_file_name']}')"
+        )
+        return
+
     logger.info(f"Processando tarefa: {tarefa['titulo_final']} (Status: {tarefa['status']})")
     atualizar_status(tarefa['id'], 'processing')
     

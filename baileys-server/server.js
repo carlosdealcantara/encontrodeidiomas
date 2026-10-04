@@ -579,6 +579,22 @@ app.post('/clear-queue', (req, res) => {
     res.json({ success: true, cleared });
 });
 
+// Enfileiramento com suporte a prioridade
+function enqueueItem(item, priority = 'normal') {
+    if (priority === 'high') {
+        // Encontra a posição após quaisquer outros itens de alta prioridade já existentes
+        const insertIndex = queue.findIndex(q => q.priority !== 'high');
+        if (insertIndex === -1) {
+            queue.push(item);
+        } else {
+            queue.splice(insertIndex, 0, item);
+        }
+        console.log(`[Queue] Item prioritário furou a fila para a posição ${insertIndex === -1 ? queue.length : insertIndex + 1}/${queue.length} (Destino: ${item.number})`);
+    } else {
+        queue.push(item);
+    }
+}
+
 // Bulk Queue Route (Used by test_cadence and crons)
 app.post('/send-bulk', (req, res) => {
     try {
@@ -586,7 +602,7 @@ app.post('/send-bulk', (req, res) => {
             return res.status(503).json({ success: false, error: 'WhatsApp não está conectado. Escaneie o QR Code primeiro.' });
         }
 
-        const { groups, textMessage } = req.body;
+        const { groups, textMessage, priority, source } = req.body;
         if (!Array.isArray(groups) || !textMessage?.text) {
             return res.status(400).json({ success: false, error: 'Invalid payload' });
         }
@@ -600,17 +616,19 @@ app.post('/send-bulk', (req, res) => {
         };
         saveJobsToFile();
         
-        addLog(jobId, 'info', 'Iniciando teste de cadência no servidor Node.js...');
+        addLog(jobId, 'info', `Iniciando disparo em lote (${groups.length} grupos)...`);
 
         groups.forEach((groupInfo, idx) => {
             // Support both object {group_id: "...", nome: "..."} or simple string array
             const number = groupInfo.group_id || groupInfo;
-            queue.push({
+            enqueueItem({
                 jobId,
                 number,
                 text: textMessage.text,
-                index: idx + 1
-            });
+                index: idx + 1,
+                priority: priority || 'normal',
+                source: source || 'bulk'
+            }, priority || 'normal');
         });
         
         if (isConnected && !isProcessingQueue) {
@@ -627,27 +645,32 @@ app.post('/send-bulk', (req, res) => {
 app.post('/send', (req, res) => {
     if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado. Escaneie o QR Code primeiro.' });
     try {
-        const { to, message, source, linkPreview } = req.body;
+        const { to, message, source, linkPreview, priority } = req.body;
         if (!to || !message) return res.status(400).json({ success: false, error: 'Parâmetros "to" e "message" são obrigatórios' });
         
+        // Se vier de class_kickoff ou class_cancel, garante prioridade alta mesmo se não explicitada
+        const itemPriority = (priority === 'high' || source === 'class_kickoff' || source === 'class_cancel') ? 'high' : 'normal';
+
         const jobId = 'unit_' + Math.random().toString(36).substring(2, 10);
         jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
         
-        console.log(`[Universal Endpoint] Enfileirando mensagem para ${to} (Source: ${source || 'desconhecida'})`);
+        console.log(`[Universal Endpoint] Enfileirando mensagem para ${to} (Source: ${source || 'desconhecida'} | Prioridade: ${itemPriority})`);
         
-        queue.push({
+        enqueueItem({
             jobId,
             number: to,
             text: message,
             index: 1,
-            linkPreview
-        });
+            linkPreview,
+            priority: itemPriority,
+            source: source || 'unitario'
+        }, itemPriority);
         
         if (isConnected && !isProcessingQueue) {
             processQueue();
         }
         
-        res.json({ success: true, jobId, queued: 1 });
+        res.json({ success: true, jobId, queued: 1, priority: itemPriority });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
@@ -657,25 +680,28 @@ app.post('/send', (req, res) => {
 app.post('/send-mention', (req, res) => {
     if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado.' });
     try {
-        const { to, message, mentions } = req.body;
+        const { to, message, mentions, priority, source } = req.body;
         if (!to || !message || !Array.isArray(mentions)) return res.status(400).json({ success: false, error: 'Parâmetros "to", "message" e "mentions" são obrigatórios' });
         
+        const itemPriority = priority || 'normal';
         const jobId = 'ment_' + Math.random().toString(36).substring(2, 10);
         jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
         
-        queue.push({
+        enqueueItem({
             jobId,
             number: to,
             text: message,
             index: 1,
-            mentions
-        });
+            mentions,
+            priority: itemPriority,
+            source: source || 'mention'
+        }, itemPriority);
         
         if (isConnected && !isProcessingQueue) {
             processQueue();
         }
         
-        res.json({ success: true, jobId, queued: 1 });
+        res.json({ success: true, jobId, queued: 1, priority: itemPriority });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

@@ -81,12 +81,25 @@
             </div>
         </div>
 
+        <!-- Kick Inadimplentes Our Classes -->
+        <div style="background: var(--bg-body); padding: 15px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h4 style="margin: 0; color: #f87171; font-size: 1.1rem;">🚫 Remoção de Inadimplentes — Our Classes (Meia-noite)</h4>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-dim);">Remove do Our Classes alunos com pagamento suspenso e vencimento passado. <strong style="color:#fca5a5;">Ação irreversível.</strong></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn" style="background:#334155; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="testarCron('mentoria_kick_inadimplente_cron.php', false)"><i class="fas fa-play"></i> Testar Normal</button>
+                <button type="button" class="btn" style="background:#dc2626; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer;" onclick="if(confirm('⚠️ Isso vai REMOVER alunos inadimplentes do Our Classes agora. Confirma?')) testarCron('mentoria_kick_inadimplente_cron.php', true)"><i class="fas fa-user-minus"></i> Forçar AGORA</button>
+            </div>
+        </div>
+
     </div>
     
     <div id="test-console" style="display:none; background:#0f172a; border: 1px solid #334155; padding: 15px; margin-top: 25px; border-radius: 8px; font-family: monospace; color: #10b981; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
         Aguardando execução...
     </div>
 </div>
+
 
 <!-- DIAGNÓSTICO DO CRON DE QUÓRUM -->
 <div class="form-card" style="margin-top: 30px;">

@@ -67,11 +67,6 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
-        .sidebar { width: 280px; background: var(--sidebar-bg); padding: 30px; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: var(--text-dim); text-decoration: none; border-radius: 12px; margin-bottom: 8px; transition: all 0.3s ease; font-weight: 500; }
-        .nav-item.active { background: var(--accent-red); color: white; }
-
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         .header { margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; }
 
         .form-inline { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; }
@@ -99,6 +94,16 @@ $links = $conn->query("SELECT * FROM useful_links ORDER BY order_index DESC, tit
         .action-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); width: 35px; height: 35px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .action-btn:hover { color: white; border-color: white; }
         .btn-del:hover { color: #ef4444; border-color: #ef4444; }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; gap: 15px; }
+            .form-inline { padding: 15px; border-radius: 16px; }
+            .form-grid, .form-row-2 { grid-template-columns: 1fr; gap: 12px; }
+            .btn-add { width: 100%; }
+            .link-item { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .link-info { width: 100%; }
+            .actions { width: 100%; justify-content: flex-end; }
+        }
 
         /* Toast Notification */
         #toast {

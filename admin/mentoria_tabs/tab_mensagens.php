@@ -6,6 +6,7 @@
     <div>
         <form method="POST" style="display: inline-block;">
             <input type="hidden" name="tab" value="mensagens">
+            <input type="hidden" name="lang" value="<?= htmlspecialchars($current_lang ?? 'en') ?>">
             <button type="submit" name="sync_groups" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white;">
                 <i class="fas fa-sync-alt"></i> Sincronizar Grupos
             </button>
@@ -14,13 +15,45 @@
 </div>
 
 <style>
-    .sub-tabs-container { margin-bottom: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-    .sub-tab-btn { padding: 12px 10px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 600; white-space: nowrap; transition: 0.2s; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+    .sub-tabs-container { 
+        margin-bottom: 20px; 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 10px; 
+        border-bottom: 1px solid rgba(255,255,255,0.1); 
+        padding-bottom: 15px; 
+    }
+    .sub-tab-btn { 
+        padding: 10px 14px; 
+        font-size: 0.9rem; 
+        border-radius: 8px; 
+        border: 1px solid rgba(255,255,255,0.1); 
+        background: transparent; 
+        color: var(--text-dim); 
+        cursor: pointer; 
+        font-weight: 600; 
+        white-space: nowrap; 
+        transition: 0.2s; 
+        text-align: center; 
+    }
     .sub-tab-btn:hover { color: var(--white); background: rgba(255,255,255,0.05); }
     .sub-tab-btn.active { background: var(--accent-red); color: white; border-color: var(--accent-red); }
     .sub-tab-pane { display: none; }
     .sub-tab-pane.active { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+        .sub-tabs-container {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 10px;
+        }
+        .sub-tab-btn {
+            flex-shrink: 0;
+        }
+        .form-card { padding: 18px 14px; }
+    }
 
     .form-card { background: var(--card-bg); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
     .form-group { margin-bottom: 20px; }
@@ -31,11 +64,17 @@
     .section-title { font-size: 1.2rem; color: #38bdf8; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 </style>
 
+<?php
+$isEs = ($current_lang === 'es');
+$labelLounge = $isEs ? '☕ El Rincón (Lounge)' : '☕ The Lounge';
+$labelDesafio = $isEs ? '🔥 El Reto (Desafio)' : '🔥 Desafio Diário';
+$labelClasses = $isEs ? '📚 El Aula (Classes)' : '📹 Our Classes';
+?>
 <div class="sub-tabs-container">
     <button class="sub-tab-btn active" onclick="openSubTab('sub_global')"><i class="fas fa-globe"></i> Configuração Global</button>
-    <button class="sub-tab-btn" onclick="openSubTab('sub_thelounge')"><i class="fas fa-coffee"></i> The Lounge</button>
-    <button class="sub-tab-btn" onclick="openSubTab('sub_desafio')"><i class="fas fa-fire"></i> Desafio Diário</button>
-    <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><i class="fas fa-video"></i> Our Classes</button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_thelounge')"><?= $labelLounge ?></button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_desafio')"><?= $labelDesafio ?></button>
+    <button class="sub-tab-btn" onclick="openSubTab('sub_meetups')"><?= $labelClasses ?></button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_pronunciation')">🗣️ Reading out loud</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_music')">🎶 Music Lab</button>
     <button class="sub-tab-btn" onclick="openSubTab('sub_vocabulary')">📒 New word!</button>
@@ -332,6 +371,13 @@
             if (targetBtn) targetBtn.classList.add('active');
         }
         localStorage.setItem('active_mentoria_sub_tab', tabId);
+
+        // Garante que o Select2 calcule a largura 100% corretamente ao exibir a sub-aba
+        if (typeof initSelect2Groups === 'function') {
+            setTimeout(function() {
+                initSelect2Groups();
+            }, 50);
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function() {

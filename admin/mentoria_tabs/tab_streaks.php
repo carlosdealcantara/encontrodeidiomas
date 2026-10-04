@@ -5,7 +5,7 @@
     </div>
 </div>
 
-<div class="form-card" style="padding: 0; overflow: hidden;">
+<div class="form-card" style="padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%;">
     <style>
         .streak-input {
             font-size: 1.1rem !important;
@@ -13,15 +13,15 @@
             padding: 4px 8px !important;
         }
     </style>
-    <table style="width: 100%; border-collapse: collapse;">
+    <table style="width: 100%; border-collapse: collapse; min-width: 680px;">
         <thead>
             <tr style="background: rgba(0,0,0,0.2);">
-                <th style="padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Nome / Número</th>
-                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Streak Atual</th>
-                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Recorde</th>
-                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Último Envio</th>
-                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Total Completado</th>
-                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim);">Ações</th>
+                <th style="padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); white-space: nowrap;">Nome / Número</th>
+                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); white-space: nowrap;">Streak Atual</th>
+                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); white-space: nowrap;">Recorde</th>
+                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); white-space: nowrap;">Último Envio</th>
+                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); white-space: nowrap;">Total Completado</th>
+                <th style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); white-space: nowrap;">Ações</th>
             </tr>
         </thead>
         <tbody>

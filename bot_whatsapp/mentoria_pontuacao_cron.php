@@ -1,7 +1,8 @@
 <?php
 /**
- * CRON: Ranking Unificado da Mentoria (Student of the Day + Social)
+ * CRON: Ranking Unificado da Mentoria (Student of the Day + Social) — Multi-idioma
  * Frequência: 1x/dia à meia-noite
+ * Calcula e posta o ranking separadamente para cada idioma ativo.
  */
 require_once __DIR__ . '/../config.php';
 ini_set('display_errors', 1);
@@ -17,8 +18,12 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 
+$dry_run = isset($_GET['dry_run']) && $_GET['dry_run'] == '1';
+if ($dry_run) {
+    echo "🔍 MODO DRY-RUN ATIVADO: Nenhuma mensagem será disparada no WhatsApp e logs não serão marcados como enviados.\n\n";
+}
+
 $conn = connectDB();
-$mentoriaConfig = getMentoriaConfig();
 
 $conn->exec("
     CREATE TABLE IF NOT EXISTS mentoria_auto_logs (
@@ -41,50 +46,26 @@ $conn->exec("
         dedication_pts INT DEFAULT 0,
         social_msgs INT DEFAULT 0,
         social_reacts INT DEFAULT 0,
+        lang_id VARCHAR(10) DEFAULT 'en',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uq_member_date (member_jid, score_date),
-        INDEX idx_score_date (score_date)
+        INDEX idx_score_date (score_date),
+        INDEX idx_lang_date (lang_id, score_date)
     )
 ");
 
-try {
-    $conn->exec("ALTER TABLE mentoria_desafio_streaks ADD COLUMN member_name VARCHAR(255) NULL");
-} catch (Exception $e) {}
+// Adiciona coluna lang_id caso não exista (migração segura)
+try { $conn->exec("ALTER TABLE mentoria_daily_scores ADD COLUMN lang_id VARCHAR(10) DEFAULT 'en' AFTER social_reacts"); } catch (Exception $e) {}
+try { $conn->exec("ALTER TABLE mentoria_desafio_streaks ADD COLUMN member_name VARCHAR(255) NULL"); } catch (Exception $e) {}
 
 $ontem = (new DateTime())->modify('-1 day')->format('Y-m-d');
 
-$check = $conn->prepare("SELECT id, detalhes FROM mentoria_auto_logs WHERE tipo = 'ranking_unificado' AND data_execucao = ?");
-$check->execute([$ontem]);
-$rowCheck = $check->fetch(PDO::FETCH_ASSOC);
-if ($rowCheck && !isset($_GET['force'])) {
-    $det = json_decode($rowCheck['detalhes'] ?? '', true);
-    $status = $det['status'] ?? 'sent';
-    if ($status === 'sent') {
-        die("Ranking já postado para esta data ($ontem). Use &force=1 para forçar o reenvio.");
-    }
+// Busca todos os idiomas ativos
+$langs = $conn->query("SELECT lang_id FROM mentoria_langs WHERE ativo = 1 ORDER BY lang_id ASC")->fetchAll(PDO::FETCH_COLUMN);
+
+if (empty($langs)) {
+    die("Nenhum idioma ativo encontrado em mentoria_langs.\n");
 }
-
-$config = getMentoriaConfig();
-
-$targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
-if (!$targetGroup) {
-    // Debug: mostra o config completo para diagnóstico
-    echo "❌ Grupo alvo (The Lounge) não configurado.\n\n";
-    echo "Chaves de 'groups' disponíveis no config:\n";
-    foreach (($config['groups'] ?? []) as $key => $val) {
-        echo "  - '{$key}' => jid: " . ($val['jid'] ?? '(vazio)') . "\n";
-    }
-    echo "\nConfig completo recebido:\n";
-    echo json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    die();
-}
-
-$adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
-
-$activity = fetchBaileysActivity($ontem);
-$memberStats = [];
-$rankingMsgs = [];
-$rankingReacts = [];
 
 $GROUP_EMOJIS = [
     'pronunciation' => '🗣️',
@@ -95,365 +76,495 @@ $GROUP_EMOJIS = [
     'protocolo_1001'=> '🔒'
 ];
 
-if (!empty($config['groups'])) {
-    foreach ($config['groups'] as $groupKey => $groupData) {
-        $groupJid = $groupData['jid'] ?? '';
-        if (!$groupJid) continue;
-        
-        $groupMembers = fetchGroupMembers($groupJid);
-        $groupAdmins = [];
-        foreach ($groupMembers as $m) {
-            if (!empty($m['admin'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['id']);
+// Pré-carrega atividade uma única vez (independe de idioma)
+$activity = fetchBaileysActivity($ontem);
+
+foreach ($langs as $lang) {
+    echo "\n🌐 Processando ranking para idioma: [{$lang}]\n";
+
+    // Anti-duplicidade por idioma (ignorado em modo dry_run)
+    $logType = 'ranking_unificado_' . $lang;
+    $check   = $conn->prepare("SELECT id, detalhes FROM mentoria_auto_logs WHERE tipo = ? AND data_execucao = ?");
+    $check->execute([$logType, $ontem]);
+    $rowCheck = $check->fetch(PDO::FETCH_ASSOC);
+    if ($rowCheck && !isset($_GET['force']) && !$dry_run) {
+        $det    = json_decode($rowCheck['detalhes'] ?? '', true);
+        $status = $det['status'] ?? 'sent';
+        if ($status === 'sent') {
+            echo "  ⏭️ Ranking [{$lang}] já postado para esta data ($ontem). Use &force=1 para forçar.\n";
+            continue;
         }
-        
-        if (isset($activity[$groupJid])) {
-            foreach ($activity[$groupJid] as $memberJid => $data) {
-                // Ignora admin e JIDs de grupos (fantasmas)
-                $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
-                if ($cleanMemberJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
-                if (in_array($cleanMemberJid, $groupAdmins)) continue;
-                if (str_ends_with($memberJid, '@g.us')) continue;
-                
-                $nome = trim($data['name'] ?? 'Unknown');
-                if ($nome === 'Unknown' || empty($nome)) {
-                    $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-                    $phoneOnly = preg_replace('/\D/', '', explode('@', $memberJid)[0]);
-                    $stmtName->execute([$phoneOnly]);
-                    $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-                    if ($rowName) {
-                        $nome = $rowName['nome'];
-                    } else {
-                        $stmtName2 = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE member_jid = ? AND member_name IS NOT NULL AND member_name != '' LIMIT 1");
-                        $stmtName2->execute([$memberJid]);
-                        $rowName2 = $stmtName2->fetch(PDO::FETCH_ASSOC);
-                        if ($rowName2) {
-                            $nome = $rowName2['member_name'];
+    }
+
+    $config = getMentoriaConfig($lang);
+
+    $targetGroup = $config['groups']['the_lounge']['jid'] ?? null;
+    if (!$targetGroup) {
+        echo "  ❌ Grupo alvo (The Lounge) não configurado para [{$lang}]. Pulando.\n";
+        continue;
+    }
+
+    $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
+
+    // -------------------------------------------------------
+    // COLETA DE ATIVIDADE SOCIAL (grupos deste idioma)
+    // -------------------------------------------------------
+    $memberStats  = [];
+    $rankingMsgs  = [];
+    $rankingReacts= [];
+
+    if (!empty($config['groups'])) {
+        foreach ($config['groups'] as $groupKey => $groupData) {
+            $groupJid = $groupData['jid'] ?? '';
+            if (!$groupJid) continue;
+
+            $groupMembers = fetchGroupMembers($groupJid);
+            $groupAdmins  = [];
+            foreach ($groupMembers as $m) {
+                if (!empty($m['admin'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['id']);
+            }
+
+            if (isset($activity[$groupJid])) {
+                foreach ($activity[$groupJid] as $memberJid => $data) {
+                    $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
+                    if ($cleanMemberJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+                    if (in_array($cleanMemberJid, $groupAdmins)) continue;
+                    if (str_ends_with($memberJid, '@g.us')) continue;
+
+                    $nome = trim($data['name'] ?? 'Unknown');
+                    if ($nome === 'Unknown' || empty($nome)) {
+                        $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' AND (lang_id = ? OR lang_id IS NULL) LIMIT 1");
+                        $phoneOnly = preg_replace('/\D/', '', explode('@', $memberJid)[0]);
+                        $stmtName->execute([$phoneOnly, $lang]);
+                        $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+                        if ($rowName) {
+                            $nome = $rowName['nome'];
+                        } else {
+                            $stmtName2 = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE member_jid = ? AND member_name IS NOT NULL AND member_name != '' LIMIT 1");
+                            $stmtName2->execute([$memberJid]);
+                            $rowName2 = $stmtName2->fetch(PDO::FETCH_ASSOC);
+                            if ($rowName2) $nome = $rowName2['member_name'];
                         }
                     }
-                }
 
-                // Ignora contas da Staff / Testes (devido a limitações de @lid no WhatsApp Business)
-                if (stripos($nome, 'Staff') !== false || stripos($nome, 'Test') !== false) continue;
+                    if (stripos($nome, 'Staff') !== false || stripos($nome, 'Test') !== false) continue;
 
-                // Track Social (Messages & Reactions across ALL groups)
-                if (!isset($rankingMsgs[$memberJid])) {
-                    $rankingMsgs[$memberJid] = [
-                        'name'  => $nome,
-                        'score' => 0
-                    ];
-                } else {
-                    // Solução C: Atualiza o nome se o anterior for ruim e o novo for bom
-                    if (($rankingMsgs[$memberJid]['name'] === 'Unknown' || $rankingMsgs[$memberJid]['name'] === 'Desconhecido') 
-                        && $nome !== 'Unknown' && $nome !== 'Desconhecido') {
-                        $rankingMsgs[$memberJid]['name'] = $nome;
+                    // Track Social
+                    if (!isset($rankingMsgs[$memberJid])) {
+                        $rankingMsgs[$memberJid] = ['name' => $nome, 'score' => 0];
+                    } else {
+                        if (($rankingMsgs[$memberJid]['name'] === 'Unknown' || $rankingMsgs[$memberJid]['name'] === 'Desconhecido')
+                            && $nome !== 'Unknown' && $nome !== 'Desconhecido') {
+                            $rankingMsgs[$memberJid]['name'] = $nome;
+                        }
                     }
-                }
-                $rankingMsgs[$memberJid]['score'] += ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0);
+                    $rankingMsgs[$memberJid]['score'] += ($data['messages'] ?? 0) + ($data['images_sent'] ?? 0) + ($data['audios_sent'] ?? 0);
 
-                if (!isset($rankingReacts[$memberJid])) {
-                    $rankingReacts[$memberJid] = ['name' => $nome, 'score' => 0];
-                } else {
-                    if (($rankingReacts[$memberJid]['name'] === 'Unknown' || $rankingReacts[$memberJid]['name'] === 'Desconhecido') 
-                        && $nome !== 'Unknown' && $nome !== 'Desconhecido') {
-                        $rankingReacts[$memberJid]['name'] = $nome;
+                    if (!isset($rankingReacts[$memberJid])) {
+                        $rankingReacts[$memberJid] = ['name' => $nome, 'score' => 0];
+                    } else {
+                        if (($rankingReacts[$memberJid]['name'] === 'Unknown' || $rankingReacts[$memberJid]['name'] === 'Desconhecido')
+                            && $nome !== 'Unknown' && $nome !== 'Desconhecido') {
+                            $rankingReacts[$memberJid]['name'] = $nome;
+                        }
                     }
+                    $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
                 }
-                $rankingReacts[$memberJid]['score'] += $data['reactions_given'] ?? 0;
-
-                // Dedication points are now fetched separately from mentoria_dedicated_pts
             }
         }
     }
-}
 
-// -----------------------------------------------------
-// 1. DEDICAÇÃO: Base Desafio (5 pts garantidos)
-// -----------------------------------------------------
+    // -------------------------------------------------------
+    // DEDICAÇÃO: Base Desafio (5 pts — quem completou o desafio)
+    // -------------------------------------------------------
+    // Para filtrar por idioma: verifica se o membro está nos grupos deste idioma
+    $desafioJid    = $config['groups']['desafio']['jid'] ?? null;
+    $desafioMembers = $desafioJid ? fetchGroupMembers($desafioJid) : [];
+    $desafioMemberJids = array_column($desafioMembers, 'id');
 
-$stmtStreak = $conn->prepare("SELECT member_jid, member_name FROM mentoria_desafio_streaks WHERE last_completed_date = ?");
-$stmtStreak->execute([$ontem]);
-$streakCompleters = $stmtStreak->fetchAll(PDO::FETCH_ASSOC);
+    $stmtStreak = $conn->prepare("SELECT member_jid, member_name FROM mentoria_desafio_streaks WHERE last_completed_date = ?");
+    $stmtStreak->execute([$ontem]);
+    $streakCompleters = $stmtStreak->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($streakCompleters as $completer) {
-    $mJid = $completer['member_jid'];
-    $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
-    
-    // Ignora admin
-    if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
-    
-    $mName = $completer['member_name'] ?? 'Unknown';
-    if ($mName === 'Unknown' || empty(trim($mName))) {
-        if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
-            $mName = $rankingMsgs[$mJid]['name'];
-        } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
-            $mName = $rankingReacts[$mJid]['name'];
-        } else {
-            $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-            $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
-            $stmtName->execute([$phoneOnly]);
-            $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-            if ($rowName) $mName = $rowName['nome'];
+    foreach ($streakCompleters as $completer) {
+        $mJid      = $completer['member_jid'];
+        $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
+
+        // Ignora admin
+        if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+
+        // Só processa se este membro pertence ao grupo de desafio deste idioma
+        // (evita contabilizar alunos de outro idioma)
+        if ($desafioJid && !empty($desafioMemberJids) && !in_array($mJid, $desafioMemberJids)) continue;
+
+        $mName = $completer['member_name'] ?? 'Unknown';
+        if ($mName === 'Unknown' || empty(trim($mName))) {
+            if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
+                $mName = $rankingMsgs[$mJid]['name'];
+            } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
+                $mName = $rankingReacts[$mJid]['name'];
+            } else {
+                $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+                $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
+                $stmtName->execute([$phoneOnly]);
+                $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+                if ($rowName) $mName = $rowName['nome'];
+            }
+        }
+
+        if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
+
+        if (!isset($memberStats[$mJid])) {
+            $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
+        }
+        $memberStats[$mJid]['total_pts'] += 5;
+        if (!in_array('📚', $memberStats[$mJid]['emojis'])) {
+            $memberStats[$mJid]['emojis'][] = '📚';
+        }
+        if ($memberStats[$mJid]['name'] === 'Unknown' && $mName !== 'Unknown' && trim($mName) !== '') {
+            $memberStats[$mJid]['name'] = $mName;
         }
     }
 
-    if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
+    // -------------------------------------------------------
+    // DEDICAÇÃO: Pontos Manuais (!1 a !5) filtrados por idioma
+    // -------------------------------------------------------
 
-    if (!isset($memberStats[$mJid])) {
-        $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
+    // Obtém todos os JIDs dos grupos deste idioma para filtrar
+    $langGroupJids = array_values(array_filter(array_column($config['groups'] ?? [], 'jid')));
+
+    $manualPoints = [];
+    if (!empty($langGroupJids)) {
+        $stmtPts = $conn->prepare("
+            SELECT member_jid, member_name, group_key, SUM(points) as group_pts
+            FROM mentoria_dedicated_pts
+            WHERE date = ? AND group_jid IN (" . implode(',', array_fill(0, count($langGroupJids), '?')) . ")
+            GROUP BY member_jid, group_key
+        ");
+        $paramsManual = array_merge([$ontem], $langGroupJids);
+        $stmtPts->execute($paramsManual);
+        $manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
     }
-    
-    // Adiciona 5 pontos base e o emoji
-    $memberStats[$mJid]['total_pts'] += 5;
-    if (!in_array('📚', $memberStats[$mJid]['emojis'])) {
-        $memberStats[$mJid]['emojis'][] = '📚';
-    }
-    
-    if ($memberStats[$mJid]['name'] === 'Unknown' && $mName !== 'Unknown' && trim($mName) !== '') {
-        $memberStats[$mJid]['name'] = $mName;
-    }
-}
 
-// -----------------------------------------------------
-// 2. DEDICAÇÃO: Pontos Manuais (!1 a !5)
-// -----------------------------------------------------
+    foreach ($manualPoints as $row) {
+        $mJid      = $row['member_jid'];
+        $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
+        if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
 
-$stmtPts = $conn->prepare("
-    SELECT member_jid, member_name, group_key, SUM(points) as group_pts
-    FROM mentoria_dedicated_pts
-    WHERE date = ?
-    GROUP BY member_jid, group_key
-");
-$stmtPts->execute([$ontem]);
-$manualPoints = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
+        $mName = $row['member_name'] ?: 'Unknown';
+        if ($mName === 'Unknown') {
+            if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
+                $mName = $rankingMsgs[$mJid]['name'];
+            } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
+                $mName = $rankingReacts[$mJid]['name'];
+            } else {
+                $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
+                $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
+                $stmtName->execute([$phoneOnly]);
+                $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
+                if ($rowName) $mName = $rowName['nome'];
+            }
+        }
 
-foreach ($manualPoints as $row) {
-    $mJid = $row['member_jid'];
-    $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
-    if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+        if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
 
-    $mName = $row['member_name'] ?: 'Unknown';
-    if ($mName === 'Unknown') {
-        if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
-            $mName = $rankingMsgs[$mJid]['name'];
-        } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
-            $mName = $rankingReacts[$mJid]['name'];
-        } else {
-            $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-            $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
-            $stmtName->execute([$phoneOnly]);
-            $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-            if ($rowName) $mName = $rowName['nome'];
+        if (!isset($memberStats[$mJid])) {
+            $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
+        }
+        $memberStats[$mJid]['total_pts'] += (int)$row['group_pts'];
+        $emoji = $GROUP_EMOJIS[$row['group_key']] ?? '⭐';
+        if (!in_array($emoji, $memberStats[$mJid]['emojis'])) {
+            $memberStats[$mJid]['emojis'][] = $emoji;
         }
     }
 
-    if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;
+    // -------------------------------------------------------
+    // AULA / ATTENDANCE (20 pts) — filtrado pelo lang_id
+    // -------------------------------------------------------
+    $stmt = $conn->prepare("
+        SELECT a.member_jid, a.member_name, s.session_type,
+               (SELECT COUNT(*) FROM class_attendances WHERE schedule_id = a.schedule_id AND aula_date = a.aula_date) as quorum
+        FROM class_attendances a
+        LEFT JOIN class_schedule s ON a.schedule_id = s.id
+        WHERE a.aula_date = ? AND (s.lang_id = ? OR s.lang_id IS NULL)
+    ");
+    $stmt->execute([$ontem, $lang]);
+    $attendees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    if (!isset($memberStats[$mJid])) {
-        $memberStats[$mJid] = ['name' => $mName, 'total_pts' => 0, 'emojis' => []];
+    foreach ($attendees as $att) {
+        $mJid = $att['member_jid'];
+        if ($mJid === $adminJid) continue;
+        if (!isset($memberStats[$mJid])) {
+            $memberStats[$mJid] = ['name' => $att['member_name'], 'total_pts' => 0, 'emojis' => []];
+        }
+        $memberStats[$mJid]['total_pts'] += 20;
+        array_unshift($memberStats[$mJid]['emojis'], '🖥️');
     }
-    
-    $memberStats[$mJid]['total_pts'] += (int)$row['group_pts'];
-    $emoji = $GROUP_EMOJIS[$row['group_key']] ?? '⭐';
-    if (!in_array($emoji, $memberStats[$mJid]['emojis'])) {
-        $memberStats[$mJid]['emojis'][] = $emoji;
-    }
-}
 
-// Aula / Attendance (20 pts ou 2 pts simbólicos se cancelado por falta de quórum)
-$stmt = $conn->prepare("
-    SELECT a.member_jid, a.member_name, s.session_type,
-           (SELECT COUNT(*) FROM class_attendances WHERE schedule_id = a.schedule_id AND aula_date = a.aula_date) as quorum
-    FROM class_attendances a
-    LEFT JOIN class_schedule s ON a.schedule_id = s.id
-    WHERE a.aula_date = ?
-");
-$stmt->execute([$ontem]);
-$attendees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // -------------------------------------------------------
+    // STUDENT OF THE DAY
+    // -------------------------------------------------------
+    $memberStats = array_filter($memberStats, fn($m) => $m['total_pts'] > 0);
+    uasort($memberStats, fn($a, $b) => $b['total_pts'] <=> $a['total_pts']);
 
-foreach ($attendees as $att) {
-    $mJid = $att['member_jid'];
-    if ($mJid === $adminJid) continue;
-    if (!isset($memberStats[$mJid])) {
-        $memberStats[$mJid] = ['name' => $att['member_name'], 'total_pts' => 0, 'emojis' => []];
-    }
-    
-    // As confirmações que chegaram até aqui são de aulas que realmente aconteceram
-    // (aulas canceladas têm as confirmações deletadas no cron de quórum)
-    $memberStats[$mJid]['total_pts'] += 20;
-    array_unshift($memberStats[$mJid]['emojis'], '🖥️');
-}
+    // Defaults de string "sem participantes" por idioma
+    $noParticipantsStr = ($lang === 'es') ? "Sin participantes ayer." : "No participants yesterday.";
+    $noOtherStr        = ($lang === 'es') ? "Sin otros participantes ayer." : "No other participants yesterday.";
 
-// -----------------------------------------------------
-// 1. DEDICAÇÃO (Student of the Day)
-// -----------------------------------------------------
-$memberStats = array_filter($memberStats, fn($m) => $m['total_pts'] > 0);
-uasort($memberStats, fn($a, $b) => $b['total_pts'] <=> $a['total_pts']);
+    $studentOfTheDayStr = '';
+    $othersStr          = '';
 
-$studentOfTheDayStr = '';
-$othersStr = '';
-$i = 0;
+    if (!empty($memberStats)) {
+        $maxPts  = reset($memberStats)['total_pts'];
+        $winners = array_filter($memberStats, fn($m) => $m['total_pts'] === $maxPts);
+        $losers  = array_filter($memberStats, fn($m) => $m['total_pts'] < $maxPts);
 
-if (!empty($memberStats)) {
-    // Detectar pontuação máxima e checar empates
-    $maxPts = reset($memberStats)['total_pts'];
-    $winners = array_filter($memberStats, fn($m) => $m['total_pts'] === $maxPts);
-    $losers  = array_filter($memberStats, fn($m) => $m['total_pts'] < $maxPts);
+        if (count($winners) === 1) {
+            $w = reset($winners);
+            $studentOfTheDayStr = "🏆 *{$w['name']}* — " . implode('', $w['emojis']) . " — *{$w['total_pts']} pts*";
+        } else {
+            $tieLabel  = ($lang === 'es') ? "🏆 *¡Empate!*" : "🏆 *It's a tie!*";
+            $tiedNames = [];
+            foreach ($winners as $w) {
+                $tiedNames[] = "*{$w['name']}* — " . implode('', $w['emojis']) . " — *{$w['total_pts']} pts*";
+            }
+            $studentOfTheDayStr = $tieLabel . "\n" . implode("\n", $tiedNames);
+        }
 
-    if (count($winners) === 1) {
-        // Vencedor único
-        $w = reset($winners);
-        $studentOfTheDayStr = "🏆 *{$w['name']}* — " . implode('', $w['emojis']) . " — *{$w['total_pts']} pts*";
+        $startPos = count($winners) + 1;
+        $i        = $startPos;
+        foreach ($losers as $jid => $data) {
+            $emojisStr  = implode('', $data['emojis']);
+            $nomeStr    = trim($data['name']) ?: 'Unknown';
+            $othersStr .= "{$i}. *{$nomeStr}* — {$emojisStr} — {$data['total_pts']} pts\n";
+            $i++;
+        }
     } else {
-        // Empate no topo — lista todos
-        $tiedNames = [];
-        foreach ($winners as $w) {
-            $tiedNames[] = "*{$w['name']}* — " . implode('', $w['emojis']) . " — *{$w['total_pts']} pts*";
-        }
-        $studentOfTheDayStr = "🏆 *It's a tie!*\n" . implode("\n", $tiedNames);
+        $studentOfTheDayStr = $noParticipantsStr;
     }
 
-    $startPos = count($winners) + 1;
-    $i = $startPos;
-    foreach ($losers as $jid => $data) {
-        $emojisStr = implode('', $data['emojis']);
-        $nomeStr = trim($data['name']) ?: 'Unknown';
-        $othersStr .= "{$i}. *{$nomeStr}* — {$emojisStr} — {$data['total_pts']} pts\n";
+    $othersStr = $othersStr ?: $noOtherStr;
+
+    // Legenda
+    $defaultLegends = [
+        'es' => "🖥️ Asistió a Clase (20 pts)\n🗣️ Lectura en voz alta (5 pts)\n📚 Desafío (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Juegos (2 pts)\n👏 Compromiso con la sesión (5 pts)\n📒 ¡Nueva palabra! (1 pt)",
+        'en' => "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (5 pts)\n📒 New word! (1 pt)",
+    ];
+    $defaultLegend = $defaultLegends[$lang] ?? $defaultLegends['en'];
+    $legendStr     = !empty($config['templates']['ranking_legend']) ? $config['templates']['ranking_legend'] : $defaultLegend;
+
+    // -------------------------------------------------------
+    // SOCIAL (Word Slingers & Emoji Gang)
+    // -------------------------------------------------------
+    $rankingMsgs   = array_filter($rankingMsgs,   fn($item) => $item['score'] > 0);
+    $rankingReacts = array_filter($rankingReacts, fn($item) => $item['score'] > 0);
+
+    uasort($rankingMsgs,   fn($a, $b) => $b['score'] <=> $a['score']);
+    uasort($rankingReacts, fn($a, $b) => $b['score'] <=> $a['score']);
+
+    $top5Msgs   = array_slice($rankingMsgs,   0, 5, true);
+    $top5Reacts = array_slice($rankingReacts, 0, 5, true);
+
+    $medals = ['🥇', '🥈', '🥉'];
+
+    $noMsgsStr   = ($lang === 'es') ? "Sin mensajes ayer.\n" : "No messages yesterday.\n";
+    $noReactsStr = ($lang === 'es') ? "Sin reacciones ayer.\n" : "No reactions yesterday.\n";
+    $msgsLabel   = ($lang === 'es') ? "mensajes" : "messages";
+    $reactsLabel = ($lang === 'es') ? "reacciones" : "reactions";
+
+    $msgList = '';
+    $i       = 0;
+    foreach ($top5Msgs as $jid => $data) {
+        $rankStr  = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
+        $nomeStr  = trim($data['name']) ?: 'Unknown';
+        $msgList .= $rankStr . " *{$nomeStr}* — {$data['score']} {$msgsLabel}\n";
         $i++;
     }
-} else {
-    $studentOfTheDayStr = "No participants yesterday.";
+
+    $reactList = '';
+    $i         = 0;
+    foreach ($top5Reacts as $jid => $data) {
+        $rankStr    = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
+        $nomeStr    = trim($data['name']) ?: 'Unknown';
+        $reactList .= $rankStr . " *{$nomeStr}* — {$data['score']} {$reactsLabel}\n";
+        $i++;
+    }
+
+    $wordSlingersList = $msgList    ?: $noMsgsStr;
+    $emojiGangList    = $reactList  ?: $noReactsStr;
+
+    // -------------------------------------------------------
+    // SALVAR PONTOS DO DIA NO BANCO (com lang_id)
+    // -------------------------------------------------------
+    foreach ($memberStats as $jid => $data) {
+        $msgs   = $rankingMsgs[$jid]['score']   ?? 0;
+        $reacts = $rankingReacts[$jid]['score'] ?? 0;
+        $stmtSave = $conn->prepare("
+            INSERT INTO mentoria_daily_scores (member_jid, member_name, score_date, dedication_pts, social_msgs, social_reacts, lang_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                member_name    = VALUES(member_name),
+                dedication_pts = VALUES(dedication_pts),
+                social_msgs    = VALUES(social_msgs),
+                social_reacts  = VALUES(social_reacts),
+                lang_id        = VALUES(lang_id)
+        ");
+        $stmtSave->execute([$jid, $data['name'], $ontem, $data['total_pts'], $msgs, $reacts, $lang]);
+    }
+
+    // Salva quem só pontuou em social
+    $allJids = array_unique(array_merge(array_keys($rankingMsgs), array_keys($rankingReacts)));
+    foreach ($allJids as $jid) {
+        if (isset($memberStats[$jid])) continue;
+        $msgs   = $rankingMsgs[$jid]['score']   ?? 0;
+        $reacts = $rankingReacts[$jid]['score'] ?? 0;
+        $name   = $rankingMsgs[$jid]['name']    ?? $rankingReacts[$jid]['name'] ?? 'Unknown';
+        $stmtSave = $conn->prepare("
+            INSERT INTO mentoria_daily_scores (member_jid, member_name, score_date, dedication_pts, social_msgs, social_reacts, lang_id)
+            VALUES (?, ?, ?, 0, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                member_name    = VALUES(member_name),
+                social_msgs    = VALUES(social_msgs),
+                social_reacts  = VALUES(social_reacts),
+                lang_id        = VALUES(lang_id)
+        ");
+        $stmtSave->execute([$jid, $name, $ontem, $msgs, $reacts, $lang]);
+    }
+
+    // -------------------------------------------------------
+    // MONTAGEM FINAL DAS MENSAGENS
+    // -------------------------------------------------------
+    $dateFormatted = ($lang === 'es')
+        ? date('j \d\e F \d\e Y') // ex: 28 de septiembre de 2026
+        : date('F jS, Y');         // ex: September 28th, 2026
+
+    $defaultStudent  = ($lang === 'es')
+        ? "📅 {date}\n\n⭐ *ESTUDIANTE DEL DÍA*\n\n{student_of_the_day}\n\n*Otros estudiantes:*\n{other_students}\n\n📖 *Leyenda:*\n{legend}"
+        : "📅 {date}\n\n⭐ *STUDENT OF THE DAY*\n\n{student_of_the_day}\n\n*Other students:*\n{other_students}\n\n📖 *Legend:*\n{legend}";
+    $defaultMessenger = ($lang === 'es')
+        ? "📅 {date}\n\n💬 *TOP MENSAJERO*\n_¿Quién envió más mensajes hoy?_\n\n{top_messenger_list}"
+        : "📅 {date}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{top_messenger_list}";
+    $defaultReactor  = ($lang === 'es')
+        ? "📅 {date}\n\n❤️ *TOP REACCIONADOR*\n_¿Quién dio más reacciones hoy?_\n\n{top_reactor_list}"
+        : "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
+
+    $tpl1 = !empty($config['templates']['ranking_student'])   ? $config['templates']['ranking_student']   : $defaultStudent;
+    $tpl2 = !empty($config['templates']['ranking_messenger']) ? $config['templates']['ranking_messenger'] : $defaultMessenger;
+    $tpl3 = !empty($config['templates']['ranking_reactor'])   ? $config['templates']['ranking_reactor']   : $defaultReactor;
+
+    $msg1 = str_replace(
+        ['{date}', '{student_of_the_day}', '{other_students}', '{legend}'],
+        [$dateFormatted, $studentOfTheDayStr, $othersStr, $legendStr],
+        $tpl1
+    );
+    $msg2 = str_replace(
+        ['{date}', '{top_messenger_list}'],
+        [$dateFormatted, $wordSlingersList],
+        $tpl2
+    );
+    $msg3 = str_replace(
+        ['{date}', '{top_reactor_list}'],
+        [$dateFormatted, $emojiGangList],
+        $tpl3
+    );
+
+    // -------------------------------------------------------
+    // DISPARO DAS MENSAGENS (COM SUPRESSÃO DE TUDO QUE ESTIVER VAZIO)
+    // -------------------------------------------------------
+    $hasStudents = !empty($memberStats);
+    $hasMsgs     = !empty($top5Msgs);
+    $hasReacts   = !empty($top5Reacts);
+
+    // Se NÃO houve NENHUMA atividade no idioma ontem (sem estudantes, sem mensagens e sem reações),
+    // NÃO ENVIA NADA para o grupo (evita poluir a comunidade com mensagens de "Sin participantes")
+    if (!$hasStudents && !$hasMsgs && !$hasReacts) {
+        echo "  ℹ️ Nenhuma atividade ontem para o idioma [{$lang}] (sem estudantes, mensagens ou reações). Disparo cancelado.\n";
+        // Registra log para não tentar novamente no mesmo dia
+        if (!$dry_run) {
+            registrarConclusaoDisparo($conn, $logType, $ontem, null, [
+                'status'        => 'skipped_empty',
+                'lang'          => $lang,
+                'messages_sent' => 0
+            ]);
+        }
+        continue;
+    }
+
+    if ($dry_run) {
+        if ($hasStudents) {
+            echo "  [DRY-RUN] Mensagem 1 (Estudante do Dia) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg1}\n" . str_repeat('-', 40) . "\n";
+        } else {
+            echo "  ℹ️ [DRY-RUN] Mensagem 1 (Estudante do Dia) ignorada pois não houve participantes ontem.\n";
+        }
+        if ($hasMsgs) {
+            echo "  [DRY-RUN] Mensagem 2 (Top Mensagens) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg2}\n" . str_repeat('-', 40) . "\n";
+        } else {
+            echo "  ℹ️ [DRY-RUN] Mensagem 2 (Top Mensagens) ignorada pois não houve mensagens ontem.\n";
+        }
+        if ($hasReacts) {
+            echo "  [DRY-RUN] Mensagem 3 (Top Reações) seria enviada para {$targetGroup}:\n" . str_repeat('-', 40) . "\n{$msg3}\n" . str_repeat('-', 40) . "\n";
+        } else {
+            echo "  ℹ️ [DRY-RUN] Mensagem 3 (Top Reações) ignorada pois não houve reações ontem.\n";
+        }
+        continue;
+    }
+
+    // Trava inicial antes de disparar
+    $travou = registrarInicioDisparo($conn, $logType, $ontem, null, 15);
+    if (!$travou && !isset($_GET['force'])) {
+        echo "  ⚠️ Ranking [{$lang}] já está sendo processado por outra instância ou já foi concluído.\n";
+        continue;
+    }
+
+    $sentCount = 0;
+    $errors = [];
+
+    if ($hasStudents) {
+        $result1 = enviarWhatsApp($targetGroup, $msg1, "mentoria_ranking_student_{$lang}");
+        if ($result1['success'] || ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300)) {
+            $sentCount++;
+        } else {
+            $errors[] = "Estudante do Dia: HTTP " . $result1['httpCode'];
+        }
+    } else {
+        echo "  ℹ️ Mensagem 1 (Estudante do Dia) ignorada: sem participantes ontem no idioma [{$lang}].\n";
+    }
+
+    if ($hasMsgs) {
+        if ($sentCount > 0) sleep(1);
+        $result2 = enviarWhatsApp($targetGroup, $msg2, "mentoria_ranking_messenger_{$lang}");
+        if ($result2['success'] || ($result2['httpCode'] >= 200 && $result2['httpCode'] < 300)) {
+            $sentCount++;
+        } else {
+            $errors[] = "Top Mensagens: HTTP " . $result2['httpCode'];
+        }
+    } else {
+        echo "  ℹ️ Mensagem 2 (Top Mensagens) ignorada: sem mensagens ontem no idioma [{$lang}].\n";
+    }
+
+    if ($hasReacts) {
+        if ($sentCount > 0) sleep(1);
+        $result3 = enviarWhatsApp($targetGroup, $msg3, "mentoria_ranking_reactor_{$lang}");
+        if ($result3['success'] || ($result3['httpCode'] >= 200 && $result3['httpCode'] < 300)) {
+            $sentCount++;
+        } else {
+            $errors[] = "Top Reações: HTTP " . $result3['httpCode'];
+        }
+    } else {
+        echo "  ℹ️ Mensagem 3 (Top Reações) ignorada: sem reações ontem no idioma [{$lang}].\n";
+    }
+
+    if (empty($errors)) {
+        registrarConclusaoDisparo($conn, $logType, $ontem, null, [
+            'stats'         => $memberStats,
+            'lang'          => $lang,
+            'messages_sent' => $sentCount
+        ]);
+        echo "  ✅ Rankings [{$lang}] enviados com sucesso ({$sentCount} mensagem(ns))!\n";
+    } else {
+        registrarFalhaDisparo($conn, $logType, $ontem, null, implode('; ', $errors));
+        echo "  ❌ Erro ao enviar ranking [{$lang}]: " . implode('; ', $errors) . "\n";
+    }
 }
 
-$othersStr = $othersStr ?: "No other participants yesterday.";
-
-// Legenda — editável no painel admin (The Lounge > Legenda do Ranking)
-$defaultLegend = "🖥️ Attended Class (20 pts)\n🗣️ Reading out loud (5 pts)\n📚 Challenge (5 pts)\n🎶 Music Lab (4 pts)\n🧩 Games (2 pts)\n👏 Session commitment (5 pts)\n📒 New word! (1 pt)";
-$legendStr = !empty($mentoriaConfig['templates']['ranking_legend']) ? $mentoriaConfig['templates']['ranking_legend'] : $defaultLegend;
-
-
-// -----------------------------------------------------
-// 2. SOCIAL (Word Slingers & Emoji Gang)
-// -----------------------------------------------------
-$rankingMsgs = array_filter($rankingMsgs, fn($item) => $item['score'] > 0);
-$rankingReacts = array_filter($rankingReacts, fn($item) => $item['score'] > 0);
-
-uasort($rankingMsgs, fn($a, $b) => $b['score'] <=> $a['score']);
-$top5Msgs = array_slice($rankingMsgs, 0, 5, true);
-
-uasort($rankingReacts, fn($a, $b) => $b['score'] <=> $a['score']);
-$top5Reacts = array_slice($rankingReacts, 0, 5, true);
-
-$medals = ['🥇', '🥈', '🥉'];
-
-$msgList = '';
-$i = 0;
-foreach ($top5Msgs as $jid => $data) {
-    $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
-    $nomeStr = trim($data['name']) ?: 'Unknown';
-    $msgList .= $rankStr . " *{$nomeStr}* — {$data['score']} messages\n";
-    $i++;
-}
-
-$reactList = '';
-$i = 0;
-foreach ($top5Reacts as $jid => $data) {
-    $rankStr = ($i < 3) ? $medals[$i] : ($i + 1) . ".";
-    $nomeStr = trim($data['name']) ?: 'Unknown';
-    $reactList .= $rankStr . " *{$nomeStr}* — {$data['score']} reactions\n";
-    $i++;
-}
-
-$wordSlingersList = $msgList ?: "No messages yesterday.\n";
-$emojiGangList = $reactList ?: "No reactions yesterday.\n";
-
-// -----------------------------------------------------
-// 3. SALVAR PONTOS DO DIA NO BANCO
-// -----------------------------------------------------
-foreach ($memberStats as $jid => $data) {
-    $msgs   = $rankingMsgs[$jid]['score']   ?? 0;
-    $reacts = $rankingReacts[$jid]['score'] ?? 0;
-    
-    $stmtSave = $conn->prepare("
-        INSERT INTO mentoria_daily_scores (member_jid, member_name, score_date, dedication_pts, social_msgs, social_reacts)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-            member_name    = VALUES(member_name),
-            dedication_pts = VALUES(dedication_pts),
-            social_msgs    = VALUES(social_msgs),
-            social_reacts  = VALUES(social_reacts)
-    ");
-    $stmtSave->execute([$jid, $data['name'], $ontem, $data['total_pts'], $msgs, $reacts]);
-}
-
-// Para garantir que quem não pontuou em dedicação mas pontuou em social também seja salvo:
-$allJids = array_unique(array_merge(array_keys($rankingMsgs), array_keys($rankingReacts)));
-foreach ($allJids as $jid) {
-    if (isset($memberStats[$jid])) continue; // já salvo acima
-    
-    $msgs   = $rankingMsgs[$jid]['score']   ?? 0;
-    $reacts = $rankingReacts[$jid]['score'] ?? 0;
-    $name   = $rankingMsgs[$jid]['name'] ?? $rankingReacts[$jid]['name'] ?? 'Unknown';
-    
-    $stmtSave = $conn->prepare("
-        INSERT INTO mentoria_daily_scores (member_jid, member_name, score_date, dedication_pts, social_msgs, social_reacts)
-        VALUES (?, ?, ?, 0, ?, ?)
-        ON DUPLICATE KEY UPDATE
-            member_name    = VALUES(member_name),
-            social_msgs    = VALUES(social_msgs),
-            social_reacts  = VALUES(social_reacts)
-    ");
-    $stmtSave->execute([$jid, $name, $ontem, $msgs, $reacts]);
-}
-
-// -----------------------------------------------------
-// 4. MONTAGEM FINAL DAS MENSAGENS
-// -----------------------------------------------------
-$enDate = date('F jS, Y', strtotime($ontem));
-
-$tpl1 = !empty($config['templates']['ranking_student']) ? $config['templates']['ranking_student'] : "📅 {date}\n\n⭐ *STUDENT OF THE DAY*\n\n{student_of_the_day}\n\n*Other students:*\n{other_students}\n\n📖 *Legend:*\n{legend}";
-$tpl2 = !empty($config['templates']['ranking_messenger']) ? $config['templates']['ranking_messenger'] : "📅 {date}\n\n💬 *TOP MESSENGER*\n_Who sent the most messages today?_\n\n{top_messenger_list}";
-$tpl3 = !empty($config['templates']['ranking_reactor']) ? $config['templates']['ranking_reactor'] : "📅 {date}\n\n❤️ *TOP REACTOR*\n_Who gave the most reactions today?_\n\n{top_reactor_list}";
-
-$msg1 = str_replace(
-    ['{date}', '{student_of_the_day}', '{other_students}', '{legend}'],
-    [$enDate, $studentOfTheDayStr, $othersStr, $legendStr],
-    $tpl1
-);
-
-$msg2 = str_replace(
-    ['{date}', '{top_messenger_list}'],
-    [$enDate, $wordSlingersList],
-    $tpl2
-);
-
-$msg3 = str_replace(
-    ['{date}', '{top_reactor_list}'],
-    [$enDate, $emojiGangList],
-    $tpl3
-);
-
-// 1. PRIMEIRA CONFIRMAÇÃO (Trava Inicial): bloqueia como 'processing' antes de disparar
-$travou = registrarInicioDisparo($conn, 'ranking_unificado', $ontem, null, 15);
-if (!$travou && !isset($_GET['force'])) {
-    die("Ranking unificado já está sendo processado por outra instância ou já foi concluído.");
-}
-
-$result1 = enviarWhatsApp($targetGroup, $msg1, 'mentoria_ranking_student');
-sleep(1);
-$result2 = enviarWhatsApp($targetGroup, $msg2, 'mentoria_ranking_messenger');
-sleep(1);
-$result3 = enviarWhatsApp($targetGroup, $msg3, 'mentoria_ranking_reactor');
-
-$allSuccessful = ($result1['success'] || ($result1['httpCode'] >= 200 && $result1['httpCode'] < 300));
-
-// 2. SEGUNDA CONFIRMAÇÃO (Conclusão): confirma o envio ou reporta falha para permitir retry
-if ($allSuccessful) {
-    registrarConclusaoDisparo($conn, 'ranking_unificado', $ontem, null, [
-        'stats' => $memberStats,
-        'httpCode' => $result1['httpCode']
-    ]);
-    echo "✅ Rankings enviados com sucesso (em 3 mensagens separadas) e confirmados!";
-} else {
-    registrarFalhaDisparo($conn, 'ranking_unificado', $ontem, null, $result1['error'] ?? 'HTTP ' . $result1['httpCode']);
-    echo "❌ Erro ao enviar ranking: HTTP " . $result1['httpCode'] . " (" . ($result1['error'] ?? 'desconhecido') . "). Status marcado como failed para retentativa.";
-}
+echo "\n🏁 Ranking Unificado Multi-idioma concluído.\n";

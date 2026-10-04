@@ -18,7 +18,15 @@
         <textarea name="pix_footer" rows="4" style="width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;" required><?= htmlspecialchars($pix_footer_atual) ?></textarea>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+    <style>
+        .cobranca-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        @media (max-width: 768px) {
+            .cobranca-grid { grid-template-columns: 1fr; gap: 15px; }
+            .card > div:first-child { flex-direction: column; align-items: flex-start !important; gap: 10px; }
+        }
+    </style>
+
+    <div class="cobranca-grid">
         <?php foreach ($mensagens_cobranca as $msg): ?>
         <div class="card" style="background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">

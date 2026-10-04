@@ -159,6 +159,15 @@ $nav_items = [
         opacity: 1;
     }
 
+    /* ─── Global Responsive Utilities ────────────────────────────── */
+    .table-responsive,
+    .table-container,
+    .bulk-card {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     @media (max-width: 768px) {
         .hamburger-btn { display: block; }
         .sidebar {
@@ -175,7 +184,20 @@ $nav_items = [
         }
         .main-content {
             width: 100%;
-            padding: 70px 16px 20px 16px; /* Extra top padding for hamburger */
+            max-width: 100vw;
+            box-sizing: border-box;
+            padding: 70px 14px 25px 14px; /* Extra top padding for hamburger */
+            overflow-x: hidden;
+        }
+        .header {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 15px !important;
+        }
+        .header > div[style*="display: flex"],
+        .header > div[style*="display:flex"] {
+            flex-wrap: wrap;
+            width: 100%;
         }
     }
 </style>

@@ -179,8 +179,8 @@ foreach ($schedules as $s) {
             continue;
         }
 
-        // Executa o envio
-        $resEnvio = enviarWhatsApp($s['group_jid'], $msg, 'class_cancel');
+        // Executa o envio com alta prioridade
+        $resEnvio = enviarWhatsApp($s['group_jid'], $msg, 'class_cancel', null, 'high');
 
         // 2. SEGUNDA CONFIRMAÇÃO (Conclusão): confirma o envio ou reporta falha
         if ($resEnvio['success'] || ($resEnvio['httpCode'] >= 200 && $resEnvio['httpCode'] < 300)) {

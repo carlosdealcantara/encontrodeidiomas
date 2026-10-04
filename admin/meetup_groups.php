@@ -293,6 +293,20 @@ unset($g);
         .api-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .api-item:last-child { border-bottom: none; }
         .api-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+
+        .form-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 30px; }
+        .table-responsive table { margin-bottom: 0; min-width: 650px; }
+
+        @media (max-width: 768px) {
+            .form-grid-4, .form-grid-2 { grid-template-columns: 1fr !important; gap: 15px !important; }
+            .header { flex-direction: column; align-items: stretch; gap: 15px; }
+            .header > div { width: 100%; }
+            .header > div:last-child { flex-direction: column !important; align-items: stretch !important; }
+            .header .btn { width: 100%; justify-content: center; }
+            .api-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -353,7 +367,7 @@ unset($g);
                 <p style="color: var(--text-dim); margin-top: 5px; margin-bottom: 20px;">Selecione os grupos abaixo e defina a categoria/idioma padrão para eles.</p>
                 
                 <form method="POST">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-grid-4">
                         <div class="form-group">
                             <label>Categoria para os Selecionados</label>
                             <select name="batch_categoria" onchange="toggleBatchLang(this.value)" required>
@@ -440,7 +454,7 @@ unset($g);
             <h3 id="form-title">Adicionar Novo Grupo (Manual)</h3>
             <form method="POST" style="margin-top: 20px;">
                 <input type="hidden" name="id" id="group_id_db">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-grid-2">
                     <div class="form-group">
                         <label>Nome do Grupo (Identificação Interna)</label>
                         <input type="text" name="nome" id="nome" required placeholder="Ex: Geral Meetups">
@@ -450,7 +464,7 @@ unset($g);
                         <input type="text" name="group_id" id="group_id" required>
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-grid-2">
                     <div class="form-group">
                         <label>Categoria</label>
                         <select name="categoria" id="categoria" onchange="toggleLang(this.value)" required>
@@ -467,7 +481,7 @@ unset($g);
                         </div>
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-grid-2">
                     <div class="form-group">
                         <label>Comunidade</label>
                         <select name="comunidade" id="comunidade">
@@ -487,66 +501,68 @@ unset($g);
         </div>
 
         <!-- Tabela de Grupos Cadastrados -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
             <h3 style="margin: 0;">Grupos Cadastrados</h3>
-            <input type="text" id="search_table" placeholder="🔍 Buscar grupo cadastrado..." onkeyup="filterTable()" style="width: 300px; padding: 10px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+            <input type="text" id="search_table" placeholder="🔍 Buscar grupo cadastrado..." onkeyup="filterTable()" style="width: 300px; max-width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
         </div>
-        <table id="groups_table">
-            <thead>
-                <tr>
-                    <th>Nome do Grupo</th>
-                    <th>ID (WhatsApp)</th>
-                    <th>Categoria / Idioma</th>
-                    <th>Comunidade</th>
-                    <th>Status do Sistema</th>
-                    <th>Presença do Bot</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($groups as $g): ?>
-                <tr>
-                    <td><strong><?= htmlspecialchars($g['nome']) ?></strong></td>
-                    <td style="color: var(--text-dim); font-size: 0.9rem;">
-                        <?= htmlspecialchars($g['group_id']) ?>
-                    </td>
-                    <td>
-                        <?php if ($g['categoria'] == 'multi_idioma'): ?>
-                            <span class="badge multi">Múltiplos Idiomas</span>
-                        <?php else: ?>
-                            <span class="badge spec">Específico: <?= htmlspecialchars(empty($g['language_name_display']) ? 'Idioma Removido' : $g['language_name_display']) ?></span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if (($g['comunidade'] ?? 'brasil') === 'global'): ?>
-                            <span class="badge" style="background:rgba(56,189,248,0.1);color:#38bdf8;">🌐 Global</span>
-                        <?php else: ?>
-                            <span class="badge" style="background:rgba(16,185,129,0.1);color:var(--success);">🇧🇷 Brasil</span>
-                        <?php endif; ?>
-                    </td>
-                    <td><?= $g['ativo'] ? '<span style="color:var(--success);">Ativo</span>' : '<span style="color:var(--text-dim);">Inativo</span>' ?></td>
-                    <td>
-                        <?php if ($g['bot_presente']): ?>
-                            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fas fa-check-circle"></i> Presente</span>
-                        <?php else: ?>
-                            <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fas fa-exclamation-triangle"></i> Ausente</span>
-                            <br>
-                            <a href="?bot_entered=<?= $g['id'] ?>" class="btn" style="background: transparent; border: 1px solid var(--success); color: var(--success); padding: 2px 6px; font-size: 0.75rem; margin-top: 5px;" onclick="return confirm('Confirmar que você já colocou o bot neste grupo no WhatsApp?')">✓ Bot Entrou</a>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem;" 
-                            onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= addslashes($g['language_ids'] ?? '') ?>', <?= $g['ativo'] ?>, '<?= $g['comunidade'] ?? 'brasil' ?>')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <a href="?delete=<?= $g['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem; color: var(--accent-red);" onclick="return confirm('Tem certeza que deseja excluir este grupo?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="groups_table">
+                <thead>
+                    <tr>
+                        <th>Nome do Grupo</th>
+                        <th>ID (WhatsApp)</th>
+                        <th>Categoria / Idioma</th>
+                        <th>Comunidade</th>
+                        <th>Status do Sistema</th>
+                        <th>Presença do Bot</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($groups as $g): ?>
+                    <tr>
+                        <td><strong><?= htmlspecialchars($g['nome']) ?></strong></td>
+                        <td style="color: var(--text-dim); font-size: 0.9rem;">
+                            <?= htmlspecialchars($g['group_id']) ?>
+                        </td>
+                        <td>
+                            <?php if ($g['categoria'] == 'multi_idioma'): ?>
+                                <span class="badge multi">Múltiplos Idiomas</span>
+                            <?php else: ?>
+                                <span class="badge spec">Específico: <?= htmlspecialchars(empty($g['language_name_display']) ? 'Idioma Removido' : $g['language_name_display']) ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (($g['comunidade'] ?? 'brasil') === 'global'): ?>
+                                <span class="badge" style="background:rgba(56,189,248,0.1);color:#38bdf8;">🌐 Global</span>
+                            <?php else: ?>
+                                <span class="badge" style="background:rgba(16,185,129,0.1);color:var(--success);">🇧🇷 Brasil</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?= $g['ativo'] ? '<span style="color:var(--success);">Ativo</span>' : '<span style="color:var(--text-dim);">Inativo</span>' ?></td>
+                        <td>
+                            <?php if ($g['bot_presente']): ?>
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fas fa-check-circle"></i> Presente</span>
+                            <?php else: ?>
+                                <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fas fa-exclamation-triangle"></i> Ausente</span>
+                                <br>
+                                <a href="?bot_entered=<?= $g['id'] ?>" class="btn" style="background: transparent; border: 1px solid var(--success); color: var(--success); padding: 2px 6px; font-size: 0.75rem; margin-top: 5px;" onclick="return confirm('Confirmar que você já colocou o bot neste grupo no WhatsApp?')">✓ Bot Entrou</a>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem;" 
+                                onclick="editGroup(<?= $g['id'] ?>, '<?= addslashes($g['nome']) ?>', '<?= $g['group_id'] ?>', '<?= $g['categoria'] ?>', '<?= addslashes($g['language_ids'] ?? '') ?>', <?= $g['ativo'] ?>, '<?= $g['comunidade'] ?? 'brasil' ?>')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <a href="?delete=<?= $g['id'] ?>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem; color: var(--accent-red);" onclick="return confirm('Tem certeza que deseja excluir este grupo?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </main>
 
     <script>

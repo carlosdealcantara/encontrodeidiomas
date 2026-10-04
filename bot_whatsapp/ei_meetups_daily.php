@@ -101,8 +101,8 @@ foreach ($meetings as $m) {
     $isGlobal = ($com === 'global');
     
     // Lista para Brasil (recebe todos)
-    $prefix = $isGlobal ? '🌐 ' : '';
-    $listaEncontrosBrasil[] = "{$prefix}{$m['flag_emoji']} {$m['name_en']} | {$m['language_name']}";
+    $suffix = $isGlobal ? ' (🌐)' : '';
+    $listaEncontrosBrasil[] = "{$m['flag_emoji']} {$m['name_en']} | {$m['language_name']}{$suffix}";
     $languageIdsHojeBrasil[] = $m['language_id'];
     
     // Lista para Global (recebe APENAS globais, formatado em inglês)

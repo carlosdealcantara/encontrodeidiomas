@@ -65,12 +65,13 @@ function rodarSubCron($arquivo, $baseUrl, $token_secreto) {
 // =========================================================================
 // 1. ROTINAS HORÁRIAS
 // (Rodam todas as horas, e decidem internamente se é hora de enviar algo)
+// AVISOS DA MENTORIA TÊM PRIORIDADE: rodam antes para garantir pontualidade
 // =========================================================================
 echo "<h2>>>> Crons Horários <<<</h2><ul>";
+rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
+rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('ei_meetups_hourly.php', $baseUrl, $token_secreto);
 rodarSubCron('ei_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
-rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
-rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
 echo "</ul>";
 
 // =========================================================================
@@ -86,13 +87,16 @@ if ($horaAtual === 0) {
     rodarSubCron('mentoria_desafio_kick_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_aniversario_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('community_ranking_cron.php', $baseUrl, $token_secreto);
+    rodarSubCron('mentoria_kick_inadimplente_cron.php', $baseUrl, $token_secreto);
     echo "</ul>";
 }
 
-// 09:00 - Resumo do Dia (Global)
+// 09:00 - Resumo do Dia (Global) & Faturamento Mensalidades
 if ($horaAtual === 9) {
     echo "<h3>Rotina da Manhã (09:00)</h3><ul>";
     rodarSubCron('ei_meetups_daily.php', $baseUrl, $token_secreto);
+    rodarSubCron('mentoria_cobranca_cron.php', $baseUrl, $token_secreto);
+    rodarSubCron('mentoria_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
     echo "</ul>";
 }
 
@@ -100,14 +104,6 @@ if ($horaAtual === 9) {
 if ($horaAtual === 21) {
     echo "<h3>Rotina da Noite (21:00)</h3><ul>";
     rodarSubCron('mentoria_desafio_aviso_cron.php', $baseUrl, $token_secreto);
-    echo "</ul>";
-}
-
-// 08:00 - Cobrança de Mensalidades
-if ($horaAtual === 8) {
-    echo "<h3>Rotina de Faturamento Mensalidades (08:00 BRT)</h3><ul>";
-    rodarSubCron('mentoria_cobranca_cron.php', $baseUrl, $token_secreto);
-    rodarSubCron('mentoria_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
     echo "</ul>";
 }
 

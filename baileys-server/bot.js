@@ -37,11 +37,11 @@ function getTodayDate() {
     return formatter.format(new Date()); // YYYY-MM-DD
 }
 
-function getActivityFile()          { return path.join(dataDir, 'activity_log.json'); }
-function getConfigFile()            { return path.join(dataDir, 'mentoria_config.json'); }
-function getConfigBackupFile()      { return path.join(dataDir, 'mentoria_config.backup.json'); }
-function getCommunityConfigFile()   { return path.join(dataDir, 'community_config.json'); }
-function getCommunityActivityFile() { return path.join(dataDir, 'community_activity_log.json'); }
+function getActivityFile()                   { return path.join(dataDir, 'activity_log.json'); }
+function getConfigFile(langId = 'en')        { return langId === 'en' ? path.join(dataDir, 'mentoria_config.json') : path.join(dataDir, `mentoria_config_${langId}.json`); }
+function getConfigBackupFile(langId = 'en')  { return langId === 'en' ? path.join(dataDir, 'mentoria_config.backup.json') : path.join(dataDir, `mentoria_config_${langId}.backup.json`); }
+function getCommunityConfigFile()            { return path.join(dataDir, 'community_config.json'); }
+function getCommunityActivityFile()          { return path.join(dataDir, 'community_activity_log.json'); }
 
 function loadCommunityConfig() {
     try {
@@ -67,46 +67,64 @@ function saveCommunityActivity(data) {
     fs.writeFileSync(getCommunityActivityFile(), JSON.stringify(data, null, 2));
 }
 
-function loadConfig() {
+function loadConfig(langId = 'en') {
     try {
-        const file = getConfigFile();
+        const file = getConfigFile(langId);
         if (fs.existsSync(file)) {
             const config = JSON.parse(fs.readFileSync(file, 'utf8'));
             // ⚠️ SAFETY CHECK: se groups está vazio mas existe backup, auto-restaura
             const groupCount    = Object.keys(config.groups || {}).length;
             const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
             if (groupsWithJid === 0) {
-                const backupFile = getConfigBackupFile();
+                const backupFile = getConfigBackupFile(langId);
                 if (fs.existsSync(backupFile)) {
                     const backup = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
                     const backupGroupCount = Object.values(backup.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
                     if (backupGroupCount > 0) {
-                        console.warn(`[CONFIG] ⚠️ GRUPOS AUSENTES no config principal (${groupCount} entradas, 0 com JID). Restaurando ${backupGroupCount} grupos do backup automaticamente!`);
+                        console.warn(`[CONFIG] ⚠️ GRUPOS AUSENTES no config [${langId}] (${groupCount} entradas, 0 com JID). Restaurando ${backupGroupCount} grupos do backup automaticamente!`);
                         config.groups = backup.groups;
                         fs.writeFileSync(file, JSON.stringify(config, null, 2));
                     }
-                } else {
+                } else if (langId === 'en') {
                     console.warn('[CONFIG] ⚠️ ATENÇÃO: Nenhum grupo cadastrado e nenhum backup disponível. O bot vai IGNORAR todas as mensagens!');
                 }
             }
             return config;
         }
-    } catch (e) { console.error('Error loading mentoria config:', e); }
+    } catch (e) { console.error(`Error loading mentoria config [${langId}]:`, e); }
     return { admin_jid: '556192666148@s.whatsapp.net', groups: {}, templates: {} };
 }
 
-function saveConfig(config) {
+/**
+ * Auto-descobre todos os langs registrados escaneando mentoria_config_*.json no dataDir.
+ * Retorna um mapa { langId: configObject } para todos os idiomas encontrados.
+ * Adicionar um novo idioma = criar mentoria_config_{lang}.json. Zero mudança de código.
+ */
+function loadAllMentoriaConfigs() {
+    const configs = { en: loadConfig('en') };
+    try {
+        if (dataDir && fs.existsSync(dataDir)) {
+            fs.readdirSync(dataDir).forEach(f => {
+                const m = f.match(/^mentoria_config_(\w+)\.json$/);
+                if (m && m[1] !== 'en') configs[m[1]] = loadConfig(m[1]);
+            });
+        }
+    } catch (e) { console.error('[LANG-DISCOVERY] Erro ao escanear configs de idioma:', e); }
+    return configs;
+}
+
+function saveConfig(config, langId = 'en') {
     // SAFETY: nunca deixa grupos da comunidade entrarem no config da mentoria
     const cleanGroups = {};
     for (const [key, val] of Object.entries(config.groups || {})) {
         if (!val.is_community_group) cleanGroups[key] = val;
     }
     config.groups = cleanGroups;
-    fs.writeFileSync(getConfigFile(), JSON.stringify(config, null, 2));
+    fs.writeFileSync(getConfigFile(langId), JSON.stringify(config, null, 2));
     const groupsWithJid = Object.values(config.groups || {}).filter(g => g.jid && g.jid.trim() !== '').length;
     if (groupsWithJid > 0) {
-        fs.writeFileSync(getConfigBackupFile(), JSON.stringify(config, null, 2));
-        console.log(`[CONFIG] Backup salvo com ${groupsWithJid} grupos configurados.`);
+        fs.writeFileSync(getConfigBackupFile(langId), JSON.stringify(config, null, 2));
+        console.log(`[CONFIG] Backup [${langId}] salvo com ${groupsWithJid} grupos configurados.`);
     }
 }
 
@@ -245,7 +263,64 @@ async function handleMessages({ messages, type }) {
     }
 
     for (const msg of messages) {
-        const groupJid = msg.key.remoteJid;
+        const remoteJid = msg.key.remoteJid;
+
+        // ─── TRATAMENTO DE DM (PRIVADO): RECEPÇÃO DE COMPROVANTES ───
+        if (!remoteJid?.endsWith('@g.us') && !msg.key.fromMe) {
+            const senderJid = remoteJid.replace(/:\d+@/, '@');
+            const msgId = msg.key.id;
+
+            if (processedMessageIds.has(msgId)) continue;
+
+            const dmMsg = msg.message?.ephemeralMessage?.message ||
+                          msg.message?.viewOnceMessageV2?.message ||
+                          msg.message?.viewOnceMessage?.message ||
+                          msg.message;
+            const dmDoc = dmMsg?.documentWithCaptionMessage?.message?.documentMessage || dmMsg?.documentMessage;
+            const isImage = !!(dmMsg?.imageMessage || (dmDoc && (dmDoc.mimetype || '').startsWith('image/')));
+
+            if (isImage) {
+                processedMessageIds.add(msgId);
+                console.log(`[DM-COMPROVANTE] Imagem recebida no privado de ${senderJid}. Consultando API...`);
+
+                try {
+                    const resp = await fetch('https://dev.viaEi.com/bot_whatsapp/mentoria_comprovante_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sender_jid: senderJid,
+                            sender_name: msg.pushName || 'Aluno'
+                        })
+                    });
+                    const data = await resp.json();
+
+                    if (data.success && data.reply_text) {
+                        console.log(`[DM-COMPROVANTE] Aluno identificado: ${data.aluno_nome}. Reagindo e respondendo...`);
+                        
+                        // Reage à mensagem da imagem com emoji 📄
+                        try {
+                            await sock.sendMessage(remoteJid, {
+                                react: { text: '📄', key: msg.key }
+                            });
+                        } catch (reactErr) {
+                            console.error('[DM-COMPROVANTE] Erro ao reagir:', reactErr.message);
+                        }
+
+                        // Envia mensagem de confirmação
+                        await sock.sendMessage(remoteJid, {
+                            text: data.reply_text
+                        });
+                    } else {
+                        console.log(`[DM-COMPROVANTE] Não elegível para comprovante (${data.reason || 'ignorado'}).`);
+                    }
+                } catch (apiErr) {
+                    console.error('[DM-COMPROVANTE] Erro ao chamar mentoria_comprovante_api:', apiErr.message);
+                }
+            }
+            continue; // Finaliza processamento de mensagens no privado
+        }
+
+        const groupJid = remoteJid;
         if (!groupJid?.endsWith('@g.us')) continue; // Só grupos
 
         // === DEBUG LOG (temporário) ===
@@ -281,11 +356,22 @@ async function handleMessages({ messages, type }) {
         await adminCmds.handle({ sock, msg, groupJid, globalText, globalRealMsg, isMasterAdmin, msgId, processedMessageIds, dataDir });
 
         // ─── ROTEAMENTO ───────────────────────────────────────────────────────
-        const mentoriaGroups  = Object.values(config.groups || {}).map(g => g.jid);
-        const communityConfig = loadCommunityConfig();
-        const communityGroups = Object.values(communityConfig.groups || {}).map(g => g.jid);
-        const isMentoriaGroup  = mentoriaGroups.includes(groupJid);
-        const isCommunityGroup = communityGroups.includes(groupJid);
+        // Suporte multi-idioma dinâmico: descobre todos os langs via filesystem.
+        // Para adicionar um novo idioma (ex: fr), basta criar mentoria_config_fr.json.
+        const allMentoriaConfigs = loadAllMentoriaConfigs();
+        const communityConfig    = loadCommunityConfig();
+        const communityGroups    = Object.values(communityConfig.groups || {}).map(g => g.jid);
+
+        // Constrói mapa reverso groupJid → langId a partir de todos os configs
+        const groupToLang = {};
+        for (const [langId, cfg] of Object.entries(allMentoriaConfigs)) {
+            Object.values(cfg.groups || {}).forEach(g => { if (g.jid) groupToLang[g.jid] = langId; });
+        }
+
+        const activeLang           = groupToLang[groupJid] || null;
+        const isMentoriaGroup      = activeLang !== null;
+        const isCommunityGroup     = communityGroups.includes(groupJid);
+        const activeMentoriaConfig = isMentoriaGroup ? allMentoriaConfigs[activeLang] : config;
 
         // Ignora grupos não reconhecidos por nenhum módulo
         if (!isMentoriaGroup && !isCommunityGroup) continue;
@@ -366,7 +452,10 @@ async function handleMessages({ messages, type }) {
             sock: safeSock, msg, groupJid, senderJid, senderName,
             text, realMsg, isVisual,
             isAdmin, isGroupAdmin, isGlobalAdmin,
-            msgId, config, communityConfig
+            msgId,
+            config: activeMentoriaConfig,
+            lang: activeLang || 'en',   // ← idioma resolvido para o grupo atual
+            communityConfig
         };
 
         if (isMentoriaGroup)  await mentoriaMod.handleMessage(moduleCtx);
@@ -385,11 +474,13 @@ async function handleParticipants({ id, participants, action }) {
     if (!WELCOME_ACTIONS.has(action)) return;
     console.log(`[BOT] handleParticipants: action=${action}, group=${id}, participants=${participants.length}`);
 
-    const config        = loadConfig();
-    const communityConfig = loadCommunityConfig();
+    const allMentoriaConfigs = loadAllMentoriaConfigs();
+    const communityConfig    = loadCommunityConfig();
 
-    // Mentoria: welcome no The Lounge (legado)
-    await mentoriaMod.handleParticipant(safeSock, id, participants, config);
+    // Mentoria: welcome no The Lounge / El Rincón de todos os idiomas configurados
+    for (const [langId, langConfig] of Object.entries(allMentoriaConfigs)) {
+        await mentoriaMod.handleParticipant(safeSock, id, participants, langConfig);
+    }
 
     // Comunidade Global: welcome com intros + perguntas
     await communityGlobalMod.handleParticipant(safeSock, id, participants, communityConfig);
@@ -448,8 +539,15 @@ function initRoutes(app, dir) {
         } catch (e) { res.status(500).json({ error: e.message }); }
     });
 
-    app.get('/mentoria-config',  (req, res) => res.json(loadConfig()));
-    app.post('/mentoria-config', (req, res) => { saveConfig(req.body); res.json({ success: true }); });
+    app.get('/mentoria-config',  (req, res) => {
+        const lang = req.query.lang || 'en';
+        res.json(loadConfig(lang));
+    });
+    app.post('/mentoria-config', (req, res) => {
+        const lang = req.query.lang || req.body.lang || 'en';
+        saveConfig(req.body, lang);
+        res.json({ success: true });
+    });
 
     app.get('/community-config',  (req, res) => res.json(loadCommunityConfig()));
     app.post('/community-config', (req, res) => { saveCommunityConfig(req.body); res.json({ success: true }); });

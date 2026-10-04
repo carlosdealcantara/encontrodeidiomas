@@ -52,6 +52,66 @@ if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
     echo "<script>window.location.href='mentoria.php?tab=odysee&lang=" . urlencode($current_lang) . "';</script>";
     exit;
 }
+if (isset($_GET['send_wpp']) && is_numeric($_GET['send_wpp'])) {
+    $id = (int)$_GET['send_wpp'];
+    try {
+        $stmtWpp = $conn->prepare("SELECT * FROM mentoria_odysee_queue WHERE id = ?");
+        $stmtWpp->execute([$id]);
+        $task = $stmtWpp->fetch(PDO::FETCH_ASSOC);
+
+        if (!$task) {
+            throw new Exception("Tarefa não encontrada.");
+        }
+
+        // Obtém o grupo Our Classes configurado para o idioma
+        $confMentoria = getMentoriaConfig($task['lang_id'] ?? $current_lang);
+        $targetJid = $confMentoria['groups']['our_classes']['jid'] ?? '';
+        
+        if (empty($targetJid)) {
+            throw new Exception("Grupo Our Classes não configurado para este idioma no Baileys.");
+        }
+
+        $rawMsg = $task['whatsapp_message'] ?? '';
+        // Remove prefixo de erro se existir para enviar o texto limpo
+        $cleanMsg = preg_replace('/^\[WPP FALHOU[^\]]*\]\s*/i', '', $rawMsg);
+        if (empty(trim($cleanMsg))) {
+            // Reconstrói a partir do template caso a coluna esteja vazia
+            $tplKey = ($current_lang === 'en') ? 'mentoria_odysee_wpp_template' : 'mentoria_odysee_wpp_template_' . $current_lang;
+            $tpl = getSetting($tplKey, getSetting('mentoria_odysee_wpp_template', "🎓 *{titulo}*\n\n🔗 {url}"));
+            $cleanMsg = str_replace(
+                ['{titulo}', '{url}'],
+                [$task['titulo_final'] ?: $task['drive_file_name'], $task['odysee_url']],
+                $tpl
+            );
+        }
+
+        $linkPreview = null;
+        if (!empty($task['odysee_url'])) {
+            $linkPreview = [
+                'title' => $task['titulo_final'] ?: $task['drive_file_name'],
+                'body'  => "Disponível agora no Odysee (Não-listado)",
+                'url'   => $task['odysee_url']
+            ];
+        }
+
+        $resWpp = enviarWhatsApp($targetJid, $cleanMsg, 'mentoria_pipeline_manual', $linkPreview);
+
+        if ($resWpp['success']) {
+            // Atualiza a mensagem no banco removendo o erro
+            $stmtUp = $conn->prepare("UPDATE mentoria_odysee_queue SET whatsapp_message = ? WHERE id = ?");
+            $stmtUp->execute([$cleanMsg, $id]);
+            echo "<script>window.location.href='mentoria.php?tab=odysee&lang=" . urlencode($current_lang) . "&msg=" . urlencode("Mensagem disparada com sucesso no grupo Our Classes!") . "';</script>";
+            exit;
+        } else {
+            $errDetail = $resWpp['error'] ?? 'Falha ao comunicar com o servidor Baileys';
+            echo "<script>alert('Erro ao disparar WhatsApp: " . addslashes($errDetail) . "'); window.location.href='mentoria.php?tab=odysee&lang=" . urlencode($current_lang) . "';</script>";
+            exit;
+        }
+    } catch (Exception $e) {
+        echo "<script>alert('Erro: " . addslashes($e->getMessage()) . "'); window.location.href='mentoria.php?tab=odysee&lang=" . urlencode($current_lang) . "';</script>";
+        exit;
+    }
+}
 
 $stmt = $conn->prepare("
     SELECT *
@@ -79,7 +139,9 @@ if (!empty($active)) {
     $stmtScrFallback = $conn->prepare("
         SELECT id, titulo_final, status, last_screenshot, last_screenshot_time
         FROM mentoria_odysee_queue
-        WHERE last_screenshot IS NOT NULL AND lang_id = ?
+        WHERE last_screenshot IS NOT NULL 
+          AND lang_id = ?
+          AND status IN ('processing', 'pending', 'done', 'error')
         ORDER BY last_screenshot_time DESC LIMIT 1
     ");
     $stmtScrFallback->execute([$current_lang]);
@@ -87,7 +149,14 @@ if (!empty($active)) {
 }
 ?>
 
-<div style="display: grid; grid-template-columns: 1fr 400px; gap: 20px;">
+<style>
+    .odysee-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+    @media (max-width: 900px) {
+        .odysee-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="odysee-grid">
     <!-- Tabela da Fila -->
     <div class="card" style="background: var(--card-bg); border-radius: 16px; padding: 25px;">
         <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-list-ul"></i> Fila de Processamento</h3>
@@ -138,10 +207,20 @@ if (!empty($active)) {
                                         <i class="fa-solid fa-link"></i> Odysee Link
                                     </a>
                                 <?php endif; ?>
-                                <?php if($item['whatsapp_message']): ?>
-                                    <button onclick="copiarWpp('msg_wpp_<?= $item['id'] ?>')" style="background: #25D366; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                        <i class="fa-brands fa-whatsapp"></i> Copiar Msg
-                                    </button>
+                                <?php if($item['whatsapp_message']): 
+                                    $wppFalhou = (stripos($item['whatsapp_message'], '[WPP FALHOU') !== false);
+                                ?>
+                                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                        <button onclick="copiarWpp('msg_wpp_<?= $item['id'] ?>')" style="background: #25D366; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" title="Copiar texto da mensagem">
+                                            <i class="fa-brands fa-whatsapp"></i> Copiar
+                                        </button>
+                                        <a href="mentoria.php?tab=odysee&lang=<?= urlencode($current_lang) ?>&send_wpp=<?= $item['id'] ?>" 
+                                           onclick="return confirm('Deseja realmente disparar esta mensagem agora para o grupo Our Classes?')"
+                                           style="background: <?= $wppFalhou ? '#ef4444' : '#0284c7' ?>; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;"
+                                           title="<?= $wppFalhou ? 'O envio automático falhou. Clique para disparar agora!' : 'Disparar ou reenviar mensagem no grupo' ?>">
+                                            <i class="fa-solid fa-paper-plane"></i> <?= $wppFalhou ? 'Reenviar Wpp' : 'Enviar Wpp' ?>
+                                        </a>
+                                    </div>
                                     <textarea id="msg_wpp_<?= $item['id'] ?>" style="display: none;"><?= htmlspecialchars($item['whatsapp_message']) ?></textarea>
                                 <?php endif; ?>
                             </td>

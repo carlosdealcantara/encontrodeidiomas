@@ -65,12 +65,13 @@ if(count($mensagensTotais) === 0) {
     die("Nenhuma mensagem cadastrada no painel. Abortando.");
 }
 
+// Mapa organizado por idioma e dias_antes: $mensagensMap[lang_id][dias_antes]
 $mensagensMap = [];
 foreach($mensagensTotais as $m) {
-    // Agora o painel gerencia explicitly o telegram
     $ativo_telegram = isset($m['ativo_telegram']) ? (int)$m['ativo_telegram'] : 1;
     if ($ativo_telegram === 1) {
-        $mensagensMap[$m['dias_antes']] = $m;
+        $lang = !empty($m['lang_id']) ? $m['lang_id'] : 'en';
+        $mensagensMap[$lang][$m['dias_antes']] = $m;
     }
 }
 
@@ -83,7 +84,7 @@ $conn->exec("
     AND DATEDIFF(proximo_vencimento, CURRENT_DATE) <= 3
 ");
 
-$pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
+$default_pix_footer = getSetting('mentoria_pix_footer', "🔑 Chave PIX: 01811018157\nCarlos");
 
 $stmtAlunos = $conn->query("
     SELECT * FROM mentoria_alunos 
@@ -127,8 +128,12 @@ foreach ($alunos as $aluno) {
     $diff = $hoje->diff($vencimento);
     $diasFaltando = (int)$diff->format('%R%a'); 
     
-    if (isset($mensagensMap[$diasFaltando])) {
-        $msgConfig = $mensagensMap[$diasFaltando];
+    $alunoLang = !empty($aluno['lang_id']) ? $aluno['lang_id'] : 'en';
+    
+    // Procura mensagem para o idioma do aluno; fallback para 'en' se não existir
+    $msgConfig = $mensagensMap[$alunoLang][$diasFaltando] ?? $mensagensMap['en'][$diasFaltando] ?? null;
+
+    if ($msgConfig) {
         $msgId = $msgConfig['id'];
         $alunoId = $aluno['id'];
         
@@ -136,6 +141,9 @@ foreach ($alunos as $aluno) {
         $stmtCheck->execute([$alunoId, $msgId, $dataDisparo]);
         
         if ($stmtCheck->rowCount() === 0 || isset($_GET['force'])) {
+            $pixKey = ($alunoLang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $alunoLang;
+            $pix_footer = getSetting($pixKey, $default_pix_footer);
+
             $primeiroNome = trim(explode(' ', $aluno['nome'])[0]);
             $textoBase = str_replace('{nome}', $primeiroNome, $msgConfig['texto']);
             $textoFinalWhats = $textoBase . "\n\n" . trim($pix_footer);

@@ -214,16 +214,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--primary-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
-        .sidebar { width: 280px; background: var(--sidebar-bg); padding: 30px; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: var(--text-dim); text-decoration: none; border-radius: 12px; margin-bottom: 8px; transition: all 0.3s ease; font-weight: 500; }
-        .nav-item.active { background: var(--accent-red); color: white; }
-
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         .header { margin-bottom: 40px; display: flex; align-items: center; gap: 20px; }
         .btn-back { color: var(--text-dim); text-decoration: none; font-size: 1.2rem; }
         .btn-back:hover { color: var(--text-main); }
 
-        .form-container { background: var(--card-bg); border-radius: 24px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); max-width: 900px; }
+        .form-container { background: var(--card-bg); border-radius: 24px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); max-width: 900px; width: 100%; }
         .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
         .full-width { grid-column: span 2; }
 
@@ -342,6 +337,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 15px 20px;
             border-radius: 12px;
             margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .form-container { padding: 20px 15px; border-radius: 16px; }
+            .form-grid { grid-template-columns: 1fr; gap: 15px; }
+            .full-width, .sessions-section { grid-column: span 1; }
+            .sessions-section { padding: 15px; }
+            .session-row { grid-template-columns: 1fr; gap: 10px; }
+            .sessions-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .btn-add-session { width: 100%; justify-content: center; }
+            .form-actions { flex-direction: column; }
+            .btn-save, .btn-cancel { width: 100%; text-align: center; justify-content: center; }
         }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e31d1c'/%3E%3Ctext x='256' y='256' dy='.35em' font-family='system-ui, -apple-system, sans-serif' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3EEi%3C/text%3E%3C/svg%3E">

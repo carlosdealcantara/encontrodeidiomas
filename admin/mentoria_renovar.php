@@ -27,12 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         // Incrementa o valor total investido
         $novoTotal = (float)$aluno['total_investido'] + (float)$aluno['valor_mensalidade'];
         
-        // Checa se virou Vitalício
+        // Checa se virou Vitalício ou volta a ser Ativo
         $novoStatusAluno = $aluno['status_aluno'];
         $mensagemExtra = "";
         if ($novoStatusAluno !== 'Vitalício' && $novoTotal >= $ltv_vitalicios) {
             $novoStatusAluno = 'Vitalício';
             $mensagemExtra = " 🏆 PARABÉNS! O aluno atingiu R$ " . number_format($ltv_vitalicios, 0, ',', '.') . " e virou VITALÍCIO!";
+        } elseif ($novoStatusAluno !== 'Vitalício') {
+            // Qualquer aluno (Comunidade, Inativo, Suspenso ou já Ativo) com pagamento confirmado volta/permanece como Ativo
+            $novoStatusAluno = 'Ativo';
         }
         
         $statusPagamento = ($novoStatusAluno === 'Vitalício') ? 'Isento' : 'Pago';
@@ -40,9 +43,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         // Renova: Joga a data pra frente, soma o LTV, atualiza status financeiro
         $stmtUpdate = $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = :data, status_pagamento = :status_pagamento, total_investido = :total, status_aluno = :status_aluno WHERE id = :id");
         $stmtUpdate->execute(['data' => $novaData, 'status_pagamento' => $statusPagamento, 'total' => $novoTotal, 'status_aluno' => $novoStatusAluno, 'id' => $id]);
-        
-        // ==========================================
-        // DISPARO IMEDIATO DE MENSAGEM DE AGRADECIMENTO
+
+        // ============================================================
+        // RENOVAR DEPENDENTES FINANCEIROS (ex: espôsa, filho)
+        // Se este aluno é um titular, renova todos os dependentes dele
+        // com a mesma data de vencimento.
+        // ============================================================
+        $dependentesRenovados = [];
+        try {
+            $stmtDep = $conn->prepare("
+                SELECT id, nome FROM mentoria_alunos
+                WHERE responsavel_financeiro_id = ? AND status_aluno IN ('Ativo', 'Comunidade', 'Inativo', 'Suspenso')
+            ");
+            $stmtDep->execute([$id]);
+            $dependentes = $stmtDep->fetchAll();
+            foreach ($dependentes as $dep) {
+                $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = ?, status_pagamento = 'Pago', status_aluno = 'Ativo' WHERE id = ?")
+                     ->execute([$novaData, $dep['id']]);
+                $dependentesRenovados[] = $dep['nome'];
+            }
+        } catch (Exception $e) { /* falha silenciosa — não interrompe o fluxo */ }
+
         // ==========================================
         // ==========================================
         require_once '../includes/whatsapp_helper.php';
@@ -130,7 +151,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         }
         // ==========================================
         
-        header('Location: mentoria.php?lang=' . urlencode($alunoLang) . '&msg=Pagamento Registrado! O aluno ' . urlencode($aluno['nome']) . ' foi renovado. Novo vencimento: ' . date('d/m/Y', strtotime($novaData)) . '.' . urlencode($mensagemExtra));
+        // Monta mensagem de dep com nomes se houver
+        $depMsg = '';
+        if (!empty($dependentesRenovados)) {
+            $depMsg = ' Dependentes também renovados: ' . implode(', ', $dependentesRenovados) . '.';
+        }
+
+        // Enriquece mensagem Telegram com dependentes
+        if (!empty($dependentesRenovados) && $ativo_telegram === 1 && $masterToggle === 1 && $telegramToken && $telegramChatId) {
+            $depLine = "👨‍👩‍👧 Dependentes renovados: *" . implode(', ', $dependentesRenovados) . "*\n";
+            // Injeta antes do separador final
+            $msgTelegram = str_replace("─────────────────────────────\n*Texto para copiar", $depLine . "─────────────────────────────\n*Texto para copiar", $msgTelegram);
+        }
+
+        header('Location: mentoria.php?lang=' . urlencode($alunoLang) . '&msg=Pagamento Registrado! O aluno ' . urlencode($aluno['nome']) . ' foi renovado. Novo vencimento: ' . date('d/m/Y', strtotime($novaData)) . '.' . urlencode($mensagemExtra . $depMsg));
         exit;
     }
 }

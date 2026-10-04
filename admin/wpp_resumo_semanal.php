@@ -68,19 +68,37 @@ if (isset($_GET['toggle_ignore_lang'])) {
     exit;
 }
 
-// Fetch all languages with their replays for the CURRENT WEEK only, ordered by their first meeting in the week
+// Ordena cada replay pelo dia real da sua sessão.
+// A sessão BASE de cada encontro está em meetings.day_of_week (parte=1).
+// Sessões EXTRAS (parte=2+) vêm de meeting_sessions excluindo o dia base para evitar duplicata.
+// Isso garante: Francês parte=1 (Segunda) e parte=2 (Sexta) no slot correto da semana.
 $stmt = $conn->prepare("
     SELECT l.id as language_id, l.name, l.flag_emoji, l.ignore_next_video, r.parte, r.numero, r.link, r.titulo 
     FROM languages l 
     LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
     LEFT JOIN (
+        SELECT sub.language_id, sub.day_of_week, sub.time_hour,
+               ROW_NUMBER() OVER (PARTITION BY sub.language_id ORDER BY sub.day_of_week ASC, sub.time_hour ASC) as parte_num
+        FROM (
+            -- Sessão base: meetings.day_of_week = parte 1
+            SELECT language_id, day_of_week, time_hour FROM meetings WHERE active = 1
+            UNION ALL
+            -- Sessões extras: meeting_sessions excluindo o mesmo dia/hora da base
+            SELECT m2.language_id, ms2.day_of_week, ms2.time_hour
+            FROM meetings m2
+            JOIN meeting_sessions ms2 ON ms2.meeting_id = m2.id AND ms2.active = 1
+            WHERE m2.active = 1
+              AND NOT (ms2.day_of_week = m2.day_of_week AND ms2.time_hour = m2.time_hour)
+        ) sub
+    ) sess ON sess.language_id = l.id AND sess.parte_num = COALESCE(r.parte, 1)
+    LEFT JOIN (
         SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
-        FROM meetings 
-        WHERE active = 1 
-        GROUP BY language_id
+        FROM meetings WHERE active = 1 GROUP BY language_id
     ) m ON l.id = m.language_id
     WHERE l.active = 1 
-    ORDER BY COALESCE(m.first_day, 9) ASC, COALESCE(m.first_hour, 99) ASC, l.name ASC, r.parte ASC
+    ORDER BY COALESCE(sess.day_of_week, m.first_day, 9) ASC, 
+             COALESCE(sess.time_hour, m.first_hour, 99) ASC, 
+             l.name ASC, r.parte ASC
 ");
 $stmt->execute([$semana_atual]);
 $replays = $stmt->fetchAll();
@@ -119,6 +137,7 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Resumo Semanal | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -143,8 +162,9 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
         
         .card { background: var(--card-bg); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
         th { color: var(--text-dim); font-size: 0.9rem; }
         
         input[type="text"] { width: 100%; padding: 8px 12px; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-family: inherit; }
@@ -155,7 +175,13 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
         .btn-success { background: var(--success); }
         .btn-outline { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); }
         
-        .actions-bar { display: flex; gap: 15px; margin-top: 20px; }
+        .actions-bar { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+
+        @media (max-width: 768px) {
+            .actions-bar { flex-direction: column; }
+            .actions-bar .btn, .actions-bar form, .actions-bar form button { width: 100%; justify-content: center; }
+            .card { padding: 18px 14px; }
+        }
     </style>
 </head>
 <body>
@@ -184,6 +210,7 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
 
             <form method="POST" id="formReplays">
                 <input type="hidden" name="action" value="save_all">
+                <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
@@ -225,6 +252,7 @@ $full_text_clean = str_replace('{REPLAYS_LIST}', trim($replays_list_clean), $tem
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                </div>
                 <button type="submit" class="btn"><i class="fas fa-save"></i> Salvar Alterações</button>
             </form>
         </div>

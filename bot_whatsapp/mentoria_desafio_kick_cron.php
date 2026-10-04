@@ -1,7 +1,8 @@
 <?php
 /**
- * CRON: Auto-kick do Desafio
+ * CRON: Auto-kick do Desafio — Multi-idioma
  * Frequência: 1x/dia, todos os dias, às 00:00 BRT
+ * Itera sobre todos os idiomas ativos em mentoria_langs.
  */
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
@@ -15,6 +16,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
 }
 
 $conn = connectDB();
+
 // Analisamos a atividade de ontem, a menos que estejamos testando hoje
 if (isset($_GET['test_hoje']) && $_GET['test_hoje'] == '1') {
     $ontem = date('Y-m-d');
@@ -35,78 +37,108 @@ try {
     )");
 } catch (Exception $e) {}
 
-// Anti-duplicidade
-$check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'desafio_kick_run' AND data_execucao = ?");
-$check->execute([$ontem]);
-if ($check->rowCount() > 0 && !isset($_GET['force'])) {
-    die("Verificação de kick do desafio já rodou para a data $ontem. Use &force=1 na URL para forçar.");
+// Busca todos os idiomas ativos
+$langs = $conn->query("SELECT lang_id FROM mentoria_langs WHERE ativo = 1 ORDER BY lang_id ASC")->fetchAll(PDO::FETCH_COLUMN);
+
+if (empty($langs)) {
+    die("Nenhum idioma ativo encontrado em mentoria_langs.\n");
 }
 
-$config = getMentoriaConfig();
-$desafioJid = $config['groups']['desafio']['jid'] ?? null;
-$template = $config['templates']['kick_desafio'] ?? "⚠️ {name} has been removed for missing the daily activity.";
-$adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
+$totalKicked = 0;
 
-if (!$desafioJid) die("Grupo do desafio não configurado.");
+foreach ($langs as $lang) {
+    echo "\n🌐 Processando idioma: [{$lang}]\n";
 
-$members = fetchGroupMembers($desafioJid);
-$activity = fetchBaileysActivity($ontem);
-$desafioActivity = $activity[$desafioJid] ?? [];
+    // Anti-duplicidade por idioma
+    $logType = 'desafio_kick_run_' . $lang;
+    $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = ? AND data_execucao = ?");
+    $check->execute([$logType, $ontem]);
+    if ($check->rowCount() > 0 && !isset($_GET['force'])) {
+        echo "  ⏭️ Verificação de kick já rodou para [{$lang}] na data $ontem. Use &force=1 para forçar.\n";
+        continue;
+    }
 
-$kickedCount = 0;
+    $config     = getMentoriaConfig($lang);
+    $desafioJid = $config['groups']['desafio']['jid'] ?? null;
+    $adminJid   = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
 
-foreach ($members as $memberData) {
-    $memberJid = $memberData['id'];
-    
-    // Remove o sufixo multi-device caso exista (ex: 55119999:12@s.whatsapp.net -> 55119999@s.whatsapp.net)
-    $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
+    // Defaults de template por idioma
+    $defaultTemplates = [
+        'es' => "⚠️ {name} fue removido/a por no haber publicado la actividad diaria.",
+        'en' => "⚠️ {name} has been removed for missing the daily activity.",
+    ];
+    $defaultTpl = $defaultTemplates[$lang] ?? $defaultTemplates['en'];
+    $template = $config['templates']['kick_desafio'] ?? $defaultTpl;
+
+    if (!$desafioJid) {
+        echo "  ⚠️ Grupo do desafio não configurado para o idioma [{$lang}]. Pulando.\n";
+        // Registra a execução mesmo sem grupo para evitar reprocessamento infinito
+        $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES (?, ?, 'Grupo não configurado')")->execute([$logType, $ontem]);
+        continue;
+    }
+
+    $members       = fetchGroupMembers($desafioJid);
+    $activity      = fetchBaileysActivity($ontem);
+    $desafioActivity = $activity[$desafioJid] ?? [];
+
     $cleanAdminJid = preg_replace('/:\d+@/', '@', $adminJid);
-    
-    // Ignora admin e o próprio bot (Baileys usa a propriedade 'admin' valendo 'admin' ou 'superadmin')
-    $isAdmin = !empty($memberData['admin']);
-    if ($cleanMemberJid === $cleanAdminJid || $isAdmin) continue;
-    
-    // Verifica se mandou IMAGEM no grupo ontem no JSON
-    $interagiu = isset($desafioActivity[$memberJid]) && ($desafioActivity[$memberJid]['images_sent'] ?? 0) > 0;
-    
-    // Escudo MySQL: Se o JSON diz que NÃO interagiu, cruza com o banco de dados como dupla checagem
-    if (!$interagiu) {
-        $stmtShield = $conn->prepare("SELECT last_completed_date FROM mentoria_desafio_streaks WHERE member_jid = ?");
-        $stmtShield->execute([$memberJid]);
-        $rowShield = $stmtShield->fetch(PDO::FETCH_ASSOC);
-        if ($rowShield && $rowShield['last_completed_date'] === $ontem) {
-            $interagiu = true; // Salvo pelo escudo! O banco tem o registro correto.
+    $kickedCount   = 0;
+
+    foreach ($members as $memberData) {
+        $memberJid      = $memberData['id'];
+        $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
+
+        // Ignora admin e o próprio bot
+        $isAdmin = !empty($memberData['admin']);
+        if ($cleanMemberJid === $cleanAdminJid || $isAdmin) continue;
+
+        // Verifica se mandou IMAGEM no grupo ontem no JSON
+        $interagiu = isset($desafioActivity[$memberJid]) && ($desafioActivity[$memberJid]['images_sent'] ?? 0) > 0;
+
+        // Escudo MySQL: cruza com o banco como dupla checagem
+        if (!$interagiu) {
+            $stmtShield = $conn->prepare("SELECT last_completed_date FROM mentoria_desafio_streaks WHERE member_jid = ?");
+            $stmtShield->execute([$memberJid]);
+            $rowShield = $stmtShield->fetch(PDO::FETCH_ASSOC);
+            if ($rowShield && $rowShield['last_completed_date'] === $ontem) {
+                $interagiu = true; // Salvo pelo escudo! O banco tem o registro correto.
+            }
+        }
+
+        if (!$interagiu) {
+            // Monta a mensagem de kick
+            $numero = explode('@', $memberJid)[0];
+            $msg    = str_replace(['@{name}', '{name}'], ["@".$numero, $numero], $template);
+
+            enviarWhatsAppMention($desafioJid, $msg, [$memberJid]);
+
+            // Pausa de 5 segundos para garantir a entrega e visualização antes do kick
+            sleep(5);
+
+            // Remove do grupo
+            $resRemove = removerDoGrupo($desafioJid, [$memberJid]);
+
+            if (($resRemove['success'] ?? false) || ($resRemove['httpCode'] ?? 0) === 200) {
+                $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid, detalhes) VALUES ('desafio_kick', ?, ?, ?)")
+                     ->execute([$ontem, $memberJid, $lang]);
+
+                // Reset streak
+                try {
+                    $conn->prepare("UPDATE mentoria_desafio_streaks SET current_streak = 0 WHERE member_jid = ?")
+                         ->execute([$memberJid]);
+                } catch (Exception $e) {}
+
+                $kickedCount++;
+                $totalKicked++;
+                echo "  🚪 Kicked [{$lang}]: $memberJid\n";
+            }
         }
     }
-    
-    if (!$interagiu) {
-        // Arruma o nome (se o template tem @{name}, trocamos por @numero. Se tem só {name}, trocamos pelo numero)
-        $numero = explode('@', $memberJid)[0];
-        $msg = str_replace(['@{name}', '{name}'], ["@".$numero, $numero], $template);
-        
-        enviarWhatsAppMention($desafioJid, $msg, [$memberJid]);
-        
-        // Pausa de 5 segundos para garantir a entrega e visualização antes do kick
-        sleep(5);
-        
-        // Remove do grupo
-        $resRemove = removerDoGrupo($desafioJid, [$memberJid]);
-        
-        if (($resRemove['success'] ?? false) || ($resRemove['httpCode'] ?? 0) === 200) {
-            $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('desafio_kick', ?, ?)")
-                 ->execute([$ontem, $memberJid]);
-            
-            // Reset streak
-            try {
-                $conn->prepare("UPDATE mentoria_desafio_streaks SET current_streak = 0 WHERE member_jid = ?")
-                     ->execute([$memberJid]);
-            } catch (Exception $e) {}
-                 
-            $kickedCount++;
-        }
-    }
+
+    // Marca que a verificação rodou para este idioma
+    $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, detalhes) VALUES (?, ?, ?)")
+         ->execute([$logType, $ontem, $kickedCount . ' removidos']);
+    echo "  ✅ Kick [{$lang}] concluído: $kickedCount removidos.\n";
 }
 
-// Marca que a verificação rodou
-$conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao) VALUES ('desafio_kick_run', ?)")->execute([$ontem]);
-echo "✅ Kick do Desafio concluído! $kickedCount removidos.";
+echo "\n🏁 Kick do Desafio Multi-idioma concluído! Total removidos: $totalKicked.\n";

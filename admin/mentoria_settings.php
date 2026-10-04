@@ -8,10 +8,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
-$conn = connectDB();
-
-// Lógica de Salvar as alterações
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Redireciona para o painel unificado com suporte multi-idioma
+header('Location: mentoria.php?tab=cobrancas');
+exit;
     
     // Salvar o Rodapé Global PIX
     if (isset($_POST['pix_footer'])) {

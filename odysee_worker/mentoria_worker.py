@@ -934,80 +934,112 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
             
         return upload_ok, share_link
 
+def limpar_pastas_vazias_mentoria(drive_service):
+    """
+    Limpa o Drive movendo para a lixeira as subpastas 'recurring' de mentoria 
+    que ficaram completamente vazias após os arquivos serem processados e movidos.
+    """
+    try:
+        meet_folders = drive_service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
+            fields='files(id, name)'
+        ).execute().get('files', [])
+        
+        termos_mentoria = ["mentorship", "mentoria", "mentoría"]
+        if MENTORIA_LANG_ID == 'es':
+            termos_mentoria.extend(["español", "espanhol"])
+
+        for mf in meet_folders:
+            subs = drive_service.files().list(
+                q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
+                fields='files(id, name)'
+            ).execute().get('files', [])
+            
+            for sub in subs:
+                sub_name_low = sub['name'].lower()
+                # Só limpa se for pasta de mentoria deste idioma
+                if not any(k in sub_name_low for k in termos_mentoria):
+                    continue
+                contents = drive_service.files().list(
+                    q=f"'{sub['id']}' in parents and trashed=false",
+                    fields='files(id)'
+                ).execute().get('files', [])
+                if not contents:
+                    logger.info(f"[LIXEIRA] Removendo subpasta de mentoria vazia: {sub['name']} ({sub['id']})")
+                    drive_service.files().update(fileId=sub['id'], body={'trashed': True}).execute()
+    except Exception as e:
+        logger.error(f"[LIXEIRA] Erro ao limpar pastas vazias de mentoria: {e}")
+
 def escanear_drive():
     print(f"Escaneando Drive MENTORIA ({MENTORIA_LANG_ID}) por novos vídeos...", flush=True)
 
     try:
         drive_service = init_drive_service()
 
-        # 1. Descobrir todas as pastas de origem dos vídeos dinamicamente.
-        # O Google Meet cria subpastas "Google Meet" > "<evento> (recurring)".
-        # Se DRIVE_MENTORIA_FOLDER_ID estiver configurado, usamos como ponto de partida.
-        # Caso contrário, descobrimos todas as pastas do Drive dinamicamente.
-        folder_ids = [DRIVE_MENTORIA_FOLDER_ID] if DRIVE_MENTORIA_FOLDER_ID else []
+        # Limpeza automática de pastas vazias residuais da execução anterior
+        limpar_pastas_vazias_mentoria(drive_service)
+
+        # 1. Descobrir todas as pastas de ORIGEM dos vídeos dinamicamente.
+        # Regra: buscamos APENAS subpastas "recurring" dentro das pastas "Google Meet",
+        # pois são essas que contêm as novas gravações geradas pelo Google Meet.
+        # As pastas de DESTINO/ARQUIVO (Meet Recordings / Publicados) NUNCA devem ser escaneadas.
+        folder_ids = []
+
+        termos_mentoria = ["mentorship", "mentoria", "mentoría"]
+        if MENTORIA_LANG_ID == 'es':
+            termos_mentoria.extend(["español", "espanhol"])
 
         try:
-            logger.info("[SCAN] Buscando subpastas 'Google Meet' no Drive...")
-
-            meet_folders = []
-            if DRIVE_MENTORIA_FOLDER_ID:
-                meet_folders = drive_service.files().list(
-                    q=f"'{DRIVE_MENTORIA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
-                    fields='files(id, name)'
-                ).execute().get('files', [])
-
-            # Também busca globalmente por "Google Meet"
-            meet_folders_global = drive_service.files().list(
+            logger.info("Buscando pastas 'Google Meet' raiz no Drive...")
+            meet_folders = drive_service.files().list(
                 q="mimeType='application/vnd.google-apps.folder' and name='Google Meet' and trashed=false",
                 fields='files(id, name)'
             ).execute().get('files', [])
 
-            seen_ids = {mf['id'] for mf in meet_folders}
-            for mf in meet_folders_global:
-                if mf['id'] not in seen_ids:
-                    meet_folders.append(mf)
-                    seen_ids.add(mf['id'])
-
             for mf in meet_folders:
-                logger.info(f"[SCAN] Pasta 'Google Meet' encontrada: {mf['id']}")
-                folder_ids.append(mf['id'])
-                # Busca subpastas (recurring ou com nome do evento)
+                # Busca subpastas que contêm 'recurring'
                 sub_results = drive_service.files().list(
-                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+                    q=f"'{mf['id']}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'recurring' and trashed=false",
                     fields='files(id, name)'
                 ).execute()
                 for sub in sub_results.get('files', []):
-                    logger.info(f"[SCAN] Subpasta encontrada: {sub['name']} ({sub['id']})")
-                    folder_ids.append(sub['id'])
+                    sub_name_low = sub['name'].lower()
+                    # Filtra pastas de mentoria do idioma
+                    if any(k in sub_name_low for k in termos_mentoria):
+                        logger.info(f"[SCAN] Pasta de origem de mentoria encontrada: {sub['name']} ({sub['id']})")
+                        folder_ids.append(sub['id'])
+                    else:
+                        logger.info(f"[SCAN] Subpasta ignorada (não é de mentoria {MENTORIA_LANG_ID}): {sub['name']}")
+
+            # Se DRIVE_MENTORIA_FOLDER_ID for configurado como uma pasta específica de gravações (que NÃO seja Meet Recordings)
+            if DRIVE_MENTORIA_FOLDER_ID:
+                try:
+                    f_info = drive_service.files().get(fileId=DRIVE_MENTORIA_FOLDER_ID, fields='id, name').execute()
+                    f_name = f_info.get('name', '').lower()
+                    if 'recordings' not in f_name and 'publicados' not in f_name:
+                        if DRIVE_MENTORIA_FOLDER_ID not in folder_ids:
+                            folder_ids.append(DRIVE_MENTORIA_FOLDER_ID)
+                except Exception as e:
+                    logger.warning(f"[SCAN] Não foi possível verificar DRIVE_MENTORIA_FOLDER_ID: {e}")
 
         except Exception as e:
             logger.warning(f"[SCAN] Erro ao buscar subpastas Google Meet dinamicamente: {e}")
 
-        # Se não achou nenhuma subpasta, varre a raiz do Drive
-        if not folder_ids:
-            logger.info("[SCAN] Nenhuma subpasta específica encontrada. Varrendo raiz do Drive...")
+        print(f"[SCAN] Pastas ativas monitoradas para Mentoria ({MENTORIA_LANG_ID}): {len(folder_ids)}", flush=True)
 
-        # 2. Buscar arquivos de vídeo nessas pastas com filtro de nome da Mentoria
+        if not folder_ids:
+            logger.info(f"[SCAN] Nenhuma pasta de origem com gravações recorrentes de mentoria encontrada no momento.")
+            return
+
+        # 2. Buscar arquivos de vídeo estritamente de Mentoria nessas pastas de origem
         arquivos = []
-        if folder_ids:
-            for i in range(0, len(folder_ids), 10):
-                lote = folder_ids[i:i+10]
-                parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
-                query = (
-                    f"({parents_q}) and mimeType contains 'video/' "
-                    f"and (name contains 'Mentorship' or name contains 'Mentoria' or name contains 'Mentoría' or name contains 'Español' or name contains 'Espanhol' or name contains 'Recording') "
-                    f"and trashed=false"
-                )
-                results = drive_service.files().list(
-                    q=query,
-                    fields="files(id, name, size)"
-                ).execute()
-                arquivos.extend(results.get('files', []))
-        else:
-            # Busca global direta por vídeos de gravação
-            query = (
-                "mimeType contains 'video/' and (name contains 'Mentorship' or name contains 'Mentoria' or name contains 'Mentoría' or name contains 'Español' or name contains 'Recording') and trashed=false"
-            )
+        name_filters = " or ".join([f"name contains '{termo}'" for termo in ['Mentorship', 'Mentoria', 'Mentoría', 'español', 'espanhol']])
+
+        for i in range(0, len(folder_ids), 10):
+            lote = folder_ids[i:i+10]
+            parents_q = " or ".join([f"'{fid}' in parents" for fid in lote])
+            query = f"({parents_q}) and mimeType contains 'video/' and ({name_filters}) and trashed=false"
+            
             results = drive_service.files().list(
                 q=query,
                 fields="files(id, name, size)"
@@ -1025,13 +1057,21 @@ def escanear_drive():
         for arquivo in arquivos:
             file_id = arquivo['id']
             file_name = arquivo['name']
+            file_name_low = file_name.lower()
 
             cursor.execute("SELECT id FROM mentoria_odysee_queue WHERE drive_file_id = %s", (file_id,))
             if cursor.fetchone():
                 continue
 
-            if 'feedback' in file_name.lower():
+            if 'feedback' in file_name_low:
                 logger.info(f"Arquivo ignorado (Feedback): {file_name}")
+                continue
+
+            # FILTRO DE SEGURANÇA ESTRITO:
+            # O nome do arquivo DEVE conter 'mentorship', 'mentoria' ou 'mentoría'.
+            # Aulas particulares ou outros eventos NUNCA devem entrar na fila.
+            if not any(k in file_name_low for k in termos_mentoria):
+                logger.warning(f"[SCAN] Arquivo ignorado por segurança (não contém termo de mentoria): {file_name}")
                 continue
 
             # Ex: Mentorship Class - 2026/07/01 13:06 GMT-03:00 - Recording.mp4
@@ -1109,33 +1149,39 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
 
     mensagem = template.replace('{titulo}', titulo).replace('{url}', url_curta)
 
-    # --- Busca o JID do Our Classes direto do Baileys (fonte de verdade única) ---
+    # --- Busca o JID do Our Classes direto do Baileys (fonte de verdade única) com retries ---
     grupos_alvo = []
-    try:
-        resp = requests.get(
-            f"http://host.docker.internal:3000/mentoria-config?lang={MENTORIA_LANG_ID}",
-            headers={"apikey": "SenhaMeetups2026"},
-            timeout=5
-        )
-        if resp.status_code == 200:
-            conf = resp.json()
-            jid = conf.get("groups", {}).get("our_classes", {}).get("jid")
-            if jid and jid.strip():
-                grupos_alvo = [jid]
-                logger.info(f"[WHATSAPP] Grupo alvo Our Classes: {jid}")
+    max_tentativas = 3
+    for tentativa in range(1, max_tentativas + 1):
+        try:
+            resp = requests.get(
+                f"http://host.docker.internal:3000/mentoria-config?lang={MENTORIA_LANG_ID}",
+                headers={"apikey": "SenhaMeetups2026"},
+                timeout=15
+            )
+            if resp.status_code == 200:
+                conf = resp.json()
+                jid = conf.get("groups", {}).get("our_classes", {}).get("jid")
+                if jid and jid.strip():
+                    grupos_alvo = [jid]
+                    logger.info(f"[WHATSAPP] Grupo alvo Our Classes: {jid} (obtido na tentativa {tentativa})")
+                    break
+                else:
+                    logger.error(
+                        "[WHATSAPP] FALHA: our_classes.jid está vazio ou ausente no mentoria-config. "
+                        "A mensagem NÃO será enviada. Verifique o painel Mentoria > Configurações."
+                    )
+                    break
             else:
-                # ERRO EXPLÍCITO: JID ausente é um problema de configuração, não um aviso
-                logger.error(
-                    "[WHATSAPP] FALHA: our_classes.jid está vazio ou ausente no mentoria-config. "
-                    "A mensagem NÃO será enviada. Verifique o painel Mentoria > Configurações."
-                )
-        else:
-            logger.error(f"[WHATSAPP] FALHA: Baileys retornou HTTP {resp.status_code} ao buscar mentoria-config. Mensagem NÃO enviada.")
-    except Exception as e:
-        logger.error(f"[WHATSAPP] FALHA CRÍTICA ao buscar mentoria-config do Baileys: {e}. Mensagem NÃO será enviada.")
+                logger.warning(f"[WHATSAPP] Tentativa {tentativa}/{max_tentativas}: Baileys retornou HTTP {resp.status_code}")
+        except Exception as e:
+            logger.warning(f"[WHATSAPP] Tentativa {tentativa}/{max_tentativas} falhou ao conectar no Baileys: {e}")
+        
+        if tentativa < max_tentativas:
+            time.sleep(3)
 
     if not grupos_alvo:
-        logger.error("[WHATSAPP] Nenhum grupo alvo encontrado. Abortando envio da notificação.")
+        logger.error("[WHATSAPP] Nenhum grupo alvo encontrado após tentativas. Abortando envio da notificação.")
         return mensagem, False
 
     link_preview_data = {
@@ -1148,17 +1194,25 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
 
     wpp_ok = False
     for grupo_id in grupos_alvo:
-        try:
-            requests.post("http://host.docker.internal:3000/send", json={
-                "to": grupo_id,
-                "message": mensagem,
-                "source": "mentoria_pipeline",
-                "linkPreview": link_preview_data
-            }, headers={"apikey": "SenhaMeetups2026"}, timeout=15)
-            logger.info(f"[WHATSAPP] Notificação enviada para {grupo_id}")
-            wpp_ok = True
-        except Exception as e:
-            logger.error(f"[WHATSAPP] Erro ao notificar {grupo_id}: {e}")
+        for tentativa_envio in range(1, max_tentativas + 1):
+            try:
+                r_send = requests.post("http://host.docker.internal:3000/send", json={
+                    "to": grupo_id,
+                    "message": mensagem,
+                    "source": "mentoria_pipeline",
+                    "linkPreview": link_preview_data
+                }, headers={"apikey": "SenhaMeetups2026"}, timeout=20)
+                if r_send.status_code == 200:
+                    logger.info(f"[WHATSAPP] Notificação enviada para {grupo_id} (tentativa {tentativa_envio})")
+                    wpp_ok = True
+                    break
+                else:
+                    logger.warning(f"[WHATSAPP] Envio para {grupo_id} retornou HTTP {r_send.status_code} na tentativa {tentativa_envio}")
+            except Exception as e:
+                logger.warning(f"[WHATSAPP] Erro ao notificar {grupo_id} na tentativa {tentativa_envio}: {e}")
+            
+            if tentativa_envio < max_tentativas:
+                time.sleep(3)
 
     return mensagem, wpp_ok
 
@@ -1169,7 +1223,29 @@ def processar_fila():
     
     tarefa = buscar_proxima_tarefa()
     if not tarefa: return
-        
+
+    # ── GUARDA-CHUVA DE SEGURANÇA ──────────────────────────────────────────────
+    # Segunda camada de proteção independente do filtro de scan.
+    # Se o nome do arquivo não contiver um termo de mentoria, recusa processar.
+    # Isso protege contra arquivos inseridos manualmente ou por bug de versão
+    # anterior do código (como aconteceu com "Franklin's Class" em 2026-09-29).
+    termos_validos = ['mentorship', 'mentoria', 'mentoría']
+    if MENTORIA_LANG_ID == 'es':
+        termos_validos += ['español', 'espanhol']
+    nome_arquivo = tarefa.get('drive_file_name', '').lower()
+    if not any(k in nome_arquivo for k in termos_validos):
+        logger.error(
+            f"[SEGURANÇA] Tarefa {tarefa['id']} REJEITADA: o arquivo '{tarefa['drive_file_name']}' "
+            f"não contém nenhum termo de mentoria. Publicação abortada para proteger conteúdo pessoal."
+        )
+        atualizar_status(
+            tarefa['id'], '',
+            error_msg=f"Cancelado: arquivo indevido na fila (não é uma aula de mentoria). "
+                      f"Arquivo: '{tarefa['drive_file_name']}'"
+        )
+        return
+    # ──────────────────────────────────────────────────────────────────────────
+
     logger.info(f"Processando mentoria: {tarefa['titulo_final']} (Status: {tarefa['status']})")
     atualizar_status(tarefa['id'], 'processing')
     

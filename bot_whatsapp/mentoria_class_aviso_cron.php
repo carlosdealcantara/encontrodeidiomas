@@ -40,9 +40,32 @@ if (empty($schedules)) {
     die("ℹ️ Nenhum encontro agendado para hoje (dia da semana: $diaSemana) a partir de agora. Nenhuma mensagem enviada.");
 }
 
-// Atualiza o JID na tabela para manter consistência
-$conn->prepare("UPDATE class_schedule SET group_jid = ? WHERE day_of_week = ? AND is_active = 1")
-     ->execute([$groupJid, $diaSemana]);
+// Cache de configs por idioma e mapeamento de grupos
+$configsByLang = [];
+$getGroupJidForLang = function($l) use (&$configsByLang, $groupJid) {
+    if (!isset($configsByLang[$l])) {
+        $configsByLang[$l] = getMentoriaConfig($l);
+    }
+    return $configsByLang[$l]['groups']['our_classes']['jid'] ?? $groupJid;
+};
+
+// Atualiza o JID na tabela respeitando o idioma de cada aula agendada
+$updateJidStmt = $conn->prepare("UPDATE class_schedule SET group_jid = ? WHERE id = ?");
+foreach ($schedules as $s) {
+    $sLang = !empty($s['lang_id']) ? $s['lang_id'] : 'en';
+    $correctJid = $getGroupJidForLang($sLang);
+    if ($correctJid && $correctJid !== ($s['group_jid'] ?? '')) {
+        $updateJidStmt->execute([$correctJid, $s['id']]);
+    }
+}
+
+// Agrupa schedules por grupo para calcular a posição relativa correta (caso haja múltiplas sessões no mesmo grupo)
+$schedulesByGroup = [];
+foreach ($schedules as $s) {
+    $sLang = !empty($s['lang_id']) ? $s['lang_id'] : 'en';
+    $tJid = $getGroupJidForLang($sLang);
+    $schedulesByGroup[$tJid][] = $s['id'];
+}
 
 // Função para formatar a hora estilo "1 PM" ou "1:30 PM"
 function formatTime($dtObj) {
@@ -57,10 +80,7 @@ function formatTime($dtObj) {
 
 $dateEn = date('l, F jS'); // Ex: Friday, June 13th
 
-// Cache de configs por idioma
-$configsByLang = [];
-
-foreach ($schedules as $index => $schedule) {
+foreach ($schedules as $schedule) {
     $lang = !empty($schedule['lang_id']) ? $schedule['lang_id'] : 'en';
     if (!isset($configsByLang[$lang])) {
         $configsByLang[$lang] = getMentoriaConfig($lang);
@@ -71,7 +91,11 @@ foreach ($schedules as $index => $schedule) {
 
     $startTime = $schedule['start_time'];
     $sessionType = $schedule['session_type'] ?? 'teacher_class';
-    $position = $index + 1;
+
+    // Determina a posição da sessão dentro do próprio grupo
+    $groupList = $schedulesByGroup[$targetJid] ?? [$schedule['id']];
+    $position = array_search($schedule['id'], $groupList) + 1;
+    $hasMultipleInGroup = count($groupList) > 1;
 
     $startTimeObj = new DateTime($hoje . ' ' . $startTime);
     $deadlineObj = clone $startTimeObj;
@@ -79,7 +103,7 @@ foreach ($schedules as $index => $schedule) {
 
     $tplKey = ($sessionType === 'student_practice') ? 'practice_aviso' : 'class_aviso';
     $defaultTpl = ($lang === 'es')
-        ? "📅 {date}\n\nTenemos una sesión programada para las {horario}.\nSi deseas participar, responde con !attend.\n\n⏳ Plazo límite para confirmar asistencia: {deadline}."
+        ? "📅 {date}\n\nTenemos una sesión programada para las {horario}.\nSi deseas participar, responde con !confirmar.\n\n⏳ Plazo límite para confirmar asistencia: {deadline}."
         : "📅 {date}\n\nWe have a session scheduled for {horario}.\nIf you want to participate, please reply with !attend.\n\n⏳ Deadline to confirm your attendance: {deadline}.";
     $tpl = $cfg['templates'][$tplKey] ?? $defaultTpl;
 
@@ -96,12 +120,18 @@ foreach ($schedules as $index => $schedule) {
         $tpl
     );
     
-    // Se há mais de 1 sessão, avise qual comando usar
-    if (count($schedules) > 1) {
-        $msg = str_replace('!attend', '!attend ' . $position, $msg);
+    // Se o idioma for espanhol, assegura instrução de comando nativo em espanhol
+    if ($lang === 'es') {
+        $msg = str_replace('!attend', '!confirmar', $msg);
     }
 
-    echo "📋 Enviando aviso para sessão $position (ID: {$schedule['id']}) - Tipo: $sessionType\n";
+    // Se há mais de 1 sessão no MESMO grupo, avisa a numeração correta
+    if ($hasMultipleInGroup) {
+        $cmdToReplace = ($lang === 'es') ? '!confirmar' : '!attend';
+        $msg = str_replace($cmdToReplace, $cmdToReplace . ' ' . $position, $msg);
+    }
+
+    echo "📋 Enviando aviso para sessão $position (ID: {$schedule['id']}) - Tipo: $sessionType - Lang: $lang\n";
     echo "🕐 Horário: " . $startTimeObj->format('h:i A') . "\n";
     
     // Trava anti-duplicidade
