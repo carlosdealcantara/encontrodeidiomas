@@ -107,15 +107,22 @@ if ($logged_in) {
         $idiomas_disponiveis = $stmt->fetchAll();
 
         // Sessões por idioma: detecta multi-sessão (ex: Francês com 2 encontros semanais)
+        // meetings.day_of_week = sessão base (sempre presente), meeting_sessions = sessões extras.
         $sessionsPerLang = [];
         try {
             $stmtSL = $conn->query("
-                SELECT m.language_id, ms.day_of_week, ms.time_hour,
-                       ROW_NUMBER() OVER (PARTITION BY m.language_id ORDER BY ms.day_of_week ASC, ms.time_hour ASC) as session_num
-                FROM meetings m
-                JOIN meeting_sessions ms ON ms.meeting_id = m.id AND ms.active = 1
-                WHERE m.active = 1
-                ORDER BY m.language_id ASC, ms.day_of_week ASC, ms.time_hour ASC
+                SELECT sub.language_id, sub.day_of_week, sub.time_hour,
+                       ROW_NUMBER() OVER (PARTITION BY sub.language_id ORDER BY sub.day_of_week ASC, sub.time_hour ASC) as session_num
+                FROM (
+                    SELECT language_id, day_of_week, time_hour FROM meetings WHERE active = 1
+                    UNION ALL
+                    SELECT m2.language_id, ms2.day_of_week, ms2.time_hour
+                    FROM meetings m2
+                    JOIN meeting_sessions ms2 ON ms2.meeting_id = m2.id AND ms2.active = 1
+                    WHERE m2.active = 1
+                      AND NOT (ms2.day_of_week = m2.day_of_week AND ms2.time_hour = m2.time_hour)
+                ) sub
+                ORDER BY sub.language_id ASC, sub.day_of_week ASC, sub.time_hour ASC
             ");
             foreach ($stmtSL->fetchAll() as $srow) {
                 $sessionsPerLang[(int)$srow['language_id']][] = [

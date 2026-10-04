@@ -68,24 +68,33 @@ if (isset($_GET['toggle_ignore_lang'])) {
     exit;
 }
 
-// Busca idiomas com replays da semana atual, ordenados pelo dia real de cada sessão.
-// ROW_NUMBER() mapeia parte→sessão (parte=1 = 1ª sessão do idioma na semana, parte=2 = 2ª, etc.)
-// para que o 2º encontro do Francês apareça no dia correto e não colado na Segunda.
+// Ordena cada replay pelo dia real da sua sessão.
+// A sessão BASE de cada encontro está em meetings.day_of_week (parte=1).
+// Sessões EXTRAS (parte=2+) vêm de meeting_sessions excluindo o dia base para evitar duplicata.
+// Isso garante: Francês parte=1 (Segunda) e parte=2 (Sexta) no slot correto da semana.
 $stmt = $conn->prepare("
     SELECT l.id as language_id, l.name, l.flag_emoji, l.ignore_next_video, r.parte, r.numero, r.link, r.titulo 
     FROM languages l 
     LEFT JOIN meetup_replays r ON l.id = r.language_id AND r.semana = ?
     LEFT JOIN (
+        SELECT sub.language_id, sub.day_of_week, sub.time_hour,
+               ROW_NUMBER() OVER (PARTITION BY sub.language_id ORDER BY sub.day_of_week ASC, sub.time_hour ASC) as parte_num
+        FROM (
+            -- Sessão base: meetings.day_of_week = parte 1
+            SELECT language_id, day_of_week, time_hour FROM meetings WHERE active = 1
+            UNION ALL
+            -- Sessões extras: meeting_sessions excluindo o mesmo dia/hora da base
+            SELECT m2.language_id, ms2.day_of_week, ms2.time_hour
+            FROM meetings m2
+            JOIN meeting_sessions ms2 ON ms2.meeting_id = m2.id AND ms2.active = 1
+            WHERE m2.active = 1
+              AND NOT (ms2.day_of_week = m2.day_of_week AND ms2.time_hour = m2.time_hour)
+        ) sub
+    ) sess ON sess.language_id = l.id AND sess.parte_num = COALESCE(r.parte, 1)
+    LEFT JOIN (
         SELECT language_id, MIN(day_of_week) as first_day, MIN(time_hour) as first_hour 
         FROM meetings WHERE active = 1 GROUP BY language_id
     ) m ON l.id = m.language_id
-    LEFT JOIN (
-        SELECT m2.language_id, ms2.day_of_week, ms2.time_hour,
-               ROW_NUMBER() OVER (PARTITION BY m2.language_id ORDER BY ms2.day_of_week ASC, ms2.time_hour ASC) as parte_num
-        FROM meetings m2
-        JOIN meeting_sessions ms2 ON ms2.meeting_id = m2.id AND ms2.active = 1
-        WHERE m2.active = 1
-    ) sess ON sess.language_id = l.id AND sess.parte_num = r.parte
     WHERE l.active = 1 
     ORDER BY COALESCE(sess.day_of_week, m.first_day, 9) ASC, 
              COALESCE(sess.time_hour, m.first_hour, 99) ASC, 
