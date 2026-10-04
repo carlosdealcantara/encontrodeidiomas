@@ -349,7 +349,7 @@ function sanitizeOdyseeUrl(string $url): string {
                         <input type="text" name="replay_titulo" id="replay_titulo_2"
                                placeholder='Ex: "Ela disse que aprendeu isso em 40 minutos!"' required>
                     </div>
-                    <button type="submit" class="btn" style="background: rgba(56,189,248,0.85);">
+                    <button type="submit" class="btn">
                         <i class="fas fa-paper-plane"></i> Salvar 2º Encontro
                     </button>
                     <div class="split-link-wrapper">
