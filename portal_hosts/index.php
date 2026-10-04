@@ -237,6 +237,11 @@ function sanitizeOdyseeUrl(string $url): string {
         .split-link { color: var(--text-dim); font-size: 0.75rem; text-decoration: none; opacity: 0.6; }
         .split-link:hover { opacity: 1; color: var(--text-main); }
         .split-info { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); padding: 10px 12px; border-radius: 8px; margin-top: 8px; font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+        .btn-sm { padding: 8px 12px; font-size: 0.8rem; margin-top: 6px; }
+        .extra-part-box { background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 16px; margin-top: 15px; margin-bottom: 10px; }
+        .extra-part-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; font-size: 0.85rem; color: #38bdf8; }
+        .close-extra-link { color: var(--text-dim); text-decoration: none; font-size: 0.75rem; }
+        .close-extra-link:hover { color: var(--accent-red); }
     </style>
 </head>
 <body>
@@ -321,14 +326,41 @@ function sanitizeOdyseeUrl(string $url): string {
                                placeholder='Ex: "Ela disse que aprendeu isso em 40 minutos!"' required>
                     </div>
                     <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Salvar e Notificar Grupo</button>
-                    <div class="split-link-wrapper">
-                        <a href="#" class="split-link" onclick="toggleSplitInfo(1); return false;">
+                    <div class="split-link-wrapper" id="splitWrapper1">
+                        <a href="#" class="split-link" onclick="abrirParteExtra(1); return false;">
                             <i class="fas fa-cut"></i> A gravação foi dividida em partes no mesmo dia?
                         </a>
                         <div class="split-info" id="splitInfo1" style="display:none;">
-                            Se este encontro teve 2 gravações separadas no mesmo dia, entre em contato com o administrador para registrar a segunda parte manualmente.
+                            <p style="margin-bottom:8px;">Se esta sessão gerou mais de um arquivo de vídeo (ex: caiu e voltou), cadastre a parte seguinte abaixo:</p>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnAddExtra1" onclick="habilitarParteExtraForm(1)">
+                                <i class="fas fa-plus"></i> Abrir campo para Parte Extra
+                            </button>
                         </div>
                     </div>
+                </form>
+
+                <!-- Formulário: Parte Extra da Sessão 1 (dinâmico) -->
+                <form method="POST" id="formReplayExtra1" style="display:none;" class="extra-part-box">
+                    <input type="hidden" name="action" value="save_replay">
+                    <input type="hidden" name="idioma_replay" id="idioma_replay_fe1" value="">
+                    <input type="hidden" name="replay_parte" id="replay_parte_extra1" value="2">
+
+                    <div class="extra-part-header">
+                        <span id="extraPartLabel1"><i class="fas fa-film"></i> Parte Extra</span>
+                        <a href="#" onclick="fecharParteExtra(1); return false;" class="close-extra-link"><i class="fas fa-times"></i> Ocultar</a>
+                    </div>
+                    <div class="form-group">
+                        <label>Nº (Máx. Participantes Simultâneos)</label>
+                        <input type="text" name="replay_numero" id="replay_numero_e1" placeholder="Ex: 12">
+                    </div>
+                    <div class="form-group">
+                        <label>Título (Clickbait Honesto da Parte Extra)</label>
+                        <input type="text" name="replay_titulo" id="replay_titulo_e1"
+                               placeholder='Ex: "Parte 2 - Ela continuou explicando..."' required>
+                    </div>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-paper-plane"></i> Salvar Parte Extra
+                    </button>
                 </form>
 
                 <!-- Formulário: 2º Encontro (apenas para idiomas com 2 sessões semanais) -->
@@ -352,14 +384,41 @@ function sanitizeOdyseeUrl(string $url): string {
                     <button type="submit" class="btn">
                         <i class="fas fa-paper-plane"></i> Salvar 2º Encontro
                     </button>
-                    <div class="split-link-wrapper">
-                        <a href="#" class="split-link" onclick="toggleSplitInfo(2); return false;">
+                    <div class="split-link-wrapper" id="splitWrapper2">
+                        <a href="#" class="split-link" onclick="abrirParteExtra(2); return false;">
                             <i class="fas fa-cut"></i> A gravação foi dividida em partes no mesmo dia?
                         </a>
                         <div class="split-info" id="splitInfo2" style="display:none;">
-                            Se este encontro teve 2 gravações separadas no mesmo dia, entre em contato com o administrador para registrar a segunda parte manualmente.
+                            <p style="margin-bottom:8px;">Se esta sessão gerou mais de um arquivo de vídeo (ex: caiu e voltou), cadastre a parte seguinte abaixo:</p>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnAddExtra2" onclick="habilitarParteExtraForm(2)">
+                                <i class="fas fa-plus"></i> Abrir campo para Parte Extra
+                            </button>
                         </div>
                     </div>
+                </form>
+
+                <!-- Formulário: Parte Extra da Sessão 2 (dinâmico) -->
+                <form method="POST" id="formReplayExtra2" style="display:none;" class="extra-part-box">
+                    <input type="hidden" name="action" value="save_replay">
+                    <input type="hidden" name="idioma_replay" id="idioma_replay_fe2" value="">
+                    <input type="hidden" name="replay_parte" id="replay_parte_extra2" value="3">
+
+                    <div class="extra-part-header">
+                        <span id="extraPartLabel2"><i class="fas fa-film"></i> Parte Extra</span>
+                        <a href="#" onclick="fecharParteExtra(2); return false;" class="close-extra-link"><i class="fas fa-times"></i> Ocultar</a>
+                    </div>
+                    <div class="form-group">
+                        <label>Nº (Máx. Participantes Simultâneos)</label>
+                        <input type="text" name="replay_numero" id="replay_numero_e2" placeholder="Ex: 12">
+                    </div>
+                    <div class="form-group">
+                        <label>Título (Clickbait Honesto da Parte Extra)</label>
+                        <input type="text" name="replay_titulo" id="replay_titulo_e2"
+                               placeholder='Ex: "Parte 3 - Conclusão do debate..."' required>
+                    </div>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-paper-plane"></i> Salvar Parte Extra
+                    </button>
                 </form>
             </div>
 
@@ -412,10 +471,14 @@ function sanitizeOdyseeUrl(string $url): string {
         const opt    = select.options[select.selectedIndex];
         const form1  = document.getElementById('formReplay1');
         const form2  = document.getElementById('formReplay2');
+        const formE1 = document.getElementById('formReplayExtra1');
+        const formE2 = document.getElementById('formReplayExtra2');
 
         if (!select.value) {
             form1.style.display = 'none';
             form2.style.display = 'none';
+            formE1.style.display = 'none';
+            formE2.style.display = 'none';
             return;
         }
 
@@ -450,11 +513,63 @@ function sanitizeOdyseeUrl(string $url): string {
         } else {
             form2.style.display = 'none';
         }
+
+        // --- Configuração das Partes Extras Dinâmicas ---
+        // Se o idioma tem 1 sessão: extra = Parte 2
+        // Se o idioma tem 2 sessões: extra1 = Parte 3 (ou split de sess1), extra2 = Parte 4 (ou split de sess2)
+        const isMultiSession = (sessions.length >= 2);
+        const parteExtraNum1 = isMultiSession ? 3 : 2;
+        const parteExtraNum2 = isMultiSession ? 4 : 3;
+
+        document.getElementById('replay_parte_extra1').value = parteExtraNum1;
+        document.getElementById('idioma_replay_fe1').value = idiomaJson;
+        document.getElementById('extraPartLabel1').innerHTML = '<i class="fas fa-film"></i> Parte ' + parteExtraNum1 + (isMultiSession ? ' (continuação da 1ª sessão)' : ' (continuação do encontro)');
+        document.getElementById('btnAddExtra1').innerHTML = '<i class="fas fa-plus"></i> Abrir campo para Parte ' + parteExtraNum1;
+
+        if (savedAllParts[parteExtraNum1] && (savedAllParts[parteExtraNum1].titulo || savedAllParts[parteExtraNum1].numero)) {
+            document.getElementById('replay_numero_e1').value = savedAllParts[parteExtraNum1].numero || '';
+            document.getElementById('replay_titulo_e1').value = savedAllParts[parteExtraNum1].titulo || '';
+            formE1.style.display = 'block';
+        } else {
+            document.getElementById('replay_numero_e1').value = '';
+            document.getElementById('replay_titulo_e1').value = '';
+            formE1.style.display = 'none';
+        }
+
+        if (isMultiSession) {
+            document.getElementById('replay_parte_extra2').value = parteExtraNum2;
+            document.getElementById('idioma_replay_fe2').value = idiomaJson;
+            document.getElementById('extraPartLabel2').innerHTML = '<i class="fas fa-film"></i> Parte ' + parteExtraNum2 + ' (continuação da 2ª sessão)';
+            document.getElementById('btnAddExtra2').innerHTML = '<i class="fas fa-plus"></i> Abrir campo para Parte ' + parteExtraNum2;
+
+            if (savedAllParts[parteExtraNum2] && (savedAllParts[parteExtraNum2].titulo || savedAllParts[parteExtraNum2].numero)) {
+                document.getElementById('replay_numero_e2').value = savedAllParts[parteExtraNum2].numero || '';
+                document.getElementById('replay_titulo_e2').value = savedAllParts[parteExtraNum2].titulo || '';
+                formE2.style.display = 'block';
+            } else {
+                document.getElementById('replay_numero_e2').value = '';
+                document.getElementById('replay_titulo_e2').value = '';
+                formE2.style.display = 'none';
+            }
+        } else {
+            formE2.style.display = 'none';
+        }
     }
 
-    function toggleSplitInfo(n) {
+    function abrirParteExtra(n) {
         const el = document.getElementById('splitInfo' + n);
         el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function habilitarParteExtraForm(n) {
+        document.getElementById('splitInfo' + n).style.display = 'none';
+        const formE = document.getElementById('formReplayExtra' + n);
+        formE.style.display = 'block';
+        formE.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function fecharParteExtra(n) {
+        document.getElementById('formReplayExtra' + n).style.display = 'none';
     }
 
 
