@@ -285,9 +285,9 @@ function sanitizeOdyseeUrl(string $url): string {
                                 $allComplete = $allDone;
                             }
                         ?>
-                        <option value='<?= json_encode(["id" => $l['id'], "nome" => $l['name'], "emoji" => $l['flag_emoji']]) ?>'
-                                data-saved='<?= json_encode($saved) ?>'
-                                data-sessions='<?= json_encode(array_values($langSessions)) ?>'
+                        <option value='<?= htmlspecialchars(json_encode(["id" => $l['id'], "nome" => $l['name'], "emoji" => $l['flag_emoji']]), ENT_QUOTES, "UTF-8") ?>'
+                                data-saved='<?= htmlspecialchars(json_encode($saved), ENT_QUOTES, "UTF-8") ?>'
+                                data-sessions='<?= htmlspecialchars(json_encode(array_values($langSessions)), ENT_QUOTES, "UTF-8") ?>'
                                 <?= ($prefill && $prefill['lang_id'] == $l['id']) ? 'selected' : '' ?>>
                             <?= $l['flag_emoji'] ?> <?= htmlspecialchars($l['name']) ?>
                             <?= $saved ? ($allComplete ? ' (Pronto ✅)' : ' (Incompleto ⏳)') : '' ?>
@@ -412,9 +412,11 @@ function sanitizeOdyseeUrl(string $url): string {
             return;
         }
 
-        const idiomaJson    = opt.value;
-        const savedAllParts = JSON.parse(opt.dataset.saved || 'null') || {};
-        const sessions      = JSON.parse(opt.dataset.sessions || '[]') || [];
+        const idiomaJson = opt.value;
+        let savedAllParts = {};
+        let sessions = [];
+        try { savedAllParts = JSON.parse(opt.dataset.saved || 'null') || {}; } catch(e) { savedAllParts = {}; }
+        try { sessions = JSON.parse(opt.dataset.sessions || '[]') || []; } catch(e) { sessions = []; }
 
         // --- Formulário 1 (sempre visível após selecionar idioma) ---
         document.getElementById('idioma_replay_f1').value    = idiomaJson;
