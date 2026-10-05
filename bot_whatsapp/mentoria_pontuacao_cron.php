@@ -121,7 +121,11 @@ foreach ($langs as $lang) {
             $groupMembers = fetchGroupMembers($groupJid);
             $groupAdmins  = [];
             foreach ($groupMembers as $m) {
-                if (!empty($m['admin'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['id']);
+                if (!empty($m['admin'])) {
+                    if (!empty($m['id']))  $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['id']);
+                    if (!empty($m['lid'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['lid']);
+                    if (!empty($m['jid'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['jid']);
+                }
             }
 
             if (isset($activity[$groupJid])) {
