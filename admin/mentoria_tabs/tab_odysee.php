@@ -14,7 +14,8 @@ $odysee_wpp_template = getSetting($wppSettingKey, getSetting('mentoria_odysee_wp
     <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 18px;">
         Texto enviado ao grupo <strong>Our Classes</strong> após cada publicação no Odysee.<br>
         Variáveis disponíveis: <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{titulo}</code> — título do vídeo &nbsp;|&nbsp;
-        <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{url}</code> — link do Odysee
+        <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{url}</code> — link do Odysee &nbsp;|&nbsp;
+        <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{bandeira}</code> — bandeira do idioma (ex: 🇺🇸, 🇪🇸)
     </p>
     <form method="POST">
         <input type="hidden" name="tab" value="odysee">
@@ -76,11 +77,20 @@ if (isset($_GET['send_wpp']) && is_numeric($_GET['send_wpp'])) {
         $cleanMsg = preg_replace('/^\[WPP FALHOU[^\]]*\]\s*/i', '', $rawMsg);
         if (empty(trim($cleanMsg))) {
             // Reconstrói a partir do template caso a coluna esteja vazia
-            $tplKey = ($current_lang === 'en') ? 'mentoria_odysee_wpp_template' : 'mentoria_odysee_wpp_template_' . $current_lang;
+            $taskLang = $task['lang_id'] ?? $current_lang;
+            $tplKey = ($taskLang === 'en') ? 'mentoria_odysee_wpp_template' : 'mentoria_odysee_wpp_template_' . $taskLang;
             $tpl = getSetting($tplKey, getSetting('mentoria_odysee_wpp_template', "🎓 *{titulo}*\n\n🔗 {url}"));
+            $flagEmoji = ($taskLang === 'en') ? '🇺🇸' : (($taskLang === 'es') ? '🇪🇸' : '');
+            try {
+                $stmtLang = $conn->prepare("SELECT bandeira FROM mentoria_langs WHERE lang_id = ? LIMIT 1");
+                $stmtLang->execute([$taskLang]);
+                $flagDb = $stmtLang->fetchColumn();
+                if (!empty($flagDb)) $flagEmoji = $flagDb;
+            } catch (Exception $e) {}
+
             $cleanMsg = str_replace(
-                ['{titulo}', '{url}'],
-                [$task['titulo_final'] ?: $task['drive_file_name'], $task['odysee_url']],
+                ['{titulo}', '{url}', '{bandeira}'],
+                [$task['titulo_final'] ?: $task['drive_file_name'], $task['odysee_url'], $flagEmoji],
                 $tpl
             );
         }
