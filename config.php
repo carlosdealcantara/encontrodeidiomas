@@ -230,9 +230,41 @@ function getHostPhotoUrl(?string $fileName, bool $thumb = false): string {
         }
     }
     
-    // Caminho absoluto no disco para o check
+    // 1. Busca primeiro na pasta de uploads dinâmicos (imutável ao Git)
+    $uploadDir = __DIR__ . '/assets/uploads/hosts/';
+    $uploadPath = $uploadDir . $checkName;
+    $uploadSubdir = 'assets/uploads/hosts/';
+
+    if (file_exists($uploadPath)) {
+        return $relative_prefix . $uploadSubdir . $checkName . '?v=' . $v;
+    }
+
+    // Tenta extensões alternativas na pasta de uploads
+    $info = pathinfo($checkName);
+    $baseNameWithoutExt = $info['filename'] ?? '';
+    $altExtensions = ['webp', 'jpeg', 'jpg', 'png'];
+    foreach ($altExtensions as $ext) {
+        $candidateName = $baseNameWithoutExt . '.' . $ext;
+        if (file_exists($uploadDir . $candidateName)) {
+            return $relative_prefix . $uploadSubdir . $candidateName . '?v=' . $v;
+        }
+    }
+
+    // 2. Busca legada em assets/images/ (imagens antigas que já estavam no Git)
     $filePath = __DIR__ . '/assets/images/' . $checkName;
-    
+
+    // Tenta extensões alternativas em assets/images/ (ex: banco tem .jpg mas disco tem .webp)
+    if (!file_exists($filePath)) {
+        foreach ($altExtensions as $ext) {
+            $candidateName = $baseNameWithoutExt . '.' . $ext;
+            if (file_exists(__DIR__ . '/assets/images/' . $candidateName)) {
+                $checkName = $candidateName;
+                $filePath = __DIR__ . '/assets/images/' . $checkName;
+                break;
+            }
+        }
+    }
+
     if (file_exists($filePath)) {
         return $relative_prefix . 'assets/images/' . $checkName . '?v=' . $v;
     } else {

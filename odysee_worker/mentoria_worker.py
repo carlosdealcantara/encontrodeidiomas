@@ -1129,25 +1129,30 @@ def notificar_whatsapp(titulo, url_curta, thumbnail_b64=None):
     Retorna uma tupla (mensagem_str, sucesso_bool).
     sucesso_bool = True apenas se ao menos um envio foi disparado sem exceção.
     """
-    # --- Busca o template editável do banco (settings table) ---
+    # --- Busca a bandeira e template editavel do banco ---
+    bandeira = "🇺🇸" if MENTORIA_LANG_ID == "en" else ("🇪🇸" if MENTORIA_LANG_ID == "es" else "")
     template = "🎓 *{titulo}*\n\n🔗 {url}"
     try:
         conn_t = get_db_connection()
         cursor_t = conn_t.cursor(dictionary=True)
+        cursor_t.execute("SELECT bandeira FROM mentoria_langs WHERE lang_id = %s LIMIT 1", (MENTORIA_LANG_ID,))
+        row_lang = cursor_t.fetchone()
+        if row_lang and row_lang.get("bandeira"):
+            bandeira = row_lang["bandeira"]
         setting_key_lang = f"mentoria_odysee_wpp_template_{MENTORIA_LANG_ID}"
         cursor_t.execute("SELECT setting_value FROM settings WHERE setting_key = %s LIMIT 1", (setting_key_lang,))
         row = cursor_t.fetchone()
-        if not row or not row.get('setting_value'):
+        if not row or not row.get("setting_value"):
             cursor_t.execute("SELECT setting_value FROM settings WHERE setting_key = 'mentoria_odysee_wpp_template' LIMIT 1")
             row = cursor_t.fetchone()
-        if row and row.get('setting_value'):
-            template = row['setting_value']
+        if row and row.get("setting_value"):
+            template = row["setting_value"]
         cursor_t.close()
         conn_t.close()
     except Exception as e:
-        logger.warning(f"[WHATSAPP] Não foi possível ler template do banco, usando padrão: {e}")
+        logger.warning(f"[WHATSAPP] Nao foi possivel ler template/bandeira do banco, usando padrao: {e}")
 
-    mensagem = template.replace('{titulo}', titulo).replace('{url}', url_curta)
+    mensagem = template.replace("{titulo}", titulo).replace("{url}", url_curta).replace("{bandeira}", bandeira)
 
     # --- Busca o JID do Our Classes direto do Baileys (fonte de verdade única) com retries ---
     grupos_alvo = []

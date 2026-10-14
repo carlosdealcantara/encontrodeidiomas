@@ -51,3 +51,7 @@ temp_dev.html
 baileys-server/mentoria.backup.js 
 govcondominial/
 admin/groups_cache.json
+
+# Uploads dinâmicos via painel admin (Git nunca sobrescreve)
+assets/uploads/*
+!assets/uploads/**/.gitkeep

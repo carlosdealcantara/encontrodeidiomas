@@ -578,8 +578,8 @@ async function handleMessages({ messages, type }) {
         const isAdmin = isGlobalAdmin || isGroupAdmin; // Used for commands below
         // msgId already declared above (line ~204)
 
-        // Only exclude global admins from activity tracking (group admins will now be tracked)
-        if (!isGlobalAdmin && !processedMessageIds.has(msgId)) {
+        // Exclude both global admins and group admins from activity tracking (only students are tracked)
+        if (!isAdmin && !processedMessageIds.has(msgId)) {
             processedMessageIds.add(msgId);
 
             const msgTypes = Object.keys(realMsg || {});

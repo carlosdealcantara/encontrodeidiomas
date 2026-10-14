@@ -106,6 +106,21 @@ try {
             $attendeeCount[$row['member_jid']] = (int)$row['session_count'];
         }
 
+        // Coleta todos os administradores dos grupos deste idioma para não contabilizá-los
+        $groupAdminsMap = [];
+        foreach (array_keys($langGroupJids) as $gJid) {
+            $membersData = fetchGroupMembers($gJid);
+            if (!empty($membersData) && is_array($membersData)) {
+                foreach ($membersData as $m) {
+                    if (!empty($m['admin'])) {
+                        if (!empty($m['id']))  $groupAdminsMap[preg_replace('/:\d+@/', '@', $m['id'])] = true;
+                        if (!empty($m['lid'])) $groupAdminsMap[preg_replace('/:\d+@/', '@', $m['lid'])] = true;
+                        if (!empty($m['jid'])) $groupAdminsMap[preg_replace('/:\d+@/', '@', $m['jid'])] = true;
+                    }
+                }
+            }
+        }
+
         $students  = [];  // seção Atividades
         $socialMap = []; // seção Social (por membro → por grupo)
 
@@ -114,7 +129,9 @@ try {
             if (!isset($langGroupJids[$groupJid])) continue;
 
             foreach ($members as $memberJid => $stats) {
-                if ($memberJid === $adminJid) continue;
+                $cleanMJid = preg_replace('/:\d+@/', '@', $memberJid);
+                if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+                if (isset($groupAdminsMap[$cleanMJid])) continue;
                 if (str_ends_with($memberJid, '@g.us')) continue;
 
                 $name = $stats['name'] ?? 'Unknown';
@@ -166,6 +183,10 @@ try {
         // Adiciona alunos que confirmaram presença mas não tiveram atividade
         foreach ($attendeesRaw as $att) {
             $jid = $att['member_jid'];
+            $cleanMJid = preg_replace('/:\d+@/', '@', $jid);
+            if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+            if (isset($groupAdminsMap[$cleanMJid])) continue;
+
             if (!isset($students[$jid])) {
                 $students[$jid] = [
                     'jid' => $jid, 'name' => $att['member_name'],
@@ -196,6 +217,7 @@ try {
             $jid = $row['member_jid'];
             $cleanMJid = preg_replace('/:\d+@/', '@', $jid);
             if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+            if (isset($groupAdminsMap[$cleanMJid])) continue;
             
             $mName = $row['member_name'] ?: 'Unknown';
             if (stripos($mName, 'Staff') !== false || stripos($mName, 'Test') !== false) continue;

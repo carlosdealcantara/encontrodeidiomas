@@ -65,8 +65,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $webpFileName = $cleanBaseName . '.webp';
             $thumbFileName = $cleanBaseName . '_thumb.webp';
-            $targetPath = '../assets/images/' . $webpFileName;
-            $thumbPath = '../assets/images/' . $thumbFileName;
+            // Uploads de hosts vão para pasta isolada do Git
+            $uploadsDir = dirname(__DIR__) . '/assets/uploads/hosts/';
+            if (!is_dir($uploadsDir)) {
+                mkdir($uploadsDir, 0755, true);
+            }
+            $targetPath = $uploadsDir . $webpFileName;
+            $thumbPath  = $uploadsDir . $thumbFileName;
             
             try {
                 $tmpFile = $_FILES['photo']['tmp_name'];

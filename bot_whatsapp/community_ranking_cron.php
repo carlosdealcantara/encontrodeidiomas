@@ -105,14 +105,25 @@ foreach ($communityGroups as $groupKey => $gData) {
         continue;
     }
     
+    $groupMembers = fetchGroupMembers($groupJid);
+    $groupAdmins  = [];
+    foreach ($groupMembers as $m) {
+        if (!empty($m['admin'])) {
+            if (!empty($m['id']))  $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['id']);
+            if (!empty($m['lid'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['lid']);
+            if (!empty($m['jid'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['jid']);
+        }
+    }
+
     $rankingMsgs = [];
     $rankingReacts = [];
-    
+
     foreach ($activity[$groupJid] as $memberJid => $data) {
         $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
         
-        // Excluir APENAS o admin principal e a conta do bot (mentoria.js vai permitir outros admins agora)
+        // Excluir admin principal, conta do bot e administradores do grupo
         if ($cleanMemberJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+        if (in_array($cleanMemberJid, $groupAdmins)) continue;
         if (str_ends_with($memberJid, '@g.us')) continue;
         
         $nome = trim($data['name'] ?? 'Unknown');
