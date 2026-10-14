@@ -232,6 +232,21 @@ function getHostPhotoUrl(?string $fileName, bool $thumb = false): string {
     
     // Caminho absoluto no disco para o check
     $filePath = __DIR__ . '/assets/images/' . $checkName;
+
+    // Se não encontrou o arquivo exato no disco, tenta extensões alternativas (ex: banco tem .jpg mas disco tem .webp)
+    if (!file_exists($filePath)) {
+        $info = pathinfo($checkName);
+        $baseNameWithoutExt = $info['filename'] ?? '';
+        $altExtensions = ['webp', 'jpeg', 'jpg', 'png'];
+        foreach ($altExtensions as $ext) {
+            $candidateName = $baseNameWithoutExt . '.' . $ext;
+            if (file_exists(__DIR__ . '/assets/images/' . $candidateName)) {
+                $checkName = $candidateName;
+                $filePath = __DIR__ . '/assets/images/' . $checkName;
+                break;
+            }
+        }
+    }
     
     if (file_exists($filePath)) {
         return $relative_prefix . 'assets/images/' . $checkName . '?v=' . $v;
