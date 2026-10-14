@@ -7,7 +7,7 @@ header('Content-Type: text/plain; charset=utf-8');
 try {
     $conn = connectDB();
     echo "=== HOSTS COM WELLINGTON ===\n";
-    $stmt = $conn->query("SELECT id, name, photo, profile_picture, status FROM hosts WHERE name LIKE '%Wellington%' OR full_name LIKE '%Wellington%'");
+    $stmt = $conn->query("SELECT * FROM hosts WHERE full_name LIKE '%Wellington%'");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     print_r($rows);
 
