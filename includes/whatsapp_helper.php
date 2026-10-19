@@ -80,7 +80,7 @@ function sendBaileysRequest($endpoint, $payload = null, $method = 'POST') {
  * Se for Bulk (array), usa /send-bulk.
  * Se for Unitário, usa /send.
  */
-function enviarWhatsApp($to, string $message, string $source = 'sistema', ?array $linkPreview = null, string $priority = 'normal'): array {
+function enviarWhatsApp($to, string $message, string $source = 'sistema', ?array $linkPreview = null, string $priority = 'normal', ?string $dedupKey = null): array {
     if (is_array($to)) {
         // Bulk
         $payload = [
@@ -89,6 +89,9 @@ function enviarWhatsApp($to, string $message, string $source = 'sistema', ?array
             'source' => $source,
             'priority' => $priority
         ];
+        if ($dedupKey !== null) {
+            $payload['dedup_key'] = $dedupKey;
+        }
         return sendBaileysRequest('/send-bulk', $payload);
     } else {
         // Unitário
@@ -100,6 +103,9 @@ function enviarWhatsApp($to, string $message, string $source = 'sistema', ?array
         ];
         if ($linkPreview !== null) {
             $payload['linkPreview'] = $linkPreview;
+        }
+        if ($dedupKey !== null) {
+            $payload['dedup_key'] = $dedupKey;
         }
         return sendBaileysRequest('/send', $payload);
     }
@@ -146,12 +152,15 @@ function fetchGroupMembers(string $groupId): array {
     return $res['success'] ? ($res['data'] ?? []) : [];
 }
 
-function enviarWhatsAppMention(string $to, string $message, array $mentions): array {
+function enviarWhatsAppMention(string $to, string $message, array $mentions, ?string $dedupKey = null): array {
     $payload = [
         'to' => $to,
         'message' => $message,
         'mentions' => $mentions
     ];
+    if ($dedupKey !== null) {
+        $payload['dedup_key'] = $dedupKey;
+    }
     return sendBaileysRequest('/send-mention', $payload, 'POST');
 }
 

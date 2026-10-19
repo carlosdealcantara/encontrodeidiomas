@@ -69,7 +69,8 @@ foreach ($schedules as $s) {
             $msg = str_replace('{link}', $cleanLink, $tpl);
             $msg = str_replace('{horario}', formatTime12h($classTime), $msg);
             
-            enviarWhatsApp($s['group_jid'], $msg, 'class_kickoff', null, 'high');
+            $dedupKey = "class_kickoff_{$s['id']}_{$hoje}";
+            enviarWhatsApp($s['group_jid'], $msg, 'class_kickoff', null, 'high', $dedupKey);
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_kickoff', ?, ?)")->execute([$hoje, $s['id']]);
             echo "Sessão " . $s['start_time'] . " iniciada!\n";
         }

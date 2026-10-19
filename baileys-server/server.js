@@ -24,6 +24,32 @@ let queue = [];
 let jobs = {}; 
 // jobs format: { jobId: { status: 'running', progress: { current: 0, total: 0 }, logs: [] } }
 
+// Deduplicação idempotente para envios automáticos (evita envio repetido por retentativas)
+const sentDedupKeys = new Map(); // key -> timestamp
+const DEDUP_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
+
+function isDedupKeyPresent(key) {
+    if (!key) return false;
+    const now = Date.now();
+    // Limpeza de chaves expiradas periodicamente
+    if (sentDedupKeys.size > 2000) {
+        for (const [k, ts] of sentDedupKeys.entries()) {
+            if (now - ts > DEDUP_TTL_MS) sentDedupKeys.delete(k);
+        }
+    }
+    if (sentDedupKeys.has(key)) {
+        const ts = sentDedupKeys.get(key);
+        if (now - ts <= DEDUP_TTL_MS) return true;
+        sentDedupKeys.delete(key);
+    }
+    return false;
+}
+
+function registerDedupKey(key) {
+    if (!key) return;
+    sentDedupKeys.set(key, Date.now());
+}
+
 let sock;
 let isConnected = false;
 let isProcessingQueue = false;
@@ -645,16 +671,25 @@ app.post('/send-bulk', (req, res) => {
 app.post('/send', (req, res) => {
     if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado. Escaneie o QR Code primeiro.' });
     try {
-        const { to, message, source, linkPreview, priority } = req.body;
+        const { to, message, source, linkPreview, priority, dedup_key } = req.body;
         if (!to || !message) return res.status(400).json({ success: false, error: 'Parâmetros "to" e "message" são obrigatórios' });
         
+        // Se já existe um dedup_key ativo ou já processado nas últimas 24h, evita reenvio duplicado
+        if (dedup_key) {
+            if (isDedupKeyPresent(dedup_key) || queue.some(q => q.dedup_key === dedup_key)) {
+                console.log(`[DEDUP-SKIP] Mensagem para ${to} ignorada pois dedup_key '${dedup_key}' já foi enfileirada/enviada.`);
+                return res.json({ success: true, skipped: true, reason: 'dedup_skipped', dedup_key });
+            }
+            registerDedupKey(dedup_key);
+        }
+
         // Se vier de class_kickoff ou class_cancel, garante prioridade alta mesmo se não explicitada
         const itemPriority = (priority === 'high' || source === 'class_kickoff' || source === 'class_cancel') ? 'high' : 'normal';
 
         const jobId = 'unit_' + Math.random().toString(36).substring(2, 10);
         jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
         
-        console.log(`[Universal Endpoint] Enfileirando mensagem para ${to} (Source: ${source || 'desconhecida'} | Prioridade: ${itemPriority})`);
+        console.log(`[Universal Endpoint] Enfileirando mensagem para ${to} (Source: ${source || 'desconhecida'} | Prioridade: ${itemPriority}${dedup_key ? ` | Dedup: ${dedup_key}` : ''})`);
         
         enqueueItem({
             jobId,
@@ -663,7 +698,8 @@ app.post('/send', (req, res) => {
             index: 1,
             linkPreview,
             priority: itemPriority,
-            source: source || 'unitario'
+            source: source || 'unitario',
+            dedup_key: dedup_key || null
         }, itemPriority);
         
         if (isConnected && !isProcessingQueue) {
@@ -680,9 +716,17 @@ app.post('/send', (req, res) => {
 app.post('/send-mention', (req, res) => {
     if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado.' });
     try {
-        const { to, message, mentions, priority, source } = req.body;
+        const { to, message, mentions, priority, source, dedup_key } = req.body;
         if (!to || !message || !Array.isArray(mentions)) return res.status(400).json({ success: false, error: 'Parâmetros "to", "message" e "mentions" são obrigatórios' });
         
+        if (dedup_key) {
+            if (isDedupKeyPresent(dedup_key) || queue.some(q => q.dedup_key === dedup_key)) {
+                console.log(`[DEDUP-SKIP] Mensagem mencionada para ${to} ignorada pois dedup_key '${dedup_key}' já foi enfileirada/enviada.`);
+                return res.json({ success: true, skipped: true, reason: 'dedup_skipped', dedup_key });
+            }
+            registerDedupKey(dedup_key);
+        }
+
         const itemPriority = priority || 'normal';
         const jobId = 'ment_' + Math.random().toString(36).substring(2, 10);
         jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
@@ -694,7 +738,8 @@ app.post('/send-mention', (req, res) => {
             index: 1,
             mentions,
             priority: itemPriority,
-            source: source || 'mention'
+            source: source || 'mention',
+            dedup_key: dedup_key || null
         }, itemPriority);
         
         if (isConnected && !isProcessingQueue) {

@@ -142,7 +142,8 @@ foreach ($schedules as $schedule) {
         continue;
     }
 
-    $res = enviarWhatsApp($targetJid, $msg, 'class_aviso');
+    $dedupKey = "class_aviso_{$schedule['id']}_{$hoje}";
+    $res = enviarWhatsApp($targetJid, $msg, 'class_aviso', null, 'normal', $dedupKey);
     if ($res['success']) {
         $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_aviso', ?, ?)")->execute([$hoje, $schedule['id']]);
         echo "✅ Aviso enfileirado! (jobId: " . ($res['data']['jobId'] ?? 'n/a') . ")\n\n";
