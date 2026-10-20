@@ -255,28 +255,25 @@ def salvar_screenshot(page, nome, tarefa_id):
 
 
 def verificar_video_publicado(channel_name, slug):
-    """Verifica se o vídeo já foi publicado na LBRY.
-    Tenta primeiro com o canal, depois sem canal (para uploads Anonymous).
-    Retorna True se encontrado, False caso contrário.
+    """Verifica se o vídeo já foi publicado na LBRY para o canal específico.
+    Retorna True se encontrado no canal, False caso contrário.
     """
+    if not channel_name or not slug:
+        return False
+    clean_channel = channel_name.lstrip('@')
     api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
-    # Testa com canal
-    urls_para_testar = [f"lbry://@{channel_name}/{slug}"]
-    # Fallback: sem canal (caso o upload tenha ficado como Anonymous)
-    urls_para_testar.append(f"lbry://{slug}")
+    lbry_url = f"lbry://@{clean_channel}/{slug}"
     try:
-        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": urls_para_testar}}
+        payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": [lbry_url]}}
         res = requests.post(api_url, json=payload, timeout=15)
         if res.status_code == 200:
             data = res.json()
-            result = data.get("result", {})
-            for lbry_url in urls_para_testar:
-                entry = result.get(lbry_url, {})
-                if entry and "error" not in entry:
-                    logger.info(f"[LBRY] Vídeo encontrado: {lbry_url}")
-                    return True
+            entry = data.get("result", {}).get(lbry_url, {})
+            if entry and "error" not in entry:
+                logger.info(f"[LBRY] Vídeo confirmado no canal @{clean_channel}: {lbry_url}")
+                return True
     except Exception as e:
-        logger.warning(f"Erro ao checar API LBRY para {slug}: {e}")
+        logger.warning(f"Erro ao checar API LBRY para {lbry_url}: {e}")
     return False
 
 def capturar_share_link_playwright(tarefa_id, auth_token, channel_name, slug):
@@ -823,11 +820,7 @@ def publicar_odysee_playwright(tarefa_id, auth_token, title, file_path, slug=Non
                     if row_check:
                         channel_name_lbry = lang_row['odysee_channel_name'].lstrip('@') if lang_row else ''
                         video_slug = row_check['odysee_slug'] or slug
-                        # Testa com canal e sem canal (fallback para uploads Anonymous)
-                        lbry_urls_check = [
-                            f"lbry://@{channel_name_lbry}/{video_slug}",
-                            f"lbry://{video_slug}",
-                        ]
+                        lbry_urls_check = [f"lbry://@{channel_name_lbry}/{video_slug}"] if channel_name_lbry else [f"lbry://{video_slug}"]
                         api_url = "https://api.na-backend.odysee.com/api/v1/proxy?m=resolve"
                         payload = {"jsonrpc": "2.0", "method": "resolve", "params": {"urls": lbry_urls_check}}
                         res = requests.post(api_url, json=payload, timeout=15)
