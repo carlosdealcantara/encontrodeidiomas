@@ -18,12 +18,22 @@ $aluno = null;
 $msg = '';
 $ltv_vitalicios = (float)getSetting('ltv_vitalicios', '5000');
 
+// Garante que as colunas de agendamento existam antes de qualquer SELECT
+try { $conn->exec("ALTER TABLE mentoria_alunos ADD COLUMN data_encerramento_agendado DATE NULL DEFAULT NULL"); } catch (Exception $e) {}
+try { $conn->exec("ALTER TABLE mentoria_alunos ADD COLUMN msg_encerramento_id INT NULL DEFAULT NULL"); } catch (Exception $e) {}
+
 // Se for Edição, busca os dados
 if (isset($_GET['id'])) {
     $stmt = $conn->prepare("SELECT * FROM mentoria_alunos WHERE id = :id");
     $stmt->execute(['id' => (int)$_GET['id']]);
     $aluno = $stmt->fetch();
 }
+
+// Carrega templates disponíveis para o selector de mensagem de encerramento
+$msgs_encerramento = [];
+try {
+    $msgs_encerramento = $conn->query("SELECT id, cenario, dias_antes FROM mentoria_mensagens WHERE ativo = 1 ORDER BY lang_id ASC, dias_antes DESC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
 
 $available_langs = [];
 try {
@@ -60,6 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Tratamento das datas (podem ser null)
     $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
     $data_nascimento = !empty($_POST['data_nascimento']) ? $_POST['data_nascimento'] : null;
+
+    // Encerramento agendado
+    $data_encerramento_agendado = !empty($_POST['data_encerramento_agendado']) ? $_POST['data_encerramento_agendado'] : null;
+    $msg_encerramento_id = !empty($_POST['msg_encerramento_id']) ? (int)$_POST['msg_encerramento_id'] : null;
     
     $grupo_atual = $_POST['grupo_atual'] ?? 'Our Meetups';
     $observacoes = $_POST['observacoes'] ?? '';
@@ -85,6 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($id > 0) {
+        // Garante colunas de agendamento (migração segura)
+        try { $conn->exec("ALTER TABLE mentoria_alunos ADD COLUMN data_encerramento_agendado DATE NULL DEFAULT NULL"); } catch (Exception $e) {}
+        try { $conn->exec("ALTER TABLE mentoria_alunos ADD COLUMN msg_encerramento_id INT NULL DEFAULT NULL"); } catch (Exception $e) {}
+
         // UPDATE
         $sql = "UPDATE mentoria_alunos SET 
                 nome = :nome, telefone = :telefone, cpf = :cpf, email = :email,
@@ -93,7 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 valor_mensalidade = :valor_mensalidade, total_investido = :total_investido,
                 proximo_vencimento = :proximo_vencimento, 
                 data_inicio = :data_inicio, data_nascimento = :data_nascimento, grupo_atual = :grupo_atual, 
-                observacoes = :observacoes, lang_id = :lang_id 
+                observacoes = :observacoes, lang_id = :lang_id,
+                data_encerramento_agendado = :data_encerramento_agendado,
+                msg_encerramento_id = :msg_encerramento_id
                 WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
@@ -103,7 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'valor_mensalidade' => $valor_mensalidade, 'total_investido' => $total_investido, 
             'proximo_vencimento' => $proximo_vencimento, 
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
-            'observacoes' => $observacoes, 'lang_id' => $lang_id, 'id' => $id
+            'observacoes' => $observacoes, 'lang_id' => $lang_id,
+            'data_encerramento_agendado' => $data_encerramento_agendado,
+            'msg_encerramento_id' => $msg_encerramento_id,
+            'id' => $id
         ]);
         header('Location: mentoria.php?lang=' . urlencode($lang_id) . '&msg=Aluno atualizado com sucesso');
         exit;
@@ -356,6 +379,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="obs-hint">Ex: "Paga apenas R$ 150 por acordo antigo", "Aluno do exterior", etc.</div>
                         <textarea name="observacoes" rows="3"><?= htmlspecialchars($aluno['observacoes'] ?? '') ?></textarea>
                     </div>
+
+                    <!-- ================================================ -->
+                    <!-- BLOCO: ENCERRAMENTO AGENDADO                      -->
+                    <!-- ================================================ -->
+                    <div class="form-group full" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 5px;">
+                        <label style="color: #f97316; font-size: 0.95rem;">
+                            <i class="fas fa-calendar-times" style="margin-right: 6px;"></i>
+                            Encerramento de Acesso Agendado
+                        </label>
+                        <div class="obs-hint" style="margin-bottom: 12px;">
+                            Para alunos que anunciaram cancelamento mas ainda têm o mês vigente em curso.
+                            Na data informada, o bot removerá automaticamente o aluno do Our Classes à meia-noite.
+                            Deixe em branco se não houver agendamento.
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label style="font-size: 0.82rem;">📅 Data do Encerramento</label>
+                                <input type="date" name="data_encerramento_agendado"
+                                       value="<?= htmlspecialchars($aluno['data_encerramento_agendado'] ?? '') ?>"
+                                       style="border-color: rgba(249,115,22,0.4);">
+                                <div class="obs-hint">Normalmente = data do próximo vencimento.</div>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 0.82rem;">💬 Mensagem no Privado (Opcional)</label>
+                                <select name="msg_encerramento_id" style="border-color: rgba(249,115,22,0.4);">
+                                    <option value="">— Nenhuma (remoção silenciosa) —</option>
+                                    <?php foreach ($msgs_encerramento as $mEnc): ?>
+                                        <option value="<?= (int)$mEnc['id'] ?>"
+                                            <?= ((int)($aluno['msg_encerramento_id'] ?? 0)) === (int)$mEnc['id'] ? 'selected' : '' ?>>
+                                            [<?= $mEnc['dias_antes'] > 0 ? '+' : '' ?><?= $mEnc['dias_antes'] ?>d] <?= htmlspecialchars($mEnc['cenario']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <div class="obs-hint">Se selecionada, será enviada no privado junto com a remoção.</div>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($aluno['data_encerramento_agendado'])): ?>
+                        <div style="margin-top: 12px; padding: 10px 14px; background: rgba(249,115,22,0.1); border-left: 3px solid #f97316; border-radius: 8px; font-size: 0.88rem;">
+                            <i class="fas fa-clock" style="color: #f97316; margin-right: 6px;"></i>
+                            <strong style="color: #f97316;">Encerramento ativo:</strong>
+                            Este aluno será removido do Our Classes em
+                            <strong><?= date('d/m/Y', strtotime($aluno['data_encerramento_agendado'])) ?></strong>
+                            automaticamente.
+                            <?php if (!empty($aluno['msg_encerramento_id'])): ?>
+                                Uma mensagem será enviada no privado.
+                            <?php else: ?>
+                                Sem mensagem — remoção silenciosa.
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <!-- /BLOCO ENCERRAMENTO AGENDADO -->
+
                 </div>
 
                 <button type="submit" class="btn-submit">
