@@ -32,7 +32,7 @@ if (isset($_GET['id'])) {
 // Carrega templates disponíveis para o selector de mensagem de encerramento
 $msgs_encerramento = [];
 try {
-    $msgs_encerramento = $conn->query("SELECT id, cenario, dias_antes FROM mentoria_mensagens WHERE ativo = 1 ORDER BY lang_id ASC, dias_antes DESC")->fetchAll(PDO::FETCH_ASSOC);
+    $msgs_encerramento = $conn->query("SELECT id, cenario, dias_antes, lang_id FROM mentoria_mensagens WHERE ativo = 1 ORDER BY lang_id ASC, dias_antes DESC")->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {}
 
 $available_langs = [];
@@ -408,9 +408,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <select name="msg_encerramento_id" style="border-color: rgba(249,115,22,0.4);">
                                     <option value="">— Nenhuma (remoção silenciosa) —</option>
                                     <?php foreach ($msgs_encerramento as $mEnc): ?>
+                                        <?php 
+                                            $tagTempo = $mEnc['dias_antes'] == -999 ? 'Auto/Encerramento' : ($mEnc['dias_antes'] > 0 ? "+{$mEnc['dias_antes']}d" : "{$mEnc['dias_antes']}d");
+                                            $flagLang = strtoupper($mEnc['lang_id'] ?? 'EN');
+                                        ?>
                                         <option value="<?= (int)$mEnc['id'] ?>"
                                             <?= ((int)($aluno['msg_encerramento_id'] ?? 0)) === (int)$mEnc['id'] ? 'selected' : '' ?>>
-                                            [<?= $mEnc['dias_antes'] > 0 ? '+' : '' ?><?= $mEnc['dias_antes'] ?>d] <?= htmlspecialchars($mEnc['cenario']) ?>
+                                            [<?= $flagLang ?>] <?= htmlspecialchars($mEnc['cenario']) ?> (<?= $tagTempo ?>)
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
