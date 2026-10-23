@@ -963,6 +963,17 @@ def limpar_pastas_vazias_mentoria(drive_service):
     except Exception as e:
         logger.error(f"[LIXEIRA] Erro ao limpar pastas vazias de mentoria: {e}")
 
+def mover_para_lixeira(drive_service, file_id, file_name):
+    """
+    Move o arquivo para a lixeira do Google Drive.
+    Usado para vídeos inválidos (< 15 MB) que não devem ser processados nem arquivados.
+    """
+    try:
+        drive_service.files().update(fileId=file_id, body={'trashed': True}).execute()
+        logger.info(f"[LIXEIRA] Vídeo de mentoria '{file_name}' movido para a lixeira do Drive.")
+    except Exception as e:
+        logger.error(f"[LIXEIRA] Erro ao mover '{file_name}' para a lixeira: {e}")
+
 def escanear_drive():
     print(f"Escaneando Drive MENTORIA ({MENTORIA_LANG_ID}) por novos vídeos...", flush=True)
 
@@ -1051,9 +1062,18 @@ def escanear_drive():
             file_id = arquivo['id']
             file_name = arquivo['name']
             file_name_low = file_name.lower()
+            file_size_mb = int(arquivo.get('size', 0)) / (1024 * 1024) if arquivo.get('size') else 0
 
             cursor.execute("SELECT id FROM mentoria_odysee_queue WHERE drive_file_id = %s", (file_id,))
             if cursor.fetchone():
+                continue
+
+            if file_size_mb > 0 and file_size_mb < 15:
+                logger.warning(
+                    f"[DESCARTE] Vídeo da mentoria '{file_name}' tem apenas {file_size_mb:.1f} MB (< 15 MB). "
+                    f"Movendo para a lixeira do Drive. NÃO será inserido na fila."
+                )
+                mover_para_lixeira(drive_service, file_id, file_name)
                 continue
 
             if 'feedback' in file_name_low:
