@@ -29,24 +29,31 @@ const pendingWelcomes = {};
  * @param {number} delaySeconds - tempo estimado até o envio
  */
 async function enqueueInDB(groupJid, participantJid, delaySeconds) {
-    try {
-        const body = new URLSearchParams({
-            group_jid:       groupJid,
-            participant_jid: participantJid,
-            delay_seconds:   String(delaySeconds),
-        });
-        const res  = await fetch(`${QUEUE_API_URL}&action=enqueue`, { method: 'POST', body });
-        const data = await res.json();
-        if (data.skipped) {
-            console.log(`[COMMUNITY-WELCOME] DB queue: ${participantJid} já estava pendente, ignorado.`);
-        } else {
-            console.log(`[COMMUNITY-WELCOME] DB queue: ${participantJid} registrado (id=${data.id}).`);
+    const urls = [
+        `${QUEUE_API_URL}&action=enqueue`,
+        `${QUEUE_API_URL.replace('https://dev.viaEi.com', 'https://viaEi.com')}&action=enqueue`
+    ];
+    for (const url of urls) {
+        try {
+            const body = new URLSearchParams({
+                group_jid:       groupJid,
+                participant_jid: participantJid,
+                delay_seconds:   String(delaySeconds),
+            });
+            const res = await fetch(url, { method: 'POST', body });
+            const rawText = await res.text();
+            const data = JSON.parse(rawText);
+            if (data.skipped) {
+                console.log(`[COMMUNITY-WELCOME] DB queue: ${participantJid} já estava pendente, ignorado.`);
+            } else {
+                console.log(`[COMMUNITY-WELCOME] DB queue: ${participantJid} registrado (id=${data.id}).`);
+            }
+            return data.id ?? null;
+        } catch (err) {
+            console.warn(`[COMMUNITY-WELCOME] Falha ao registrar na fila DB via ${url}:`, err.message);
         }
-        return data.id ?? null;
-    } catch (err) {
-        console.error('[COMMUNITY-WELCOME] Falha ao registrar na fila DB:', err.message);
-        return null;
     }
+    return null;
 }
 
 /**
@@ -56,11 +63,18 @@ async function enqueueInDB(groupJid, participantJid, delaySeconds) {
  */
 async function updateQueueStatus(ids, status) {
     if (!ids || ids.length === 0) return;
-    try {
-        const body = new URLSearchParams({ ids: ids.join(',') });
-        await fetch(`${QUEUE_API_URL}&action=mark_${status}`, { method: 'POST', body });
-    } catch (err) {
-        console.error(`[COMMUNITY-WELCOME] Falha ao marcar fila como ${status}:`, err.message);
+    const urls = [
+        `${QUEUE_API_URL}&action=mark_${status}`,
+        `${QUEUE_API_URL.replace('https://dev.viaEi.com', 'https://viaEi.com')}&action=mark_${status}`
+    ];
+    for (const url of urls) {
+        try {
+            const body = new URLSearchParams({ ids: ids.join(',') });
+            await fetch(url, { method: 'POST', body });
+            return;
+        } catch (err) {
+            console.warn(`[COMMUNITY-WELCOME] Falha ao marcar fila como ${status} via ${url}:`, err.message);
+        }
     }
 }
 
@@ -77,8 +91,30 @@ async function updateQueueStatus(ids, status) {
 async function sendGroupedWelcome(sock, groupJid, participants, communityConfig, queueIds = []) {
     try {
         const apiUrl = `${WELCOME_API_URL}&group_jid=${encodeURIComponent(groupJid)}`;
-        const res    = await fetch(apiUrl);
-        const data   = await res.json();
+        let res, data;
+        let lastErr = null;
+        const urlsToTry = [
+            apiUrl,
+            apiUrl.replace('https://dev.viaEi.com', 'https://viaEi.com')
+        ];
+
+        for (const targetUrl of urlsToTry) {
+            try {
+                res = await fetch(targetUrl);
+                const rawText = await res.text();
+                data = JSON.parse(rawText);
+                lastErr = null;
+                break;
+            } catch (parseErr) {
+                lastErr = parseErr;
+                console.warn(`[COMMUNITY-WELCOME] Falha ao obter JSON de ${targetUrl}:`, parseErr.message);
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+
+        if (!data) {
+            throw new Error(`Falha em todas as tentativas de consulta à welcome API: ${lastErr?.message}`);
+        }
 
         if (!data.enabled) {
             console.log(`[COMMUNITY-WELCOME] Welcome disabled for group ${groupJid} (API returned enabled=false)`);
@@ -201,10 +237,23 @@ async function handleParticipant(sock, groupJid, participants, communityConfig) 
 async function recoverPendingWelcomes(sock, communityConfig) {
     try {
         console.log('[COMMUNITY-WELCOME] Verificando fila de boas-vindas pendentes...');
-        const res  = await fetch(`${QUEUE_API_URL}&action=pending&min_age_minutes=10`);
-        const data = await res.json();
+        const urls = [
+            `${QUEUE_API_URL}&action=pending&min_age_minutes=10`,
+            `${QUEUE_API_URL.replace('https://dev.viaEi.com', 'https://viaEi.com')}&action=pending&min_age_minutes=10`
+        ];
+        let data = null;
+        for (const url of urls) {
+            try {
+                const res = await fetch(url);
+                const rawText = await res.text();
+                data = JSON.parse(rawText);
+                break;
+            } catch (err) {
+                console.warn(`[COMMUNITY-WELCOME] Falha ao verificar fila pendente via ${url}:`, err.message);
+            }
+        }
 
-        if (!data.success || !data.items || data.items.length === 0) {
+        if (!data || !data.success || !data.items || data.items.length === 0) {
             console.log('[COMMUNITY-WELCOME] Nenhuma boas-vinda pendente encontrada.');
             return;
         }
