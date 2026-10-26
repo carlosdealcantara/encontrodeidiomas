@@ -3,6 +3,11 @@ require_once __DIR__ . '/../config.php';
 header('Content-Type: text/plain; charset=utf-8');
 
 $conn = connectDB();
+
+echo "=== CHECKING ARTHURO & MENTORIA_ALUNOS ===\n";
+$stmtArt = $conn->query("SELECT * FROM mentoria_alunos WHERE nome LIKE '%Arthuro%' OR telefone LIKE '%2001555443754%'");
+print_r($stmtArt->fetchAll(PDO::FETCH_ASSOC));
+
 $stmt = $conn->query("SELECT * FROM class_attendances ORDER BY id DESC LIMIT 20");
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
