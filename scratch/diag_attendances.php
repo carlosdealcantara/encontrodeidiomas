@@ -4,24 +4,30 @@ header('Content-Type: text/plain; charset=utf-8');
 
 $conn = connectDB();
 
-echo "=== CHECKING ARTHURO & MENTORIA_ALUNOS ===\n";
-$stmtArt = $conn->query("SELECT * FROM mentoria_alunos WHERE nome LIKE '%Arthuro%' OR telefone LIKE '%2001555443754%'");
-print_r($stmtArt->fetchAll(PDO::FETCH_ASSOC));
+echo "=== CLEANING UP ARTHURO ATTENDANCE & SCORES ===\n";
+$delAtt = $conn->prepare("DELETE FROM class_attendances WHERE id = 203 AND member_jid = '2001555443754@lid'");
+$delAtt->execute();
+echo "Linhas deletadas em class_attendances: " . $delAtt->rowCount() . "\n";
 
-$stmt = $conn->query("SELECT * FROM class_attendances ORDER BY id DESC LIMIT 20");
+$delScore = $conn->prepare("DELETE FROM mentoria_daily_scores WHERE id = 363 AND member_jid = '2001555443754@lid'");
+$delScore->execute();
+echo "Linhas deletadas em mentoria_daily_scores: " . $delScore->rowCount() . "\n";
+
+$stmt = $conn->query("SELECT * FROM class_attendances ORDER BY id DESC LIMIT 10");
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-echo "=== CLASS ATTENDANCES ===\n";
+echo "\n=== CLASS ATTENDANCES ===\n";
 foreach ($rows as $r) {
-    echo "ID: {$r['id']} | Data: {$r['aula_date']} | Lang: {$r['lang_id']} | Nome: {$r['member_name']} | JID: {$r['member_jid']} | SchedId: {$r['schedule_id']}\n";
+    echo "ID: {$r['id']} | Data: {$r['aula_date']} | Lang: {$r['lang_id']} | Nome: {$r['member_name']} | JID: {$r['member_jid']}\n";
 }
 
-echo "\n=== MENTORIA_DAILY_SCORES (Ultimos dias) ===\n";
-$stmt2 = $conn->query("SELECT * FROM mentoria_daily_scores WHERE dedication_pts >= 20 ORDER BY id DESC LIMIT 20");
+echo "\n=== MENTORIA_DAILY_SCORES (2026-10-19 ES) ===\n";
+$stmt2 = $conn->query("SELECT * FROM mentoria_daily_scores WHERE score_date = '2026-10-19' AND lang_id = 'es'");
 $rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 foreach ($rows2 as $r) {
-    echo "ID: {$r['id']} | Data: {$r['score_date']} | Lang: {$r['lang_id']} | Nome: {$r['member_name']} | JID: {$r['member_jid']} | DedPts: {$r['dedication_pts']}\n";
+    echo "ID: {$r['id']} | Nome: {$r['member_name']} | JID: {$r['member_jid']} | DedPts: {$r['dedication_pts']}\n";
 }
+
 
 echo "\n=== MENTORIA_CONFIGS (Grupos de Mentoria e Classes) ===\n";
 $stmt3 = $conn->query("SELECT id, lang_id, day_of_week, start_time, session_type, is_active FROM class_schedule ORDER BY lang_id, day_of_week, start_time");

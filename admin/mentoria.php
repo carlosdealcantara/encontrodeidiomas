@@ -132,11 +132,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
     } else {
         $error = "Erro ao buscar grupos do Node.js: " . ($res['error'] ?? 'Desconhecido');
     }
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
+    $rawExtraAdmins = $_POST['extra_admin_jids'] ?? '';
+    $parsedExtraAdmins = array_filter(array_map(function($line) {
+        $clean = trim($line);
+        if (!$clean) return null;
+        if (!str_contains($clean, '@')) {
+            $digits = preg_replace('/\D/', '', $clean);
+            return $digits ? $digits . '@s.whatsapp.net' : null;
+        }
+        return $clean;
+    }, preg_split('/[\r\n,]+/', $rawExtraAdmins)));
+
     $newConfig = [
         'admin_jid' => trim($_POST['admin_jid']),
+        'extra_admin_jids' => array_values(array_unique($parsedExtraAdmins)),
         'groups' => [
             'our_classes'   => ['jid' => trim($_POST['jid_our_classes']),   'automations' => ['lembrete_aula']],
             'desafio'       => ['jid' => trim($_POST['jid_desafio']),        'automations' => ['auto_kick', 'aviso']],
@@ -197,6 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
 
 $config = getMentoriaConfig($current_lang);
 $admin_jid = $config['admin_jid'] ?? '556192666148@s.whatsapp.net';
+$extra_admin_jids = $config['extra_admin_jids'] ?? [];
 $jid_our_classes  = $config['groups']['our_classes']['jid']   ?? '';
 $jid_desafio      = $config['groups']['desafio']['jid']       ?? '';
 $jid_the_lounge   = $config['groups']['the_lounge']['jid']    ?? '';

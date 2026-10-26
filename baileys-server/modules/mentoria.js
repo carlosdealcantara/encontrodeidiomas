@@ -418,6 +418,12 @@ async function handleMessage(ctx) {
     // Obs.: 'text' já foi normalizado acima (ex.: !confirmar → !attend)
 
     if (text.startsWith('!attend')) {
+        // Professores e administradores não confirmam presença como alunos
+        if (isAdmin) {
+            console.log(`[ATTEND-SKIP] Admin/Professor ${senderName} (${senderJid}) enviou comando de presença como instrução. Ignorado.`);
+            return;
+        }
+
         const parts = text.split(' ');
         let schedulePosition = null;
         if (parts.length > 1) schedulePosition = parseInt(parts[1]);
@@ -485,6 +491,12 @@ async function handleMessage(ctx) {
         }
 
     } else if (text.startsWith('!unattend')) {
+        // Professores e administradores não cancelam presença de alunos
+        if (isAdmin) {
+            console.log(`[UNATTEND-SKIP] Admin/Professor ${senderName} (${senderJid}) enviou comando de cancelamento como instrução. Ignorado.`);
+            return;
+        }
+
         const parts = text.split(' ');
         let schedulePosition = null;
         if (parts.length > 1) schedulePosition = parseInt(parts[1]);
