@@ -96,7 +96,7 @@ function cleanStaleAuthFiles(authDirectory, maxAgeDays = 14) {
 
 // Agenda limpeza automática diária (a cada 24 horas)
 setInterval(() => {
-    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 14);
+    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 2);
 }, 24 * 60 * 60 * 1000);
 
 function isDedupKeyPresent(key) {
@@ -468,7 +468,7 @@ function setJobStatus(jobId, status) {
 // Connect to WhatsApp
 async function connectToWhatsApp() {
     // Executa autolimpeza de pre-keys e sessões mortas (>14 dias) na inicialização
-    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 14);
+    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 2);
     const { state, saveCreds } = await useMultiFileAuthState(path.join(dataDir, 'auth_info_baileys'));
     const { version, isLatest } = await fetchLatestBaileysVersion();
     console.log(`Using WA v${version.join('.')}, isLatest: ${isLatest}`);
