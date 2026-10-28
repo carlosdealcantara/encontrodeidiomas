@@ -28,6 +28,38 @@ let jobs = {};
 const sentDedupKeys = new Map(); // key -> timestamp
 const DEDUP_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
 
+// Cache em memória para resolução de Retries de Criptografia do WhatsApp
+// Impede o aviso "Essa mensagem está demorando para carregar. Clique aqui para saber mais detalhes"
+const messageRetryStore = new Map(); // key.id -> proto.IMessage
+const MAX_RETRY_STORE_SIZE = 1000;
+
+function storeMessageForRetry(keyId, message) {
+    if (!keyId || !message) return;
+    if (messageRetryStore.size >= MAX_RETRY_STORE_SIZE) {
+        const oldestKey = messageRetryStore.keys().next().value;
+        messageRetryStore.delete(oldestKey);
+    }
+    messageRetryStore.set(keyId, message);
+}
+
+// Implementação de CacheStore para msgRetryCounterCache do Baileys
+class SimpleCacheStore {
+    constructor() {
+        this.cache = new Map();
+    }
+    get(key) {
+        return this.cache.get(key);
+    }
+    set(key, value) {
+        this.cache.set(key, value);
+        return true;
+    }
+    del(key) {
+        return this.cache.delete(key);
+    }
+}
+const msgRetryCounterCache = new SimpleCacheStore();
+
 function isDedupKeyPresent(key) {
     if (!key) return false;
     const now = Date.now();
@@ -418,7 +450,11 @@ async function connectToWhatsApp() {
         // a mensagem original (retry request), causando mensagens vazias no grupo.
         // Retornar undefined informa ao Baileys que não temos a mensagem em cache,
         // e o retry é simplesmente ignorado.
+        msgRetryCounterCache,
         getMessage: async (key) => {
+            if (key && key.id && messageRetryStore.has(key.id)) {
+                return messageRetryStore.get(key.id);
+            }
             return undefined;
         }
     });
@@ -481,7 +517,16 @@ async function connectToWhatsApp() {
     });
 
     sock.ev.on('creds.update', saveCreds);
-    sock.ev.on('messages.upsert', mentoriaPlugin.handleMessages);
+    sock.ev.on('messages.upsert', (m) => {
+        if (m && Array.isArray(m.messages)) {
+            for (const msg of m.messages) {
+                if (msg && msg.key && msg.key.id && msg.message) {
+                    storeMessageForRetry(msg.key.id, msg.message);
+                }
+            }
+        }
+        mentoriaPlugin.handleMessages(m);
+    });
     sock.ev.on('group-participants.update', mentoriaPlugin.handleParticipants);
 }
 
@@ -548,7 +593,10 @@ async function processQueue() {
                 // Injeção manual de linkPreview desativada para dar lugar ao generateHighQualityLinkPreview nativo
                 // if (item.linkPreview) { ... }
                 
-                await sock.sendMessage(jid, msgPayload, { generateHighQualityLinkPreview: true });
+                const sentResult = await sock.sendMessage(jid, msgPayload, { generateHighQualityLinkPreview: true });
+                if (sentResult && sentResult.key && sentResult.key.id && sentResult.message) {
+                    storeMessageForRetry(sentResult.key.id, sentResult.message);
+                }
                 
                 const duration = ((Date.now() - startTime) / 1000).toFixed(2);
                 addLog(jobId, 'success', `[SUCESSO] Mensagem entregue. Tempo: ${duration}s.`);
