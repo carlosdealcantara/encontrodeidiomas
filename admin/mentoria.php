@@ -132,6 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_groups'])) {
     } else {
         $error = "Erro ao buscar grupos do Node.js: " . ($res['error'] ?? 'Desconhecido');
     }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
     $rawExtraAdmins = $_POST['extra_admin_jids'] ?? '';
     $parsedExtraAdmins = array_filter(array_map(function($line) {
