@@ -60,6 +60,45 @@ class SimpleCacheStore {
 }
 const msgRetryCounterCache = new SimpleCacheStore();
 
+// Rotina de autolimpeza de arquivos de sessão mortos (Signal Pre-Keys e Sessions antigas)
+// Previne que o disco acumule dezenas de milhares de arquivos zumbis que corrompem o espelhamento
+function cleanStaleAuthFiles(authDirectory, maxAgeDays = 14) {
+    try {
+        if (!fs.existsSync(authDirectory)) return;
+        const files = fs.readdirSync(authDirectory);
+        const now = Date.now();
+        const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
+        let cleaned = 0;
+
+        for (const file of files) {
+            // NUNCA deletar creds.json nem chaves de sincronização primárias
+            if (file === 'creds.json' || file.startsWith('app-state-sync-')) continue;
+
+            // Limpa pre-keys consumidas e sessões com mais de X dias sem uso
+            if (file.startsWith('pre-key-') || file.startsWith('session-')) {
+                const filePath = path.join(authDirectory, file);
+                try {
+                    const stats = fs.statSync(filePath);
+                    if (now - stats.mtimeMs > maxAgeMs) {
+                        fs.unlinkSync(filePath);
+                        cleaned++;
+                    }
+                } catch (e) {}
+            }
+        }
+        if (cleaned > 0) {
+            console.log(`[AUTH-CLEANUP] Autolimpeza: ${cleaned} arquivos de chaves antigas (> ${maxAgeDays} dias) removidos com sucesso.`);
+        }
+    } catch (err) {
+        console.error('[AUTH-CLEANUP] Erro na autolimpeza de auth:', err.message);
+    }
+}
+
+// Agenda limpeza automática diária (a cada 24 horas)
+setInterval(() => {
+    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 14);
+}, 24 * 60 * 60 * 1000);
+
 function isDedupKeyPresent(key) {
     if (!key) return false;
     const now = Date.now();
@@ -428,6 +467,8 @@ function setJobStatus(jobId, status) {
 
 // Connect to WhatsApp
 async function connectToWhatsApp() {
+    // Executa autolimpeza de pre-keys e sessões mortas (>14 dias) na inicialização
+    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 14);
     const { state, saveCreds } = await useMultiFileAuthState(path.join(dataDir, 'auth_info_baileys'));
     const { version, isLatest } = await fetchLatestBaileysVersion();
     console.log(`Using WA v${version.join('.')}, isLatest: ${isLatest}`);
@@ -451,6 +492,14 @@ async function connectToWhatsApp() {
         // Retornar undefined informa ao Baileys que não temos a mensagem em cache,
         // e o retry é simplesmente ignorado.
         msgRetryCounterCache,
+        patchMessageBeforeSending: async (msg) => {
+            try {
+                if (sock && typeof sock.uploadPreKeysToServerIfRequired === 'function') {
+                    await sock.uploadPreKeysToServerIfRequired();
+                }
+            } catch (pkErr) {}
+            return msg;
+        },
         getMessage: async (key) => {
             if (key && key.id && messageRetryStore.has(key.id)) {
                 return messageRetryStore.get(key.id);
