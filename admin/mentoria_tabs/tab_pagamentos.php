@@ -91,7 +91,7 @@
             <tr>
                 <th>Aluno</th>
                 <th>Plano</th>
-                <th>Vencimento / Saída</th>
+                <th>Vencimento</th>
                 <th>Status Pgto</th>
                 <th>Ações</th>
             </tr>
@@ -173,9 +173,6 @@
                     <?php else: ?>
                         <!-- Aluno Inativo / Comunidade / Vitalício: campo de data de saída -->
                         <div style="display:flex; flex-direction:column; gap:4px;">
-                            <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">
-                                <i class="fas fa-sign-out-alt"></i> Saída:
-                            </div>
                             <input type="date" 
                                    class="input-data-saida" 
                                    data-aluno-id="<?= (int)$aluno['id'] ?>" 
