@@ -139,10 +139,12 @@ try {
         if (!$ourClassesJid) {
             echo "   ❌ Grupo Our Classes NÃO configurado para [{$lang}]. Pulando.\n\n";
 
-            // Mesmo sem conseguir remover do grupo, limpa o agendamento
+            // Mesmo sem conseguir remover do grupo, limpa o agendamento e finaliza ciclo financeiro
             $conn->prepare("
                 UPDATE mentoria_alunos
-                SET data_encerramento_agendado = NULL, msg_encerramento_id = NULL
+                SET data_encerramento_agendado = NULL,
+                    msg_encerramento_id = NULL,
+                    status_pagamento = 'Pendente'
                 WHERE id = ?
             ")->execute([$alunoId]);
 
@@ -183,10 +185,11 @@ try {
             echo "   📡 Resposta API: HTTP {$httpCode} | success=" . ($success ? 'true' : 'false') . "\n";
 
             if ($success) {
-                // Atualiza status para Comunidade (caso ainda estivesse Ativo) e limpa agendamento
+                // Atualiza status para Comunidade, encerra pagamento vigente para Pendente e limpa agendamento
                 $conn->prepare("
                     UPDATE mentoria_alunos
                     SET status_aluno = 'Comunidade',
+                        status_pagamento = 'Pendente',
                         data_encerramento_agendado = NULL,
                         msg_encerramento_id = NULL
                     WHERE id = ?
