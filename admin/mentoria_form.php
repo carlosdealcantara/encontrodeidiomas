@@ -128,6 +128,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'msg_encerramento_id' => $msg_encerramento_id,
             'id' => $id
         ]);
+        // Rastreamento de Churn / Periodos de Atividade
+        $status_anterior = $aluno['status_aluno'] ?? 'Ativo';
+        if ($status_anterior !== $status_aluno) {
+            require_once __DIR__ . '/../includes/periodos_helper.php';
+            if ($status_aluno === 'Ativo') {
+                registrar_entrada_periodo($conn, $id);
+            } elseif ($status_anterior === 'Ativo') {
+                $tipoSaida = ($status_aluno === 'Vitalício') ? 'vitalicio' : (!empty($data_encerramento_agendado) ? 'cancelamento' : 'kick_automatico');
+                registrar_saida_periodo($conn, $id, $tipoSaida, 'Alterado manualmente no formulário de edição');
+            }
+        }
+
         header('Location: mentoria.php?lang=' . urlencode($lang_id) . '&msg=Aluno atualizado com sucesso');
         exit;
     } else {
@@ -144,6 +156,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'data_inicio' => $data_inicio, 'data_nascimento' => $data_nascimento, 'grupo_atual' => $grupo_atual,
             'observacoes' => $observacoes, 'lang_id' => $lang_id
         ]);
+        $novo_id = (int)$conn->lastInsertId();
+        if ($status_aluno === 'Ativo' && $novo_id > 0) {
+            require_once __DIR__ . '/../includes/periodos_helper.php';
+            registrar_entrada_periodo($conn, $novo_id, $data_inicio);
+        }
+
         header('Location: mentoria.php?lang=' . urlencode($lang_id) . '&msg=Novo aluno cadastrado com sucesso');
         exit;
     }

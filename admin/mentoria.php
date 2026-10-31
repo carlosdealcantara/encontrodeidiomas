@@ -86,11 +86,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_telegram_relay']
     $msg = "Configurações do Telegram Relay salvas com sucesso!";
 }
 
-// Alunos filtrados por idioma, com nome do responsavel financeiro
+// Alunos filtrados por idioma, com nome do responsavel financeiro e ultimo periodo
 $stmt = $conn->prepare("
-    SELECT a.*, r.nome AS responsavel_nome
+    SELECT a.*, r.nome AS responsavel_nome,
+           p.data_fim AS ultimo_periodo_fim,
+           p.tipo_saida AS ultimo_tipo_saida,
+           p.id AS ultimo_periodo_id
     FROM mentoria_alunos a
     LEFT JOIN mentoria_alunos r ON a.responsavel_financeiro_id = r.id
+    LEFT JOIN (
+        SELECT mp1.*
+        FROM mentoria_periodos mp1
+        INNER JOIN (
+            SELECT aluno_id, MAX(id) AS max_id
+            FROM mentoria_periodos
+            GROUP BY aluno_id
+        ) mp2 ON mp1.id = mp2.max_id
+    ) p ON a.id = p.aluno_id
     WHERE a.lang_id = ?
     ORDER BY
         CASE WHEN a.status_aluno = 'Ativo' THEN 1 ELSE 2 END ASC,

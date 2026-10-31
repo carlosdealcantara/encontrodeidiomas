@@ -44,6 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $stmtUpdate = $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = :data, status_pagamento = :status_pagamento, total_investido = :total, status_aluno = :status_aluno WHERE id = :id");
         $stmtUpdate->execute(['data' => $novaData, 'status_pagamento' => $statusPagamento, 'total' => $novoTotal, 'status_aluno' => $novoStatusAluno, 'id' => $id]);
 
+        // Rastreamento de Churn / Periodos de Atividade
+        require_once __DIR__ . '/../includes/periodos_helper.php';
+        if ($aluno['status_aluno'] !== 'Ativo' && $novoStatusAluno === 'Ativo') {
+            registrar_entrada_periodo($conn, $id);
+        } elseif ($aluno['status_aluno'] === 'Ativo' && $novoStatusAluno === 'Vitalício') {
+            registrar_saida_periodo($conn, $id, 'vitalicio', 'LTV atingido na renovação');
+        }
+
         // ============================================================
         // RENOVAR DEPENDENTES FINANCEIROS (ex: espôsa, filho)
         // Se este aluno é um titular, renova todos os dependentes dele
@@ -52,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $dependentesRenovados = [];
         try {
             $stmtDep = $conn->prepare("
-                SELECT id, nome FROM mentoria_alunos
+                SELECT id, nome, status_aluno FROM mentoria_alunos
                 WHERE responsavel_financeiro_id = ? AND status_aluno IN ('Ativo', 'Comunidade', 'Inativo', 'Suspenso')
             ");
             $stmtDep->execute([$id]);
@@ -61,6 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
                 $conn->prepare("UPDATE mentoria_alunos SET proximo_vencimento = ?, status_pagamento = 'Pago', status_aluno = 'Ativo' WHERE id = ?")
                      ->execute([$novaData, $dep['id']]);
                 $dependentesRenovados[] = $dep['nome'];
+                if (($dep['status_aluno'] ?? '') !== 'Ativo') {
+                    registrar_entrada_periodo($conn, $dep['id']);
+                }
             }
         } catch (Exception $e) { /* falha silenciosa — não interrompe o fluxo */ }
 

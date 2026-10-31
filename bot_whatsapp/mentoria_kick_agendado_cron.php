@@ -192,6 +192,12 @@ try {
                     WHERE id = ?
                 ")->execute([$alunoId]);
 
+                // Rastreamento de Churn / Periodos de Atividade
+                try {
+                    require_once __DIR__ . '/../includes/periodos_helper.php';
+                    registrar_saida_periodo($conn, $alunoId, 'cancelamento', 'Encerramento agendado executado');
+                } catch (Exception $ePeriodo) { /* nao interrompe o cron */ }
+
                 // Registra no log
                 $conn->prepare("
                     INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid, detalhes)

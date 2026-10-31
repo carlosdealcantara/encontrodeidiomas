@@ -91,7 +91,7 @@
             <tr>
                 <th>Aluno</th>
                 <th>Plano</th>
-                <th>Vencimento</th>
+                <th>Vencimento / Saída</th>
                 <th>Status Pgto</th>
                 <th>Ações</th>
             </tr>
@@ -168,7 +168,23 @@
                     <div style="font-size:0.8rem; color:var(--text-dim);">LTV: R$ <?= number_format($aluno['total_investido'] ?? 0, 2, ',', '.') ?></div>
                 </td>
                 <td>
-                    <div class="<?= $vencimentoClass ?>"><?= $vencimentoText ?></div>
+                    <?php if ($aluno['status_aluno'] === 'Ativo'): ?>
+                        <div class="<?= $vencimentoClass ?>"><?= $vencimentoText ?></div>
+                    <?php else: ?>
+                        <!-- Aluno Inativo / Comunidade / Vitalício: campo de data de saída -->
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">
+                                <i class="fas fa-sign-out-alt"></i> Saída:
+                            </div>
+                            <input type="date" 
+                                   class="input-data-saida" 
+                                   data-aluno-id="<?= (int)$aluno['id'] ?>" 
+                                   value="<?= htmlspecialchars($aluno['ultimo_periodo_fim'] ?? '') ?>"
+                                   style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.15); border-radius:6px; color:#f1f5f9; padding:4px 8px; font-size:0.8rem; outline:none; max-width:145px;"
+                                   title="Clique para definir ou alterar a data de encerramento deste aluno">
+                            <span class="status-saida-msg" id="status-saida-<?= (int)$aluno['id'] ?>" style="font-size:0.7rem; color:#10b981; display:none;"></span>
+                        </div>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <?php 
@@ -232,6 +248,49 @@
             }
         });
     }
+
+    // Salvar data de saída via mentoria_periodo_api.php
+    document.querySelectorAll('.input-data-saida').forEach(input => {
+        input.addEventListener('change', function() {
+            const alunoId = this.dataset.alunoId;
+            const novaData = this.value;
+            const statusMsg = document.getElementById('status-saida-' + alunoId);
+
+            if (statusMsg) {
+                statusMsg.textContent = 'Salvando...';
+                statusMsg.style.color = '#38bdf8';
+                statusMsg.style.display = 'inline';
+            }
+
+            const formData = new FormData();
+            formData.append('aluno_id', alunoId);
+            formData.append('data_fim', novaData);
+            formData.append('tipo_saida', 'kick_automatico');
+            formData.append('observacao', 'Ajustado via painel de pagamentos');
+
+            fetch('mentoria_periodo_api.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && statusMsg) {
+                    statusMsg.textContent = 'Salvo!';
+                    statusMsg.style.color = '#10b981';
+                    setTimeout(() => { statusMsg.style.display = 'none'; }, 2000);
+                } else if (statusMsg) {
+                    statusMsg.textContent = 'Erro ao salvar';
+                    statusMsg.style.color = '#ef4444';
+                }
+            })
+            .catch(err => {
+                if (statusMsg) {
+                    statusMsg.textContent = 'Erro rede';
+                    statusMsg.style.color = '#ef4444';
+                }
+            });
+        });
+    });
 
     if(searchInput) {
         searchInput.addEventListener('input', filterTable);
