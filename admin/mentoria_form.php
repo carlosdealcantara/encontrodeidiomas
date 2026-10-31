@@ -29,6 +29,18 @@ if (isset($_GET['id'])) {
     $aluno = $stmt->fetch();
 }
 
+// Carrega histórico de períodos de atividade do aluno (Churn / Retenção)
+$historico_periodos = [];
+if (!empty($aluno['id'])) {
+    try {
+        require_once __DIR__ . '/../includes/periodos_helper.php';
+        garantir_tabela_periodos($conn);
+        $stmtP = $conn->prepare("SELECT * FROM mentoria_periodos WHERE aluno_id = ? ORDER BY data_inicio DESC, id DESC");
+        $stmtP->execute([(int)$aluno['id']]);
+        $historico_periodos = $stmtP->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {}
+}
+
 // Carrega templates disponíveis para o selector de mensagem de encerramento
 $msgs_encerramento = [];
 try {
@@ -456,6 +468,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endif; ?>
                     </div>
                     <!-- /BLOCO ENCERRAMENTO AGENDADO -->
+
+                    <?php if ($aluno): ?>
+                    <!-- ================================================ -->
+                    <!-- BLOCO: HISTÓRICO DE CICLOS & CHURN               -->
+                    <!-- ================================================ -->
+                    <div class="form-group full" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 10px;">
+                        <label style="color: #38bdf8; font-size: 0.95rem;">
+                            <i class="fas fa-history" style="margin-right: 6px;"></i>
+                            Ciclos de Permanência & Histórico de Saídas (Churn)
+                        </label>
+                        <div class="obs-hint" style="margin-bottom: 12px;">
+                            Registros automáticos de quando o aluno iniciou e encerrou suas aulas. Usado para estatísticas de retenção, tempo de casa e campanhas de reconquista.
+                        </div>
+
+                        <?php if (empty($historico_periodos)): ?>
+                            <div style="font-size:0.85rem; color:var(--text-dim); font-style:italic;">Nenhum período registrado até o momento.</div>
+                        <?php else: ?>
+                            <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.03); color: var(--text-dim); text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                            <th style="padding: 10px 14px;">Início</th>
+                                            <th style="padding: 10px 14px;">Saída / Fim</th>
+                                            <th style="padding: 10px 14px;">Permanência</th>
+                                            <th style="padding: 10px 14px;">Tipo de Saída</th>
+                                            <th style="padding: 10px 14px;">Obs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($historico_periodos as $hp): 
+                                            $dtIni = new DateTime($hp['data_inicio']);
+                                            $dtFim = !empty($hp['data_fim']) ? new DateTime($hp['data_fim']) : null;
+                                            $diffObj = $dtFim ? $dtIni->diff($dtFim) : $dtIni->diff(new DateTime());
+                                            $meses = ($diffObj->y * 12) + $diffObj->m;
+                                            $dias = $diffObj->d;
+                                            $tempoFormatado = ($meses > 0 ? "{$meses}m " : "") . "{$dias}d";
+                                            if ($meses == 0 && $dias == 0) $tempoFormatado = "1 dia";
+                                        ?>
+                                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                            <td style="padding: 10px 14px; font-weight: 600; color: #f1f5f9;">
+                                                <i class="fas fa-play" style="color: #10b981; font-size: 0.7rem; margin-right: 4px;"></i>
+                                                <?= $dtIni->format('d/m/Y') ?>
+                                            </td>
+                                            <td style="padding: 10px 14px;">
+                                                <?php if ($dtFim): ?>
+                                                    <span style="color: #ef4444; font-weight: 600;">
+                                                        <i class="fas fa-stop" style="font-size: 0.7rem; margin-right: 4px;"></i>
+                                                        <?= $dtFim->format('d/m/Y') ?>
+                                                    </span>
+                                                    <?php if (!empty($hp['kick_revertido'])): ?>
+                                                        <span style="font-size: 0.7rem; background: rgba(56,189,248,0.15); color: #38bdf8; border-radius: 4px; padding: 1px 5px; margin-left: 4px;" title="Pagou logo após a data de vencimento (apenas atraso pontual)">
+                                                            Voltou logo
+                                                        </span>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <span style="color: #10b981; font-weight: 600; background: rgba(16,185,129,0.1); padding: 2px 8px; border-radius: 6px;">
+                                                        ● Atualmente Cursando
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td style="padding: 10px 14px; color: var(--text-dim);">
+                                                <?= $tempoFormatado ?> <?= $dtFim ? '' : '(em curso)' ?>
+                                            </td>
+                                            <td style="padding: 10px 14px;">
+                                                <?php
+                                                    $tipoLabel = '—';
+                                                    if ($hp['tipo_saida'] === 'cancelamento') $tipoLabel = '<span style="color:#f97316;">Avisou saída</span>';
+                                                    elseif ($hp['tipo_saida'] === 'kick_automatico') $tipoLabel = '<span style="color:#ef4444;">Venceu sem pagar</span>';
+                                                    elseif ($hp['tipo_saida'] === 'vitalicio') $tipoLabel = '<span style="color:#8b5cf6;">Virou Vitalício</span>';
+                                                    echo $tipoLabel;
+                                                ?>
+                                            </td>
+                                            <td style="padding: 10px 14px; color: var(--text-dim); font-size: 0.8rem;">
+                                                <?= htmlspecialchars($hp['observacao_saida'] ?? '') ?>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <!-- /BLOCO HISTÓRICO -->
+                    <?php endif; ?>
 
                 </div>
 
