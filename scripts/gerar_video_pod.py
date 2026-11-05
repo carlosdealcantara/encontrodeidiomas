@@ -1,9 +1,7 @@
 """
-Pipeline Automatizado: Pill of the Day (Áudio -> Vídeo YouTube com Legenda Dinâmica)
+Pipeline Automatizado: Pill of the Day (Áudio -> Vídeo YouTube com Legenda Dinâmica e Branding)
 Uso:
     python scripts/gerar_video_pod.py --pod 1 --url "https://www.youtube.com/watch?v=..."
-    # Ou passando o áudio diretamente:
-    python scripts/gerar_video_pod.py --pod 1 --audio "caminho/do/audio.ogg" --url "https://..."
 """
 
 import os
@@ -16,21 +14,17 @@ from pathlib import Path
 from faster_whisper import WhisperModel
 
 def get_downloads_dir():
-    # Caminho padrão e confiável para a pasta Downloads do usuário
     home = Path.home()
     downloads = home / "Downloads"
     if not downloads.exists():
         downloads.mkdir(parents=True, exist_ok=True)
     return downloads
 
-def to_srt_time(seconds):
+def to_ass_time(seconds):
     h = int(seconds // 3600)
     m = int((seconds % 3600) // 60)
-    s = int(seconds % 60)
-    ms = int(round((seconds - int(seconds)) * 1000))
-    if ms >= 1000:
-        ms = 999
-    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+    s = seconds % 60
+    return f"{h:01d}:{m:02d}:{s:05.2f}"
 
 def get_audio_duration(audio_path):
     cmd = [
@@ -40,15 +34,32 @@ def get_audio_duration(audio_path):
     res = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(res.stdout.strip())
 
-def transcribe_audio(audio_path, temp_dir):
+def transcribe_and_generate_ass(audio_path, temp_dir, pod_num, duration_sec):
     print("🎧 [1/4] Transcrevendo áudio via Faster-Whisper (100% offline)...")
     model = WhisperModel("small", device="cpu", compute_type="int8")
     segments, info = model.transcribe(audio_path, beam_size=5)
 
-    chunks = []
+    header = """[Script Info]
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Branding,Arial,22,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,8,0,7,45,45,40,1
+Style: Subtitle,Arial,32,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,2,60,60,60,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+"""
+    events = []
+    # Badge fixa no canto superior esquerdo (Top-Left) durante todo o vídeo
+    max_t = to_ass_time(duration_sec)
+    events.append(f"Dialogue: 0,0:00:00.00,{max_t},Branding,,0,0,0,,POD #{pod_num}   |   CARLOS DE ALCANTARA")
+
     for seg in segments:
         text = seg.text.strip()
-        # Correção automática de termos comuns
         if "bill of the day" in text.lower():
             text = re.sub(r'bill of the day', 'Pill of the Day', text, flags=re.IGNORECASE)
             
@@ -65,25 +76,17 @@ def transcribe_audio(audio_path, temp_dir):
         for wc in word_chunks:
             chunk_text = " ".join(wc)
             chunk_dur = len(wc) * time_per_word
-            chunks.append({
-                'start': curr_t,
-                'end': curr_t + chunk_dur,
-                'text': chunk_text
-            })
+            s_str = to_ass_time(curr_t)
+            e_str = to_ass_time(curr_t + chunk_dur)
+            events.append(f"Dialogue: 1,{s_str},{e_str},Subtitle,,0,0,0,,{chunk_text}")
             curr_t += chunk_dur
 
-    srt_path = os.path.join(temp_dir, "subtitles.srt")
-    srt_lines = []
-    for idx, ch in enumerate(chunks, 1):
-        s_time = to_srt_time(ch['start'])
-        e_time = to_srt_time(ch['end'])
-        srt_lines.append(f"{idx}\n{s_time} --> {e_time}\n{ch['text']}\n")
+    ass_path = os.path.join(temp_dir, f"subtitles_pod{pod_num}.ass")
+    with open(ass_path, "w", encoding="utf-8") as f:
+        f.write(header + "\n".join(events) + "\n")
         
-    with open(srt_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(srt_lines))
-        
-    print(f"✅ Legendas dinâmicas geradas em: {srt_path}")
-    return srt_path
+    print(f"✅ Legendas dinâmicas e branding gerados em: {ass_path}")
+    return ass_path
 
 def download_background(youtube_url, temp_dir):
     print(f"📥 [2/4] Baixando vídeo de fundo ({youtube_url})...")
@@ -98,21 +101,16 @@ def download_background(youtube_url, temp_dir):
     subprocess.run(cmd, check=True)
     return bg_path
 
-def render_final_video(bg_path, audio_path, srt_path, duration_sec, output_file):
-    print("🎬 [3/4] Renderizando vídeo com FFmpeg (Opção A: contorno + sombra)...")
-    srt_clean = srt_path.replace("\\", "/").replace(":", "\\:")
-    
-    style = (
-        "FontName=Arial,FontSize=28,Bold=1,PrimaryColour=&H00FFFFFF,"
-        "BorderStyle=1,OutlineColour=&H00000000,Outline=3,Shadow=2,MarginV=55,Alignment=2"
-    )
+def render_final_video(bg_path, audio_path, ass_path, duration_sec, output_file):
+    print("🎬 [3/4] Renderizando vídeo com FFmpeg (Branding + Legenda Dinâmica)...")
+    ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     
     cmd = [
         "ffmpeg", "-y",
         "-i", bg_path,
         "-i", audio_path,
         "-t", str(duration_sec),
-        "-filter_complex", f"[0:v]subtitles={srt_clean}:force_style='{style}'[v]",
+        "-filter_complex", f"[0:v]subtitles={ass_clean}[v]",
         "-map", "[v]",
         "-map", "1:a",
         "-c:v", "libx264",
@@ -134,7 +132,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # Define arquivo de áudio
     if args.audio:
         audio_file = args.audio
     else:
@@ -144,18 +141,16 @@ if __name__ == "__main__":
         print(f"❌ Erro: Arquivo de áudio não encontrado em '{audio_file}'.")
         sys.exit(1)
         
-    # Define arquivo final de saída (padrão: Downloads/podX.mp4)
     if args.output:
         final_output = Path(args.output)
     else:
         downloads_folder = get_downloads_dir()
         final_output = downloads_folder / f"pod{args.pod}.mp4"
         
-    # Diretório temporário para rascunhos (mantém o projeto limpo)
     temp_dir = Path("scratch/pod_test")
     temp_dir.mkdir(parents=True, exist_ok=True)
     
     dur = get_audio_duration(audio_file)
-    srt = transcribe_audio(audio_file, str(temp_dir))
+    ass_file = transcribe_and_generate_ass(audio_file, str(temp_dir), args.pod, dur)
     bg = download_background(args.url, str(temp_dir))
-    render_final_video(bg, audio_file, srt, dur, final_output)
+    render_final_video(bg, audio_file, ass_file, dur, final_output)
