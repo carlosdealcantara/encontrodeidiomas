@@ -2,6 +2,8 @@
 Pipeline Automatizado: Pill of the Day (Áudio -> Vídeo YouTube com Legenda Dinâmica)
 Uso:
     python scripts/gerar_video_pod.py --pod 1 --url "https://www.youtube.com/watch?v=..."
+    # Ou passando o áudio diretamente:
+    python scripts/gerar_video_pod.py --pod 1 --audio "caminho/do/audio.ogg" --url "https://..."
 """
 
 import os
@@ -12,6 +14,14 @@ import json
 import re
 from pathlib import Path
 from faster_whisper import WhisperModel
+
+def get_downloads_dir():
+    # Caminho padrão e confiável para a pasta Downloads do usuário
+    home = Path.home()
+    downloads = home / "Downloads"
+    if not downloads.exists():
+        downloads.mkdir(parents=True, exist_ok=True)
+    return downloads
 
 def to_srt_time(seconds):
     h = int(seconds // 3600)
@@ -30,7 +40,7 @@ def get_audio_duration(audio_path):
     res = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(res.stdout.strip())
 
-def transcribe_audio(audio_path, output_dir):
+def transcribe_audio(audio_path, temp_dir):
     print("🎧 [1/4] Transcrevendo áudio via Faster-Whisper (100% offline)...")
     model = WhisperModel("small", device="cpu", compute_type="int8")
     segments, info = model.transcribe(audio_path, beam_size=5)
@@ -62,7 +72,7 @@ def transcribe_audio(audio_path, output_dir):
             })
             curr_t += chunk_dur
 
-    srt_path = os.path.join(output_dir, "subtitles.srt")
+    srt_path = os.path.join(temp_dir, "subtitles.srt")
     srt_lines = []
     for idx, ch in enumerate(chunks, 1):
         s_time = to_srt_time(ch['start'])
@@ -75,9 +85,9 @@ def transcribe_audio(audio_path, output_dir):
     print(f"✅ Legendas dinâmicas geradas em: {srt_path}")
     return srt_path
 
-def download_background(youtube_url, output_dir):
+def download_background(youtube_url, temp_dir):
     print(f"📥 [2/4] Baixando vídeo de fundo ({youtube_url})...")
-    bg_path = os.path.join(output_dir, "bg_video.mp4")
+    bg_path = os.path.join(temp_dir, "bg_video.mp4")
     cmd = [
         sys.executable, "-m", "yt_dlp",
         "-f", "bestvideo[ext=mp4][height<=1080]/bestvideo[height<=1080]/best[height<=1080]",
@@ -90,7 +100,6 @@ def download_background(youtube_url, output_dir):
 
 def render_final_video(bg_path, audio_path, srt_path, duration_sec, output_file):
     print("🎬 [3/4] Renderizando vídeo com FFmpeg (Opção A: contorno + sombra)...")
-    # Escapar caminho do SRT para o filtro do ffmpeg no Windows
     srt_clean = srt_path.replace("\\", "/").replace(":", "\\:")
     
     style = (
@@ -111,21 +120,42 @@ def render_final_video(bg_path, audio_path, srt_path, duration_sec, output_file)
         "-crf", "20",
         "-c:a", "aac",
         "-b:a", "192k",
-        output_file
+        str(output_file)
     ]
     subprocess.run(cmd, check=True)
-    print(f"🎉 [4/4] Vídeo final pronto: {output_file}")
+    print(f"🎉 [4/4] Vídeo final exportado diretamente para: {output_file}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automação Pod -> Vídeo YouTube")
-    parser.add_argument("--audio", required=True, help="Caminho do arquivo de áudio (.ogg/.mp3)")
+    parser.add_argument("--pod", type=int, required=True, help="Número do episódio do Pod (ex: 1, 2, 3...)")
+    parser.add_argument("--audio", help="Caminho local do áudio (se omitido, busca em scratch/pod_test/pod_X.ogg)")
     parser.add_argument("--url", required=True, help="URL do vídeo Creative Commons do YouTube")
-    parser.add_argument("--output", default="video_pronto.mp4", help="Nome do arquivo de saída")
+    parser.add_argument("--output", help="Caminho customizado de saída (se omitido, salva em ~/Downloads/podX.mp4)")
     
     args = parser.parse_args()
-    work_dir = os.path.dirname(os.path.abspath(args.output))
     
-    dur = get_audio_duration(args.audio)
-    srt = transcribe_audio(args.audio, work_dir)
-    bg = download_background(args.url, work_dir)
-    render_final_video(bg, args.audio, srt, dur, args.output)
+    # Define arquivo de áudio
+    if args.audio:
+        audio_file = args.audio
+    else:
+        audio_file = f"scratch/pod_test/pod_{args.pod}.ogg"
+        
+    if not os.path.exists(audio_file):
+        print(f"❌ Erro: Arquivo de áudio não encontrado em '{audio_file}'.")
+        sys.exit(1)
+        
+    # Define arquivo final de saída (padrão: Downloads/podX.mp4)
+    if args.output:
+        final_output = Path(args.output)
+    else:
+        downloads_folder = get_downloads_dir()
+        final_output = downloads_folder / f"pod{args.pod}.mp4"
+        
+    # Diretório temporário para rascunhos (mantém o projeto limpo)
+    temp_dir = Path("scratch/pod_test")
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    
+    dur = get_audio_duration(audio_file)
+    srt = transcribe_audio(audio_file, str(temp_dir))
+    bg = download_background(args.url, str(temp_dir))
+    render_final_video(bg, audio_file, srt, dur, final_output)
