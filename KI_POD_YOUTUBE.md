@@ -1,6 +1,6 @@
 # KI: Pipeline de Conversão Pod (Áudio) para Vídeo do YouTube
 
-Esta base de conhecimento documenta o pipeline completo de reaproveitamento de áudios do Pod (Pill of the Day) para o canal do YouTube do professor Carlos de Alcantara.
+Esta base de conhecimento documenta o pipeline completo de reaproveitamento de áudios do Pod (Pill of the Day) para o canal do YouTube e redes verticais (Reels / Shorts / TikTok) do professor Carlos de Alcantara.
 
 ---
 
@@ -20,15 +20,21 @@ O script Python centralizado está versionado em:
 python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_COMMONS>"
 ```
 
-### O que o script faz sozinho:
+### O que o script faz sozinho (DOIS vídeos por episódio):
 1. **Duração:** Mede o tempo exato do áudio via FFprobe.
-2. **Transcrição Offline (Zero custo de API):** Usa o modelo Faster-Whisper local.
-3. **Legendas Dinâmicas:** Gera arquivo de legendas fatiadas em blocos curtos (4 a 5 palavras por linha) para evitar spoilers e maximizar a retenção visual.
-4. **Branding no Vídeo:** Adiciona no canto superior esquerdo (Top-Left): `POD #<N>   |   CARLOS DE ALCANTARA`.
-5. **Estilo das Legendas:** Letras brancas em Arial Bold, com contorno preto (`outline=3`) e sombra suave (`shadow=2`), centralizadas na parte inferior.
-6. **Download do Vídeo de Fundo:** Baixa o vídeo do YouTube em até 1080p (Creative Commons) via `yt-dlp`.
-7. **Renderização FFmpeg:** Substitui o som original pelo áudio do Pod e exporta diretamente para:
-   `~/Downloads/pod<N>.mp4`
+2. **Transcrição Offline (Zero custo de API):** Usa o modelo Faster-Whisper local (`device=cpu`, `compute_type=int8`).
+3. **Dois arquivos ASS gerados:**
+   - `subtitles_pod<N>_h.ass` → horizontal (PlayRes 1920x1080, branding top-left `Alignment=7`)
+   - `subtitles_pod<N>_v.ass` → vertical (PlayRes 1080x1920, branding top-center `Alignment=8`, legendas centro-tela `Alignment=5`)
+4. **Legendas Dinâmicas:** 5 palavras por bloco, sem spoilers, loop de dopamina visual.
+5. **Branding:** `POD #<N>   |   CARLOS DE ALCANTARA` em fonte Arial, pequeno e discreto.
+6. **Estilo das Legendas:** Arial Bold branco, Outline=3.5, Shadow=2, **sem caixa de fundo**.
+   - **⚠️ FontSize CORRETO no ASS: 68** (em espaço de coordenadas 1920x1080; equivale visualmente ao SRT force_style FontSize=28 aprovado pelo usuário). Nunca usar valores abaixo de 60.
+7. **Download do Vídeo de Fundo:** Baixa o vídeo YouTube em até 1080p (Creative Commons) via `yt-dlp`.
+8. **Renderização FFmpeg — dois outputs:**
+   - **Horizontal 16:9** → `~/Downloads/pod<N>.mp4` (YouTube)
+   - **Vertical 9:16** → `~/Downloads/pod<N>_vertical.mp4` (Reels / Shorts / TikTok)
+   - O vertical usa `crop=ih*9/16:ih,scale=1080:1920` para cortar o centro do vídeo de fundo.
 
 ---
 
@@ -99,3 +105,4 @@ Estilo geral: Design gráfico arrojado e moderno de capa de vídeo viral de YouT
 - **Site:** `https://viaEi.com`
 - **Página de Links / Grupos:** `https://viaEi.com/links`
 - **Página da Mentoria:** `https://viaEi.com/mentoria`
+
