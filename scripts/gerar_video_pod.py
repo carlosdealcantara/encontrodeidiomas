@@ -142,6 +142,7 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
     """
     print(f"🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
+    target_duration = duration_sec / speed
 
     if speed != 1.0:
         # subtitles com PTS original → setpts acelera os frames já com legenda queimada
@@ -159,7 +160,7 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
         "ffmpeg", "-y",
         "-i", bg_path,
         "-i", audio_path,
-        "-t", str(duration_sec),
+        "-t", str(target_duration),
         "-filter_complex", filter_complex,
         "-map", "[v]",
         "-map", audio_map,
@@ -183,6 +184,7 @@ def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, sp
     """
     print(f"📱 [4/5] Renderizando vídeo VERTICAL 9:16 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
+    target_duration = duration_sec / speed
 
     if speed != 1.0:
         v_filter = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean},setpts=PTS/{speed}[v]"
@@ -197,7 +199,7 @@ def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, sp
         "ffmpeg", "-y",
         "-i", bg_path,
         "-i", audio_path,
-        "-t", str(duration_sec),
+        "-t", str(target_duration),
         "-filter_complex", filter_complex,
         "-map", "[v]",
         "-map", audio_map,
