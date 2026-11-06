@@ -1,8 +1,8 @@
 """
 Pipeline Automatizado: Pill of the Day (Áudio -> Vídeo YouTube com Legenda Dinâmica e Branding)
 Gera DOIS vídeos por episódio:
-  - Horizontal 16:9 → ~/Downloads/podN.mp4          (YouTube)
-  - Vertical   9:16 → ~/Downloads/podN_vertical.mp4 (Reels / Shorts / TikTok)
+  - Horizontal 16:9 → ~/Downloads/pod<N>.mp4  (YouTube)
+  - Vertical   9:16 → ~/Downloads/pod<N>v.mp4 (Reels / Shorts / TikTok)
 
 Uso:
     python scripts/gerar_video_pod.py --pod 1 --url "https://www.youtube.com/watch?v=..."
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     # --- Resolve destinos de saída ---
     downloads_folder = get_downloads_dir()
     final_h = Path(args.output) if args.output else downloads_folder / f"pod{args.pod}.mp4"
-    final_v = downloads_folder / f"pod{args.pod}_vertical.mp4"
+    final_v = downloads_folder / f"pod{args.pod}v.mp4"
 
     # --- Diretório temporário ---
     temp_dir = Path("scratch/pod_test")

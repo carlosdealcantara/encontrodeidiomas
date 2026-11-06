@@ -33,9 +33,9 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
    - **Posicionamento:** Centralizado na tela (`Alignment=5`) em horizontal e vertical.
 7. **Velocidade Padrão:** Acelerado em **1.2x** por padrão (`--speed 1.2`), queimando a legenda primeiro e acelerando os frames e áudio em conjunto para retenção ideal no YouTube, Reels e TikTok.
 8. **Download do Vídeo de Fundo:** Baixa o vídeo YouTube em até 1080p (Creative Commons) via `yt-dlp`.
-9. **Renderização FFmpeg — dois outputs:**
+9. **Renderização FFmpeg — dois outputs (Padrão de Nomenclatura):**
    - **Horizontal 16:9** → `~/Downloads/pod<N>.mp4` (YouTube)
-   - **Vertical 9:16** → `~/Downloads/pod<N>_vertical.mp4` (Reels / Shorts / TikTok)
+   - **Vertical 9:16** → `~/Downloads/pod<N>v.mp4` (Reels / Shorts / TikTok)
    - O vertical usa `crop=ih*9/16:ih,scale=1080:1920` para cortar o centro do vídeo de fundo.
 
 ---
