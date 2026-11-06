@@ -24,14 +24,16 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 1. **Duração:** Mede o tempo exato do áudio via FFprobe.
 2. **Transcrição Offline (Zero custo de API):** Usa o modelo Faster-Whisper local (`device=cpu`, `compute_type=int8`).
 3. **Dois arquivos ASS gerados:**
-   - `subtitles_pod<N>_h.ass` → horizontal (PlayRes 1920x1080, branding top-left `Alignment=7`)
-   - `subtitles_pod<N>_v.ass` → vertical (PlayRes 1080x1920, branding top-center `Alignment=8`, legendas centro-tela `Alignment=5`)
-4. **Legendas Dinâmicas:** 5 palavras por bloco, sem spoilers, loop de dopamina visual.
-5. **Branding:** `POD #<N>   |   CARLOS DE ALCANTARA` em fonte Arial, pequeno e discreto.
+   - `subtitles_pod<N>_h.ass` → horizontal 16:9 (PlayRes 1920x1080, branding top-left `Alignment=7`, legendas centro-tela `Alignment=5`)
+   - `subtitles_pod<N>_v.ass` → vertical 9:16 (PlayRes 1080x1920, branding top-center `Alignment=8`, legendas centro-tela `Alignment=5`)
+4. **Legendas Dinâmicas Protagonistas:** 5 palavras por bloco, sem spoilers, alto impacto visual no centro da tela em ambos os formatos.
+5. **Branding:** `POD #<N>   |   CARLOS DE ALCANTARA` em fonte Arial, pequeno e discreto no topo.
 6. **Estilo das Legendas:** Arial Bold branco, Outline=3.5, Shadow=2, **sem caixa de fundo**.
-   - **⚠️ FontSize CORRETO no ASS: 68** (em espaço de coordenadas 1920x1080; equivale visualmente ao SRT force_style FontSize=28 aprovado pelo usuário). Nunca usar valores abaixo de 60.
-7. **Download do Vídeo de Fundo:** Baixa o vídeo YouTube em até 1080p (Creative Commons) via `yt-dlp`.
-8. **Renderização FFmpeg — dois outputs:**
+   - **⚠️ FontSize DEFINITIVO no ASS: 90** (legenda com protagonismo visual e tamanho ideal para visualização rápida no celular e desktop).
+   - **Posicionamento:** Centralizado na tela (`Alignment=5`) em horizontal e vertical.
+7. **Velocidade Padrão:** Acelerado em **1.2x** por padrão (`--speed 1.2`), queimando a legenda primeiro e acelerando os frames e áudio em conjunto para retenção ideal no YouTube, Reels e TikTok.
+8. **Download do Vídeo de Fundo:** Baixa o vídeo YouTube em até 1080p (Creative Commons) via `yt-dlp`.
+9. **Renderização FFmpeg — dois outputs:**
    - **Horizontal 16:9** → `~/Downloads/pod<N>.mp4` (YouTube)
    - **Vertical 9:16** → `~/Downloads/pod<N>_vertical.mp4` (Reels / Shorts / TikTok)
    - O vertical usa `crop=ih*9/16:ih,scale=1080:1920` para cortar o centro do vídeo de fundo.

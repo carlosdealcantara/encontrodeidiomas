@@ -48,14 +48,14 @@ def transcribe_audio(audio_path):
 def build_ass_events(segments, duration_sec, pod_num, mode="horizontal"):
     """
     Constrói o bloco [Events] do arquivo ASS.
-    mode: "horizontal" → branding top-left, legendas bottom-center
-          "vertical"   → branding top-center, legendas center-screen
+    mode: "horizontal" → branding top-left, legendas center-screen (Alignment=5)
+          "vertical"   → branding top-center, legendas center-screen (Alignment=5)
     """
     max_t = to_ass_time(duration_sec)
 
     if mode == "vertical":
         # Branding: Alignment=8 (top-center)
-        # Subtitle:  Alignment=5 (center-screen, posição ideal para Reels/Shorts)
+        # Subtitle:  Alignment=5 (center-screen, posição de destaque para Reels/Shorts)
         header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 1080
@@ -65,14 +65,14 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Branding,Arial,28,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,8,0,8,30,30,50,1
-Style: Subtitle,Arial,68,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,5,40,40,0,1
+Style: Subtitle,Arial,90,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,5,40,40,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
         branding_line = f"Dialogue: 0,0:00:00.00,{max_t},Branding,,0,0,0,,POD #{pod_num}   |   CARLOS DE ALCANTARA"
     else:
-        # Horizontal padrão
+        # Horizontal (YouTube 16:9): Subtitle Alignment=5 (center-screen como protagonista)
         header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 1920
@@ -82,7 +82,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Branding,Arial,22,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,8,0,7,45,45,40,1
-Style: Subtitle,Arial,68,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,2,60,60,60,1
+Style: Subtitle,Arial,90,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,5,60,60,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -219,8 +219,8 @@ if __name__ == "__main__":
     parser.add_argument("--audio", help="Caminho local do áudio (padrão: scratch/pod_test/pod_X.ogg)")
     parser.add_argument("--url", required=True, help="URL do vídeo Creative Commons do YouTube")
     parser.add_argument("--output", help="Caminho customizado para o vídeo horizontal (padrão: ~/Downloads/podX.mp4)")
-    parser.add_argument("--speed", type=float, default=1.0,
-                        help="Fator de aceleração do vídeo (ex: 1.2 = 20%% mais rápido). Padrão: 1.0 (sem alteração)")
+    parser.add_argument("--speed", type=float, default=1.2,
+                        help="Fator de aceleração do vídeo (ex: 1.2 = 20%% mais rápido). Padrão: 1.2 (otimizado para retenção)")
 
     args = parser.parse_args()
 
