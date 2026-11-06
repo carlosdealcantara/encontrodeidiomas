@@ -56,7 +56,8 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoriamente** entregar três coisas formatadas:
 
 ### A. Título do Vídeo
-- **Estrutura:** `[Gancho Curioso / Anti-erro] | Pod #<N>`
+- **Estrutura:** `[Gancho Curioso / Anti-erro / Dúvida Real] | Pod #<N>`
+- **Regra de Não-Repetição com a Capa:** O título deve focar mais no contexto ou na consequência do erro (ex: `CUIDADO ao falar isso em inglês! Você pode arrumar briga | Pod #2`), enquanto a thumbnail ataca por outro ângulo emocional ou direto (ex: `ISSO NÃO É BRIGA?!`). **Nunca repita as mesmas palavras exatas no texto da thumbnail e no título.**
 - **Exemplo:** `NUNCA diga "Did you understand?" em inglês! Use isso | Pod #1`
 
 ### B. Descrição Completa do YouTube (Pronta para copiar e colar)
@@ -92,6 +93,12 @@ Créditos de imagem: Vídeo de fundo em [Local do Vídeo] licenciado sob Creativ
 
 ### C. Prompt Otimizado para Geração de Thumbnail no Gemini
 O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida seguindo esta estrutura:
+
+> **⚠️ Regra de Complementaridade (Anti-Repetição):**
+> O texto da thumbnail **NÃO DEVE** repetir as frases ou palavras exatas do título. Eles atuam em dupla para ativar o clique por ângulos diferentes:
+> - Se o título foca no termo técnico/cognato (ex: *CUIDADO com "Discuss" e "Argue"*), a thumbnail deve focar no susto/reação humana (ex: *ARRUMOU BRIGA SEM QUERER?* ou *VOCÊ SOOU MUITO GROSSO!*).
+> - Se o título foca na dor/situação (ex: *NUNCA diga isso para o seu chefe*), a thumbnail foca no erro visual com uma palavra cortada ou contraste direto (ex: *PARE DE DIZER ISSO!*).
+
 ```text
 Gere uma thumbnail de alto impacto para o YouTube, proporção 16:9 widescreen (1280x720).
 
@@ -99,11 +106,11 @@ Cenário e Fundo:
 - Vista cinematográfica em ângulo aberto de [Cidade/Cenário do vídeo de fundo].
 - Iluminação vibrante, realista, fotografia urbana em 4K, sem pessoas em primeiro plano.
 
-Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis):
+Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis - complementares ao título, sem repetir frases):
 - No centro-esquerda, texto gigante em 3D ou estilo pôster moderno com cores contrastantes (amarelo vibrante e branco com contorno preto forte e sombra profunda):
-  "[FRASE CLICKBAIT REAL / GANCHO PRINCIPAL]"
+  "[FRASE CLICKBAIT COMPLEMENTAR / REAÇÃO HUMANA / GANCHO EMOTIVO]"
 - Logo abaixo em uma faixa contrastante com tipografia moderna e nítida:
-  "[TERMO CHAVE OU ERRO EM DESTAQUE]"
+  "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE]"
 - No canto superior: um selo discreto e elegante: "POD #<N> • DICA RÁPIDA"
 - No canto inferior: a tag sutil: "Carlos de Alcantara | @ei.ingles"
 
