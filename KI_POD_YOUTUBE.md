@@ -27,7 +27,9 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
    - `subtitles_pod<N>_h.ass` → horizontal 16:9 (PlayRes 1920x1080, branding top-left `Alignment=7`, legendas centro-tela `Alignment=5`)
    - `subtitles_pod<N>_v.ass` → vertical 9:16 (PlayRes 1080x1920, branding top-center `Alignment=8`, legendas centro-tela `Alignment=5`)
 4. **Legendas Dinâmicas Protagonistas:** 5 palavras por bloco, sem spoilers, alto impacto visual no centro da tela em ambos os formatos.
-5. **Branding:** `POD #<N>   |   CARLOS DE ALCANTARA` em fonte Arial, pequeno e discreto no topo.
+5. **Branding no Topo:** `POD #<N>   |   CARLOS DE ALCANTARA` em fonte Arial com destaque visual ampliado (+100% no tamanho para nitidez):
+   - **Horizontal (16:9):** `FontSize=44`, top-left (`Alignment=7`), contorno escuro nítido.
+   - **Vertical (9:16):** `FontSize=56`, top-center (`Alignment=8`), margem superior segura.
 6. **Estilo das Legendas:** Arial Bold branco, Outline=3.5, Shadow=2, **sem caixa de fundo**.
    - **⚠️ FontSize DEFINITIVO no ASS: 90** (legenda com protagonismo visual e tamanho ideal para visualização rápida no celular e desktop).
    - **Posicionamento:** Centralizado na tela (`Alignment=5`) em horizontal e vertical.

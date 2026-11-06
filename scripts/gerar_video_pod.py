@@ -54,7 +54,7 @@ def build_ass_events(segments, duration_sec, pod_num, mode="horizontal"):
     max_t = to_ass_time(duration_sec)
 
     if mode == "vertical":
-        # Branding: Alignment=8 (top-center)
+        # Branding: Alignment=8 (top-center, FontSize=56 ampliado para legibilidade)
         # Subtitle:  Alignment=5 (center-screen, posição de destaque para Reels/Shorts)
         header = f"""[Script Info]
 ScriptType: v4.00+
@@ -64,7 +64,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Branding,Arial,28,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,8,0,8,30,30,50,1
+Style: Branding,Arial,56,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,10,0,8,30,30,50,1
 Style: Subtitle,Arial,90,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,5,40,40,0,1
 
 [Events]
@@ -72,7 +72,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
         branding_line = f"Dialogue: 0,0:00:00.00,{max_t},Branding,,0,0,0,,POD #{pod_num}   |   CARLOS DE ALCANTARA"
     else:
-        # Horizontal (YouTube 16:9): Subtitle Alignment=5 (center-screen como protagonista)
+        # Horizontal (YouTube 16:9): Branding FontSize=44 (100% maior que os 22 originais), Subtitle Alignment=5
         header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 1920
@@ -81,7 +81,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Branding,Arial,22,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,8,0,7,45,45,40,1
+Style: Branding,Arial,44,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,10,0,7,45,45,40,1
 Style: Subtitle,Arial,90,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,5,60,60,0,1
 
 [Events]
