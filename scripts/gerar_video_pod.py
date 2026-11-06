@@ -133,19 +133,36 @@ def download_background(youtube_url, temp_dir):
     subprocess.run(cmd, check=True)
     return bg_path
 
-def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file):
-    """Renderiza o vídeo horizontal 16:9 (1920x1080) para YouTube."""
-    print("🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 para YouTube...")
+def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0):
+    """
+    Renderiza o vídeo horizontal 16:9 (1920x1080) para YouTube.
+    speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
+    Ordem do filtro: queima a legenda com PTS original → depois acelera os frames.
+    Assim a legenda já está gravada como pixel e acompanha automaticamente.
+    """
+    print(f"🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
+
+    if speed != 1.0:
+        # subtitles com PTS original → setpts acelera os frames já com legenda queimada
+        # atempo acelera o áudio no mesmo fator
+        v_filter = f"[0:v]subtitles={ass_clean},setpts=PTS/{speed}[v]"
+        a_filter = f"[1:a]atempo={speed}[a]"
+        filter_complex = f"{v_filter};{a_filter}"
+        audio_map = "[a]"
+    else:
+        filter_complex = f"[0:v]subtitles={ass_clean}[v]"
+        audio_map = "1:a"
+
     # ultrafast + threads=2 + rc-lookahead=0 → minimiza consumo de RAM (~2.5 GB free é suficiente)
     cmd = [
         "ffmpeg", "-y",
         "-i", bg_path,
         "-i", audio_path,
         "-t", str(duration_sec),
-        "-filter_complex", f"[0:v]subtitles={ass_clean}[v]",
+        "-filter_complex", filter_complex,
         "-map", "[v]",
-        "-map", "1:a",
+        "-map", audio_map,
         "-c:v", "libx264",
         "-preset", "ultrafast",
         "-tune", "fastdecode",
@@ -158,25 +175,32 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file):
     subprocess.run(cmd, check=True)
     print(f"✅ Horizontal exportado: {output_file}")
 
-def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file):
+def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0):
     """
     Renderiza o vídeo vertical 9:16 (1080x1920) para Reels / Shorts / TikTok.
     Recorta o centro da faixa horizontal (crop=ih*9/16:ih) e escala para 1080x1920.
+    speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
     """
-    print("📱 [4/5] Renderizando vídeo VERTICAL 9:16 para Reels/Shorts/TikTok...")
+    print(f"📱 [4/5] Renderizando vídeo VERTICAL 9:16 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
-    filter_chain = (
-        f"[0:v]crop=ih*9/16:ih,scale=1080:1920,"
-        f"subtitles={ass_clean}[v]"
-    )
+
+    if speed != 1.0:
+        v_filter = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean},setpts=PTS/{speed}[v]"
+        a_filter = f"[1:a]atempo={speed}[a]"
+        filter_complex = f"{v_filter};{a_filter}"
+        audio_map = "[a]"
+    else:
+        filter_complex = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean}[v]"
+        audio_map = "1:a"
+
     cmd = [
         "ffmpeg", "-y",
         "-i", bg_path,
         "-i", audio_path,
         "-t", str(duration_sec),
-        "-filter_complex", filter_chain,
+        "-filter_complex", filter_complex,
         "-map", "[v]",
-        "-map", "1:a",
+        "-map", audio_map,
         "-c:v", "libx264",
         "-preset", "ultrafast",
         "-tune", "fastdecode",
@@ -195,6 +219,8 @@ if __name__ == "__main__":
     parser.add_argument("--audio", help="Caminho local do áudio (padrão: scratch/pod_test/pod_X.ogg)")
     parser.add_argument("--url", required=True, help="URL do vídeo Creative Commons do YouTube")
     parser.add_argument("--output", help="Caminho customizado para o vídeo horizontal (padrão: ~/Downloads/podX.mp4)")
+    parser.add_argument("--speed", type=float, default=1.0,
+                        help="Fator de aceleração do vídeo (ex: 1.2 = 20%% mais rápido). Padrão: 1.0 (sem alteração)")
 
     args = parser.parse_args()
 
@@ -230,14 +256,21 @@ if __name__ == "__main__":
     # Baixa o vídeo de fundo (compartilhado entre os dois renders)
     bg = download_background(args.url, str(temp_dir))
 
-    # Renderiza ambos
-    render_horizontal(bg, audio_file, ass_h_path, dur, final_h)
-    render_vertical(bg, audio_file, ass_v_path, dur, final_v)
+    speed = args.speed
+    if speed != 1.0:
+        print(f"⚡ Aceleração ativa: {speed}x (legenda queimada primeiro, depois frames acelerados)")
 
+    # Renderiza ambos
+    render_horizontal(bg, audio_file, ass_h_path, dur, final_h, speed=speed)
+    render_vertical(bg, audio_file, ass_v_path, dur, final_v, speed=speed)
+
+    duration_final = dur / speed
     print()
     print("=" * 60)
     print(f"🎉 [5/5] PIPELINE CONCLUÍDO!")
     print(f"   📺 YouTube (16:9):         {final_h}")
     print(f"   📱 Reels/Shorts (9:16):    {final_v}")
+    if speed != 1.0:
+        print(f"   ⚡ Velocidade:              {speed}x  ({dur:.0f}s → {duration_final:.0f}s)")
     print("=" * 60)
 
