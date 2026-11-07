@@ -43,11 +43,13 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 ---
 
 ## 2.1. Regra de Fluxo de Trabalho (Importante)
+- **Vídeo de Fundo Padrão:** Todo link do YouTube fornecido pelo usuário para o episódio é **sempre** o vídeo a ser usado como imagem de fundo na renderização.
 - A IA **NUNCA** deve iniciar a renderização antes que o usuário forneça a URL do vídeo do YouTube.
 - Quando o usuário solicitar a criação de um episódio:
   1. A IA deve primeiro baixar o áudio do pod (se já não estiver local) e obter a duração original e acelerada (1.2x).
   2. A IA informa imediatamente ao usuário a duração necessária para o vídeo de fundo e aguarda o link do YouTube.
   3. Somente após receber a URL, a IA executa o pipeline de download e renderização.
+- **Duração do Próximo Episódio:** A IA deve SEMPRE informar ao final da mensagem a duração (original e acelerada 1.2x) do Pod seguinte (ex: ao entregar o Pod 3, já informar a duração do Pod 4), permitindo que o usuário já saiba quanto tempo de vídeo de fundo precisará buscar.
 
 ---
 
