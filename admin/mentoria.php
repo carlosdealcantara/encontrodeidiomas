@@ -174,6 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
         ],
         'templates' => [
             'welcome' => trim($_POST['tpl_welcome']),
+            'classes_welcome' => trim($_POST['tpl_classes_welcome'] ?? ''),
             'birthday' => trim($_POST['tpl_birthday'] ?? ''),
             'lembrete_aula' => trim($_POST['tpl_lembrete']),
             'aviso_desafio' => trim($_POST['tpl_aviso_desafio']),
@@ -234,6 +235,7 @@ $jid_protocolo_1001 = $config['groups']['protocolo_1001']['jid'] ?? '';
 
 if ($current_lang === 'es') {
     $tpl_welcome = $config['templates']['welcome'] ?? "¡Hola, @{name}! 👋\n¡Bienvenido/a a *El Rincón*! 🎉\n¡Preséntate al grupo!";
+    $tpl_classes_welcome = $config['templates']['classes_welcome'] ?? "¡Hola, @{name}! ¡Bienvenido/a a *El Aula*! 👋🎉\n\n¡Ya estás en el lugar indicado para llevar tu fluidez al siguiente nivel!\n\nTe contamos rápidamente cómo funciona la dinámica aquí:\nCada vez que hay clase, nuestro staff envía un mensaje a medianoche con el horario y las instrucciones para confirmar tu lugar. ¡Es súper sencillo!\n\nAsegúrate de leer la descripción del grupo para más detalles. ¡Estamos ansiosos por verte en la próxima sesión! Si tienes cualquier duda o necesitas ayuda, solo etiqueta al profesor. ¡Nos vemos en clase! 🌟";
     $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *¡Feliz Cumpleaños, {nome}!* 🎉\n\nHoy es un día muy especial: ¡uno de nuestros increíbles miembros de la Mentoría está de cumpleaños! 🥳\n\n¡Te deseamos un nuevo año lleno de aprendizajes, alegrías y mucha fluidez! 🌟\n\n¡Deja un 🎂 o un mensaje para felicitar a {nome}! 💬 @{numero}";
     $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Recordatorio de Clase*\n¡No olvides agendar tu clase de hoy!";
     $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *¡Alerta de Desafío!*\n¡Tienes hasta la medianoche para enviar la foto de tu actividad! ⏳";
@@ -267,6 +269,7 @@ if ($current_lang === 'es') {
     $tpl_streak_leaderboard = $config['templates']['streak_leaderboard'] ?? "🏆 *Récords Históricos de Racha*\n\n{allTimeList}\n🔥 *Rachas Activas Hoy*\n\n{activeList}";
 } else {
     $tpl_welcome = $config['templates']['welcome'] ?? "Hey, @{name}! 👋\nWelcome to *The Lounge*! 🎉\nIntroduce yourself to the group!";
+    $tpl_classes_welcome = $config['templates']['classes_welcome'] ?? "Hey @{name}, welcome to *Our Classes*! 👋🎉\n\nYou are officially in the right place to level up your speaking!\n\nA quick heads-up on how things work here:\nWhenever there is a class, our staff sends a message right at midnight with the class time and instructions on how to confirm your spot. It's super simple!\n\nMake sure to read the group description for more details. We can’t wait to see you at the next session! Whenever you need help, just tag the teacher. See you in class! 🌟";
     $tpl_birthday = $config['templates']['birthday'] ?? "🎂 *Happy Birthday, {nome}!* 🎉\n\nToday is a special day — one of our amazing Mentorship members is celebrating their birthday! 🥳\n\nWe hope this new year of life brings you lots of growth, joy, and of course... fluency! 🌟\n\nDrop a 🎂 or send a birthday message to make {nome}'s day even more special! 💬 @{numero}";
     $tpl_lembrete = $config['templates']['lembrete_aula'] ?? "📚 *Daily Class Reminder*\nDon't forget to book today's class on Calendly!";
     $tpl_aviso_desafio = $config['templates']['aviso_desafio'] ?? "⚠️ *Challenge Alert!*\nYou have until midnight to post your activity!";

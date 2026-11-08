@@ -638,19 +638,34 @@ async function handleMessage(ctx) {
 // ─── HANDLER DE PARTICIPANTES ────────────────────────────────────────────────
 
 /**
- * Trata entrada de novo participante no The Lounge (welcome legado da Mentoria).
+ * Trata entrada de novo participante nos grupos da Mentoria (The Lounge e Our Classes).
  */
 async function handleParticipant(sock, groupJid, participants, config) {
     const theLoungeJid = config.groups?.the_lounge?.jid;
-    if (groupJid !== theLoungeJid || !config.templates?.welcome) return;
+    const ourClassesJid = config.groups?.our_classes?.jid;
 
-    for (const participantJid of participants) {
-        const name = participantJid.split('@')[0];
-        const text = config.templates.welcome
-            .replace('@{name}', `@${name}`)
-            .replace('{name}', name);
-        await sock.sendMessage(groupJid, { text, mentions: [participantJid] });
-        console.log(`[MENTORIA-WELCOME] Sent to ${participantJid} in The Lounge`);
+    // 1. Welcome no The Lounge
+    if (groupJid === theLoungeJid && config.templates?.welcome) {
+        for (const participantJid of participants) {
+            const name = participantJid.split('@')[0];
+            const text = config.templates.welcome
+                .replace('@{name}', `@${name}`)
+                .replace('{name}', name);
+            await sock.sendMessage(groupJid, { text, mentions: [participantJid] });
+            console.log(`[MENTORIA-WELCOME] Sent to ${participantJid} in The Lounge`);
+        }
+    }
+
+    // 2. Welcome no Our Classes
+    if (groupJid === ourClassesJid && config.templates?.classes_welcome) {
+        for (const participantJid of participants) {
+            const name = participantJid.split('@')[0];
+            const text = config.templates.classes_welcome
+                .replace('@{name}', `@${name}`)
+                .replace('{name}', name);
+            await sock.sendMessage(groupJid, { text, mentions: [participantJid] });
+            console.log(`[MENTORIA-WELCOME] Sent to ${participantJid} in Our Classes`);
+        }
     }
 }
 

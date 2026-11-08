@@ -218,6 +218,12 @@ $labelClasses = $isEs ? '📚 El Aula (Classes)' : '📹 Our Classes';
             </div>
 
             <div class="form-group" style="margin-top: 20px;">
+                <label>Mensagem de Boas-vindas (Ao entrar no grupo)</label>
+                <textarea name="tpl_classes_welcome" style="min-height: 140px;"><?= htmlspecialchars($tpl_classes_welcome ?? '') ?></textarea>
+                <p class="help-text">Enviada assim que um novo membro entra no grupo. Use <code>{name}</code> para o nome ou <code>@{name}</code> para marcar a pessoa.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
                 <label>Aviso Matinal Our Classes (À meia-noite no dia da aula)</label>
                 <textarea name="tpl_class_aviso"><?= htmlspecialchars($tpl_class_aviso) ?></textarea>
                 <p class="help-text">Use <code>{horario}</code> e <code>{deadline}</code> para mostrar as horas da aula e do prazo final de inscrição.</p>

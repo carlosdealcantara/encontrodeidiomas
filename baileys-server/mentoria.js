@@ -1061,9 +1061,10 @@ async function handleParticipants({ id, participants, action }) {
     if (!sock) return;
 
     if (action === 'add') {
-        // === MENTORIA: The Lounge legacy welcome ===
+        // === MENTORIA: The Lounge & Our Classes welcome ===
         const config = loadConfig();
         const theLoungeJid = config.groups?.the_lounge?.jid;
+        const ourClassesJid = config.groups?.our_classes?.jid;
 
         if (id === theLoungeJid && config.templates?.welcome) {
             for (const participantJid of participants) {
@@ -1071,6 +1072,15 @@ async function handleParticipants({ id, participants, action }) {
                 const text = config.templates.welcome.replace('@{name}', `@${name}`).replace('{name}', name);
                 await sock.sendMessage(id, { text, mentions: [participantJid] });
                 console.log(`[WELCOME] Welcome message sent to ${participantJid} in The Lounge`);
+            }
+        }
+
+        if (id === ourClassesJid && config.templates?.classes_welcome) {
+            for (const participantJid of participants) {
+                const name = participantJid.split('@')[0];
+                const text = config.templates.classes_welcome.replace('@{name}', `@${name}`).replace('{name}', name);
+                await sock.sendMessage(id, { text, mentions: [participantJid] });
+                console.log(`[WELCOME] Welcome message sent to ${participantJid} in Our Classes`);
             }
         }
 
