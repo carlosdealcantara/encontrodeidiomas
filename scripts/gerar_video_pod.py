@@ -40,8 +40,12 @@ def get_audio_duration(audio_path):
 
 def transcribe_audio(audio_path):
     """Roda o Faster-Whisper e retorna lista de segmentos."""
-    print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (modelo medium, 100% offline)...")
-    model = WhisperModel("medium", device="cpu", compute_type="int8")
+    print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (100% offline)...")
+    try:
+        model = WhisperModel("medium", device="cpu", compute_type="int8")
+    except (RuntimeError, MemoryError) as e:
+        print(f"⚠️ Memória insuficiente para modelo 'medium' ({e}). Alternando para modelo 'small'...")
+        model = WhisperModel("small", device="cpu", compute_type="int8")
     segments, _info = model.transcribe(
         audio_path,
         beam_size=5,
