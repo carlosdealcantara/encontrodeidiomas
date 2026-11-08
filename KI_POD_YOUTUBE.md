@@ -1,6 +1,6 @@
 # KI: Pipeline de Conversão Pod (Áudio) para Vídeo do YouTube
 
-Esta base de conhecimento documenta o pipeline completo de reaproveitamento de áudios do Pod (Pill of the Day) para o canal do YouTube e redes verticais (Reels / Shorts / TikTok) do professor Carlos de Alcantara.
+Esta base de conhecimento documenta o pipeline completo de reaproveitamento de áudios do Pod (Pill of the Day) para o canal do YouTube e redes verticais (Reels / Shorts / TikTok) do professor Carlos de Alcântara.
 
 ---
 
@@ -22,14 +22,14 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 
 ### O que o script faz sozinho (DOIS vídeos por episódio):
 1. **Duração:** Mede o tempo exato do áudio via FFprobe e calcula o corte final correto com base no fator de aceleração (`target_duration = audio_duration / speed`). O vídeo NUNCA fica com sobras mudas no final.
-2. **Transcrição Offline (Zero custo de API):** Usa o modelo Faster-Whisper local (`device=cpu`, `compute_type=int8`).
+2. **Transcrição Offline Robusta (Zero custo de API):** Usa o modelo Faster-Whisper **`medium`** local (`device=cpu`, `compute_type=int8`) com `condition_on_previous_text=False`, `vad_filter=True` e `no_speech_threshold=0.6` para alta precisão bilíngue (inglês/português) e garantia total contra omissão de blocos falados.
 3. **Dois arquivos ASS gerados:**
    - `subtitles_pod<N>_h.ass` → horizontal 16:9 (PlayRes 1920x1080, branding top-left `Alignment=7`, legendas centro-tela `Alignment=5`)
    - `subtitles_pod<N>_v.ass` → vertical 9:16 (PlayRes 1080x1920, branding top-center `Alignment=8`, legendas centro-tela `Alignment=5`)
 4. **Legendas Dinâmicas Protagonistas:** 5 palavras por bloco, sem spoilers, alto impacto visual no centro da tela em ambos os formatos.
-5. **Branding no Topo:** `POD #<N>   |   CARLOS DE ALCANTARA` em fonte Arial com destaque visual ampliado (+100% no tamanho para nitidez):
+5. **Branding no Topo:** `POD #<N>   |   CARLOS DE ALCÂNTARA` em fonte Arial com destaque visual ampliado:
    - **Horizontal (16:9):** `FontSize=44`, top-left (`Alignment=7`), contorno escuro nítido.
-   - **Vertical (9:16):** `FontSize=56`, top-center (`Alignment=8`), margem superior segura.
+   - **Vertical (9:16):** `FontSize=56`, top-center (`Alignment=8`), margem superior vertical ampliada (`MarginV=140`) para safe zone total das interfaces e barras de busca de Reels, Shorts e TikTok.
 6. **Estilo das Legendas:** Arial Bold branco, Outline=3.5, Shadow=2, **sem caixa de fundo**.
    - **⚠️ FontSize DEFINITIVO no ASS: 90** (legenda com protagonismo visual e tamanho ideal para visualização rápida no celular e desktop).
    - **Posicionamento:** Centralizado na tela (`Alignment=5`) em horizontal e vertical.
@@ -67,7 +67,7 @@ Seguir rigorosamente este template com quebras de linha limpas:
 ```text
 [Breve resumo de 2 linhas do erro e da dica abordada no áudio].
 
-Neste episódio do Pill of the Day (Pod #<N>), o professor Carlos de Alcantara mostra [benefício/solução da aula].
+Neste episódio do Pill of the Day (Pod #<N>), o professor Carlos de Alcântara mostra [benefício/solução da aula].
 
 💬 Deixe seu exemplo nos comentários para praticar!
 
@@ -114,7 +114,7 @@ Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis - comp
 - Logo abaixo em uma faixa contrastante com tipografia moderna e nítida:
   "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE]"
 - No canto superior: um selo discreto e elegante: "POD #<N> • DICA RÁPIDA"
-- No canto inferior: a tag sutil: "Carlos de Alcantara | @ei.ingles"
+- No canto inferior: a tag sutil: "Carlos de Alcântara | @ei.ingles"
 
 Estilo geral: Design gráfico arrojado e moderno de capa de vídeo viral de YouTube, cores saturadas e vibrantes, alto contraste para leitura perfeita mesmo no feed do celular.
 ```
@@ -122,7 +122,7 @@ Estilo geral: Design gráfico arrojado e moderno de capa de vídeo viral de YouT
 ---
 
 ## 4. Dados e Identidade do Projeto
-- **Nome do Autor:** Carlos de Alcantara
+- **Nome do Autor:** Carlos de Alcântara
 - **Instagram:** `@ei.ingles` (`https://instagram.com/ei.ingles`)
 - **Site:** `https://viaEi.com`
 - **Página de Links / Grupos:** `https://viaEi.com/links`

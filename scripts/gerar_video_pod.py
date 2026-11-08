@@ -40,9 +40,16 @@ def get_audio_duration(audio_path):
 
 def transcribe_audio(audio_path):
     """Roda o Faster-Whisper e retorna lista de segmentos."""
-    print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (100% offline)...")
-    model = WhisperModel("small", device="cpu", compute_type="int8")
-    segments, _info = model.transcribe(audio_path, beam_size=5)
+    print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (modelo medium, 100% offline)...")
+    model = WhisperModel("medium", device="cpu", compute_type="int8")
+    segments, _info = model.transcribe(
+        audio_path,
+        beam_size=5,
+        condition_on_previous_text=False,
+        vad_filter=True,
+        vad_parameters=dict(min_silence_duration_ms=500),
+        no_speech_threshold=0.6
+    )
     return list(segments)  # materializa o generator aqui para reusar
 
 def build_ass_events(segments, duration_sec, pod_num, mode="horizontal"):
@@ -54,7 +61,7 @@ def build_ass_events(segments, duration_sec, pod_num, mode="horizontal"):
     max_t = to_ass_time(duration_sec)
 
     if mode == "vertical":
-        # Branding: Alignment=8 (top-center, FontSize=56 ampliado para legibilidade)
+        # Branding: Alignment=8 (top-center, FontSize=56, MarginV=140 para safe zone de Reels/Shorts/TikTok)
         # Subtitle:  Alignment=5 (center-screen, posição de destaque para Reels/Shorts)
         header = f"""[Script Info]
 ScriptType: v4.00+
@@ -64,7 +71,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Branding,Arial,56,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,10,0,8,30,30,50,1
+Style: Branding,Arial,56,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,3,10,0,8,30,30,140,1
 Style: Subtitle,Arial,90,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3.5,2,5,40,40,0,1
 
 [Events]
