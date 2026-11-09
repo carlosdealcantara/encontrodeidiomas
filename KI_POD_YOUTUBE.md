@@ -115,11 +115,12 @@ O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letrei
    - **Vocabulário / Comparações / Expressões do dia a dia:** Tarja Ciano / Azul Elétrico com texto branco.
    - **Pronúncia / Dúvidas rápidas / Curiosidades:** Tarja Amarelo Alerta ou Verde Neon com texto escuro/preto para contraste máximo.
 
-2. **Variável B — Rotação de Cenários de Fundo (Manter qualidade cinematográfica 4K, alternando temas urbanos):**
-   - **Ambiente 1 (Urbano Noturno/Golden Hour):** Metrópole moderna, rua iluminada, bokeh de luzes de trânsito.
-   - **Ambiente 2 (Café / Lifestyle Intelectual):** Exterior ou interior de um café moderno e elegante (coffee shop) ou livraria/biblioteca contemporânea bem iluminada.
-   - **Ambiente 3 (Trânsito / Conexão Global):** Estação de metrô futurista/moderna, saguão de aeroporto contemporâneo ou centro financeiro envidraçado.
-   - **Ambiente 4 (Ar Livre / Dia Claro):** Parque urbano moderno com árvores e alameda asfaltada, luz natural diurna nítida.
+2. **Variável B — Enquadramento, Atmosfera e Iluminação Fiel ao Vídeo de Fundo:**
+   - **Regra Fundamental de Coerência:** O cenário NÃO deve ser inventado aleatoriamente (ex: colocar cafeteria se o vídeo é uma caminhada em Los Angeles). O prompt deve **extrair a locação real a partir do título/tema do vídeo de fundo do YouTube** fornecido pelo usuário.
+   - **Onde entra a variação visual (evitando a "mesmice" e mantendo 100% de realismo fotográfico):**
+     - **Distância Focal e Enquadramento:** Alternar entre *plano geral aberto (wide angle / vista ampla da avenida ou horizonte)*, *plano médio (visão de pedestre com calçada/arquitetura próxima)* e *enquadramento com foco em elemento urbano específico (close em semáforo, placa de trânsito, fachada icônica com desfoque de fundo)*.
+     - **Momento do Dia e Luz Natural:** Dia ensolarado com cores vivas e sombras nítidas, dia nublado/cinematográfico com iluminação suave, entardecer/golden hour com tons alaranjados/dourados, ou noite urbana com profundidade de luzes artificiais.
+     - **Temperatura e Iluminação de Cena:** Variar entre tons quentes (luzes âmbar/amarelas de postes e vitrines) e tons frios/modernos (luzes de LED brancas/azuladas, neon, asfalto molhado refletindo luz).
 
 3. **Variável C — Elemento Humano Opcional / Rotativo:**
    - **Padrão (Sem pessoa):** Cenário cinematográfico limpo com foco total na tipografia.
@@ -131,9 +132,11 @@ O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letrei
 ```text
 Gere uma thumbnail de alto impacto para o YouTube, proporção 16:9 widescreen (1280x720).
 
-Cenário e Fundo:
-- [Descrever o cenário escolhido rotativamente: ex: Exterior iluminado de um café moderno e elegante / Estação de metrô contemporânea / etc.].
-- Iluminação cinematográfica vibrante, fotografia urbana realista em 4K [se sem pessoa: "sem pessoas em primeiro plano" | se com pessoa: "com um homem expressivo ao lado direito em pose de [alerta/dúvida/surpresa], sem encobrir o texto"].
+Cenário e Fundo (Baseado no local real do vídeo de fundo: [Local extraído do título do vídeo]):
+- Fotografia realista e cinematográfica em 4K capturada em [Local real do vídeo].
+- Enquadramento e perspectiva: [Alternar entre: plano aberto com horizonte / perspectiva ao nível da rua / plano médio com foco em elemento urbano e fundo com bokeh suave].
+- Atmosfera e luz: [Alternar entre: luz natural do dia vívida / pôr do sol dourado / noite vibrante com iluminação âmbar de postes / iluminação moderna fria de LED e reflexos].
+- [Se sem pessoa: "Cena urbana realista sem pessoas em primeiro plano" | se com pessoa: "Homem expressivo ao lado direito em pose de [alerta/dúvida/surpresa], sem encobrir o texto"].
 
 Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis - complementares ao título, sem repetir frases):
 - No centro-esquerda, texto gigante em 3D estilo pôster moderno em amarelo vibrante com contorno preto e sombra profunda:
@@ -143,7 +146,7 @@ Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis - comp
 - No canto superior: um selo discreto e elegante: "POD #<N> • DICA RÁPIDA"
 - No canto inferior: a tag sutil: "Carlos de Alcântara | @ei.ingles"
 
-Estilo geral: Design gráfico arrojado e moderno de capa de vídeo viral de YouTube, cores saturadas e vibrantes, alto contraste para leitura perfeita mesmo no feed do celular.
+Estilo geral: Fotografia urbana realista em 4K combinada com design gráfico arrojado de capa de vídeo viral de YouTube, alto contraste para leitura perfeita mesmo no feed do celular.
 ```
 
 ---
