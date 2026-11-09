@@ -94,25 +94,52 @@ Créditos de imagem: Vídeo de fundo em [Local do Vídeo] licenciado sob Creativ
 ```
 
 ### C. Prompt Otimizado para Geração de Thumbnail no Gemini
-O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida seguindo esta estrutura:
+O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida combinando uma **Estrutura Fixa (Branding)** com **Variáveis Dinâmicas por Episódio** para evitar "Cegueira de Padrão" no feed do YouTube:
 
 > **⚠️ Regra de Complementaridade (Anti-Repetição):**
 > O texto da thumbnail **NÃO DEVE** repetir as frases ou palavras exatas do título. Eles atuam em dupla para ativar o clique por ângulos diferentes:
 > - Se o título foca no termo técnico/cognato (ex: *CUIDADO com "Discuss" e "Argue"*), a thumbnail deve focar no susto/reação humana (ex: *ARRUMOU BRIGA SEM QUERER?* ou *VOCÊ SOOU MUITO GROSSO!*).
-> - Se o título foca na dor/situação (ex: *NUNCA diga isso para o seu chefe*), a thumbnail foca no erro visual com uma palavra cortada ou contraste direto (ex: *PARE DE DIZER ISSO!*).
+> - Se o título foca na dor/situação (ex: *NUNCA diga isso para o seu chefe*), a thumbnail foca no erro visual ou contraste direto (ex: *PARE DE DIZER ISSO!*).
 
+#### 1. Estrutura Fixa (Manter em 100% dos Prompts)
+- **Formato:** Proporção 16:9 widescreen (1280x720), alto contraste e saturação para leitura mobile perfeita.
+- **Texto Principal (Centro-Esquerda):** Tipografia 3D gigante, amarelo vibrante ou branco com contorno escuro forte e sombra projetada.
+- **Branding Institucional:** 
+  - Selo no canto superior: `"POD #<N> • DICA RÁPIDA"`
+  - Tag no canto inferior: `"Carlos de Alcântara | @ei.ingles"`
+
+#### 2. Matriz de Variáveis Dinâmicas (A IA DEVE Alternar a Cada Pod)
+
+1. **Variável A — Cor da Tarja / Destaque Secundário (Conforme a intenção do conteúdo):**
+   - **Alerta / Erros graves / Cuidado / Falsos amigos:** Tarja Vermelha vibrante com texto em branco ou amarelo.
+   - **Vocabulário / Comparações / Expressões do dia a dia:** Tarja Ciano / Azul Elétrico com texto branco.
+   - **Pronúncia / Dúvidas rápidas / Curiosidades:** Tarja Amarelo Alerta ou Verde Neon com texto escuro/preto para contraste máximo.
+
+2. **Variável B — Rotação de Cenários de Fundo (Manter qualidade cinematográfica 4K, alternando temas urbanos):**
+   - **Ambiente 1 (Urbano Noturno/Golden Hour):** Metrópole moderna, rua iluminada, bokeh de luzes de trânsito.
+   - **Ambiente 2 (Café / Lifestyle Intelectual):** Exterior ou interior de um café moderno e elegante (coffee shop) ou livraria/biblioteca contemporânea bem iluminada.
+   - **Ambiente 3 (Trânsito / Conexão Global):** Estação de metrô futurista/moderna, saguão de aeroporto contemporâneo ou centro financeiro envidraçado.
+   - **Ambiente 4 (Ar Livre / Dia Claro):** Parque urbano moderno com árvores e alameda asfaltada, luz natural diurna nítida.
+
+3. **Variável C — Elemento Humano Opcional / Rotativo:**
+   - **Padrão (Sem pessoa):** Cenário cinematográfico limpo com foco total na tipografia.
+   - **Alternativa expressiva:** Quando a temática pedir forte apelo emocional (ex: espanto, dúvida ou alívio), incluir no lado direito um professor/homem jovem-adulto expressivo (olhando para o texto ou câmera com expressão de surpresa/alerta/dúvida), sem sobrepor as palavras.
+
+---
+
+#### Modelo do Prompt Gerado pela IA:
 ```text
 Gere uma thumbnail de alto impacto para o YouTube, proporção 16:9 widescreen (1280x720).
 
 Cenário e Fundo:
-- Vista cinematográfica em ângulo aberto de [Cidade/Cenário do vídeo de fundo].
-- Iluminação vibrante, realista, fotografia urbana em 4K, sem pessoas em primeiro plano.
+- [Descrever o cenário escolhido rotativamente: ex: Exterior iluminado de um café moderno e elegante / Estação de metrô contemporânea / etc.].
+- Iluminação cinematográfica vibrante, fotografia urbana realista em 4K [se sem pessoa: "sem pessoas em primeiro plano" | se com pessoa: "com um homem expressivo ao lado direito em pose de [alerta/dúvida/surpresa], sem encobrir o texto"].
 
 Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis - complementares ao título, sem repetir frases):
-- No centro-esquerda, texto gigante em 3D ou estilo pôster moderno com cores contrastantes (amarelo vibrante e branco com contorno preto forte e sombra profunda):
+- No centro-esquerda, texto gigante em 3D estilo pôster moderno em amarelo vibrante com contorno preto e sombra profunda:
   "[FRASE CLICKBAIT COMPLEMENTAR / REAÇÃO HUMANA / GANCHO EMOTIVO]"
-- Logo abaixo em uma faixa contrastante com tipografia moderna e nítida:
-  "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE]"
+- Logo abaixo em uma tarja contrastante [COR ESCOLHIDA: Vermelha / Azul Elétrico / Verde Neon / Amarelo Alerta]:
+  "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE EM TEXTO CONTRASTANTE]"
 - No canto superior: um selo discreto e elegante: "POD #<N> • DICA RÁPIDA"
 - No canto inferior: a tag sutil: "Carlos de Alcântara | @ei.ingles"
 
