@@ -4,10 +4,29 @@ Esta base de conhecimento documenta o pipeline completo de reaproveitamento de �
 
 ---
 
-## 1. Origem dos Áudios
-- Os áudios são gravados no WhatsApp (grupo *The Lounge*), salvos na tabela `pilulas_conteudo` no MySQL e armazenados na VPS Oracle em:
+## 1. Origem e Download dos Áudios
+- Os áudios são gravados no WhatsApp (grupo *The Lounge*), salvos como rascunhos no MySQL e armazenados na VPS Oracle em:
   `/home/ubuntu/encontrodeidiomas/baileys-server/data/audios_pilulas/`
-- O arquivo de áudio do episódio N pode ser baixado via SCP para a máquina local em `scratch/pod_test/pod_N.ogg`.
+- **Acesso SSH / SCP à Oracle VPS:**
+  - **Host / IP:** `136.248.92.126` (usuário: `ubuntu`)
+  - **Chave SSH Local Obrigatória:** `C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key`
+- **Como a IA localiza e baixa o áudio do episódio N:**
+  1. Conectar via SSH na VPS usando a chave para listar os arquivos ordenados cronologicamente:
+     ```powershell
+     ssh -i C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key ubuntu@136.248.92.126 "ls -1tr /home/ubuntu/encontrodeidiomas/baileys-server/data/audios_pilulas/"
+     ```
+  2. O Pod #1 corresponde ao 1º áudio da ordem cronológica (`pilula_1784860410211.ogg`), Pod #2 ao 2º, Pod #3 ao 3º, e assim sucessivamente:
+     - Pod #1: `pilula_1784860410211.ogg`
+     - Pod #2: `pilula_1785029252319.ogg`
+     - Pod #3: `pilula_1785029273241.ogg`
+     - Pod #4: `pilula_1785075422474.ogg`
+     - Pod #5: `pilula_1785165963239.ogg`
+     - Pod #6: `pilula_1785332191057.ogg`
+  3. Baixar via SCP com a chave privada diretamente para a pasta local:
+     ```powershell
+     scp -i C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key ubuntu@136.248.92.126:/home/ubuntu/encontrodeidiomas/baileys-server/data/audios_pilulas/<ARQUIVO_PILULA>.ogg scratch/pod_test/pod_<N>.ogg
+     ```
+  4. Medir a duração imediatamente via FFprobe e informar ao usuário para aguardar o link do YouTube.
 
 ---
 
