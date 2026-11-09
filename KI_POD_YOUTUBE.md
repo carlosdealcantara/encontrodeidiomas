@@ -71,8 +71,10 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 - **Duração do Próximo Episódio (OBRIGATÓRIO):** Ao finalizar a entrega de qualquer episódio N, a IA deve **obrigatoriamente**:
   1. Conectar via SCP na VPS e já baixar autonomamente o áudio do episódio N+1 para `scratch/pod_test/pod_<N+1>.ogg`.
   2. Medir a duração exata com FFprobe.
-  3. Informar ao final da mensagem a **duração original** e a **duração acelerada (1.2x)** do Pod N+1 em segundos e minutos/segundos.
-  > Isso garante que, quando o usuário abrir uma nova conversa para o próximo Pod, ele já saberá a duração exata do vídeo de fundo a buscar e a IA já terá o áudio baixado localmente pronto para renderizar.
+  3. Informar ao final da mensagem a **duração mínima que o vídeo do YouTube precisa ter** (que é a duração ORIGINAL do áudio) e a duração final que o vídeo terá pronto (acelerada 1.2x):
+     - **Vídeo de fundo do YouTube necessário:** No mínimo `<DUR_ORIGINAL>` segundos (`<X>m <Y>s`).
+       *(Explicação: como o FFmpeg acelera o vídeo de fundo em 1.2x junto com o áudio, 1s de vídeo acelerado consome 1.2s do vídeo original do YouTube; portanto, o vídeo bruto precisa cobrir todo o tempo original).*
+     - **Duração final do vídeo pronto:** `<DUR_ACELERADA>` segundos (`<X>m <Y>s`).
 
 ---
 
