@@ -78,14 +78,18 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 
 ## 3. O que a IA DEVE Entregar ao Usuário ao Final da Geração:
 
-Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoriamente** entregar quatro coisas formatadas:
+Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoriamente** entregar os 3 blocos de conteúdo formatados individualmente em **blocos de código (code blocks)** com botão de cópia com um clique:
 
 ### A. Título do Vídeo
 - **Estrutura:** `[Gancho Curioso / Anti-erro / Dúvida Real] | Pod #<N>`
 - **Regra de Não-Repetição com a Capa:** O título deve focar mais no contexto ou na consequência do erro (ex: `CUIDADO ao falar isso em inglês! Você pode arrumar briga | Pod #2`), enquanto a thumbnail ataca por outro ângulo emocional ou direto (ex: `ISSO NÃO É BRIGA?!`). **Nunca repita as mesmas palavras exatas no texto da thumbnail e no título.**
 - **Exemplo:** `NUNCA diga "Did you understand?" em inglês! Use isso | Pod #1`
+- **Formato de entrega:** Fornecer sempre dentro de um bloco de código ```` ```text ```` para cópia direta em 1 clique:
+  ```text
+  [Gancho Curioso / Anti-erro / Dúvida Real] | Pod #<N>
+  ```
 
-### B. Descrição Completa do YouTube (Pronta para copiar e colar)
+### B. Descrição Completa do YouTube (Pronta para copiar e colar em 1 clique)
 Seguir rigorosamente este template com quebras de linha limpas:
 ```text
 [Breve resumo de 2 linhas do erro e da dica abordada no áudio].
