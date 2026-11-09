@@ -68,13 +68,17 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
   1. A IA deve primeiro baixar o áudio do pod (se já não estiver local) e obter a duração original e acelerada (1.2x).
   2. A IA informa imediatamente ao usuário a duração necessária para o vídeo de fundo e aguarda o link do YouTube.
   3. Somente após receber a URL, a IA executa o pipeline de download e renderização.
-- **Duração do Próximo Episódio:** A IA deve SEMPRE informar ao final da mensagem a duração (original e acelerada 1.2x) do Pod seguinte (ex: ao entregar o Pod 3, já informar a duração do Pod 4), permitindo que o usuário já saiba quanto tempo de vídeo de fundo precisará buscar.
+- **Duração do Próximo Episódio (OBRIGATÓRIO):** Ao finalizar a entrega de qualquer episódio N, a IA deve **obrigatoriamente**:
+  1. Conectar via SCP na VPS e já baixar autonomamente o áudio do episódio N+1 para `scratch/pod_test/pod_<N+1>.ogg`.
+  2. Medir a duração exata com FFprobe.
+  3. Informar ao final da mensagem a **duração original** e a **duração acelerada (1.2x)** do Pod N+1 em segundos e minutos/segundos.
+  > Isso garante que, quando o usuário abrir uma nova conversa para o próximo Pod, ele já saberá a duração exata do vídeo de fundo a buscar e a IA já terá o áudio baixado localmente pronto para renderizar.
 
 ---
 
 ## 3. O que a IA DEVE Entregar ao Usuário ao Final da Geração:
 
-Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoriamente** entregar três coisas formatadas:
+Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoriamente** entregar quatro coisas formatadas:
 
 ### A. Título do Vídeo
 - **Estrutura:** `[Gancho Curioso / Anti-erro / Dúvida Real] | Pod #<N>`
