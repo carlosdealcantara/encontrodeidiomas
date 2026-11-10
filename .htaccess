@@ -57,6 +57,9 @@ RewriteRule ^links/?$        links.php?lang=pt [L,QSA]
 RewriteRule ^contato/?$      contato.php?lang=pt [L,QSA]
 RewriteRule ^politica-privacidade/?$      politica-privacidade.php?lang=pt [L,QSA]
 
+# Redirecionamento da Landing Page EUA
+RewriteRule ^eua/?$ /mentoria/eua [R=301,L,QSA]
+
 # --- Slugs de Idioma (Links Curtos Dinâmicos) ---
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
