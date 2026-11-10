@@ -93,9 +93,14 @@ $labelClasses = $isEs ? '📚 El Aula (Classes)' : '📹 Our Classes';
         <div class="form-card">
             <h3 class="section-title"><i class="fas fa-cog"></i> Configuração Geral</h3>
             <div class="form-group">
-                <label>Seu WhatsApp JID (Admin)</label>
+                <label>Seu WhatsApp JID (Admin Principal)</label>
                 <input type="text" name="admin_jid" value="<?= htmlspecialchars($admin_jid) ?>" required>
                 <p class="help-text">Este número é excluído do ranking e do sistema de expulsão do desafio.</p>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Professores / Administradores Extras (JIDs ou Números)</label>
+                <textarea name="extra_admin_jids" style="min-height: 80px;" placeholder="Ex: 556199999999 ou 2001555443754@lid (um por linha ou separados por vírgula)"><?= htmlspecialchars(implode("\n", $extra_admin_jids ?? [])) ?></textarea>
+                <p class="help-text">Professores e administradores auxiliares que <strong>não devem pontuar</strong> no ranking, não têm presença computada em aulas e têm permissão de moderador.</p>
             </div>
             <div class="form-group" style="margin-top: 20px;">
                 <label>💎 LTV para Vitalício (R$)</label>
@@ -210,6 +215,12 @@ $labelClasses = $isEs ? '📚 El Aula (Classes)' : '📹 Our Classes';
             <div class="form-group">
                 <label>Mapeamento de Grupo (JID)</label>
                 <?= renderGroupSelect('jid_our_classes', $jid_our_classes, $available_groups) ?>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Mensagem de Boas-vindas (Ao entrar no grupo)</label>
+                <textarea name="tpl_classes_welcome" style="min-height: 140px;"><?= htmlspecialchars($tpl_classes_welcome ?? '') ?></textarea>
+                <p class="help-text">Enviada assim que um novo membro entra no grupo. Use <code>{name}</code> para o nome ou <code>@{name}</code> para marcar a pessoa.</p>
             </div>
 
             <div class="form-group" style="margin-top: 20px;">

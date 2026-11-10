@@ -105,6 +105,26 @@ foreach ($langs as $lang) {
     }
 
     $adminJid = $config['admin_jid'] ?? "556192666148@s.whatsapp.net";
+    $extraAdminJids = $config['extra_admin_jids'] ?? [];
+    $allStaffJids = array_map(fn($j) => preg_replace('/:\d+@/', '@', $j), array_merge([$adminJid], $extraAdminJids));
+
+    // Coleta todos os administradores dos grupos deste idioma
+    $allGroupAdmins = [];
+    if (!empty($config['groups'])) {
+        foreach ($config['groups'] as $groupKey => $groupData) {
+            $gJid = $groupData['jid'] ?? '';
+            if (!$gJid) continue;
+            $membersData = fetchGroupMembers($gJid);
+            foreach ($membersData as $m) {
+                if (!empty($m['admin'])) {
+                    if (!empty($m['id']))  $allGroupAdmins[] = preg_replace('/:\d+@/', '@', $m['id']);
+                    if (!empty($m['lid'])) $allGroupAdmins[] = preg_replace('/:\d+@/', '@', $m['lid']);
+                    if (!empty($m['jid'])) $allGroupAdmins[] = preg_replace('/:\d+@/', '@', $m['jid']);
+                }
+            }
+        }
+    }
+    $allGroupAdmins = array_values(array_unique(array_merge($allStaffJids, $allGroupAdmins)));
 
     // -------------------------------------------------------
     // COLETA DE ATIVIDADE SOCIAL (grupos deste idioma)
@@ -118,21 +138,10 @@ foreach ($langs as $lang) {
             $groupJid = $groupData['jid'] ?? '';
             if (!$groupJid) continue;
 
-            $groupMembers = fetchGroupMembers($groupJid);
-            $groupAdmins  = [];
-            foreach ($groupMembers as $m) {
-                if (!empty($m['admin'])) {
-                    if (!empty($m['id']))  $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['id']);
-                    if (!empty($m['lid'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['lid']);
-                    if (!empty($m['jid'])) $groupAdmins[] = preg_replace('/:\d+@/', '@', $m['jid']);
-                }
-            }
-
             if (isset($activity[$groupJid])) {
                 foreach ($activity[$groupJid] as $memberJid => $data) {
                     $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
-                    if ($cleanMemberJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
-                    if (in_array($cleanMemberJid, $groupAdmins)) continue;
+                    if (in_array($cleanMemberJid, $allGroupAdmins)) continue;
                     if (str_ends_with($memberJid, '@g.us')) continue;
 
                     $nome = trim($data['name'] ?? 'Unknown');
@@ -194,8 +203,8 @@ foreach ($langs as $lang) {
         $mJid      = $completer['member_jid'];
         $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
 
-        // Ignora admin
-        if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+        // Ignora administradores e professores
+        if (in_array($cleanMJid, $allGroupAdmins)) continue;
 
         // Só processa se este membro pertence ao grupo de desafio deste idioma
         // (evita contabilizar alunos de outro idioma)
@@ -253,7 +262,7 @@ foreach ($langs as $lang) {
     foreach ($manualPoints as $row) {
         $mJid      = $row['member_jid'];
         $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
-        if ($cleanMJid === preg_replace('/:\d+@/', '@', $adminJid)) continue;
+        if (in_array($cleanMJid, $allGroupAdmins)) continue;
 
         $mName = $row['member_name'] ?: 'Unknown';
         if ($mName === 'Unknown') {
@@ -297,7 +306,8 @@ foreach ($langs as $lang) {
 
     foreach ($attendees as $att) {
         $mJid = $att['member_jid'];
-        if ($mJid === $adminJid) continue;
+        $cleanMJid = preg_replace('/:\d+@/', '@', $mJid);
+        if (in_array($cleanMJid, $allGroupAdmins)) continue;
         if (!isset($memberStats[$mJid])) {
             $memberStats[$mJid] = ['name' => $att['member_name'], 'total_pts' => 0, 'emojis' => []];
         }

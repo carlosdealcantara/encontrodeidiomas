@@ -106,8 +106,14 @@ try {
             $attendeeCount[$row['member_jid']] = (int)$row['session_count'];
         }
 
-        // Coleta todos os administradores dos grupos deste idioma para não contabilizá-los
+        // Coleta todos os administradores e professores deste idioma para não contabilizá-los
         $groupAdminsMap = [];
+        $extraAdminJids = $config['extra_admin_jids'] ?? [];
+        foreach (array_merge([$adminJid], $extraAdminJids) as $staffJid) {
+            if (!empty($staffJid)) {
+                $groupAdminsMap[preg_replace('/:\d+@/', '@', $staffJid)] = true;
+            }
+        }
         foreach (array_keys($langGroupJids) as $gJid) {
             $membersData = fetchGroupMembers($gJid);
             if (!empty($membersData) && is_array($membersData)) {

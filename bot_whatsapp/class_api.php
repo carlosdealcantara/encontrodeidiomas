@@ -118,6 +118,25 @@ try {
     $timeEn = (new DateTime($hoje . ' ' . $schedule['start_time']))->format('h:i A') . ' (UTC-3)';
 
     if ($action === 'attend') {
+        // Bloqueia se quem enviou for o admin ou professor
+        $scheduleLang = !empty($schedule['lang_id']) ? $schedule['lang_id'] : 'en';
+        $cfg = function_exists('getMentoriaConfig') ? getMentoriaConfig($scheduleLang) : [];
+        $adminJid = $cfg['admin_jid'] ?? '556192666148@s.whatsapp.net';
+        $extraAdmins = $cfg['extra_admin_jids'] ?? [];
+        $allStaffJids = array_merge([$adminJid], $extraAdmins);
+
+        $cleanMemberJid = preg_replace('/:\d+@/', '@', $memberJid);
+        foreach ($allStaffJids as $staffJid) {
+            if ($cleanMemberJid === preg_replace('/:\d+@/', '@', $staffJid)) {
+                die(json_encode([
+                    'success' => false,
+                    'reason' => 'is_admin_or_teacher',
+                    'message' => 'Professores e administradores não confirmam presença como alunos.',
+                    'class_date' => $hoje,
+                    'class_time' => $schedule['start_time']
+                ]));
+            }
+        }
         
         $attendanceBlocked = false;
         

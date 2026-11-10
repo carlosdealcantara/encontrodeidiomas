@@ -282,6 +282,12 @@ foreach ($langs as $lang) {
                     UPDATE mentoria_alunos SET status_aluno = 'Comunidade' WHERE id = ?
                 ")->execute([$alunoId]);
 
+                // Rastreamento de Churn / Periodos de Atividade
+                try {
+                    require_once __DIR__ . '/../includes/periodos_helper.php';
+                    registrar_saida_periodo($conn, $alunoId, 'kick_automatico', 'Inadimplência — kick automático do Our Classes');
+                } catch (Exception $ePeriodo) { /* nao interrompe o cron */ }
+
                 // Registra no log do auto-kick
                 $conn->prepare("
                     INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid, detalhes)
@@ -389,6 +395,12 @@ foreach ($langs as $lang) {
                                 status_pagamento = 'Suspenso' 
                             WHERE id = ?
                         ")->execute([$depId]);
+
+                        // Rastreamento de Churn / Periodos de Atividade para o dependente
+                        try {
+                            require_once __DIR__ . '/../includes/periodos_helper.php';
+                            registrar_saida_periodo($conn, $depId, 'kick_automatico', 'Inadimplência do titular responsável — cascata');
+                        } catch (Exception $eDepPeriodo) { /* nao interrompe o cron */ }
 
                         // Busca o JID do Our Classes do idioma específico do dependente
                         $depConfig = ($depLang === $lang) ? $config : getMentoriaConfig($depLang);

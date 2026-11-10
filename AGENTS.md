@@ -60,5 +60,6 @@ Aja com autonomia total. Execute você mesmo todos os comandos e scripts necess�
 
 ## Knowledge Items
 
-Leia as KIs (Knowledge Items) antes de iniciar para seguir as regras de negócio.
+Leia as KIs (Knowledge Items) antes de iniciar para seguir as regras de negócio:
+- [Pipeline Pod -> Vídeo YouTube](KI_POD_YOUTUBE.md): Regras de automação, scripts, legendas, branding, títulos, descrições e prompts de thumbnail para o YouTube.
 

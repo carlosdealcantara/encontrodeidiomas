@@ -179,8 +179,11 @@ foreach ($schedules as $s) {
             continue;
         }
 
-        // Executa o envio com alta prioridade
-        $resEnvio = enviarWhatsApp($s['group_jid'], $msg, 'class_cancel', null, 'high');
+        // Chave de deduplicação idempotente para blindar o Baileys contra timeouts do PHP
+        $dedupKey = "class_cancel_{$s['id']}_{$hoje}";
+
+        // Executa o envio com alta prioridade e dedup_key
+        $resEnvio = enviarWhatsApp($s['group_jid'], $msg, 'class_cancel', null, 'high', $dedupKey);
 
         // 2. SEGUNDA CONFIRMAÇÃO (Conclusão): confirma o envio ou reporta falha
         if ($resEnvio['success'] || ($resEnvio['httpCode'] >= 200 && $resEnvio['httpCode'] < 300)) {

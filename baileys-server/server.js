@@ -24,6 +24,103 @@ let queue = [];
 let jobs = {}; 
 // jobs format: { jobId: { status: 'running', progress: { current: 0, total: 0 }, logs: [] } }
 
+// Deduplicação idempotente para envios automáticos (evita envio repetido por retentativas)
+const sentDedupKeys = new Map(); // key -> timestamp
+const DEDUP_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
+
+// Cache em memória para resolução de Retries de Criptografia do WhatsApp
+// Impede o aviso "Essa mensagem está demorando para carregar. Clique aqui para saber mais detalhes"
+const messageRetryStore = new Map(); // key.id -> proto.IMessage
+const MAX_RETRY_STORE_SIZE = 1000;
+
+function storeMessageForRetry(keyId, message) {
+    if (!keyId || !message) return;
+    if (messageRetryStore.size >= MAX_RETRY_STORE_SIZE) {
+        const oldestKey = messageRetryStore.keys().next().value;
+        messageRetryStore.delete(oldestKey);
+    }
+    messageRetryStore.set(keyId, message);
+}
+
+// Implementação de CacheStore para msgRetryCounterCache do Baileys
+class SimpleCacheStore {
+    constructor() {
+        this.cache = new Map();
+    }
+    get(key) {
+        return this.cache.get(key);
+    }
+    set(key, value) {
+        this.cache.set(key, value);
+        return true;
+    }
+    del(key) {
+        return this.cache.delete(key);
+    }
+}
+const msgRetryCounterCache = new SimpleCacheStore();
+
+// Rotina de autolimpeza de arquivos de sessão mortos (Signal Pre-Keys e Sessions antigas)
+// Previne que o disco acumule dezenas de milhares de arquivos zumbis que corrompem o espelhamento
+function cleanStaleAuthFiles(authDirectory, maxAgeDays = 14) {
+    try {
+        if (!fs.existsSync(authDirectory)) return;
+        const files = fs.readdirSync(authDirectory);
+        const now = Date.now();
+        const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
+        let cleaned = 0;
+
+        for (const file of files) {
+            // NUNCA deletar creds.json nem chaves de sincronização primárias
+            if (file === 'creds.json' || file.startsWith('app-state-sync-')) continue;
+
+            // Limpa pre-keys consumidas e sessões com mais de X dias sem uso
+            if (file.startsWith('pre-key-') || file.startsWith('session-')) {
+                const filePath = path.join(authDirectory, file);
+                try {
+                    const stats = fs.statSync(filePath);
+                    if (now - stats.mtimeMs > maxAgeMs) {
+                        fs.unlinkSync(filePath);
+                        cleaned++;
+                    }
+                } catch (e) {}
+            }
+        }
+        if (cleaned > 0) {
+            console.log(`[AUTH-CLEANUP] Autolimpeza: ${cleaned} arquivos de chaves antigas (> ${maxAgeDays} dias) removidos com sucesso.`);
+        }
+    } catch (err) {
+        console.error('[AUTH-CLEANUP] Erro na autolimpeza de auth:', err.message);
+    }
+}
+
+// Agenda limpeza automática diária (a cada 24 horas)
+setInterval(() => {
+    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 2);
+}, 24 * 60 * 60 * 1000);
+
+function isDedupKeyPresent(key) {
+    if (!key) return false;
+    const now = Date.now();
+    // Limpeza de chaves expiradas periodicamente
+    if (sentDedupKeys.size > 2000) {
+        for (const [k, ts] of sentDedupKeys.entries()) {
+            if (now - ts > DEDUP_TTL_MS) sentDedupKeys.delete(k);
+        }
+    }
+    if (sentDedupKeys.has(key)) {
+        const ts = sentDedupKeys.get(key);
+        if (now - ts <= DEDUP_TTL_MS) return true;
+        sentDedupKeys.delete(key);
+    }
+    return false;
+}
+
+function registerDedupKey(key) {
+    if (!key) return;
+    sentDedupKeys.set(key, Date.now());
+}
+
 let sock;
 let isConnected = false;
 let isProcessingQueue = false;
@@ -370,6 +467,8 @@ function setJobStatus(jobId, status) {
 
 // Connect to WhatsApp
 async function connectToWhatsApp() {
+    // Executa autolimpeza de pre-keys e sessões mortas (>14 dias) na inicialização
+    cleanStaleAuthFiles(path.join(dataDir, 'auth_info_baileys'), 2);
     const { state, saveCreds } = await useMultiFileAuthState(path.join(dataDir, 'auth_info_baileys'));
     const { version, isLatest } = await fetchLatestBaileysVersion();
     console.log(`Using WA v${version.join('.')}, isLatest: ${isLatest}`);
@@ -392,7 +491,19 @@ async function connectToWhatsApp() {
         // a mensagem original (retry request), causando mensagens vazias no grupo.
         // Retornar undefined informa ao Baileys que não temos a mensagem em cache,
         // e o retry é simplesmente ignorado.
+        msgRetryCounterCache,
+        patchMessageBeforeSending: async (msg) => {
+            try {
+                if (sock && typeof sock.uploadPreKeysToServerIfRequired === 'function') {
+                    await sock.uploadPreKeysToServerIfRequired();
+                }
+            } catch (pkErr) {}
+            return msg;
+        },
         getMessage: async (key) => {
+            if (key && key.id && messageRetryStore.has(key.id)) {
+                return messageRetryStore.get(key.id);
+            }
             return undefined;
         }
     });
@@ -455,7 +566,16 @@ async function connectToWhatsApp() {
     });
 
     sock.ev.on('creds.update', saveCreds);
-    sock.ev.on('messages.upsert', mentoriaPlugin.handleMessages);
+    sock.ev.on('messages.upsert', (m) => {
+        if (m && Array.isArray(m.messages)) {
+            for (const msg of m.messages) {
+                if (msg && msg.key && msg.key.id && msg.message) {
+                    storeMessageForRetry(msg.key.id, msg.message);
+                }
+            }
+        }
+        mentoriaPlugin.handleMessages(m);
+    });
     sock.ev.on('group-participants.update', mentoriaPlugin.handleParticipants);
 }
 
@@ -522,7 +642,10 @@ async function processQueue() {
                 // Injeção manual de linkPreview desativada para dar lugar ao generateHighQualityLinkPreview nativo
                 // if (item.linkPreview) { ... }
                 
-                await sock.sendMessage(jid, msgPayload, { generateHighQualityLinkPreview: true });
+                const sentResult = await sock.sendMessage(jid, msgPayload, { generateHighQualityLinkPreview: true });
+                if (sentResult && sentResult.key && sentResult.key.id && sentResult.message) {
+                    storeMessageForRetry(sentResult.key.id, sentResult.message);
+                }
                 
                 const duration = ((Date.now() - startTime) / 1000).toFixed(2);
                 addLog(jobId, 'success', `[SUCESSO] Mensagem entregue. Tempo: ${duration}s.`);
@@ -645,16 +768,25 @@ app.post('/send-bulk', (req, res) => {
 app.post('/send', (req, res) => {
     if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado. Escaneie o QR Code primeiro.' });
     try {
-        const { to, message, source, linkPreview, priority } = req.body;
+        const { to, message, source, linkPreview, priority, dedup_key } = req.body;
         if (!to || !message) return res.status(400).json({ success: false, error: 'Parâmetros "to" e "message" são obrigatórios' });
         
+        // Se já existe um dedup_key ativo ou já processado nas últimas 24h, evita reenvio duplicado
+        if (dedup_key) {
+            if (isDedupKeyPresent(dedup_key) || queue.some(q => q.dedup_key === dedup_key)) {
+                console.log(`[DEDUP-SKIP] Mensagem para ${to} ignorada pois dedup_key '${dedup_key}' já foi enfileirada/enviada.`);
+                return res.json({ success: true, skipped: true, reason: 'dedup_skipped', dedup_key });
+            }
+            registerDedupKey(dedup_key);
+        }
+
         // Se vier de class_kickoff ou class_cancel, garante prioridade alta mesmo se não explicitada
         const itemPriority = (priority === 'high' || source === 'class_kickoff' || source === 'class_cancel') ? 'high' : 'normal';
 
         const jobId = 'unit_' + Math.random().toString(36).substring(2, 10);
         jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
         
-        console.log(`[Universal Endpoint] Enfileirando mensagem para ${to} (Source: ${source || 'desconhecida'} | Prioridade: ${itemPriority})`);
+        console.log(`[Universal Endpoint] Enfileirando mensagem para ${to} (Source: ${source || 'desconhecida'} | Prioridade: ${itemPriority}${dedup_key ? ` | Dedup: ${dedup_key}` : ''})`);
         
         enqueueItem({
             jobId,
@@ -663,7 +795,8 @@ app.post('/send', (req, res) => {
             index: 1,
             linkPreview,
             priority: itemPriority,
-            source: source || 'unitario'
+            source: source || 'unitario',
+            dedup_key: dedup_key || null
         }, itemPriority);
         
         if (isConnected && !isProcessingQueue) {
@@ -680,9 +813,17 @@ app.post('/send', (req, res) => {
 app.post('/send-mention', (req, res) => {
     if (!isConnected) return res.status(503).json({ success: false, error: 'WhatsApp não conectado.' });
     try {
-        const { to, message, mentions, priority, source } = req.body;
+        const { to, message, mentions, priority, source, dedup_key } = req.body;
         if (!to || !message || !Array.isArray(mentions)) return res.status(400).json({ success: false, error: 'Parâmetros "to", "message" e "mentions" são obrigatórios' });
         
+        if (dedup_key) {
+            if (isDedupKeyPresent(dedup_key) || queue.some(q => q.dedup_key === dedup_key)) {
+                console.log(`[DEDUP-SKIP] Mensagem mencionada para ${to} ignorada pois dedup_key '${dedup_key}' já foi enfileirada/enviada.`);
+                return res.json({ success: true, skipped: true, reason: 'dedup_skipped', dedup_key });
+            }
+            registerDedupKey(dedup_key);
+        }
+
         const itemPriority = priority || 'normal';
         const jobId = 'ment_' + Math.random().toString(36).substring(2, 10);
         jobs[jobId] = { status: 'running', progress: { current: 0, total: 1 }, logs: [] };
@@ -694,7 +835,8 @@ app.post('/send-mention', (req, res) => {
             index: 1,
             mentions,
             priority: itemPriority,
-            source: source || 'mention'
+            source: source || 'mention',
+            dedup_key: dedup_key || null
         }, itemPriority);
         
         if (isConnected && !isProcessingQueue) {

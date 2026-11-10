@@ -34,7 +34,7 @@ foreach ($schedules as $s) {
     
     // Dispara o kickoff apenas se for O EXATO MOMENTO da aula ou até 5 minutos DEPOIS (0 a 300 segundos).
     // Isso impede que dispare 5 minutos antes dizendo "starting NOW".
-    if (($diff >= 0 && $diff <= 300) || $isTest) { 
+    if (($diff >= 0 && $diff <= 600) || $isTest) { 
         
         // Verifica anti-duplicidade para evitar spam se rodar a cada 5 minutos
         $check = $conn->prepare("SELECT id FROM mentoria_auto_logs WHERE tipo = 'class_kickoff' AND data_execucao = ? AND membro_jid = ?");
@@ -69,7 +69,8 @@ foreach ($schedules as $s) {
             $msg = str_replace('{link}', $cleanLink, $tpl);
             $msg = str_replace('{horario}', formatTime12h($classTime), $msg);
             
-            enviarWhatsApp($s['group_jid'], $msg, 'class_kickoff', null, 'high');
+            $dedupKey = "class_kickoff_{$s['id']}_{$hoje}";
+            enviarWhatsApp($s['group_jid'], $msg, 'class_kickoff', null, 'high', $dedupKey);
             $conn->prepare("INSERT INTO mentoria_auto_logs (tipo, data_execucao, membro_jid) VALUES ('class_kickoff', ?, ?)")->execute([$hoje, $s['id']]);
             echo "Sessão " . $s['start_time'] . " iniciada!\n";
         }

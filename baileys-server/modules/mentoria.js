@@ -9,7 +9,114 @@
  *   3. Crie mentoria_config_fr.json na VPS. Bot.js detecta automaticamente.
  */
 
-// ─── I18N: STRINGS LOCALIZADAS ──────────────────────────────────────────────────────
+// ─── FILA PERSISTENTE DE ATRIBUIÇÃO DE PONTOS (RETRY AUTOMÁTICO) ────────────
+const fs = require('fs');
+const path = require('path');
+
+let mentoriaDataDir = '';
+function setMentoriaDataDir(dir) { mentoriaDataDir = dir; }
+
+function getPendingAwardsFile() {
+    return path.join(mentoriaDataDir || path.join(__dirname, '..', 'data'), 'pending_awards.json');
+}
+
+function loadPendingAwards() {
+    try {
+        const file = getPendingAwardsFile();
+        if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch (e) {
+        console.error('[AWARDS-QUEUE] Erro ao carregar fila:', e.message);
+    }
+    return [];
+}
+
+function savePendingAwards(queue) {
+    try {
+        fs.writeFileSync(getPendingAwardsFile(), JSON.stringify(queue, null, 2));
+    } catch (e) {
+        console.error('[AWARDS-QUEUE] Erro ao salvar fila:', e.message);
+    }
+}
+
+function enqueuePendingAward(item) {
+    const q = loadPendingAwards();
+    q.push(item);
+    savePendingAwards(q);
+    console.log(`[AWARDS-QUEUE] Enfileirado para retry: ${item.points} pts para ${item.member_jid} (Total pendente: ${q.length})`);
+}
+
+let isProcessingAwardsQueue = false;
+async function processPendingAwards(sock) {
+    if (isProcessingAwardsQueue || !sock) return;
+    const q = loadPendingAwards();
+    if (q.length === 0) return;
+
+    isProcessingAwardsQueue = true;
+    console.log(`[AWARDS-QUEUE] Processando ${q.length} atribuições pendentes...`);
+    const remaining = [];
+
+    for (const item of q) {
+        // Se já tiver mais de 48h, descarta para evitar lixo eterno
+        if (Date.now() - (item.created_at || 0) > 48 * 3600 * 1000) {
+            console.log(`[AWARDS-QUEUE] Descartando item expirado (>48h):`, item);
+            continue;
+        }
+
+        try {
+            const res = await fetch('https://dev.viaEi.com/bot_whatsapp/mentoria_award_api.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    group_jid: item.group_jid,
+                    group_key: item.group_key,
+                    member_jid: item.member_jid,
+                    points: item.points
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                console.log(`[AWARDS-QUEUE] ✅ Sucesso no retry de ${item.points} pts para ${item.member_jid}`);
+                let reactEmoji = '🙌';
+                let s = item.points !== 1 ? 's' : '';
+                let replyMsg = t(item.lang || 'en', 'award1').replace('{pts}', item.points).replace('{s}', s);
+
+                if (item.points >= 20)      { reactEmoji = '🚀'; replyMsg = t(item.lang || 'en', 'award20').replace('{pts}', item.points); }
+                else if (item.points >= 15) { reactEmoji = '⚡'; replyMsg = t(item.lang || 'en', 'award15').replace('{pts}', item.points); }
+                else if (item.points >= 10) { reactEmoji = '🔥'; replyMsg = t(item.lang || 'en', 'award10').replace('{pts}', item.points); }
+                else if (item.points >= 5)  { reactEmoji = '🎉'; replyMsg = t(item.lang || 'en', 'award5').replace('{pts}', item.points); }
+
+                // Atualiza a reação na mensagem original para o emoji final definitivo
+                if (item.stanzaId) {
+                    await sock.sendMessage(item.group_jid, {
+                        react: {
+                            text: reactEmoji,
+                            key: { remoteJid: item.group_jid, fromMe: false, id: item.stanzaId, participant: item.member_jid }
+                        }
+                    });
+                }
+                await sock.sendMessage(item.group_jid, { text: replyMsg, mentions: [item.member_jid] });
+            } else {
+                item.attempts = (item.attempts || 0) + 1;
+                remaining.push(item);
+            }
+        } catch (err) {
+            // Continua na fila para a próxima rodada
+            item.attempts = (item.attempts || 0) + 1;
+            remaining.push(item);
+        }
+    }
+
+    savePendingAwards(remaining);
+    isProcessingAwardsQueue = false;
+}
+
+// Inicia loop de retry automático a cada 2 minutos
+setInterval(() => {
+    if (globalMentoriaSock) processPendingAwards(globalMentoriaSock);
+}, 2 * 60 * 1000);
+
+let globalMentoriaSock = null;
 // Adicionar novo idioma = nova entrada neste objeto. Os valores de 'en' são
 // usados como fallback automático para qualquer lang não mapeado.
 const STRINGS_I18N = {
@@ -205,6 +312,8 @@ async function handleMessage(ctx) {
     const { sock, msg, groupJid, senderJid, senderName, realMsg, isVisual, isAdmin, isGroupAdmin, isGlobalAdmin, msgId, config } = ctx;
     const lang = ctx.lang || 'en';
 
+    globalMentoriaSock = sock;
+
     // Normaliza aliases do idioma para os comandos canônicos em inglês
     // Ex.: '!confirmar 1' (ES) → '!attend 1'; '!rachas' (ES) → '!streaks'
     const text = normalizeCommand(ctx.text, lang);
@@ -219,14 +328,15 @@ async function handleMessage(ctx) {
 
             const quotedParticipant = msg.message.extendedTextMessage.contextInfo.participant;
             const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+            const stanzaId = msg.message.extendedTextMessage.contextInfo.stanzaId;
 
             if (quotedParticipant && quotedParticipant !== botJid && quotedParticipant !== senderJid) {
-                try {
-                    let groupKey = 'unknown';
-                    for (const [key, gData] of Object.entries(config.groups || {})) {
-                        if (gData.jid === groupJid) { groupKey = key; break; }
-                    }
+                let groupKey = 'unknown';
+                for (const [key, gData] of Object.entries(config.groups || {})) {
+                    if (gData.jid === groupJid) { groupKey = key; break; }
+                }
 
+                try {
                     const res = await fetch('https://dev.viaEi.com/bot_whatsapp/mentoria_award_api.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -244,11 +354,30 @@ async function handleMessage(ctx) {
                         else if (points >= 10) { reactEmoji = '🔥'; replyMsg = t(lang, 'award10').replace('{pts}', points); }
                         else if (points >= 5)  { reactEmoji = '🎉'; replyMsg = t(lang, 'award5').replace('{pts}', points); }
 
-                        await sock.sendMessage(groupJid, { react: { text: reactEmoji, key: { remoteJid: groupJid, fromMe: false, id: msg.message.extendedTextMessage.contextInfo.stanzaId, participant: quotedParticipant } } });
+                        await sock.sendMessage(groupJid, { react: { text: reactEmoji, key: { remoteJid: groupJid, fromMe: false, id: stanzaId, participant: quotedParticipant } } });
                         await sock.sendMessage(groupJid, { text: replyMsg, mentions: [quotedParticipant] });
+                    } else {
+                        throw new Error(data.message || 'API responded success: false');
                     }
                 } catch (err) {
-                    console.error('Error awarding points:', err);
+                    console.error('[SCORING-FAIL] Erro ao atribuir pontos na API. Enfileirando para retry...', err.message);
+                    // Reage temporariamente com ampulheta ⏳ avisando que o comando foi recebido e está em fila
+                    try {
+                        await sock.sendMessage(groupJid, {
+                            react: { text: '⏳', key: { remoteJid: groupJid, fromMe: false, id: stanzaId, participant: quotedParticipant } }
+                        });
+                    } catch (eReact) {}
+
+                    enqueuePendingAward({
+                        group_jid: groupJid,
+                        group_key: groupKey,
+                        member_jid: quotedParticipant,
+                        points,
+                        stanzaId,
+                        lang,
+                        created_at: Date.now(),
+                        attempts: 1
+                    });
                 }
             }
         }
@@ -289,6 +418,12 @@ async function handleMessage(ctx) {
     // Obs.: 'text' já foi normalizado acima (ex.: !confirmar → !attend)
 
     if (text.startsWith('!attend')) {
+        // Professores e administradores não confirmam presença como alunos
+        if (isAdmin) {
+            console.log(`[ATTEND-SKIP] Admin/Professor ${senderName} (${senderJid}) enviou comando de presença como instrução. Ignorado.`);
+            return;
+        }
+
         const parts = text.split(' ');
         let schedulePosition = null;
         if (parts.length > 1) schedulePosition = parseInt(parts[1]);
@@ -356,6 +491,12 @@ async function handleMessage(ctx) {
         }
 
     } else if (text.startsWith('!unattend')) {
+        // Professores e administradores não cancelam presença de alunos
+        if (isAdmin) {
+            console.log(`[UNATTEND-SKIP] Admin/Professor ${senderName} (${senderJid}) enviou comando de cancelamento como instrução. Ignorado.`);
+            return;
+        }
+
         const parts = text.split(' ');
         let schedulePosition = null;
         if (parts.length > 1) schedulePosition = parseInt(parts[1]);
@@ -497,20 +638,35 @@ async function handleMessage(ctx) {
 // ─── HANDLER DE PARTICIPANTES ────────────────────────────────────────────────
 
 /**
- * Trata entrada de novo participante no The Lounge (welcome legado da Mentoria).
+ * Trata entrada de novo participante nos grupos da Mentoria (The Lounge e Our Classes).
  */
 async function handleParticipant(sock, groupJid, participants, config) {
     const theLoungeJid = config.groups?.the_lounge?.jid;
-    if (groupJid !== theLoungeJid || !config.templates?.welcome) return;
+    const ourClassesJid = config.groups?.our_classes?.jid;
 
-    for (const participantJid of participants) {
-        const name = participantJid.split('@')[0];
-        const text = config.templates.welcome
-            .replace('@{name}', `@${name}`)
-            .replace('{name}', name);
-        await sock.sendMessage(groupJid, { text, mentions: [participantJid] });
-        console.log(`[MENTORIA-WELCOME] Sent to ${participantJid} in The Lounge`);
+    // 1. Welcome no The Lounge
+    if (groupJid === theLoungeJid && config.templates?.welcome) {
+        for (const participantJid of participants) {
+            const name = participantJid.split('@')[0];
+            const text = config.templates.welcome
+                .replace('@{name}', `@${name}`)
+                .replace('{name}', name);
+            await sock.sendMessage(groupJid, { text, mentions: [participantJid] });
+            console.log(`[MENTORIA-WELCOME] Sent to ${participantJid} in The Lounge`);
+        }
+    }
+
+    // 2. Welcome no Our Classes
+    if (groupJid === ourClassesJid && config.templates?.classes_welcome) {
+        for (const participantJid of participants) {
+            const name = participantJid.split('@')[0];
+            const text = config.templates.classes_welcome
+                .replace('@{name}', `@${name}`)
+                .replace('{name}', name);
+            await sock.sendMessage(groupJid, { text, mentions: [participantJid] });
+            console.log(`[MENTORIA-WELCOME] Sent to ${participantJid} in Our Classes`);
+        }
     }
 }
 
-module.exports = { handleMessage, handleParticipant };
+module.exports = { handleMessage, handleParticipant, setMentoriaDataDir, processPendingAwards };

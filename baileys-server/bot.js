@@ -490,6 +490,7 @@ async function handleParticipants({ id, participants, action }) {
 
 function initRoutes(app, dir) {
     dataDir = dir;
+    mentoriaMod.setMentoriaDataDir(dir);
 
     app.get('/activity', (req, res) => {
         const date = req.query.date || getTodayDate();
@@ -584,6 +585,8 @@ function setSock(socket) { sock = socket; }
 async function recoverWelcomes() {
     const communityConfig = loadCommunityConfig();
     await communityGlobalMod.recoverPendingWelcomes(safeSock, communityConfig);
+    // Tenta processar imediatamente quaisquer awards de pontuação pendentes na fila
+    await mentoriaMod.processPendingAwards(safeSock);
 }
 
 module.exports = { initRoutes, setSock, handleMessages, handleParticipants, recoverWelcomes };
