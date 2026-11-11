@@ -125,10 +125,16 @@ Créditos de imagem: Vídeo de fundo em [Local do Vídeo] licenciado sob Creativ
 ### C. Prompt Otimizado para Geração de Thumbnail no Gemini
 O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida combinando uma **Estrutura Fixa (Branding)** com **Variáveis Dinâmicas por Episódio** para evitar "Cegueira de Padrão" no feed do YouTube:
 
-> **⚠️ Regra de Complementaridade (Anti-Repetição):**
-> O texto da thumbnail **NÃO DEVE** repetir as frases ou palavras exatas do título. Eles atuam em dupla para ativar o clique por ângulos diferentes:
-> - Se o título foca no termo técnico/cognato (ex: *CUIDADO com "Discuss" e "Argue"*), a thumbnail deve focar no susto/reação humana (ex: *ARRUMOU BRIGA SEM QUERER?* ou *VOCÊ SOOU MUITO GROSSO!*).
-> - Se o título foca na dor/situação (ex: *NUNCA diga isso para o seu chefe*), a thumbnail foca no erro visual ou contraste direto (ex: *PARE DE DIZER ISSO!*).
+> **⚠️ Regra de Ouro: Coerência Temática + Complementaridade de Ângulos (Anti-Repetição sem Desconexão):**
+> O título e a thumbnail **DEVEM tratar rigorosamente do MESMO tema central** para não causar ruído ou confusão cognitiva no espectador. O que muda é o **ângulo de ataque**:
+> - **Thumbnail:** Ataque emocional, reação rápida, choque, dúvida direta ou o erro falado em destaque (lido em 0,3 segundo pelo cérebro).
+> - **Título:** Contexto, exemplo prático real, consequência do erro e o termo de busca (SEO).
+> - **❌ O QUE NUNCA FAZER:** 
+>   1. **Repetição literal:** Colocar as exatas mesmas palavras no título e na capa (ex: Título: *Say ou Tell?* e Capa: *Say ou Tell?*).
+>   2. **Desconexão de temas:** Falar de um assunto na capa e de outro assunto no título (ex: Capa: *Say ou Tell?* e Título: *Either e Neither*). Isso faz o público achar que a capa foi colocada por engano e derruba o clique.
+> - **✅ O QUE FAZER (Exemplo de sucesso):**
+>   - **Thumbnail:** `"QUAL É O CERTO?"` + `"SAY OU TELL?"` (Gera o dilema instantâneo)
+>   - **Título:** `NUNCA diga "They say me" em inglês! Aprenda o jeito certo | Pod #<N>` (Apresenta o exemplo concreto do erro que a pessoa comete).
 
 #### 1. Estrutura Fixa (Manter em 100% dos Prompts)
 - **Formato:** Proporção 16:9 widescreen (1280x720), alto contraste e saturação para leitura mobile perfeita.
