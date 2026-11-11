@@ -130,11 +130,12 @@ O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letrei
 > - **Thumbnail:** Ataque emocional, reação rápida, choque, dúvida direta ou o erro falado em destaque (lido em 0,3 segundo pelo cérebro).
 > - **Título:** Contexto, exemplo prático real, consequência do erro e o termo de busca (SEO).
 > - **❌ O QUE NUNCA FAZER:** 
->   1. **Repetição literal:** Colocar as exatas mesmas palavras no título e na capa (ex: Título: *Say ou Tell?* e Capa: *Say ou Tell?*).
->   2. **Desconexão de temas:** Falar de um assunto na capa e de outro assunto no título (ex: Capa: *Say ou Tell?* e Título: *Either e Neither*). Isso faz o público achar que a capa foi colocada por engano e derruba o clique.
-> - **✅ O QUE FAZER (Exemplo de sucesso):**
->   - **Thumbnail:** `"QUAL É O CERTO?"` + `"SAY OU TELL?"` (Gera o dilema instantâneo)
->   - **Título:** `NUNCA diga "They say me" em inglês! Aprenda o jeito certo | Pod #<N>` (Apresenta o exemplo concreto do erro que a pessoa comete).
+>   1. **Repetição literal ou de termos sinônimos redundantes:** Colocar as mesmas palavras ou expressões que dizem a mesma coisa no título e na capa (ex: Capa: *"QUAL É O CERTO?"* e Título: *"Aprenda o jeito certo"* — isso soa redundante e empobrece o clique).
+>   2. **Desconexão de temas:** Falar de um assunto na capa e de outro assunto no título (ex: Capa: *Say ou Tell?* e Título: *Either e Neither*). Isso gera confusão imediata e faz parecer erro de postagem.
+> - **✅ O QUE FAZER (Exemplo de sucesso com ângulos opostos/complementares):**
+>   - **Thumbnail (Dúvida / Dilema):** `"QUAL É O CERTO?"` + `"SAY OU TELL?"`
+>   - **Título (Anti-erro prático / Consequência):** `NUNCA diga "They say me" em inglês! Pare de errar isso | Pod #<N>`
+>   *(Note o contraste inteligente: a capa foca na dúvida direta e o título foca no erro prático a ser evitado, sem repetir a palavra "certo" nem soar repetitivo).*
 
 #### 1. Estrutura Fixa (Manter em 100% dos Prompts)
 - **Formato:** Proporção 16:9 widescreen (1280x720), alto contraste e saturação para leitura mobile perfeita.
