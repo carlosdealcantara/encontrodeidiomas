@@ -151,31 +151,59 @@ O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letrei
      - **Momento do Dia e Luz Natural:** Dia ensolarado com cores vivas e sombras nítidas, dia nublado/cinematográfico com iluminação suave, entardecer/golden hour com tons alaranjados/dourados, ou noite urbana com profundidade de luzes artificiais.
      - **Temperatura e Iluminação de Cena:** Variar entre tons quentes (luzes âmbar/amarelas de postes e vitrines) e tons frios/modernos (luzes de LED brancas/azuladas, neon, asfalto molhado refletindo luz).
 
-3. **Variável C — Elemento Humano Opcional / Rotativo:**
-   - **Padrão (Sem pessoa):** Cenário cinematográfico limpo com foco total na tipografia.
-   - **Alternativa expressiva:** Quando a temática pedir forte apelo emocional (ex: espanto, dúvida ou alívio), incluir no lado direito um professor/homem jovem-adulto expressivo (olhando para o texto ou câmera com expressão de surpresa/alerta/dúvida), sem sobrepor as palavras.
+3. **Variável C — Elemento Humano com Imagem de Referência (O Rosto Real do Carlos):**
+   - **PROIBIDO Gerar Homens/Professores Genéricos do Zero:** A IA **NUNCA** deve colocar prompts descrevendo "um professor jovem de barba" ou pessoas genéricas, pois a capa precisa ser do próprio Carlos de Alcântara.
+   - **Formato Padrão de Entrega (Dois Modelos):** A IA deve sempre fornecer **duas opções** prontas para cópia:
+     1. **Opção 1 (Com Referência Anexada - Recomendada):** Instrução específica para o usuário subir junto com o prompt um print/foto real sua (reacts, aulas ou lives), instruindo o Gemini a manter fidelidade absoluta à identidade facial, corte de cabelo e traços, adaptando apenas a pose e expressão (dúvida, espanto, alerta) e integrando ao cenário e iluminação.
+     2. **Opção 2 (Sem Pessoa):** Apenas o cenário real do vídeo em 4K cinematográfico com a tipografia 3D e tarjas em destaque no centro-esquerda.
 
 ---
 
 #### Modelo do Prompt Gerado pela IA:
+
+##### Opção 1 — Com Imagem de Referência do Carlos Anexada (Recomendada):
+```text
+Gere uma thumbnail de alto impacto para o YouTube no formato 16:9 widescreen (1280x720).
+
+Instrução de Pessoa (Referência anexada):
+- Utilize a pessoa da imagem anexada como referência exata e fiel de identidade facial, cabelo e aparência (mantendo fidelidade absoluta ao rosto da foto).
+- Posicione-a no lado direito da cena, em plano médio, olhando para a câmera com uma expressão natural e expressiva de [dúvida / choque / alerta / curiosidade / questionamento], [descrever gesto sutil: apontando para o texto / mão no queixo / braços abertos], sem sobrepor os textos à esquerda.
+- A iluminação e reflexos do ambiente devem se integrar realisticamente à pessoa.
+
+Cenário e Fundo (Baseado no local real do vídeo: [Local e atração extraídos do vídeo]):
+- Fotografia realista e cinematográfica em 4K em [Local real do vídeo].
+- Elementos visuais e atmosfera: [Descrever elementos fiéis do vídeo: ex. arquitetura, veículos, criaturas, iluminação cênica / luz natural, etc.].
+- Profundidade de campo: desfoque suave (bokeh) no fundo para destacar a pessoa e a tipografia.
+
+Textos Gráficos Integrados (Lado Esquerdo, sem cobrir a pessoa):
+- No centro-esquerda, em tipografia 3D gigante estilo pôster moderno em amarelo vibrante (ou branco) com contorno preto espesso e sombra projetada:
+  "[FRASE CLICKBAIT COMPLEMENTAR / REAÇÃO HUMANA / GANCHO EMOTIVO]"
+- Logo abaixo em uma tarja contrastante [COR ESCOLHIDA: Vermelha / Azul Elétrico / Verde Neon / Amarelo Alerta] com letras em caixa alta:
+  "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE EM TEXTO CONTRASTANTE]"
+- No canto superior esquerdo: selo discreto "POD #<N> • DICA RÁPIDA"
+- No canto inferior esquerdo: tag "Carlos de Alcântara | @ei.ingles"
+
+Estilo geral: Fotografia realista 4K combinada com design arrojado e viral de capa do YouTube, alto contraste e legibilidade perfeita na tela pequena do celular.
+```
+
+##### Opção 2 — Sem Pessoa (Cenário Real do Vídeo + Tipografia 3D):
 ```text
 Gere uma thumbnail de alto impacto para o YouTube, proporção 16:9 widescreen (1280x720).
 
-Cenário e Fundo (Baseado no local real do vídeo de fundo: [Local extraído do título do vídeo]):
+Cenário e Fundo (Baseado no local real do vídeo: [Local e atração extraídos do vídeo]):
 - Fotografia realista e cinematográfica em 4K capturada em [Local real do vídeo].
-- Enquadramento e perspectiva: [Alternar entre: plano aberto com horizonte / perspectiva ao nível da rua / plano médio com foco em elemento urbano e fundo com bokeh suave].
-- Atmosfera e luz: [Alternar entre: luz natural do dia vívida / pôr do sol dourado / noite vibrante com iluminação âmbar de postes / iluminação moderna fria de LED e reflexos].
-- [Se sem pessoa: "Cena urbana realista sem pessoas em primeiro plano" | se com pessoa: "Homem expressivo ao lado direito em pose de [alerta/dúvida/surpresa], sem encobrir o texto"].
+- Enquadramento e perspectiva: [plano aberto / perspectiva ao nível da rua / POV de caminhada] sem pessoas em primeiro plano.
+- Atmosfera e luz: [iluminação real do vídeo: neon / luz diurna / pôr do sol / luz urbana noturna].
 
-Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis - complementares ao título, sem repetir frases):
+Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis no celular):
 - No centro-esquerda, texto gigante em 3D estilo pôster moderno em amarelo vibrante com contorno preto e sombra profunda:
   "[FRASE CLICKBAIT COMPLEMENTAR / REAÇÃO HUMANA / GANCHO EMOTIVO]"
-- Logo abaixo em uma tarja contrastante [COR ESCOLHIDA: Vermelha / Azul Elétrico / Verde Neon / Amarelo Alerta]:
+- Logo abaixo em uma tarja contrastante [COR ESCOLHIDA]:
   "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE EM TEXTO CONTRASTANTE]"
-- No canto superior: um selo discreto e elegante: "POD #<N> • DICA RÁPIDA"
-- No canto inferior: a tag sutil: "Carlos de Alcântara | @ei.ingles"
+- No canto superior: selo discreto: "POD #<N> • DICA RÁPIDA"
+- No canto inferior: tag sutil: "Carlos de Alcântara | @ei.ingles"
 
-Estilo geral: Fotografia urbana realista em 4K combinada com design gráfico arrojado de capa de vídeo viral de YouTube, alto contraste para leitura perfeita mesmo no feed do celular.
+Estilo geral: Fotografia urbana/cenográfica realista em 4K combinada com design gráfico arrojado de capa de YouTube, alto contraste para leitura perfeita mesmo no feed do celular.
 ```
 
 ---
