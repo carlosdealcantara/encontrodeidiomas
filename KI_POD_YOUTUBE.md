@@ -119,8 +119,21 @@ Quer destravar a sua fala e ter acompanhamento direto comigo?
 
 Créditos de imagem: Vídeo de fundo em [Local do Vídeo] licenciado sob Creative Commons (CC BY).
 
-#Ingles #CarlosDeAlcantara #AprenderIngles #DicasDeIngles #InglesDoDiaADia #EnglishTips
+#Ingles #Pod #CarlosDeAlcantara #PillOfTheDay #[HashtagDinamicaTema1] #[HashtagDinamicaTema2]
 ```
+
+#### Regras de Ouro para as Hashtags da Descrição:
+1. **Ordem das 3 Primeiras (Topo do Vídeo no YouTube):**
+   - O YouTube destaca automaticamente as 3 primeiras hashtags acima do título do vídeo.
+   - A ordem **OBRIGATÓRIA** das 3 primeiras é sempre: `#Ingles #Pod #CarlosDeAlcantara`.
+2. **Hashtag de Marca do Formato:**
+   - A 4ª hashtag fixa é sempre `#PillOfTheDay` (marca oficial das pílulas de áudio).
+3. **Hashtags Dinâmicas (Específicas do Conteúdo):**
+   - Adicionar apenas de 2 a 3 hashtags dinâmicas complementares extraídas do tema central do áudio (ex: `#SayOuTell`, `#FalseFriends`, `#PronunciaEmIngles`, `#DicasDeIngles`).
+4. **Regra Anti-Redundância e Anti-Spam:**
+   - **PROIBIDO repetição:** Nunca repetir nenhuma das tags do topo (`#Ingles`, `#Pod`, `#CarlosDeAlcantara`) nas tags dinâmicas.
+   - **PROIBIDO variações redundantes:** Não adicionar tags que dizem a mesma coisa de forma repetitiva (como `#AprenderIngles`, `#InglesDoDiaADia`, `#EnglishTips` todas juntas).
+   - Manter no máximo **6 a 7 hashtags no total** para um visual limpo, profissional e sem poluição.
 
 ### C. Prompt Otimizado para Geração de Thumbnail no Gemini
 O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida combinando uma **Estrutura Fixa (Branding)** com **Variáveis Dinâmicas por Episódio** para evitar "Cegueira de Padrão" no feed do YouTube:
