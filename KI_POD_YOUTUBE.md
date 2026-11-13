@@ -136,19 +136,16 @@ Créditos de imagem: Vídeo de fundo em [Local do Vídeo] licenciado sob Creativ
    - Manter no máximo **6 a 7 hashtags no total** para um visual limpo, profissional e sem poluição.
 
 ### C. Prompt Otimizado para Geração de Thumbnail no Gemini
-O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida combinando uma **Estrutura Fixa (Branding)** com **Variáveis Dinâmicas por Episódio** para evitar "Cegueira de Padrão" no feed do YouTube:
+O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida combinando uma **Estrutura Fixa (Branding)** com **Variáveis Dinâmicas por Episódio** para evitar "Cegueira de Padrão" no feed do YouTube.
 
-> **⚠️ Regra de Ouro: Coerência Temática + Complementaridade de Ângulos (Anti-Repetição sem Desconexão):**
-> O título e a thumbnail **DEVEM tratar rigorosamente do MESMO tema central** para não causar ruído ou confusão cognitiva no espectador. O que muda é o **ângulo de ataque**:
+> **Regra de Ouro: Coerência Temática + Complementaridade de Ângulos:**
+> O título e a thumbnail **DEVEM tratar rigorosamente do MESMO tema central**. O que muda é o **ângulo de ataque**:
 > - **Thumbnail:** Ataque emocional, reação rápida, choque, dúvida direta ou o erro falado em destaque (lido em 0,3 segundo pelo cérebro).
 > - **Título:** Contexto, exemplo prático real, consequência do erro e o termo de busca (SEO).
-> - **❌ O QUE NUNCA FAZER:** 
->   1. **Repetição literal ou de termos sinônimos redundantes:** Colocar as mesmas palavras ou expressões que dizem a mesma coisa no título e na capa (ex: Capa: *"QUAL É O CERTO?"* e Título: *"Aprenda o jeito certo"* — isso soa redundante e empobrece o clique).
->   2. **Desconexão de temas:** Falar de um assunto na capa e de outro assunto no título (ex: Capa: *Say ou Tell?* e Título: *Either e Neither*). Isso gera confusão imediata e faz parecer erro de postagem.
-> - **✅ O QUE FAZER (Exemplo de sucesso com ângulos opostos/complementares):**
+> - **Exemplo de sucesso com ângulos opostos/complementares:**
 >   - **Thumbnail (Dúvida / Dilema):** `"QUAL É O CERTO?"` + `"SAY OU TELL?"`
 >   - **Título (Anti-erro prático / Consequência):** `NUNCA diga "They say me" em inglês! Pare de errar isso | Pod #<N>`
->   *(Note o contraste inteligente: a capa foca na dúvida direta e o título foca no erro prático a ser evitado, sem repetir a palavra "certo" nem soar repetitivo).*
+>   *(A capa foca na dúvida direta e o título foca no erro prático a ser evitado, sem repetir palavras nem soar redundante).*
 
 #### 1. Estrutura Fixa (Manter em 100% dos Prompts)
 - **Formato:** Proporção 16:9 widescreen (1280x720), alto contraste e saturação para leitura mobile perfeita.
@@ -165,34 +162,31 @@ O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letrei
    - **Pronúncia / Dúvidas rápidas / Curiosidades:** Tarja Amarelo Alerta ou Verde Neon com texto escuro/preto para contraste máximo.
 
 2. **Variável B — Enquadramento, Atmosfera e Iluminação Fiel ao Vídeo de Fundo:**
-   - **Regra Fundamental de Coerência:** O cenário NÃO deve ser inventado aleatoriamente (ex: colocar cafeteria se o vídeo é uma caminhada em Los Angeles). O prompt deve **extrair a locação real a partir do título/tema do vídeo de fundo do YouTube** fornecido pelo usuário.
-   - **Onde entra a variação visual (evitando a "mesmice" e mantendo 100% de realismo fotográfico):**
+   - O cenário da thumbnail deve ser composto a partir da locação real do vídeo de fundo do YouTube fornecido pelo usuário. A IA extrai o local e a atmosfera do título/descrição desse vídeo e usa essa informação como base do cenário.
+   - **Variações visuais para manter frescor e evitar repetição:**
      - **Distância Focal e Enquadramento:** Alternar entre *plano geral aberto (wide angle / vista ampla da avenida ou horizonte)*, *plano médio (visão de pedestre com calçada/arquitetura próxima)* e *enquadramento com foco em elemento urbano específico (close em semáforo, placa de trânsito, fachada icônica com desfoque de fundo)*.
      - **Momento do Dia e Luz Natural:** Dia ensolarado com cores vivas e sombras nítidas, dia nublado/cinematográfico com iluminação suave, entardecer/golden hour com tons alaranjados/dourados, ou noite urbana com profundidade de luzes artificiais.
      - **Temperatura e Iluminação de Cena:** Variar entre tons quentes (luzes âmbar/amarelas de postes e vitrines) e tons frios/modernos (luzes de LED brancas/azuladas, neon, asfalto molhado refletindo luz).
 
-3. **Variável C — Elemento Humano com Imagem de Referência (O Rosto Real do Carlos):**
-   - **PROIBIDO Gerar Homens/Professores Genéricos do Zero:** A IA **NUNCA** deve colocar prompts descrevendo "um professor jovem de barba" ou pessoas genéricas, pois a capa precisa ser do próprio Carlos de Alcântara.
-   - **Formato Padrão de Entrega (Dois Modelos):** A IA deve sempre fornecer **duas opções** prontas para cópia:
-     1. **Opção 1 (Com Referência Anexada - Recomendada):** Instrução específica para o usuário subir junto com o prompt um print/foto real sua (reacts, aulas ou lives), instruindo o Gemini a manter fidelidade absoluta à identidade facial, corte de cabelo e traços, adaptando apenas a pose e expressão (dúvida, espanto, alerta) e integrando ao cenário e iluminação.
-     2. **Opção 2 (Sem Pessoa):** Apenas o cenário real do vídeo em 4K cinematográfico com a tipografia 3D e tarjas em destaque no centro-esquerda.
+3. **Variável C — Elemento Humano: Carlos de Alcântara (Sempre Presente):**
+   - A thumbnail **sempre** apresenta o Carlos de Alcântara como elemento humano principal. Assuma que, junto com o prompt gerado, o usuário está enviando uma foto real do Carlos para o Gemini usar como referência de identidade facial, corte de cabelo e aparência.
+   - O prompt instrui o Gemini a manter fidelidade absoluta ao rosto da foto enviada, adaptando apenas a pose e expressão (dúvida, espanto, alerta, questionamento) conforme o tema do episódio, integrando o personagem ao cenário e iluminação do fundo.
 
 ---
 
 #### Modelo do Prompt Gerado pela IA:
 
-##### Opção 1 — Com Imagem de Referência do Carlos Anexada (Recomendada):
 ```text
 Gere uma thumbnail de alto impacto para o YouTube no formato 16:9 widescreen (1280x720).
 
-Instrução de Pessoa (Referência anexada):
-- Utilize a pessoa da imagem anexada como referência exata e fiel de identidade facial, cabelo e aparência (mantendo fidelidade absoluta ao rosto da foto).
-- Posicione-a no lado direito da cena, em plano médio, olhando para a câmera com uma expressão natural e expressiva de [dúvida / choque / alerta / curiosidade / questionamento], [descrever gesto sutil: apontando para o texto / mão no queixo / braços abertos], sem sobrepor os textos à esquerda.
-- A iluminação e reflexos do ambiente devem se integrar realisticamente à pessoa.
+Instrução de Pessoa (Imagem de referência enviada junto com este prompt):
+- Utilize a pessoa da imagem enviada como referência exata de identidade facial, cabelo e aparência. Mantenha fidelidade absoluta ao rosto da foto.
+- Posicione-a no lado direito da cena, em plano médio, olhando para a câmera com uma expressão expressiva de [dúvida / choque / alerta / curiosidade / questionamento], [descrever gesto natural: apontando para o texto / mão no queixo / braços abertos], de forma que não sobreponha os textos à esquerda.
+- A iluminação e os reflexos do ambiente devem se integrar realisticamente à pessoa.
 
 Cenário e Fundo (Baseado no local real do vídeo: [Local e atração extraídos do vídeo]):
 - Fotografia realista e cinematográfica em 4K em [Local real do vídeo].
-- Elementos visuais e atmosfera: [Descrever elementos fiéis do vídeo: ex. arquitetura, veículos, criaturas, iluminação cênica / luz natural, etc.].
+- Elementos visuais e atmosfera: [Descrever elementos fiéis do vídeo: ex. arquitetura, veículos, iluminação cênica / luz natural, etc.].
 - Profundidade de campo: desfoque suave (bokeh) no fundo para destacar a pessoa e a tipografia.
 
 Textos Gráficos Integrados (Lado Esquerdo, sem cobrir a pessoa):
@@ -204,26 +198,6 @@ Textos Gráficos Integrados (Lado Esquerdo, sem cobrir a pessoa):
 - No canto inferior esquerdo: tag "Carlos de Alcântara | @ei.ingles"
 
 Estilo geral: Fotografia realista 4K combinada com design arrojado e viral de capa do YouTube, alto contraste e legibilidade perfeita na tela pequena do celular.
-```
-
-##### Opção 2 — Sem Pessoa (Cenário Real do Vídeo + Tipografia 3D):
-```text
-Gere uma thumbnail de alto impacto para o YouTube, proporção 16:9 widescreen (1280x720).
-
-Cenário e Fundo (Baseado no local real do vídeo: [Local e atração extraídos do vídeo]):
-- Fotografia realista e cinematográfica em 4K capturada em [Local real do vídeo].
-- Enquadramento e perspectiva: [plano aberto / perspectiva ao nível da rua / POV de caminhada] sem pessoas em primeiro plano.
-- Atmosfera e luz: [iluminação real do vídeo: neon / luz diurna / pôr do sol / luz urbana noturna].
-
-Textos Integrados na Imagem (Extremamente chamativos, grandes e legíveis no celular):
-- No centro-esquerda, texto gigante em 3D estilo pôster moderno em amarelo vibrante com contorno preto e sombra profunda:
-  "[FRASE CLICKBAIT COMPLEMENTAR / REAÇÃO HUMANA / GANCHO EMOTIVO]"
-- Logo abaixo em uma tarja contrastante [COR ESCOLHIDA]:
-  "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE EM TEXTO CONTRASTANTE]"
-- No canto superior: selo discreto: "POD #<N> • DICA RÁPIDA"
-- No canto inferior: tag sutil: "Carlos de Alcântara | @ei.ingles"
-
-Estilo geral: Fotografia urbana/cenográfica realista em 4K combinada com design gráfico arrojado de capa de YouTube, alto contraste para leitura perfeita mesmo no feed do celular.
 ```
 
 ---
