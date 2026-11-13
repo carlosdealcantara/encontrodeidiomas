@@ -149,53 +149,94 @@ O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letrei
 
 #### 1. Estrutura Fixa (Manter em 100% dos Prompts)
 - **Formato:** Proporção 16:9 widescreen (1280x720), alto contraste e saturação para leitura mobile perfeita.
-- **Texto Principal (Centro-Esquerda):** Tipografia 3D gigante, amarelo vibrante ou branco com contorno escuro forte e sombra projetada.
+- **Texto Principal:** Tipografia 3D gigante com contorno escuro forte e sombra projetada — cor definida pela Variável A.
 - **Branding Institucional:** 
-  - Selo no canto superior: `"POD #<N> • DICA RÁPIDA"`
-  - Tag no canto inferior: `"Carlos de Alcântara | @ei.ingles"`
+  - Selo no canto superior (lado oposto ao Carlos): `"POD #<N> • DICA RÁPIDA"`
+  - Tag no canto inferior (lado oposto ao Carlos): `"Carlos de Alcântara | @ei.ingles"`
 
 #### 2. Matriz de Variáveis Dinâmicas (A IA DEVE Alternar a Cada Pod)
 
-1. **Variável A — Cor da Tarja / Destaque Secundário (Conforme a intenção do conteúdo):**
-   - **Alerta / Erros graves / Cuidado / Falsos amigos:** Tarja Vermelha vibrante com texto em branco ou amarelo.
-   - **Vocabulário / Comparações / Expressões do dia a dia:** Tarja Ciano / Azul Elétrico com texto branco.
-   - **Pronúncia / Dúvidas rápidas / Curiosidades:** Tarja Amarelo Alerta ou Verde Neon com texto escuro/preto para contraste máximo.
+> **⚠️ Regra Anti-Repetição:** As quatro variáveis abaixo devem ser explicitamente escolhidas a cada episódio de forma que a combinação resultante seja **visivelmente diferente da thumbnail do episódio anterior**. Nunca repita a mesma cor principal + mesma posição do Carlos + mesma expressão em dois episódios consecutivos.
 
-2. **Variável B — Enquadramento, Atmosfera e Iluminação Fiel ao Vídeo de Fundo:**
-   - O cenário da thumbnail deve ser composto a partir da locação real do vídeo de fundo do YouTube fornecido pelo usuário. A IA extrai o local e a atmosfera do título/descrição desse vídeo e usa essa informação como base do cenário.
-   - **Variações visuais para manter frescor e evitar repetição:**
-     - **Distância Focal e Enquadramento:** Alternar entre *plano geral aberto (wide angle / vista ampla da avenida ou horizonte)*, *plano médio (visão de pedestre com calçada/arquitetura próxima)* e *enquadramento com foco em elemento urbano específico (close em semáforo, placa de trânsito, fachada icônica com desfoque de fundo)*.
-     - **Momento do Dia e Luz Natural:** Dia ensolarado com cores vivas e sombras nítidas, dia nublado/cinematográfico com iluminação suave, entardecer/golden hour com tons alaranjados/dourados, ou noite urbana com profundidade de luzes artificiais.
-     - **Temperatura e Iluminação de Cena:** Variar entre tons quentes (luzes âmbar/amarelas de postes e vitrines) e tons frios/modernos (luzes de LED brancas/azuladas, neon, asfalto molhado refletindo luz).
+---
 
-3. **Variável C — Elemento Humano: Carlos de Alcântara (Sempre Presente):**
-   - A thumbnail **sempre** apresenta o Carlos de Alcântara como elemento humano principal. Assuma que, junto com o prompt gerado, o usuário está enviando uma foto real do Carlos para o Gemini usar como referência de identidade facial, corte de cabelo e aparência.
-   - O prompt instrui o Gemini a manter fidelidade absoluta ao rosto da foto enviada, adaptando apenas a pose e expressão (dúvida, espanto, alerta, questionamento) conforme o tema do episódio, integrando o personagem ao cenário e iluminação do fundo.
+**Variável A — Cor Principal do Título e da Tarja Secundária**
+
+A IA escolhe **uma cor principal para o título** e **uma cor para a tarja** que: (1) gere máximo contraste com as cores dominantes do cenário de fundo escolhido, e (2) seja coerente com o tema/intenção do episódio. Use a tabela abaixo como guia:
+
+| Tipo de conteúdo | Cor do Título | Cor da Tarja Secundária |
+|---|---|---|
+| Alerta / Erro grave / Falso amigo / Cuidado | Branco com contorno preto | Vermelha vibrante |
+| Vocabulário / Comparação / Expressão do dia a dia | Branco com contorno preto | Ciano / Azul Elétrico |
+| Pronúncia / Dúvida rápida / Curiosidade engraçada | Amarelo vibrante com contorno preto | Verde Neon |
+| Revelação / Surpresa / Fato inesperado | Amarelo vibrante com contorno preto | Laranja / Âmbar |
+
+> **Regra de harmonia:** Se o cenário de fundo for predominantemente escuro/noturno, prefira título branco. Se o fundo for claro/ensolarado, prefira título amarelo. A tarja deve sempre contrastar fortemente com o fundo — nunca escolher tarja amarela sobre fundo amarelo/dourado nem tarja azul sobre céu azul saturado.
+
+---
+
+**Variável B — Enquadramento, Atmosfera e Iluminação Fiel ao Vídeo de Fundo**
+
+O cenário da thumbnail deve ser composto a partir da locação real do vídeo de fundo do YouTube fornecido pelo usuário. A IA extrai o local e a atmosfera do título/descrição desse vídeo e usa essa informação como base do cenário.
+
+Variações visuais para manter frescor e evitar repetição:
+- **Distância Focal e Enquadramento:** Alternar entre *plano geral aberto (wide angle / vista ampla da avenida ou horizonte)*, *plano médio (visão de pedestre com calçada/arquitetura próxima)* e *enquadramento com foco em elemento urbano específico (close em semáforo, placa de trânsito, fachada icônica com desfoque de fundo)*.
+- **Momento do Dia e Luz Natural:** Dia ensolarado com cores vivas e sombras nítidas, dia nublado/cinematográfico com iluminação suave, entardecer/golden hour com tons alaranjados/dourados, ou noite urbana com profundidade de luzes artificiais.
+- **Temperatura e Iluminação de Cena:** Variar entre tons quentes (luzes âmbar/amarelas de postes e vitrines) e tons frios/modernos (luzes de LED brancas/azuladas, neon, asfalto molhado refletindo luz).
+
+---
+
+**Variável C — Posição do Carlos na Thumbnail**
+
+A cada episódio, a IA deve alternar o lado em que o Carlos aparece. A regra absoluta é: **texto e Carlos nunca no mesmo lado**. O Carlos pode estar à esquerda ou à direita — o bloco de texto ocupa sempre o lado oposto.
+
+| Posição do Carlos | Posição dos Textos |
+|---|---|
+| Lado direito (padrão) | Centro-esquerda |
+| Lado esquerdo (alternar) | Centro-direita |
+
+> Carlos no centro **não é recomendado** — comprime o espaço dos textos e reduz legibilidade em mobile. Quando Carlos estiver à esquerda, instrua o Gemini a posicioná-lo levemente voltado/olhando em direção ao texto à direita, criando tensão visual que guia o olhar.
+
+---
+
+**Variável D — Expressão e Pose do Carlos**
+
+A expressão facial deve ser escolhida conforme o tema do episódio e deve ser **exagerada e inequívoca** — o rosto precisa comunicar a emoção antes que o olho leia qualquer texto. Nunca repetir a mesma expressão em dois episódios consecutivos.
+
+| Tipo de conteúdo | Expressão recomendada | Descrição para o prompt |
+|---|---|---|
+| Erro grave / Falso amigo / Armadilha | Alerta / Aviso sério | Olhar direto para a câmera, sobrancelha franzida, dedo apontado para o texto ou para a câmera, postura firme |
+| Comparação confusa / Dúvida de vocabulário | Dúvida com humor | Cabeça levemente inclinada, sobrancelha levantada de um lado, leve sorriso de "sério?", mão no queixo ou braços levemente abertos |
+| Revelação / Fato surpreendente / Viral | Surpresa genuína | Boca aberta, sobrancelhas bem levantadas, olhos arregalados, mãos abertas ou cobrindo a boca levemente |
+| Erro engraçado / Situação absurda / Curiosidade divertida | Diversão / Risada contida | Sorriso largo, olhos levemente semicerrados de quem está rindo, postura descontraída, gesto de "não acredito" |
+| Dica poderosa / Revelação de segredo | Cumplicidade / "Isso aqui é ouro" | Leve sorriso de quem sabe algo que o outro não sabe, olhar levemente para o lado e depois para a câmera, dedo na têmpora |
 
 ---
 
 #### Modelo do Prompt Gerado pela IA:
+
+O prompt deve ser montado preenchendo as variáveis A, B, C e D escolhidas para o episódio. Use o template abaixo como base:
 
 ```text
 Gere uma thumbnail de alto impacto para o YouTube no formato 16:9 widescreen (1280x720).
 
 Instrução de Pessoa (Imagem de referência enviada junto com este prompt):
 - Utilize a pessoa da imagem enviada como referência exata de identidade facial, cabelo e aparência. Mantenha fidelidade absoluta ao rosto da foto.
-- Posicione-a no lado direito da cena, em plano médio, olhando para a câmera com uma expressão expressiva de [dúvida / choque / alerta / curiosidade / questionamento], [descrever gesto natural: apontando para o texto / mão no queixo / braços abertos], de forma que não sobreponha os textos à esquerda.
-- A iluminação e os reflexos do ambiente devem se integrar realisticamente à pessoa.
+- Posicione-a no lado [DIREITO ou ESQUERDO — Variável C] da cena, em plano médio, [DESCRIÇÃO DA EXPRESSÃO E POSE — Variável D], de forma que não sobreponha os textos no lado oposto.
+- A iluminação e os reflexos do ambiente devem se integrar realisticamente à pessoa. Quando Carlos estiver à esquerda, posicione-o levemente voltado em direção ao texto à direita.
 
 Cenário e Fundo (Baseado no local real do vídeo: [Local e atração extraídos do vídeo]):
 - Fotografia realista e cinematográfica em 4K em [Local real do vídeo].
 - Elementos visuais e atmosfera: [Descrever elementos fiéis do vídeo: ex. arquitetura, veículos, iluminação cênica / luz natural, etc.].
 - Profundidade de campo: desfoque suave (bokeh) no fundo para destacar a pessoa e a tipografia.
 
-Textos Gráficos Integrados (Lado Esquerdo, sem cobrir a pessoa):
-- No centro-esquerda, em tipografia 3D gigante estilo pôster moderno em amarelo vibrante (ou branco) com contorno preto espesso e sombra projetada:
+Textos Gráficos Integrados (Lado [ESQUERDO ou DIREITO — oposto ao Carlos], sem cobrir a pessoa):
+- No centro-[lado oposto ao Carlos], em tipografia 3D gigante estilo pôster moderno em [COR DO TÍTULO — Variável A] com contorno preto espesso e sombra projetada:
   "[FRASE CLICKBAIT COMPLEMENTAR / REAÇÃO HUMANA / GANCHO EMOTIVO]"
-- Logo abaixo em uma tarja contrastante [COR ESCOLHIDA: Vermelha / Azul Elétrico / Verde Neon / Amarelo Alerta] com letras em caixa alta:
+- Logo abaixo em uma tarja contrastante em [COR DA TARJA — Variável A] com letras em caixa alta:
   "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE EM TEXTO CONTRASTANTE]"
-- No canto superior esquerdo: selo discreto "POD #<N> • DICA RÁPIDA"
-- No canto inferior esquerdo: tag "Carlos de Alcântara | @ei.ingles"
+- No canto superior [lado oposto ao Carlos]: selo discreto "POD #<N> • DICA RÁPIDA"
+- No canto inferior [lado oposto ao Carlos]: tag "Carlos de Alcântara | @ei.ingles"
 
 Estilo geral: Fotografia realista 4K combinada com design arrojado e viral de capa do YouTube, alto contraste e legibilidade perfeita na tela pequena do celular.
 ```
