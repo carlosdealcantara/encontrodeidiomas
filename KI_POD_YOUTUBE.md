@@ -156,7 +156,7 @@ O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letrei
 
 #### 2. Matriz de Variáveis Dinâmicas (A IA DEVE Alternar a Cada Pod)
 
-> **⚠️ Regra Anti-Repetição:** As quatro variáveis abaixo devem ser explicitamente escolhidas a cada episódio de forma que a combinação resultante seja **visivelmente diferente da thumbnail do episódio anterior**. Nunca repita a mesma cor principal + mesma posição do Carlos + mesma expressão em dois episódios consecutivos.
+> **⚠️ Regra Anti-Repetição sem depender de memória:** Como cada episódio é gerado em uma conversa nova, as variáveis C (posição) e D (expressão) são calculadas **deterministicamente pelo número do Pod** — sem precisar lembrar do episódio anterior. Qualquer IA, em qualquer chat, chega à mesma combinação partindo só do número N. A variável A (cor) é semântica e segue o tipo de conteúdo do episódio.
 
 ---
 
@@ -175,41 +175,51 @@ A IA escolhe **uma cor principal para o título** e **uma cor para a tarja** que
 
 ---
 
-**Variável B — Enquadramento, Atmosfera e Iluminação Fiel ao Vídeo de Fundo**
+**Variável B — Cenário: Enquadramento, Color Grading e Elemento Hero**
 
-O cenário da thumbnail deve ser composto a partir da locação real do vídeo de fundo do YouTube fornecido pelo usuário. A IA extrai o local e a atmosfera do título/descrição desse vídeo e usa essa informação como base do cenário.
+O cenário da thumbnail deve ser composto a partir da locação real do vídeo de fundo do YouTube fornecido pelo usuário. A IA extrai o local, o ponto de interesse e a atmosfera do título/descrição desse vídeo e usa como base.
 
-Variações visuais para manter frescor e evitar repetição:
-- **Distância Focal e Enquadramento:** Alternar entre *plano geral aberto (wide angle / vista ampla da avenida ou horizonte)*, *plano médio (visão de pedestre com calçada/arquitetura próxima)* e *enquadramento com foco em elemento urbano específico (close em semáforo, placa de trânsito, fachada icônica com desfoque de fundo)*.
-- **Momento do Dia e Luz Natural:** Dia ensolarado com cores vivas e sombras nítidas, dia nublado/cinematográfico com iluminação suave, entardecer/golden hour com tons alaranjados/dourados, ou noite urbana com profundidade de luzes artificiais.
-- **Temperatura e Iluminação de Cena:** Variar entre tons quentes (luzes âmbar/amarelas de postes e vitrines) e tons frios/modernos (luzes de LED brancas/azuladas, neon, asfalto molhado refletindo luz).
+**Regra do Elemento Hero (obrigatória):**
+Toda thumbnail deve ter um **elemento visual dominante e imediatamente reconhecível** do local ("hero element") posicionado no fundo, em profundidade — um monumento, uma avenida com perspectiva forte, uma ponte, um parque colorido, uma arquitetura icônica, árvores com cores vivas, etc. Esse elemento deve ser:
+- **Legível em 0,3 segundo** (a pessoa bate o olho e sabe onde é)
+- **Posicionado no fundo**, entre Carlos e o extremo oposto, sem cobrir o texto nem o rosto
+- **Mais nítido que o bokeh padrão** — o desfoque deve ser suave apenas nas bordas, mantendo o hero element com boa definição
 
----
+**Color Grading Cinematográfico (obrigatório em todos os episódios):**
+O fundo deve ter tratamento de cor como um **cartaz de cinema ou capa de álbum**: saturação elevada, contraste HDR-like, luzes e sombras bem definidas. Não é uma foto de rua qualquer — é uma versão "enhanced" e estilizada do local, ainda realista mas visualmente poderosa. Instrua o Gemini explicitamente com as palavras: *"color grading cinematográfico com saturação elevada, cores vivas e contrastadas, estilo cartaz de filme"*.
 
-**Variável C — Posição do Carlos na Thumbnail**
-
-A cada episódio, a IA deve alternar o lado em que o Carlos aparece. A regra absoluta é: **texto e Carlos nunca no mesmo lado**. O Carlos pode estar à esquerda ou à direita — o bloco de texto ocupa sempre o lado oposto.
-
-| Posição do Carlos | Posição dos Textos |
-|---|---|
-| Lado direito (padrão) | Centro-esquerda |
-| Lado esquerdo (alternar) | Centro-direita |
-
-> Carlos no centro **não é recomendado** — comprime o espaço dos textos e reduz legibilidade em mobile. Quando Carlos estiver à esquerda, instrua o Gemini a posicioná-lo levemente voltado/olhando em direção ao texto à direita, criando tensão visual que guia o olhar.
+**Variações de enquadramento e luz (alternar a cada episódio):**
+- **Enquadramento:** Alternar entre *plano geral aberto (wide angle, horizonte ou skyline visível)*, *plano médio (perspectiva de pedestre, calçada próxima)* e *plano com foco em elemento icônico específico (fachada, torre, ponte, entrada de parque)*.
+- **Momento do Dia:** Dia ensolarado com sombras nítidas e cores vivas; golden hour com tons laranja/dourado saturados; noite urbana com neon e reflexos em asfalto molhado; dia nublado com iluminação dramática e fria.
 
 ---
 
-**Variável D — Expressão e Pose do Carlos**
+**Variável C — Posição do Carlos na Thumbnail (Rotação por número do Pod)**
 
-A expressão facial deve ser escolhida conforme o tema do episódio e deve ser **exagerada e inequívoca** — o rosto precisa comunicar a emoção antes que o olho leia qualquer texto. Nunca repetir a mesma expressão em dois episódios consecutivos.
+A posição alterna deterministicamente pelo número do Pod — sem depender de memória de conversa anterior:
 
-| Tipo de conteúdo | Expressão recomendada | Descrição para o prompt |
+| Pod # | Posição do Carlos | Posição dos Textos |
 |---|---|---|
-| Erro grave / Falso amigo / Armadilha | Alerta / Aviso sério | Olhar direto para a câmera, sobrancelha franzida, dedo apontado para o texto ou para a câmera, postura firme |
-| Comparação confusa / Dúvida de vocabulário | Dúvida com humor | Cabeça levemente inclinada, sobrancelha levantada de um lado, leve sorriso de "sério?", mão no queixo ou braços levemente abertos |
-| Revelação / Fato surpreendente / Viral | Surpresa genuína | Boca aberta, sobrancelhas bem levantadas, olhos arregalados, mãos abertas ou cobrindo a boca levemente |
-| Erro engraçado / Situação absurda / Curiosidade divertida | Diversão / Risada contida | Sorriso largo, olhos levemente semicerrados de quem está rindo, postura descontraída, gesto de "não acredito" |
-| Dica poderosa / Revelação de segredo | Cumplicidade / "Isso aqui é ouro" | Leve sorriso de quem sabe algo que o outro não sabe, olhar levemente para o lado e depois para a câmera, dedo na têmpora |
+| Ímpar (1, 3, 5, 7…) | Lado **direito** | Centro-esquerda |
+| Par (2, 4, 6, 8…) | Lado **esquerdo** | Centro-direita |
+
+> **Regra absoluta:** Texto e Carlos nunca no mesmo lado. Carlos no centro não é recomendado — comprime o espaço dos textos e reduz legibilidade em mobile. Quando Carlos estiver à esquerda, instrua o Gemini a posicioná-lo levemente voltado/olhando em direção ao texto à direita, criando tensão visual que guia o olhar.
+
+---
+
+**Variável D — Expressão e Pose do Carlos (Rotação por número do Pod)**
+
+A expressão também é calculada deterministicamente pelo número do Pod usando `N mod 5`. Isso garante variação sem depender de memória:
+
+| Pod # mod 5 | Expressão | Descrição para o prompt |
+|---|---|---|
+| 1 (Pods 1, 6, 11…) | Alerta / Aviso sério | Olhar direto para a câmera, sobrancelha franzida, dedo apontado para o texto ou para a câmera, postura firme |
+| 2 (Pods 2, 7, 12…) | Dúvida com humor | Cabeça levemente inclinada, sobrancelha levantada de um lado, leve sorriso de "sério?", mão no queixo ou braços levemente abertos |
+| 3 (Pods 3, 8, 13…) | Surpresa genuína | Boca aberta, sobrancelhas bem levantadas, olhos arregalados, mãos abertas ou cobrindo a boca levemente |
+| 4 (Pods 4, 9, 14…) | Diversão / Risada contida | Sorriso largo, olhos levemente semicerrados de quem ri, postura descontraída, gesto de "não acredito" |
+| 0 (Pods 5, 10, 15…) | Cumplicidade / "Isso é ouro" | Leve sorriso de quem sabe algo que o outro não sabe, olhar levemente de lado e depois para a câmera, dedo na têmpora |
+
+> **Como calcular:** `N mod 5` é o resto da divisão de N por 5. Exemplos: Pod #7 → 7 mod 5 = 2 → Dúvida com humor. Pod #10 → 10 mod 5 = 0 → Cumplicidade. Pod #13 → 13 mod 5 = 3 → Surpresa genuína.
 
 ---
 
@@ -222,13 +232,15 @@ Gere uma thumbnail de alto impacto para o YouTube no formato 16:9 widescreen (12
 
 Instrução de Pessoa (Imagem de referência enviada junto com este prompt):
 - Utilize a pessoa da imagem enviada como referência exata de identidade facial, cabelo e aparência. Mantenha fidelidade absoluta ao rosto da foto.
-- Posicione-a no lado [DIREITO ou ESQUERDO — Variável C] da cena, em plano médio, [DESCRIÇÃO DA EXPRESSÃO E POSE — Variável D], de forma que não sobreponha os textos no lado oposto.
+- Posicione-a no lado [DIREITO (Pod ímpar) ou ESQUERDO (Pod par) — Variável C] da cena, em plano médio, [DESCRIÇÃO EXATA DA EXPRESSÃO E POSE — Variável D calculada por N mod 5], de forma que não sobreponha os textos no lado oposto.
 - A iluminação e os reflexos do ambiente devem se integrar realisticamente à pessoa. Quando Carlos estiver à esquerda, posicione-o levemente voltado em direção ao texto à direita.
 
-Cenário e Fundo (Baseado no local real do vídeo: [Local e atração extraídos do vídeo]):
+Cenário e Fundo (Baseado no local real do vídeo: [Local e ponto de interesse extraídos do vídeo]):
 - Fotografia realista e cinematográfica em 4K em [Local real do vídeo].
-- Elementos visuais e atmosfera: [Descrever elementos fiéis do vídeo: ex. arquitetura, veículos, iluminação cênica / luz natural, etc.].
-- Profundidade de campo: desfoque suave (bokeh) no fundo para destacar a pessoa e a tipografia.
+- Color grading cinematográfico com saturação elevada, cores vivas e contrastadas, estilo cartaz de filme — não uma foto de rua qualquer, mas uma versão visualmente poderosa e estilizada do local.
+- Elemento hero (obrigatório): posicione em destaque no fundo, em profundidade, o elemento visual mais icônico e imediatamente reconhecível deste local — [descrever o hero element: ex. a Torre Eiffel ao fundo, a perspectiva da avenida convergindo ao horizonte, a fachada do museu, as árvores com cores de outono, etc.]. O hero element deve ser legível e com boa definição, sem bokeh excessivo sobre ele.
+- Profundidade de campo: desfoque suave apenas nas bordas extremas do fundo, mantendo o hero element com boa nitidez e Carlos bem integrado ao cenário.
+- Momento do dia e temperatura de luz: [Escolher conforme Variável B: ex. golden hour com tons laranja/dourado saturados / noite urbana com neon e reflexos / dia ensolarado com sombras nítidas].
 
 Textos Gráficos Integrados (Lado [ESQUERDO ou DIREITO — oposto ao Carlos], sem cobrir a pessoa):
 - No centro-[lado oposto ao Carlos], em tipografia 3D gigante estilo pôster moderno em [COR DO TÍTULO — Variável A] com contorno preto espesso e sombra projetada:
@@ -238,7 +250,7 @@ Textos Gráficos Integrados (Lado [ESQUERDO ou DIREITO — oposto ao Carlos], se
 - No canto superior [lado oposto ao Carlos]: selo discreto "POD #<N> • DICA RÁPIDA"
 - No canto inferior [lado oposto ao Carlos]: tag "Carlos de Alcântara | @ei.ingles"
 
-Estilo geral: Fotografia realista 4K combinada com design arrojado e viral de capa do YouTube, alto contraste e legibilidade perfeita na tela pequena do celular.
+Estilo geral: Fotografia realista 4K com color grading cinematográfico vibrante, design arrojado e viral de capa do YouTube, alto contraste e legibilidade perfeita na tela pequena do celular.
 ```
 
 ---
