@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * ============================================================
  * MASTER CRON - ENCONTRO DE IDIOMAS & MENTORIA
@@ -70,6 +70,11 @@ function rodarSubCron($arquivo, $baseUrl, $token_secreto) {
 echo "<h2>>>> Crons Horários <<<</h2><ul>";
 rodarSubCron('mentoria_class_kickoff_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('mentoria_class_quorum_cron.php', $baseUrl, $token_secreto);
+// CATCH-UP DE AVISOS: a cada hora, verifica se existe algum aviso de classe com
+// status 'failed' cujo deadline ainda nao expirou, e retenta o envio automaticamente.
+// O proprio mentoria_class_aviso_cron.php filtra aulas ja confirmadas ('sent')
+// e aulas com deadline expirado, tornando esta chamada completamente segura e idempotente.
+rodarSubCron('mentoria_class_aviso_cron.php', $baseUrl, $token_secreto);
 rodarSubCron('ei_meetups_hourly.php', $baseUrl, $token_secreto);
 rodarSubCron('ei_telegram_cron.php', str_replace('/bot_whatsapp/', '/bot_telegram/', $baseUrl), $token_secreto);
 echo "</ul>";
@@ -80,9 +85,10 @@ echo "</ul>";
 echo "<h2>>>> Crons Diários <<<</h2>";
 
 // 00:00 - Processamento de Rankings e Kicks (Baseado no dia anterior)
+// Nota: mentoria_class_aviso_cron.php foi movido para a secao horaria acima
+// e roda a cada hora como catch-up idempotente.
 if ($horaAtual === 0) {
     echo "<h3>Rotina da Meia-Noite (00:00)</h3><ul>";
-    rodarSubCron('mentoria_class_aviso_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_pontuacao_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_desafio_kick_cron.php', $baseUrl, $token_secreto);
     rodarSubCron('mentoria_aniversario_cron.php', $baseUrl, $token_secreto);

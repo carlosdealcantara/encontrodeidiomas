@@ -315,9 +315,39 @@ foreach ($langs as $lang) {
                     $pixKey = ($lang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $lang;
                     $pix_footer = getSetting($pixKey, $default_pix_footer);
 
+                    // Obtém valor vigente da mensalidade dinamicamente via pricing engine
+                    $valorAtual = ($lang === 'es') ? 'R$ 175' : 'R$ 275';
+                    $pricingPaths = [
+                        __DIR__ . '/../../mentoria/pricing.php',
+                        __DIR__ . '/../mentoria/pricing.php',
+                        dirname(__DIR__, 2) . '/mentoria/pricing.php',
+                    ];
+                    foreach ($pricingPaths as $pPath) {
+                        if (file_exists($pPath)) {
+                            require_once $pPath;
+                            if (function_exists('pricing_format')) {
+                                $valorAtual = ($lang === 'es')
+                                    ? pricing_format($pricing_espanhol_mensal ?? 175)
+                                    : pricing_format($pricing_mensal ?? 275);
+                            }
+                            break;
+                        }
+                    }
+
                     $primeiroNome = trim(explode(' ', $alunoNome)[0]);
-                    $textoSuspensao = str_replace('{nome}', $primeiroNome, $msgSuspensaoRow['texto']);
-                    $textoSuspensao .= "\n\n" . trim($pix_footer);
+                    $idiomaNome = ($lang === 'es') ? 'Espanhol' : 'Inglês';
+
+                    // Substitui tags: {nome}, {valor}, {idioma}, {pix}
+                    $textoSuspensao = str_replace(
+                        ['{nome}', '{valor}', '{idioma}', '{pix}'],
+                        [$primeiroNome, $valorAtual, $idiomaNome, trim($pix_footer)],
+                        $msgSuspensaoRow['texto']
+                    );
+
+                    // Se a mensagem não contiver a tag {pix}, anexa o rodapé no final por segurança
+                    if (strpos($msgSuspensaoRow['texto'], '{pix}') === false) {
+                        $textoSuspensao .= "\n\n" . trim($pix_footer);
+                    }
 
                     echo "      💬 Disparando mensagem de suspensão no privado para {$alunoNome}...\n";
                     $resWhats = enviarWhatsApp($telefone, $textoSuspensao, 'mentoria_kick_privado');

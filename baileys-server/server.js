@@ -654,10 +654,29 @@ async function processQueue() {
                 const errorMsg = err.message || 'Erro desconhecido';
                 addLog(jobId, 'error', `[FALHA] Erro no disparo: ${errorMsg}`);
                 
-                if (errorMsg.includes('Connection Closed') || errorMsg.includes('Stream Errored')) {
-                    addLog(jobId, 'info', '[PAUSA] Conexão instável. Pausando fila.');
-                    queue.unshift(item); // Put it back
-                    isConnected = false;
+                // Erros transitórios (conexão ou timeout): recoloca na fila para retentativa.
+                // O item só é descartado definitivamente em erros definitivos (ex: JID inválido).
+                const isTransient = errorMsg.includes('Connection Closed')
+                    || errorMsg.includes('Stream Errored')
+                    || errorMsg.includes('Timed Out')
+                    || errorMsg.includes('ECONNRESET')
+                    || errorMsg.includes('ETIMEDOUT');
+
+                if (isTransient) {
+                    item._retries = (item._retries || 0) + 1;
+                    if (item._retries <= 3) {
+                        addLog(jobId, 'info', `[RETRY ${item._retries}/3] Conexão instável. Recolocando na fila em 10s...`);
+                        // Recoloca no início da fila com delay para aguardar estabilização
+                        setTimeout(() => {
+                            queue.unshift(item);
+                            if (isConnected && !isProcessingQueue) processQueue();
+                        }, 10000);
+                    } else {
+                        addLog(jobId, 'info', `[DESCARTADO] ${item._retries} tentativas esgotadas para ${number}.`);
+                    }
+                    if (errorMsg.includes('Connection Closed') || errorMsg.includes('Stream Errored')) {
+                        isConnected = false;
+                    }
                     break;
                 }
             }
@@ -777,6 +796,9 @@ app.post('/send', (req, res) => {
                 console.log(`[DEDUP-SKIP] Mensagem para ${to} ignorada pois dedup_key '${dedup_key}' já foi enfileirada/enviada.`);
                 return res.json({ success: true, skipped: true, reason: 'dedup_skipped', dedup_key });
             }
+            // IMPORTANTE: registra a dedup_key AGORA para evitar enfileiramento duplo paralelo.
+            // O processQueue vai confirmar o envio real. Se falhar transitoriamente e recolocar
+            // na fila, a dedup_key já está registrada e impede um segundo enfileiramento pelo PHP.
             registerDedupKey(dedup_key);
         }
 

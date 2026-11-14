@@ -80,7 +80,7 @@ INSERT IGNORE INTO mentoria_mensagens (cenario, dias_antes, texto) VALUES
 ('Aviso Amigável (Prévio)', 3, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. Consta no Sistema que o seu ciclo de acesso vence em 3 dias.\nPara evitar a suspensão automática pelo servidor, realize a renovação e nos envie o comprovante.'),
 ('Aviso de Véspera', 1, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. O seu ciclo de acesso vence amanhã.\nPor favor, realize a renovação.'),
 ('Aviso de Vencimento', 0, '🤖 MENSAGEM AUTOMÁTICA:\nOlá, {nome}. O prazo de renovação do seu acesso encerra hoje.'),
-('Aviso de Suspensão', -1, '🤖 AVISO DE SUSPENSÃO:\nOlá, {nome}. O sistema suspendeu seu acesso devido à não identificação da renovação.\nEntre em contato com o suporte para reativarmos manualmente.');
+('Aviso de Suspensão', -1, '🤖 AVISO DE SUSPENSÃO DE ACESSO\n\nOlá, {nome}. Como o pagamento do seu ciclo não foi identificado até a data de vencimento, o sistema pausou o seu acesso ao grupo de aulas ao vivo.\n\n⚠️ Para reativar seu acesso:\nConforme previsto em nosso acordo, em caso de encerramento do ciclo sem renovação na data, a reativação segue a tabela vigente atual:\n\n• Nova mensalidade: {valor}\n\nAssim que realizar a transferência, basta enviar o comprovante aqui nesta conversa para restabelecermos o seu acesso às aulas.');
 
 -- ==========================================
 -- MÓDULO ODYSEE PIPELINE
