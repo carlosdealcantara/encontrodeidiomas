@@ -336,7 +336,7 @@ foreach ($langs as $lang) {
 
                     $primeiroNome = trim(explode(' ', $alunoNome)[0]);
                     $idiomaNome = ($lang === 'es') ? 'Espanhol' : 'Inglês';
-                    $urlSite = ($lang === 'es') ? 'https://viaei.com/espanhol' : 'https://viaei.com/ingles';
+                    $urlSite = ($lang === 'es') ? 'https://viaei.com/mentoria/espanhol/' : 'https://viaei.com/mentoria/ingles/';
 
                     // Substitui tags: {nome}, {valor}, {idioma}, {url_site}, {pix}
                     $textoSuspensao = str_replace(
