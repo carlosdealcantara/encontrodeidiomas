@@ -336,11 +336,12 @@ foreach ($langs as $lang) {
 
                     $primeiroNome = trim(explode(' ', $alunoNome)[0]);
                     $idiomaNome = ($lang === 'es') ? 'Espanhol' : 'Inglês';
+                    $urlSite = ($lang === 'es') ? 'https://viaei.com/espanhol' : 'https://viaei.com/ingles';
 
-                    // Substitui tags: {nome}, {valor}, {idioma}, {pix}
+                    // Substitui tags: {nome}, {valor}, {idioma}, {url_site}, {pix}
                     $textoSuspensao = str_replace(
-                        ['{nome}', '{valor}', '{idioma}', '{pix}'],
-                        [$primeiroNome, $valorAtual, $idiomaNome, trim($pix_footer)],
+                        ['{nome}', '{valor}', '{idioma}', '{url_site}', '{pix}'],
+                        [$primeiroNome, $valorAtual, $idiomaNome, $urlSite, trim($pix_footer)],
                         $msgSuspensaoRow['texto']
                     );
 
