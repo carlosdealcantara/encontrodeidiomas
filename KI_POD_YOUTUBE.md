@@ -11,22 +11,26 @@ Esta base de conhecimento documenta o pipeline completo de reaproveitamento de �
   - **Host / IP:** `136.248.92.126` (usuário: `ubuntu`)
   - **Chave SSH Local Obrigatória:** `C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key`
 - **Como a IA localiza e baixa o áudio do episódio N:**
-  1. Conectar via SSH na VPS usando a chave para listar os arquivos ordenados cronologicamente:
+  1. **Verificar cache local primeiro (otimização obrigatória):** Antes de qualquer acesso à VPS, verificar se `scratch/pod_test/pod_<N>.ogg` já existe localmente com tamanho > 0:
+     - **Se existir:** Pular direto para a medição de duração via FFprobe. Nenhum acesso à VPS é necessário.
+     - **Se não existir:** Seguir os passos abaixo para baixar da VPS.
+  2. Conectar via SSH na VPS usando a chave para listar os arquivos ordenados cronologicamente:
      ```powershell
      ssh -i C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key ubuntu@136.248.92.126 "ls -1tr /home/ubuntu/encontrodeidiomas/baileys-server/data/audios_pilulas/"
      ```
-  2. O Pod #1 corresponde ao 1º áudio da ordem cronológica (`pilula_1784860410211.ogg`), Pod #2 ao 2º, Pod #3 ao 3º, e assim sucessivamente:
+  3. O Pod #1 corresponde ao 1º áudio da ordem cronológica (`pilula_1784860410211.ogg`), Pod #2 ao 2º, Pod #3 ao 3º, e assim sucessivamente:
      - Pod #1: `pilula_1784860410211.ogg`
      - Pod #2: `pilula_1785029252319.ogg`
      - Pod #3: `pilula_1785029273241.ogg`
      - Pod #4: `pilula_1785075422474.ogg`
      - Pod #5: `pilula_1785165963239.ogg`
      - Pod #6: `pilula_1785332191057.ogg`
-  3. Baixar via SCP com a chave privada diretamente para a pasta local:
+  4. Baixar via SCP com a chave privada diretamente para a pasta local:
      ```powershell
      scp -i C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key ubuntu@136.248.92.126:/home/ubuntu/encontrodeidiomas/baileys-server/data/audios_pilulas/<ARQUIVO_PILULA>.ogg scratch/pod_test/pod_<N>.ogg
      ```
-  4. Medir a duração imediatamente via FFprobe e informar ao usuário para aguardar o link do YouTube.
+  5. Verificar se o SCP foi bem-sucedido (arquivo existe e tamanho > 0). Se falhar, reportar o erro e não prosseguir.
+  6. Medir a duração imediatamente via FFprobe e informar ao usuário para aguardar o link do YouTube.
 
 ---
 
