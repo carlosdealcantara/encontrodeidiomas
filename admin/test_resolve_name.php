@@ -6,38 +6,68 @@ header('Content-Type: text/plain; charset=utf-8');
 
 $conn = connectDB();
 
-echo "=== TESTE DE RESOLUÇÃO DE NOMES (PROVA REAL) ===\n\n";
+echo "=======================================================\n";
+echo "   TESTE DE RESOLUÇÃO DE NOMES DA MENTORIA (PROVA REAL)\n";
+echo "=======================================================\n\n";
 
-// Exemplos de JIDs com diferentes cenários (com dispositivo, sem nono dígito, etc.)
-$testJids = [
-    // Se passar via GET: ?jid=55...
-    $_GET['jid'] ?? null,
-    // Exemplos históricos
-    '5511988887777@s.whatsapp.net',
-    '551188887777:2@s.whatsapp.net',
-];
+// 1. Pega alunos reais cadastrados no banco para testar a busca por telefone
+echo "1. TESTANDO COM ALUNOS REAIS DA TABELA 'mentoria_alunos':\n";
+echo "-------------------------------------------------------\n";
 
-$testJids = array_filter($testJids);
+$stmtAlunos = $conn->query("SELECT id, nome, telefone, lang_id FROM mentoria_alunos WHERE telefone IS NOT NULL AND telefone != '' LIMIT 2");
+$alunosReais = $stmtAlunos->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($testJids as $jid) {
-    echo "Testando JID: {$jid}\n";
-    $nome = resolveMentoriaMemberName($conn, $jid);
-    echo "Resultado: [{$nome}]\n";
-    echo str_repeat('-', 40) . "\n";
+if (empty($alunosReais)) {
+    echo "Nenhum aluno encontrado no banco.\n";
+} else {
+    foreach ($alunosReais as $a) {
+        $telOriginal = $a['telefone'];
+        $nomeCadastrado = $a['nome'];
+        
+        // Simulação 1: JID como o WhatsApp costuma mandar (55 + DDD + sem o nono dígito)
+        $telLimpo = preg_replace('/\D/', '', $telOriginal);
+        $jidSimulado = (str_starts_with($telLimpo, '55') ? $telLimpo : '55' . $telLimpo) . "@s.whatsapp.net";
+        $jidComDevice = (str_starts_with($telLimpo, '55') ? $telLimpo : '55' . $telLimpo) . ":2@s.whatsapp.net";
+
+        echo "• Aluno no banco: [{$nomeCadastrado}] | Telefone gravado: {$telOriginal}\n";
+        
+        $resolvido1 = resolveMentoriaMemberName($conn, $jidSimulado);
+        echo "  → Testando JID simulação 1 ({$jidSimulado}):\n";
+        echo "    Resultado: [{$resolvido1}] " . ($resolvido1 === $nomeCadastrado ? "✅ SUCESSO" : "❌ FALHA") . "\n";
+
+        $resolvido2 = resolveMentoriaMemberName($conn, $jidComDevice);
+        echo "  → Testando JID simulação 2 com dispositivo ({$jidComDevice}):\n";
+        echo "    Resultado: [{$resolvido2}] " . ($resolvido2 === $nomeCadastrado ? "✅ SUCESSO" : "❌ FALHA") . "\n\n";
+    }
 }
 
-// Mostra os últimos 5 pontos manuais atribuídos em mentoria_dedicated_pts
-echo "\n=== ÚLTIMOS PONTOS MANUAIS (!pontos) REGISTRADOS NO BANCO ===\n";
-try {
-    $stmt = $conn->query("SELECT id, date, member_jid, member_name, points, group_key, awarded_at FROM mentoria_dedicated_pts ORDER BY id DESC LIMIT 5");
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    if (empty($rows)) {
-        echo "Nenhum ponto registrado recentemente.\n";
-    } else {
-        foreach ($rows as $r) {
-            echo "#{$r['id']} | Data: {$r['date']} | JID: {$r['member_jid']} | Nome gravado: [{$r['member_name']}] | Pts: {$r['points']} ({$r['group_key']})\n";
-        }
-    }
-} catch (Exception $e) {
-    echo "Erro ao consultar: " . $e->getMessage() . "\n";
+// 2. Testa com os JIDs recentes de pontuação manual (que usam formato @lid do WhatsApp)
+echo "2. TESTANDO COM OS JIDs REAIS DOS ÚLTIMOS PONTOS ATRIBUÍDOS:\n";
+echo "-------------------------------------------------------\n";
+
+$stmtPts = $conn->query("SELECT DISTINCT member_jid, member_name FROM mentoria_dedicated_pts WHERE member_name IS NOT NULL AND member_name != '' LIMIT 3");
+$pontosReais = $stmtPts->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($pontosReais as $p) {
+    $jidReal = $p['member_jid'];
+    $nomeEsperado = $p['member_name'];
+
+    // Simula também variação de dispositivo no JID LID (:3@lid)
+    $jidDevice = preg_replace('/@/', ':3@', $jidReal);
+
+    $resolvido = resolveMentoriaMemberName($conn, $jidReal);
+    $resolvidoDev = resolveMentoriaMemberName($conn, $jidDevice);
+
+    echo "• Participante: [{$nomeEsperado}]\n";
+    echo "  → JID original ({$jidReal}): [{$resolvido}] " . ($resolvido === $nomeEsperado ? "✅ SUCESSO" : "❌ FALHA") . "\n";
+    echo "  → JID com dispositivo ({$jidDevice}): [{$resolvidoDev}] " . ($resolvidoDev === $nomeEsperado ? "✅ SUCESSO" : "❌ FALHA") . "\n\n";
+}
+
+// 3. Se o usuário passar um JID personalizado via URL: ?jid=...
+if (!empty($_GET['jid'])) {
+    echo "3. TESTE PERSONALIZADO VIA URL (?jid={$_GET['jid']}):\n";
+    echo "-------------------------------------------------------\n";
+    $custom = resolveMentoriaMemberName($conn, $_GET['jid']);
+    echo "JID informado: {$_GET['jid']}\n";
+    echo "Nome resolvido: [{$custom}]\n";
 }
