@@ -174,10 +174,40 @@
 .happening-now .event-tag { background: transparent; }
 .event-title { display:flex; align-items:center; gap:10px; font-size:1.5rem; font-weight:600; margin-bottom:10px; flex-wrap:wrap; }
 .event-social-links { display:flex; gap:5px; margin-left:10px; }
-.social-icon { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; font-size:.85rem; background:#f0f2f5; color:var(--text-color); border:1px solid #ddd; transition:all .3s ease; }
-.social-icon:hover { transform:translateY(-2px); }
-.whatsapp-icon:hover { color:#25D366; }
-.instagram-icon:hover { color:#E1306C; }
+.social-icon { 
+    display:inline-flex; 
+    align-items:center; 
+    justify-content:center; 
+    width:26px; 
+    height:26px; 
+    border-radius:50%; 
+    font-size:.85rem; 
+    background:#f0f2f5;
+    border:1px solid #ddd;
+    transition:all .25s ease; 
+    flex-shrink:0;
+}
+.social-icon:hover { transform:translateY(-2px); box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.whatsapp-icon { 
+    background:#f0f2f5;
+    color:#16a34a; 
+    border:1px solid #ddd; 
+}
+.whatsapp-icon:hover { 
+    background:#16a34a; 
+    color:#ffffff; 
+    border-color:#16a34a;
+}
+.instagram-icon { 
+    background:#f0f2f5;
+    color:#be185d; 
+    border:1px solid #ddd; 
+}
+.instagram-icon:hover { 
+    background:linear-gradient(45deg, #c2410c 0%, #be185d 60%, #9333ea 100%); 
+    border-color:transparent;
+    color:#ffffff; 
+}
 .flag-icon { width:24px; height:16px; vertical-align:middle; border-radius:2px; object-fit:cover; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .event-description { margin:10px 0 15px; opacity:.8; font-size: 0.95rem; }
 .event-actions { display:flex; gap:10px; position:relative; }
@@ -208,6 +238,47 @@
 @keyframes pulse { 0%{opacity:.7} 50%{opacity:1} 100%{opacity:.7} }
 .happening-now { border:2px solid var(--highlight-border); background:var(--highlight-bg); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2); }
 .wait-button { background:#e0e0e0; color:#666; cursor:not-allowed; border: 1px solid #ccc; }
+
+/* Rodapé discreto de anúncio da Mentoria */
+.event-footer-mentoria {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.event-mentoria-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none !important;
+    padding: 4px 14px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+.event-mentoria-link i.fa-graduation-cap {
+    color: #d97706;
+    font-size: 0.9rem;
+}
+.event-mentoria-link .arrow-icon {
+    font-size: 0.7rem;
+    opacity: 0.5;
+    transition: transform 0.2s ease;
+}
+.event-mentoria-link:hover {
+    color: #92400e !important;
+    background: #fef3c7;
+}
+.event-mentoria-link:hover .arrow-icon {
+    transform: translateX(3px);
+    opacity: 1;
+}
 .wait-button i { margin-right: 5px; }
 .fa-spin-slow { animation: fa-spin 3s infinite linear; }
 @keyframes fa-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(359deg); } }

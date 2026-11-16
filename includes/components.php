@@ -34,7 +34,7 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
             <span><?= htmlspecialchars($langDisplayName) ?></span>
             <div class="event-social-links">
                 <?php if (!empty($ev['final_whatsapp'])): ?>
-                <a href="<?= htmlspecialchars($ev['final_whatsapp']) ?>" target="_blank" class="social-icon whatsapp-icon" title="Grupo WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="<?= htmlspecialchars($ev['final_whatsapp']) ?>" target="_blank" class="social-icon whatsapp-icon" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                 <?php endif; ?>
                 <?php if (!empty($ev['final_instagram'])): ?>
                 <a href="<?= htmlspecialchars($ev['final_instagram']) ?>" target="_blank" class="social-icon instagram-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
@@ -78,6 +78,11 @@ function renderEventCard($ev, $currentDayOfWeek, $currentHour, $isTarget = false
                 <i class="fa-solid fa-circle-play"></i> <?= t('events.previous') ?>
             </a>
             <?php endif; ?>
+        </div>
+        <div class="event-footer-mentoria">
+            <a href="https://viaei.com/mentoria" target="_blank" rel="noopener" class="event-mentoria-link">
+                <i class="fas fa-graduation-cap"></i> <span>Ei Mentorias</span> <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
         </div>
     </div>
     <?php

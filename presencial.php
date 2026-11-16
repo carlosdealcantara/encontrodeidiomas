@@ -273,6 +273,8 @@ ob_start();
         padding:7px 16px; border-radius:50px; font-size:0.82rem; font-weight:600;
         text-decoration:none; transition: all 0.25s; border: 1.5px solid;
     }
+    .city-link-mentoria { color: #d97706; border-color: #f59e0b; background: #fffbeb; }
+    .city-link-mentoria:hover { background:#f59e0b; color:#fff; }
     .city-link-whatsapp { color: #16a34a; border-color: #16a34a; }
     .city-link-whatsapp:hover { background:#16a34a; color:#fff; }
     .city-link-instagram { color: #9333ea; border-color: #9333ea; }
