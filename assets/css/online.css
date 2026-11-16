@@ -182,27 +182,29 @@
     height:26px; 
     border-radius:50%; 
     font-size:.85rem; 
+    background:#ffffff;
     transition:all .25s ease; 
-    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    box-shadow:0 1px 3px rgba(0,0,0,0.06);
     flex-shrink:0;
 }
-.social-icon:hover { transform:translateY(-2px); box-shadow:0 3px 8px rgba(0,0,0,0.15); }
+.social-icon:hover { transform:translateY(-2px); box-shadow:0 3px 8px rgba(0,0,0,0.12); }
 .whatsapp-icon { 
-    background:#25D366; 
-    color:#ffffff; 
-    border:1px solid #20bd5a; 
+    background:#ffffff;
+    color:#25D366; 
+    border:1.5px solid #25D366; 
 }
 .whatsapp-icon:hover { 
-    background:#20bd5a; 
+    background:#25D366; 
     color:#ffffff; 
 }
 .instagram-icon { 
-    background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
-    color:#ffffff; 
-    border:1px solid rgba(0,0,0,0.05); 
+    background:#ffffff;
+    color:#E1306C; 
+    border:1.5px solid #E1306C; 
 }
 .instagram-icon:hover { 
-    filter:brightness(1.1); 
+    background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
+    border-color:transparent;
     color:#ffffff; 
 }
 .flag-icon { width:24px; height:16px; vertical-align:middle; border-radius:2px; object-fit:cover; box-shadow:0 1px 3px rgba(0,0,0,.2); }
