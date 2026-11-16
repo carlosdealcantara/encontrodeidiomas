@@ -10,27 +10,19 @@ Esta base de conhecimento documenta o pipeline completo de reaproveitamento de �
 - **Acesso SSH / SCP à Oracle VPS:**
   - **Host / IP:** `136.248.92.126` (usuário: `ubuntu`)
   - **Chave SSH Local Obrigatória:** `C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key`
-- **Como a IA localiza e baixa o áudio do episódio N:**
-  1. **Verificar cache local primeiro (otimização obrigatória):** Antes de qualquer acesso à VPS, verificar se `scratch/pod_test/pod_<N>.ogg` já existe localmente com tamanho > 0:
-     - **Se existir:** Pular direto para a medição de duração via FFprobe. Nenhum acesso à VPS é necessário.
-     - **Se não existir:** Seguir os passos abaixo para baixar da VPS.
-  2. Conectar via SSH na VPS usando a chave para listar os arquivos ordenados cronologicamente:
-     ```powershell
-     ssh -i C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key ubuntu@136.248.92.126 "ls -1tr /home/ubuntu/encontrodeidiomas/baileys-server/data/audios_pilulas/"
-     ```
-  3. O Pod #1 corresponde ao 1º áudio da ordem cronológica (`pilula_1784860410211.ogg`), Pod #2 ao 2º, Pod #3 ao 3º, e assim sucessivamente:
-     - Pod #1: `pilula_1784860410211.ogg`
-     - Pod #2: `pilula_1785029252319.ogg`
-     - Pod #3: `pilula_1785029273241.ogg`
-     - Pod #4: `pilula_1785075422474.ogg`
-     - Pod #5: `pilula_1785165963239.ogg`
-     - Pod #6: `pilula_1785332191057.ogg`
-  4. Baixar via SCP com a chave privada diretamente para a pasta local:
-     ```powershell
-     scp -i C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key ubuntu@136.248.92.126:/home/ubuntu/encontrodeidiomas/baileys-server/data/audios_pilulas/<ARQUIVO_PILULA>.ogg scratch/pod_test/pod_<N>.ogg
-     ```
-  5. Verificar se o SCP foi bem-sucedido (arquivo existe e tamanho > 0). Se falhar, reportar o erro e não prosseguir.
-  6. Medir a duração imediatamente via FFprobe e informar ao usuário para aguardar o link do YouTube.
+- **Como a IA localiza e baixa o áudio do episódio N (REGRA DE OURO - ZERO OLHÔMETRO):**
+  1. **Verificar cache local primeiro:** Verificar se `scratch/pod_test/pod_<N>.ogg` já existe localmente com tamanho > 0.
+     - Se existir e for válido, use-o diretamente.
+  2. **Verdade Absoluta = ID da Tabela `pilulas_conteudo`:**
+     - É ESTRITAMENTE PROIBIDO contar linhas ou confiar em ordem visual de `ls`. O episódio N corresponde ao registro no banco MySQL onde `id = N` (ou o mapeamento exato registrado).
+     - Para buscar o nome exato do arquivo do Pod N via SSH na VPS Oracle:
+       ```powershell
+       ssh -i C:\Users\sorla\Projetos\encontrodeidiomas\ssh-key-2026-05-25.key ubuntu@136.248.92.126 "mysql -h 77.37.127.146 -u u879045076_ei -p'#Nadier38' u879045076_ei -N -s -e \"SELECT audio_path FROM pilulas_conteudo WHERE id = <N> LIMIT 1;\""
+       ```
+     - O comando retorna o caminho exato salvo no banco (ex: `baileys-server/data/audios_pilulas/pilula_XXXXX.ogg`).
+  3. **Download direto via SCP:** Baixar exatamente o arquivo apontado pelo banco para `scratch/pod_test/pod_<N>.ogg`.
+  4. **Validação:** Verificar se o arquivo local tem tamanho > 0.
+  5. **Medir a duração imediatamente via FFprobe:** Informar ao usuário a duração mínima necessária para o vídeo de fundo do YouTube e a duração final acelerada (1.2x).
 
 ---
 
