@@ -173,21 +173,20 @@
 }
 .happening-now .event-tag { background: transparent; }
 .event-title { display:flex; align-items:center; gap:10px; font-size:1.5rem; font-weight:600; margin-bottom:10px; flex-wrap:wrap; }
-.event-title > span { display:inline-flex; align-items:center; }
-.event-social-links { display:inline-flex; align-items:center; gap:8px; margin-left:auto; }
+.event-social-links { display:flex; gap:5px; margin-left:10px; }
 .social-icon { 
     display:inline-flex; 
     align-items:center; 
     justify-content:center; 
-    width:30px; 
-    height:30px; 
+    width:26px; 
+    height:26px; 
     border-radius:50%; 
-    font-size:0.95rem; 
+    font-size:.85rem; 
     transition:all .25s ease; 
-    box-shadow:0 1px 4px rgba(0,0,0,0.08);
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
     flex-shrink:0;
 }
-.social-icon:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.15); }
+.social-icon:hover { transform:translateY(-2px); box-shadow:0 3px 8px rgba(0,0,0,0.15); }
 .whatsapp-icon { 
     background:#25D366; 
     color:#ffffff; 
@@ -239,35 +238,38 @@
 
 /* Rodapé discreto de anúncio da Mentoria */
 .event-footer-mentoria {
-    margin-top: 12px;
+    margin-top: 14px;
     padding-top: 10px;
     border-top: 1px dashed rgba(0, 0, 0, 0.08);
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .event-mentoria-link {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #6b7280;
-    text-decoration: none;
-    padding: 3px 12px;
+    text-decoration: none !important;
+    padding: 4px 14px;
     border-radius: 12px;
     transition: all 0.2s ease;
     background: transparent;
 }
 .event-mentoria-link i.fa-graduation-cap {
     color: #d97706;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 .event-mentoria-link .arrow-icon {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     opacity: 0.5;
     transition: transform 0.2s ease;
 }
 .event-mentoria-link:hover {
-    color: #92400e;
+    color: #92400e !important;
     background: #fef3c7;
 }
 .event-mentoria-link:hover .arrow-icon {
