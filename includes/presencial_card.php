@@ -38,6 +38,9 @@ $cityHref = $citySlugVal
         <?php endif; ?>
 
         <div class="city-links">
+            <a href="https://viaei.com/mentoria" target="_blank" rel="noopener" class="city-link city-link-mentoria">
+                <i class="fas fa-graduation-cap"></i> <?= t('events.mentorias') ?>
+            </a>
             <?php if (!empty($ev['whatsapp_link'])): ?>
                 <a href="<?= htmlspecialchars($ev['whatsapp_link']) ?>" target="_blank" rel="noopener" class="city-link city-link-whatsapp">
                     <i class="fab fa-whatsapp"></i> <?= t('events.join_group') ?>

@@ -173,11 +173,61 @@
 }
 .happening-now .event-tag { background: transparent; }
 .event-title { display:flex; align-items:center; gap:10px; font-size:1.5rem; font-weight:600; margin-bottom:10px; flex-wrap:wrap; }
-.event-social-links { display:flex; gap:5px; margin-left:10px; }
-.social-icon { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; font-size:.85rem; background:#f0f2f5; color:var(--text-color); border:1px solid #ddd; transition:all .3s ease; }
-.social-icon:hover { transform:translateY(-2px); }
-.whatsapp-icon:hover { color:#25D366; }
-.instagram-icon:hover { color:#E1306C; }
+.event-social-links { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.event-mentoria-badge {
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    padding:4px 10px;
+    background:#f3f4f6;
+    color:var(--text-color);
+    border:1px solid #d1d5db;
+    border-radius:20px;
+    font-size:0.75rem;
+    font-weight:600;
+    text-decoration:none;
+    letter-spacing:0.3px;
+    transition:all 0.25s ease;
+}
+.event-mentoria-badge i { font-size:0.85rem; color:#d97706; }
+.event-mentoria-badge:hover {
+    background:#fef3c7;
+    border-color:#f59e0b;
+    color:#92400e;
+    transform:translateY(-2px);
+    box-shadow:0 3px 10px rgba(245,158,11,0.2);
+}
+.social-icon { 
+    display:inline-flex; 
+    align-items:center; 
+    justify-content:center; 
+    width:34px; 
+    height:34px; 
+    border-radius:50%; 
+    font-size:1.05rem; 
+    transition:all .3s ease; 
+    box-shadow:0 2px 5px rgba(0,0,0,0.06);
+    flex-shrink:0;
+}
+.social-icon:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.12); }
+.whatsapp-icon { 
+    background:#25D366; 
+    color:#ffffff; 
+    border:1px solid #20bd5a; 
+}
+.whatsapp-icon:hover { 
+    background:#20bd5a; 
+    color:#ffffff; 
+}
+.instagram-icon { 
+    background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
+    color:#ffffff; 
+    border:1px solid rgba(0,0,0,0.05); 
+}
+.instagram-icon:hover { 
+    filter:brightness(1.1); 
+    color:#ffffff; 
+}
 .flag-icon { width:24px; height:16px; vertical-align:middle; border-radius:2px; object-fit:cover; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .event-description { margin:10px 0 15px; opacity:.8; font-size: 0.95rem; }
 .event-actions { display:flex; gap:10px; position:relative; }
