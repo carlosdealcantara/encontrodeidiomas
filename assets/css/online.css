@@ -182,25 +182,26 @@
     height:26px; 
     border-radius:50%; 
     font-size:.85rem; 
-    background:#ffffff;
+    background:#f0f2f5;
+    border:1px solid #ddd;
     transition:all .25s ease; 
-    box-shadow:0 1px 3px rgba(0,0,0,0.06);
     flex-shrink:0;
 }
 .social-icon:hover { transform:translateY(-2px); box-shadow:0 3px 8px rgba(0,0,0,0.12); }
 .whatsapp-icon { 
-    background:#ffffff;
-    color:#15803d; 
-    border:1.5px solid #16a34a; 
+    background:#f0f2f5;
+    color:#16a34a; 
+    border:1px solid #ddd; 
 }
 .whatsapp-icon:hover { 
     background:#16a34a; 
     color:#ffffff; 
+    border-color:#16a34a;
 }
 .instagram-icon { 
-    background:#ffffff;
+    background:#f0f2f5;
     color:#be185d; 
-    border:1.5px solid #db2777; 
+    border:1px solid #ddd; 
 }
 .instagram-icon:hover { 
     background:linear-gradient(45deg, #c2410c 0%, #be185d 60%, #9333ea 100%); 
