@@ -190,20 +190,20 @@
 .social-icon:hover { transform:translateY(-2px); box-shadow:0 3px 8px rgba(0,0,0,0.12); }
 .whatsapp-icon { 
     background:#ffffff;
-    color:#25D366; 
-    border:1.5px solid #25D366; 
+    color:#15803d; 
+    border:1.5px solid #16a34a; 
 }
 .whatsapp-icon:hover { 
-    background:#25D366; 
+    background:#16a34a; 
     color:#ffffff; 
 }
 .instagram-icon { 
     background:#ffffff;
-    color:#E1306C; 
-    border:1.5px solid #E1306C; 
+    color:#be185d; 
+    border:1.5px solid #db2777; 
 }
 .instagram-icon:hover { 
-    background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
+    background:linear-gradient(45deg, #c2410c 0%, #be185d 60%, #9333ea 100%); 
     border-color:transparent;
     color:#ffffff; 
 }
