@@ -78,14 +78,34 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 
 Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoriamente** entregar os 3 blocos de conteúdo formatados individualmente em **blocos de código (code blocks)** com botão de cópia com um clique:
 
-### A. Título do Vídeo
-- **Estrutura:** `[Gancho Curioso / Anti-erro / Dúvida Real] | Pod #<N>`
-- **Regra de Não-Repetição com a Capa:** O título deve focar mais no contexto ou na consequência do erro (ex: `CUIDADO ao falar isso em inglês! Você pode arrumar briga | Pod #2`), enquanto a thumbnail ataca por outro ângulo emocional ou direto (ex: `ISSO NÃO É BRIGA?!`). **Nunca repita as mesmas palavras exatas no texto da thumbnail e no título.**
-- **Exemplo:** `NUNCA diga "Did you understand?" em inglês! Use isso | Pod #1`
-- **Formato de entrega:** Fornecer sempre dentro de um bloco de código ```` ```text ```` para cópia direta em 1 clique:
-  ```text
-  [Gancho Curioso / Anti-erro / Dúvida Real] | Pod #<N>
-  ```
+### A. Títulos do Vídeo (Estratégia de Alto CTR & Teste A/B Nativo)
+
+> **Fundamento Psicológico (Empacotamento de Alta Conversão):**
+> O título não é legenda descritiva; é uma **ferramenta de vendas e interrupção de padrão**. No celular ou na TV de sala, o espectador decide clicar em menos de meio segundo por impulso emocional.
+> 
+> **Regras Inegociáveis de Construção:**
+> 1. **Loop Aberto (Curiosity Gap):** O título deve instigar uma dúvida ou tensão que **SÓ o clique resolve**. É **PROIBIDO** entregar a resposta/solução no título (se já revelou a resposta, matou o motivo de clicar).
+> 2. **Front-Loaded (Impacto nos primeiros 45 a 55 caracteres):** O YouTube corta títulos longos no mobile e na TV após ~55 caracteres. O gancho emocional e a palavra-chave devem vir **no início**, nunca escondidos no final antes do corte por "...".
+> 3. **Acionar pelo menos 1 dos 5 Gatilhos Emocionais:**
+>    - *Medo / Urgência / Anti-erro:* Passar vergonha, soar indelicado, arrumar confusão (`CUIDADO ao falar...`, `NÃO diga isso...`).
+>    - *Curiosidade Intensa:* Um segredo ou contraste oculto (`O detalhe que ninguém te contou...`, `Por que nativos nunca usam...`).
+>    - *Desejo de Recompensa:* Falar com naturalidade imediata (`O jeito simples de falar como nativo...`).
+>    - *Surpresa / Choque:* Quebra de crença comum (`Essa palavra NÃO significa o que você pensa...`).
+>    - *FOMO:* Medo de ficar para trás ou cometer erro básico (`Todo brasileiro erra isso em inglês...`).
+> 4. **Promessa Verdadeira (Zero Clickbait Falso):** O YouTube cruza CTR com retenção inicial. A promessa deve ser forte e instigante, mas **100% cumprida e respondida** no áudio para reter a audiência e evitar punição algorítmica.
+> 5. **Complementaridade Absoluta com a Thumbnail:** O título foca no contexto e consequência; a capa ataca a emoção visual rápida. **Nunca repita as mesmas palavras da capa no título.**
+> 
+> **Formato Obrigatório de Entrega:**
+> Entregar **3 variações prontas para Teste A/B** no YouTube Studio (para medir CTR real e tempo de exibição):
+> - **Opção A (Anti-erro / Medo):** Foco na consequência social ou constrangimento.
+> - **Opção B (Curiosidade / Loop Aberto):** Foco no contraste ou na regra que ninguém ensina.
+> - **Opção C (Desejo / Naturalidade):** Foco no resultado prático e na fala fluida.
+> 
+> ```text
+> [Opção A - Anti-erro / Consequência]: [Gancho curto de impacto] | Pod #<N>
+> [Opção B - Curiosidade / Loop Aberto]: [Gancho que insinua sem entregar] | Pod #<N>
+> [Opção C - Desejo / Fala Natural]: [Benefício prático direto] | Pod #<N>
+> ```
 
 ### B. Descrição Completa do YouTube (Pronta para copiar e colar em 1 clique)
 Seguir rigorosamente este template com quebras de linha limpas:
@@ -134,14 +154,21 @@ Créditos de imagem: Vídeo de fundo em [Local do Vídeo] licenciado sob Creativ
 ### C. Prompt Otimizado para Geração de Thumbnail no Gemini
 O usuário gera a capa no Gemini para ter estética cinematográfica 4K e letreiros chamativos. A IA deve gerar um prompt sob medida combinando uma **Estrutura Fixa (Branding)** com **Variáveis Dinâmicas por Episódio** para evitar "Cegueira de Padrão" no feed do YouTube.
 
-> **Regra de Ouro: Coerência Temática + Complementaridade de Ângulos:**
-> O título e a thumbnail **DEVEM tratar rigorosamente do MESMO tema central**. O que muda é o **ângulo de ataque**:
-> - **Thumbnail:** Ataque emocional, reação rápida, choque, dúvida direta ou o erro falado em destaque (lido em 0,3 segundo pelo cérebro).
-> - **Título:** Contexto, exemplo prático real, consequência do erro e o termo de busca (SEO).
-> - **Exemplo de sucesso com ângulos opostos/complementares:**
->   - **Thumbnail (Dúvida / Dilema):** `"QUAL É O CERTO?"` + `"SAY OU TELL?"`
->   - **Título (Anti-erro prático / Consequência):** `NUNCA diga "They say me" em inglês! Pare de errar isso | Pod #<N>`
->   *(A capa foca na dúvida direta e o título foca no erro prático a ser evitado, sem repetir palavras nem soar redundante).*
+> **Regra de Ouro: Coerência Temática + Complementaridade de Ângulos (Ping-Pong Visual):**
+> O título e a thumbnail **DEVEM tratar rigorosamente do MESMO tema central**, mas atacando por **ângulos opostos e complementares**:
+> - **Thumbnail (Bandeira / Impacto Rápido):** Ataque emocional imediato, reação humana de choque ou dúvida curta, lida em 0,3 segundo no feed mobile. **Texto de no máximo 3 a 5 palavras no total** (frases longas poluem a imagem e matam o CTR).
+> - **Título (Venda / Loop Aberto):** Contexto, erro real, consequência e gancho que só é solucionado com o clique.
+> - **Regra Anti-Repetição Estrita:** NUNCA repita na thumbnail as mesmas palavras ou termos do título. Eles se completam como duas metades da mesma história.
+> - **Exemplos de sucesso (Dupla Título + Thumbnail):**
+>   - *Exemplo 1 (Erro social):*
+>     - **Thumbnail:** Texto Principal: `"NÃO FALE ISSO!"` | Tarja: `"ISSO É OFENSIVO?"`
+>     - **Título:** `CUIDADO ao usar "Understand?" em inglês! Gera atrito | Pod #<N>`
+>   - *Exemplo 2 (Dilema / Escolha):*
+>     - **Thumbnail:** Texto Principal: `"QUAL É O CERTO?"` | Tarja: `"SAY OU TELL?"`
+>     - **Título:** `NUNCA diga "They say me" em inglês! Pare de errar isso | Pod #<N>`
+>   - *Exemplo 3 (Falso Amigo / Surpresa):*
+>     - **Thumbnail:** Texto Principal: `"NÃO É ISSO!"` | Tarja: `"TODO MUNDO ERRA"`
+>     - **Título:** `Essa palavra NÃO significa o que você pensa em inglês! | Pod #<N>`
 
 #### 1. Estrutura Fixa (Manter em 100% dos Prompts)
 - **Formato:** Proporção 16:9 widescreen (1280x720), alto contraste e saturação para leitura mobile perfeita.
@@ -239,10 +266,10 @@ Cenário e Fundo (Baseado no local real do vídeo: [Local e ponto de interesse e
 - Momento do dia e temperatura de luz: [Escolher conforme Variável B: ex. golden hour com tons laranja/dourado saturados / noite urbana com neon e reflexos / dia ensolarado com sombras nítidas].
 
 Textos Gráficos Integrados (Lado [ESQUERDO ou DIREITO — oposto ao Carlos], sem cobrir a pessoa):
-- No centro-[lado oposto ao Carlos], em tipografia 3D gigante estilo pôster moderno em [COR DO TÍTULO — Variável A] com contorno preto espesso e sombra projetada:
-  "[FRASE CLICKBAIT COMPLEMENTAR / REAÇÃO HUMANA / GANCHO EMOTIVO]"
-- Logo abaixo em uma tarja contrastante em [COR DA TARJA — Variável A] com letras em caixa alta:
-  "[DÚVIDA RÁPIDA OU ALERTA IMPACTANTE EM TEXTO CONTRASTANTE]"
+- No centro-[lado oposto ao Carlos], em tipografia 3D gigante estilo pôster moderno em [COR DO TÍTULO — Variável A] com contorno preto espesso e sombra projetada (máximo 2 a 3 palavras curtas de choque emocional):
+  "[MICROCÓPIA DE IMPACTO / CHOQUE / ALERTA CURTO]"
+- Logo abaixo em uma tarja contrastante em [COR DA TARJA — Variável A] com letras em caixa alta (máximo 2 a 3 palavras complementares):
+  "[DÚVIDA RÁPIDA OU GANCHO SECUNDÁRIO CONTRASTANTE]"
 - No canto superior [lado oposto ao Carlos]: selo discreto "POD #<N> • DICA RÁPIDA"
 - No canto inferior [lado oposto ao Carlos]: tag "Carlos de Alcântara | @ei.ingles"
 
