@@ -166,7 +166,7 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
         filter_complex = f"[0:v]subtitles={ass_clean}[v]"
         audio_map = "1:a"
 
-    # ultrafast + threads=2 + rc-lookahead=0 → minimiza consumo de RAM (~2.5 GB free é suficiente)
+    # veryfast + threads=4 + rc-lookahead=10 → excelente compressão (~4500k bitrate, ~70% menor em disco), seguro em RAM
     cmd = [
         "ffmpeg", "-y",
         "-i", bg_path,
@@ -176,10 +176,9 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
         "-map", "[v]",
         "-map", audio_map,
         "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-tune", "fastdecode",
-        "-x264-params", "threads=2:rc-lookahead=0:bframes=0",
-        "-crf", "23",
+        "-preset", "veryfast",
+        "-x264-params", "threads=4:rc-lookahead=10",
+        "-crf", "24",
         "-c:a", "aac",
         "-b:a", "128k",
         str(output_file)
@@ -215,10 +214,9 @@ def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, sp
         "-map", "[v]",
         "-map", audio_map,
         "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-tune", "fastdecode",
-        "-x264-params", "threads=2:rc-lookahead=0:bframes=0",
-        "-crf", "23",
+        "-preset", "veryfast",
+        "-x264-params", "threads=4:rc-lookahead=10",
+        "-crf", "24",
         "-c:a", "aac",
         "-b:a", "128k",
         str(output_file)

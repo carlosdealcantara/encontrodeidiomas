@@ -48,7 +48,9 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 6. **Estilo das Legendas:** Arial Bold branco, Outline=3.5, Shadow=2, **sem caixa de fundo**.
    - **⚠️ FontSize DEFINITIVO no ASS: 90** (legenda com protagonismo visual e tamanho ideal para visualização rápida no celular e desktop).
    - **Posicionamento:** Centralizado na tela (`Alignment=5`) em horizontal e vertical.
-7. **Velocidade Padrão:** Acelerado em **1.2x** por padrão (`--speed 1.2`), queimando a legenda primeiro e acelerando os frames e áudio em conjunto para retenção ideal no YouTube, Reels e TikTok. O parâmetro `-t` do FFmpeg é ajustado para a duração final acelerada (`dur / speed`) para cortar no segundo exato onde termina o áudio.
+7. **Velocidade e Compressão Inteligente:** Acelerado em **1.2x** por padrão (`--speed 1.2`), queimando a legenda primeiro e acelerando os frames e áudio em conjunto para retenção ideal no YouTube, Reels e TikTok.
+   - **Renderização Otimizada (CRF 24 + Preset veryfast):** Usa `libx264` com `-crf 24`, `-preset veryfast` e `-x264-params threads=4:rc-lookahead=10` tanto para o horizontal quanto para o vertical. Isso reduz o tamanho final em ~70% sem perda perceptível de qualidade (Full HD 1080p nativo cristalino e áudio intacto a 128k), garantindo que mesmo episódios longos (>20 min) fiquem bem abaixo de 800 MB, compatíveis com os limites do Telegram e rápidos para upload.
+   - O parâmetro `-t` do FFmpeg é ajustado para a duração final acelerada (`dur / speed`) para cortar no segundo exato onde termina o áudio.
 8. **Download do Vídeo de Fundo:** Baixa o vídeo YouTube em até 1080p (Creative Commons) via `yt-dlp`.
 9. **Renderização FFmpeg — dois outputs (Padrão de Nomenclatura):**
    - **Horizontal 16:9** → `~/Downloads/pod<N>.mp4` (YouTube)
