@@ -110,11 +110,17 @@ Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoria
 > ```
 
 ### B. Descrição Completa do YouTube (Pronta para copiar e colar em 1 clique)
+
+> **Engenharia de SEO & Conversão (Padrão VidIQ + Alta Retenção):**
+> 1. **Parágrafo 1 (Above the fold - Primeiros 150 caracteres para SEO e Busca):** Comece com uma sentença afirmativa e direta de intenção de busca que contenha as principais palavras-chave de cauda longa (ex: *"Entenda a diferença entre [Termo A] e [Termo B] em inglês para parar de confundir ao se comunicar"*). Em seguida, exponha o erro comum de tradução literal ou constrangimento que o aluno vive.
+> 2. **Parágrafo 2 (Autoridade & Cobertura Total do Conteúdo):** Apresente o episódio contextualizando a solução prática do professor Carlos de Alcântara. É **OBRIGATÓRIO cobrir TODOS os tópicos reais ensinados no áudio** (ex: se além da dica principal ele explicou expressões sensoriais como *look like*, cite textualmente para gerar relevância semântica e evitar alucinações).
+> 3. **CTA dos Comentários:** Chamada simples estimulando o espectador a fixar o aprendizado comentando um exemplo real.
+
 Seguir rigorosamente este template com quebras de linha limpas:
 ```text
-[Breve resumo de 2 linhas do erro e da dica abordada no áudio].
+[Gancho de SEO direto: "Entenda a diferença entre X e Y em inglês para parar de..."] + [Breve resumo do erro comum e do mal-entendido na prática].
 
-Neste episódio do Pill of the Day (Pod #<N>), o professor Carlos de Alcântara mostra [benefício/solução da aula].
+Neste episódio do Pill of the Day (Pod #<N>), o professor Carlos de Alcântara [explica o porquê do erro e detalha a regra prática, cobrindo TODOS os tópicos abordados no áudio com exemplos reais citados].
 
 💬 Deixe seu exemplo nos comentários para praticar!
 
