@@ -96,7 +96,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
           "url": "<?= SITE_URL ?>",
           "logo": {
             "@type": "ImageObject",
-            "url": "<?= SITE_URL ?>/assets/images/logo.webp?v=6"
+            "url": "<?= SITE_URL ?>/assets/images/logo.webp?v=7"
           },
           "description": "<?= t('meta.seo_org_desc') ?>",
           "sameAs": [
@@ -178,9 +178,12 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
     ?>
     <title>Ei | <?= sanitize($title) ?><?= $title_suffix ?></title>
 
-    <!-- Favicon -->
-    <link rel="icon"             type="image/webp" href="/assets/images/favicon.webp?v=4">
-    <link rel="apple-touch-icon"                   href="/assets/images/favicon.webp?v=4">
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/images/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/images/favicon-192x192.png">
+    <link rel="icon" type="image/webp" href="/assets/images/favicon.webp?v=5">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -773,7 +776,7 @@ $canonical = $canonical ?? ($current_lang === 'pt' ? $hreflang_pt : $hreflang_en
         </script>
         <div class="header-content">
             <div class="logo-container">
-                <img src="/assets/images/logo.webp?v=6" alt="Logo Encontro de Idiomas" class="logo" width="60" height="60" fetchpriority="high">
+                <img src="/assets/images/logo.webp?v=7" alt="Logo Encontro de Idiomas" class="logo" width="60" height="60" fetchpriority="high">
                 <div>
                     <div class="site-title"><?= SITE_NAME ?></div>
                     <div class="site-description"><?= t('meta.tagline') ?></div>
