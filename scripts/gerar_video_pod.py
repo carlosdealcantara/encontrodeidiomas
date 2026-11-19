@@ -136,6 +136,7 @@ def download_background(youtube_url, temp_dir):
     bg_path = os.path.join(temp_dir, "bg_video.mp4")
     cmd = [
         sys.executable, "-m", "yt_dlp",
+        "--extractor-args", "youtube:player_client=android,web",
         "-f", "bestvideo[ext=mp4][height<=1080]/bestvideo[height<=1080]/best[height<=1080]",
         "-o", bg_path,
         "--force-overwrites",
