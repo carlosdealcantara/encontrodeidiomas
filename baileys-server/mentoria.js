@@ -153,14 +153,18 @@ function saveActivity(data) {
 }
 
 function resolveParticipantName(jid) {
+    if (!jid) return 'Unknown';
     try {
+        const cleanJid = jid.replace(/:\d+@/, '@');
+
         const tryFind = (logData) => {
             if (!logData) return null;
             const dates = Object.keys(logData).sort().reverse();
             for (const d of dates) {
                 for (const g of Object.keys(logData[d])) {
-                    if (logData[d][g][jid] && logData[d][g][jid].name && logData[d][g][jid].name !== 'Unknown' && logData[d][g][jid].name !== 'Desconhecido') {
-                        return logData[d][g][jid].name;
+                    const entry = logData[d][g][jid] || logData[d][g][cleanJid];
+                    if (entry && entry.name && entry.name !== 'Unknown' && entry.name !== 'Desconhecido') {
+                        return entry.name;
                     }
                 }
             }

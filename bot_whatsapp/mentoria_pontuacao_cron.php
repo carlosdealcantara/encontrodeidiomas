@@ -145,18 +145,10 @@ foreach ($langs as $lang) {
                     if (str_ends_with($memberJid, '@g.us')) continue;
 
                     $nome = trim($data['name'] ?? 'Unknown');
-                    if ($nome === 'Unknown' || empty($nome)) {
-                        $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' AND (lang_id = ? OR lang_id IS NULL) LIMIT 1");
-                        $phoneOnly = preg_replace('/\D/', '', explode('@', $memberJid)[0]);
-                        $stmtName->execute([$phoneOnly, $lang]);
-                        $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-                        if ($rowName) {
-                            $nome = $rowName['nome'];
-                        } else {
-                            $stmtName2 = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE member_jid = ? AND member_name IS NOT NULL AND member_name != '' LIMIT 1");
-                            $stmtName2->execute([$memberJid]);
-                            $rowName2 = $stmtName2->fetch(PDO::FETCH_ASSOC);
-                            if ($rowName2) $nome = $rowName2['member_name'];
+                    if ($nome === 'Unknown' || $nome === 'Desconhecido' || empty($nome)) {
+                        $resolved = resolveMentoriaMemberName($conn, $memberJid, $lang);
+                        if ($resolved !== 'Unknown') {
+                            $nome = $resolved;
                         }
                     }
 
@@ -211,17 +203,14 @@ foreach ($langs as $lang) {
         if ($desafioJid && !empty($desafioMemberJids) && !in_array($mJid, $desafioMemberJids)) continue;
 
         $mName = $completer['member_name'] ?? 'Unknown';
-        if ($mName === 'Unknown' || empty(trim($mName))) {
-            if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
+        if ($mName === 'Unknown' || $mName === 'Desconhecido' || empty(trim($mName))) {
+            if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown' && $rankingMsgs[$mJid]['name'] !== 'Desconhecido') {
                 $mName = $rankingMsgs[$mJid]['name'];
-            } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
+            } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown' && $rankingReacts[$mJid]['name'] !== 'Desconhecido') {
                 $mName = $rankingReacts[$mJid]['name'];
             } else {
-                $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-                $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
-                $stmtName->execute([$phoneOnly]);
-                $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-                if ($rowName) $mName = $rowName['nome'];
+                $resolved = resolveMentoriaMemberName($conn, $mJid, $lang);
+                if ($resolved !== 'Unknown') $mName = $resolved;
             }
         }
 
@@ -265,17 +254,14 @@ foreach ($langs as $lang) {
         if (in_array($cleanMJid, $allGroupAdmins)) continue;
 
         $mName = $row['member_name'] ?: 'Unknown';
-        if ($mName === 'Unknown') {
-            if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown') {
+        if ($mName === 'Unknown' || $mName === 'Desconhecido' || empty(trim($mName))) {
+            if (isset($rankingMsgs[$mJid]) && $rankingMsgs[$mJid]['name'] !== 'Unknown' && $rankingMsgs[$mJid]['name'] !== 'Desconhecido') {
                 $mName = $rankingMsgs[$mJid]['name'];
-            } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown') {
+            } elseif (isset($rankingReacts[$mJid]) && $rankingReacts[$mJid]['name'] !== 'Unknown' && $rankingReacts[$mJid]['name'] !== 'Desconhecido') {
                 $mName = $rankingReacts[$mJid]['name'];
             } else {
-                $stmtName = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? AND nome IS NOT NULL AND nome != '' LIMIT 1");
-                $phoneOnly = preg_replace('/\D/', '', explode('@', $mJid)[0]);
-                $stmtName->execute([$phoneOnly]);
-                $rowName = $stmtName->fetch(PDO::FETCH_ASSOC);
-                if ($rowName) $mName = $rowName['nome'];
+                $resolved = resolveMentoriaMemberName($conn, $mJid, $lang);
+                if ($resolved !== 'Unknown') $mName = $resolved;
             }
         }
 
@@ -319,6 +305,17 @@ foreach ($langs as $lang) {
     // STUDENT OF THE DAY
     // -------------------------------------------------------
     $memberStats = array_filter($memberStats, fn($m) => $m['total_pts'] > 0);
+    // Assegura que nenhum nome final em $memberStats permaneça Unknown ou Desconhecido
+    foreach ($memberStats as $mJid => &$mData) {
+        if ($mData['name'] === 'Unknown' || $mData['name'] === 'Desconhecido' || empty(trim($mData['name']))) {
+            $resolved = resolveMentoriaMemberName($conn, $mJid, $lang);
+            if ($resolved !== 'Unknown') {
+                $mData['name'] = $resolved;
+            }
+        }
+    }
+    unset($mData);
+
     uasort($memberStats, fn($a, $b) => $b['total_pts'] <=> $a['total_pts']);
 
     // Defaults de string "sem participantes" por idioma
@@ -370,6 +367,23 @@ foreach ($langs as $lang) {
     // -------------------------------------------------------
     // SOCIAL (Word Slingers & Emoji Gang)
     // -------------------------------------------------------
+    // Assegura resolução de nomes no ranking social antes de filtrar e ordenar
+    foreach ($rankingMsgs as $mJid => &$mData) {
+        if ($mData['name'] === 'Unknown' || $mData['name'] === 'Desconhecido' || empty(trim($mData['name']))) {
+            $resolved = resolveMentoriaMemberName($conn, $mJid, $lang);
+            if ($resolved !== 'Unknown') $mData['name'] = $resolved;
+        }
+    }
+    unset($mData);
+
+    foreach ($rankingReacts as $mJid => &$rData) {
+        if ($rData['name'] === 'Unknown' || $rData['name'] === 'Desconhecido' || empty(trim($rData['name']))) {
+            $resolved = resolveMentoriaMemberName($conn, $mJid, $lang);
+            if ($resolved !== 'Unknown') $rData['name'] = $resolved;
+        }
+    }
+    unset($rData);
+
     $rankingMsgs   = array_filter($rankingMsgs,   fn($item) => $item['score'] > 0);
     $rankingReacts = array_filter($rankingReacts, fn($item) => $item['score'] > 0);
 

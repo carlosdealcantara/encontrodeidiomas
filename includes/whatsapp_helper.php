@@ -164,6 +164,107 @@ function enviarWhatsAppMention(string $to, string $message, array $mentions, ?st
     return sendBaileysRequest('/send-mention', $payload, 'POST');
 }
 
+/**
+ * Resolve o nome de um participante da Mentoria pelo seu JID.
+ * Testa múltiplos formatos de telefone (com/sem 55, com/sem nono dígito)
+ * em mentoria_alunos, mentoria_desafio_streaks e class_attendances.
+ *
+ * @param PDO $conn Conexão com o banco
+ * @param string $memberJid JID do participante (ex: 5511999998888@s.whatsapp.net ou com :device)
+ * @param string|null $lang Idioma opcional para priorizar busca em alunos
+ * @return string Nome resolvido ou 'Unknown'
+ */
+function resolveMentoriaMemberName(PDO $conn, string $memberJid, ?string $lang = null): string {
+    $cleanJid = preg_replace('/:\d+@/', '@', $memberJid);
+    $phoneOnly = preg_replace('/\D/', '', explode('@', $cleanJid)[0]);
+
+    if (!empty($phoneOnly)) {
+        // Gera variações comuns de telefone brasileiro/internacional
+        $phoneCandidates = [$phoneOnly];
+
+        // Se começa com 55 (Brasil)
+        if (str_starts_with($phoneOnly, '55')) {
+            $semDDI = substr($phoneOnly, 2);
+            $phoneCandidates[] = $semDDI;
+            // 55 + DDD + 8 dígitos (12 dígitos) -> gera versão com 9
+            if (strlen($phoneOnly) === 12) {
+                $phoneCandidates[] = substr($phoneOnly, 0, 4) . '9' . substr($phoneOnly, 4);
+                $phoneCandidates[] = substr($semDDI, 0, 2) . '9' . substr($semDDI, 2);
+            }
+            // 55 + DDD + 9 dígitos (13 dígitos) -> gera versão sem o 9
+            elseif (strlen($phoneOnly) === 13 && $phoneOnly[4] === '9') {
+                $phoneCandidates[] = substr($phoneOnly, 0, 4) . substr($phoneOnly, 5);
+                $phoneCandidates[] = substr($semDDI, 0, 2) . substr($semDDI, 3);
+            }
+        } else {
+            // Não começou com 55, adiciona versão com 55
+            $phoneCandidates[] = '55' . $phoneOnly;
+            if (strlen($phoneOnly) === 10) { // DDD + 8 dígitos
+                $phoneCandidates[] = substr($phoneOnly, 0, 2) . '9' . substr($phoneOnly, 2);
+                $phoneCandidates[] = '55' . substr($phoneOnly, 0, 2) . '9' . substr($phoneOnly, 2);
+            } elseif (strlen($phoneOnly) === 11 && $phoneOnly[2] === '9') { // DDD + 9 dígitos
+                $phoneCandidates[] = substr($phoneOnly, 0, 2) . substr($phoneOnly, 3);
+                $phoneCandidates[] = '55' . substr($phoneOnly, 0, 2) . substr($phoneOnly, 3);
+            }
+        }
+
+        $phoneCandidates = array_values(array_unique(array_filter($phoneCandidates)));
+
+        if (!empty($phoneCandidates)) {
+            $inPlaceholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
+
+            // 1. Tenta buscar em mentoria_alunos
+            if ($lang) {
+                $sqlAlunos = "SELECT nome FROM mentoria_alunos WHERE telefone IN ($inPlaceholders) AND nome IS NOT NULL AND TRIM(nome) != '' AND (lang_id = ? OR lang_id IS NULL) ORDER BY (lang_id = ?) DESC LIMIT 1";
+                $paramsAlunos = array_merge($phoneCandidates, [$lang, $lang]);
+            } else {
+                $sqlAlunos = "SELECT nome FROM mentoria_alunos WHERE telefone IN ($inPlaceholders) AND nome IS NOT NULL AND TRIM(nome) != '' LIMIT 1";
+                $paramsAlunos = $phoneCandidates;
+            }
+            try {
+                $stmt = $conn->prepare($sqlAlunos);
+                $stmt->execute($paramsAlunos);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($row && !empty(trim($row['nome']))) {
+                    return trim($row['nome']);
+                }
+            } catch (Exception $e) {}
+        }
+    }
+
+    // 2. Tenta em mentoria_desafio_streaks (por member_jid exato ou clean)
+    try {
+        $stmtStreak = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE (member_jid = ? OR member_jid = ?) AND member_name IS NOT NULL AND TRIM(member_name) != '' AND member_name != 'Unknown' AND member_name != 'Desconhecido' LIMIT 1");
+        $stmtStreak->execute([$memberJid, $cleanJid]);
+        $rowStreak = $stmtStreak->fetch(PDO::FETCH_ASSOC);
+        if ($rowStreak && !empty(trim($rowStreak['member_name']))) {
+            return trim($rowStreak['member_name']);
+        }
+    } catch (Exception $e) {}
+
+    // 3. Tenta em class_attendances (presenças mais recentes)
+    try {
+        $stmtAtt = $conn->prepare("SELECT member_name FROM class_attendances WHERE (member_jid = ? OR member_jid = ?) AND member_name IS NOT NULL AND TRIM(member_name) != '' AND member_name != 'Unknown' AND member_name != 'Desconhecido' ORDER BY id DESC LIMIT 1");
+        $stmtAtt->execute([$memberJid, $cleanJid]);
+        $rowAtt = $stmtAtt->fetch(PDO::FETCH_ASSOC);
+        if ($rowAtt && !empty(trim($rowAtt['member_name']))) {
+            return trim($rowAtt['member_name']);
+        }
+    } catch (Exception $e) {}
+
+    // 4. Tenta em mentoria_daily_scores (histórico de pontuação com nome já registrado)
+    try {
+        $stmtDaily = $conn->prepare("SELECT member_name FROM mentoria_daily_scores WHERE (member_jid = ? OR member_jid = ?) AND member_name IS NOT NULL AND TRIM(member_name) != '' AND member_name != 'Unknown' AND member_name != 'Desconhecido' ORDER BY score_date DESC LIMIT 1");
+        $stmtDaily->execute([$memberJid, $cleanJid]);
+        $rowDaily = $stmtDaily->fetch(PDO::FETCH_ASSOC);
+        if ($rowDaily && !empty(trim($rowDaily['member_name']))) {
+            return trim($rowDaily['member_name']);
+        }
+    } catch (Exception $e) {}
+
+    return 'Unknown';
+}
+
 function removerDoGrupo(string $groupId, array $participants): array {
     $payload = [
         'groupId' => $groupId,

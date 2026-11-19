@@ -4,6 +4,7 @@
  * Chamada pelo bot Node.js ao receber comandos !1 a !5
  */
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/whatsapp_helper.php';
 
 header('Content-Type: application/json');
 
@@ -26,38 +27,10 @@ $hoje = (new DateTime('now', new DateTimeZone('America/Sao_Paulo')))->format('Y-
 
 $conn = connectDB();
 
-if ($memberName === 'Unknown') {
-    // Tenta achar o nome em class_attendances mais recentes
-    $stmtN = $conn->prepare("SELECT member_name FROM class_attendances WHERE member_jid = ? AND member_name != 'Desconhecido' AND member_name IS NOT NULL ORDER BY id DESC LIMIT 1");
-    $stmtN->execute([$memberJid]);
-    $found = $stmtN->fetchColumn();
-    if ($found) {
-        $memberName = $found;
-    } else {
-        // Tenta em mentoria_desafio_streaks
-        $stmtN2 = $conn->prepare("SELECT member_name FROM mentoria_desafio_streaks WHERE member_jid = ? AND member_name != 'Desconhecido' AND member_name IS NOT NULL LIMIT 1");
-        $stmtN2->execute([$memberJid]);
-        $found2 = $stmtN2->fetchColumn();
-        if ($found2) {
-            $memberName = $found2;
-        } else {
-            // Tenta em mentoria_alunos pelo telefone
-            $stmtN3 = $conn->prepare("SELECT nome FROM mentoria_alunos WHERE telefone = ? OR telefone = ? LIMIT 1");
-            $phoneOnly = preg_replace('/\D/', '', explode('@', $memberJid)[0]);
-            
-            $phoneAlt = $phoneOnly;
-            if (str_starts_with($phoneOnly, '55') && strlen($phoneOnly) === 12) {
-                $phoneAlt = substr($phoneOnly, 0, 4) . '9' . substr($phoneOnly, 4);
-            } elseif (str_starts_with($phoneOnly, '55') && strlen($phoneOnly) === 13 && $phoneOnly[4] === '9') {
-                $phoneAlt = substr($phoneOnly, 0, 4) . substr($phoneOnly, 5);
-            }
-            
-            $stmtN3->execute([$phoneOnly, $phoneAlt]);
-            $found3 = $stmtN3->fetchColumn();
-            if ($found3) {
-                $memberName = $found3;
-            }
-        }
+if ($memberName === 'Unknown' || $memberName === 'Desconhecido' || empty(trim($memberName))) {
+    $resolved = resolveMentoriaMemberName($conn, $memberJid);
+    if ($resolved !== 'Unknown') {
+        $memberName = $resolved;
     }
 }
 
