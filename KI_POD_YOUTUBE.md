@@ -84,7 +84,18 @@ Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoria
 
 > **Fundamento Psicológico (Empacotamento de Alta Conversão):**
 > O título não é legenda descritiva; é uma **ferramenta de vendas e interrupção de padrão**. No celular ou na TV de sala, o espectador decide clicar em menos de meio segundo por impulso emocional.
-> 
+>
+> **⚡ Regra de Ouro — Usar a Transcrição como Fonte de Clickbait:**
+> A IA **JÁ TEM A TRANSCRIÇÃO COMPLETA** do episódio antes de gerar o conteúdo. Use isso como ouro. **Minere na transcrição:**
+> - O momento mais surpreendente, chocante ou contraintuitivo do áudio.
+> - Uma frase do Carlos que soa provocativa ou filosófica fora de contexto.
+> - Um exemplo de vida real citado (história de aluno, situação de trabalho, constrangimento social).
+> - Uma sigla, expressão ou conceito que desperta curiosidade mesmo em quem não quer aprender inglês agora.
+> Esses elementos são o **gancho real do episódio** e rendem títulos que nenhuma fórmula genérica de SEO consegue superar em CTR.
+>
+> **⚡ Estratégia de Broad Appeal (Clickbait Emocional Legítimo):**
+> Títulos que funcionam como **cavalo de Troia** — começam com um tema humano universal (medo, perda, FOMO, constrangimento, desejo) e entregam o conteúdo de inglês dentro do vídeo. São válidos e altamente recomendados desde que a **promessa seja 100% cumprida no áudio**. Exemplo: se o Carlos mencionou FOMO e o medo de perder coisas na vida, um título como *"Perder ou Deixar Passar: a reflexão que você precisa ouvir hoje"* é legítimo e tem CTR massivo, pois o tema real foi abordado no Pod.
+>
 > **Regras Inegociáveis de Construção:**
 > 1. **Loop Aberto (Curiosity Gap):** O título deve instigar uma dúvida ou tensão que **SÓ o clique resolve**. É **PROIBIDO** entregar a resposta/solução no título (se já revelou a resposta, matou o motivo de clicar).
 > 2. **Front-Loaded (Impacto nos primeiros 45 a 55 caracteres):** O YouTube corta títulos longos no mobile e na TV após ~55 caracteres. O gancho emocional e a palavra-chave devem vir **no início**, nunca escondidos no final antes do corte por "...".
@@ -93,20 +104,20 @@ Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoria
 >    - *Curiosidade Intensa:* Um segredo ou contraste oculto (`O detalhe que ninguém te contou...`, `Por que nativos nunca usam...`).
 >    - *Desejo de Recompensa:* Falar com naturalidade imediata (`O jeito simples de falar como nativo...`).
 >    - *Surpresa / Choque:* Quebra de crença comum (`Essa palavra NÃO significa o que você pensa...`).
->    - *FOMO:* Medo de ficar para trás ou cometer erro básico (`Todo brasileiro erra isso em inglês...`).
+>    - *FOMO / Vida Real:* Conexão com emoção humana universal, não apenas erro de gramática (`Você tem medo de perder coisas na vida?`, `Todo brasileiro sente isso e não sabe nomear...`).
 > 4. **Promessa Verdadeira (Zero Clickbait Falso):** O YouTube cruza CTR com retenção inicial. A promessa deve ser forte e instigante, mas **100% cumprida e respondida** no áudio para reter a audiência e evitar punição algorítmica.
 > 5. **Complementaridade Absoluta com a Thumbnail:** O título foca no contexto e consequência; a capa ataca a emoção visual rápida. **Nunca repita as mesmas palavras da capa no título.**
-> 
+>
 > **Formato Obrigatório de Entrega:**
 > Entregar **3 variações prontas para Teste A/B** no YouTube Studio (para medir CTR real e tempo de exibição):
-> - **Opção A (Anti-erro / Medo):** Foco na consequência social ou constrangimento.
-> - **Opção B (Curiosidade / Loop Aberto):** Foco no contraste ou na regra que ninguém ensina.
-> - **Opção C (Desejo / Naturalidade):** Foco no resultado prático e na fala fluida.
-> 
+> - **Opção A (Broad Appeal / Clickbait Emocional Legítimo):** Título de apelo humano universal, minerado da transcrição. Foco em tema de vida, psicologia ou situação social — sem mencionar "aula" ou "inglês" explicitamente. CTR máximo.
+> - **Opção B (Curiosidade Técnica / Loop Aberto):** Foco no contraste ou na regra de inglês que ninguém ensina. Para quem já sabe que quer aprender.
+> - **Opção C (Anti-erro / Consequência):** Foco na consequência social ou constrangimento de errar. Instiga medo de usar errado.
+>
 > ```text
-> [Opção A - Anti-erro / Consequência]: [Gancho curto de impacto] | Pod #<N>
-> [Opção B - Curiosidade / Loop Aberto]: [Gancho que insinua sem entregar] | Pod #<N>
-> [Opção C - Desejo / Fala Natural]: [Benefício prático direto] | Pod #<N>
+> [Opção A - Broad Appeal / Clickbait Emocional]: [Gancho humano universal minerado da transcrição] | Pod #<N>
+> [Opção B - Curiosidade / Loop Aberto]: [Gancho técnico que insinua sem entregar] | Pod #<N>
+> [Opção C - Anti-erro / Consequência]: [Gancho de consequência social ou constrangimento] | Pod #<N>
 > ```
 
 ### B. Descrição Completa do YouTube (Pronta para copiar e colar em 1 clique)
@@ -263,6 +274,7 @@ Gere uma thumbnail de alto impacto para o YouTube no formato 16:9 widescreen (12
 
 Instrução de Pessoa (Imagem de referência enviada junto com este prompt):
 - Utilize a pessoa da imagem enviada como referência exata de identidade facial, cabelo e aparência. Mantenha fidelidade absoluta ao rosto da foto.
+- **⚠️ PROIBIÇÃO ABSOLUTA:** É ESTRITAMENTE PROIBIDO inventar ou deduzir qualquer característica física da pessoa (idade, cor de cabelo, barba, óculos, roupa, altura, compleição). A IA NUNCA tem essas informações. A ÚNICA fonte de verdade é a foto de referência enviada pelo usuário. Se não houver foto, NÃO gere o prompt — solicite a foto antes.
 - Posicione-a no lado [DIREITO (Pod ímpar) ou ESQUERDO (Pod par) — Variável C] da cena, em plano médio, [DESCRIÇÃO EXATA DA EXPRESSÃO E POSE — Variável D calculada por N mod 5], de forma que não sobreponha os textos no lado oposto.
 - A iluminação e os reflexos do ambiente devem se integrar realisticamente à pessoa. Quando Carlos estiver à esquerda, posicione-o levemente voltado em direção ao texto à direita.
 
