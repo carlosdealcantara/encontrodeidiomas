@@ -45,7 +45,11 @@ def transcribe_audio(audio_path):
         model = WhisperModel("medium", device="cpu", compute_type="int8")
     except (RuntimeError, MemoryError) as e:
         print(f"⚠️ Memória insuficiente para modelo 'medium' ({e}). Alternando para modelo 'small'...")
-        model = WhisperModel("small", device="cpu", compute_type="int8")
+        try:
+            model = WhisperModel("small", device="cpu", compute_type="int8")
+        except (RuntimeError, MemoryError) as e2:
+            print(f"⚠️ Memória insuficiente para modelo 'small' ({e2}). Alternando para modelo 'base'...")
+            model = WhisperModel("base", device="cpu", compute_type="int8")
     segments, _info = model.transcribe(
         audio_path,
         beam_size=5,
