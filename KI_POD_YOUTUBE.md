@@ -105,8 +105,13 @@ Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoria
 >    - *Desejo de Recompensa:* Falar com naturalidade imediata (`O jeito simples de falar como nativo...`).
 >    - *Surpresa / Choque:* Quebra de crença comum (`Essa palavra NÃO significa o que você pensa...`).
 >    - *FOMO / Vida Real:* Conexão com emoção humana universal, não apenas erro de gramática (`Você tem medo de perder coisas na vida?`, `Todo brasileiro sente isso e não sabe nomear...`).
-> 4. **Promessa Verdadeira (Zero Clickbait Falso):** O YouTube cruza CTR com retenção inicial. A promessa deve ser forte e instigante, mas **100% cumprida e respondida** no áudio para reter a audiência e evitar punição algorítmica.
-> 5. **Complementaridade Absoluta com a Thumbnail:** O título foca no contexto e consequência; a capa ataca a emoção visual rápida. **Nunca repita as mesmas palavras da capa no título.**
+> 4. **Palavra(s) em CAIXA ALTA (Visual Emphasis):** Todo título deve conter **1 ou 2 palavras em letras maiúsculas** para criar interrupção visual no feed. Regras:
+>    - Use em palavras de impacto máximo: verbos de alerta (`NÃO`, `NUNCA`, `CUIDADO`), conceitos centrais do episódio (`LOSE`, `MISS`, `FOMO`) ou adjetivos de choque (`ERRADO`, `ABSURDO`).
+>    - **Máximo 2 palavras** em caixa alta — mais do que isso soa spam e reduz credibilidade.
+>    - Posicione de preferência **no início ou no meio** do título, onde o olho cai primeiro no feed.
+>    - Exemplo correto: `Você usa LOSE quando deveria usar MISS | Pod #16` ou `NÃO cometa esse erro de prazo em inglês | Pod #16`.
+> 5. **Promessa Verdadeira (Zero Clickbait Falso):** O YouTube cruza CTR com retenção inicial. A promessa deve ser forte e instigante, mas **100% cumprida e respondida** no áudio para reter a audiência e evitar punição algorítmica.
+> 6. **Complementaridade Absoluta com a Thumbnail:** O título foca no contexto e consequência; a capa ataca a emoção visual rápida. **Nunca repita as mesmas palavras da capa no título.**
 >
 > **Formato Obrigatório de Entrega:**
 > Entregar **3 variações prontas para Teste A/B** no YouTube Studio (para medir CTR real e tempo de exibição):
