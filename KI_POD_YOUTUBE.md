@@ -111,14 +111,14 @@ Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoria
 
 ### B. Descrição Completa do YouTube (Pronta para copiar e colar em 1 clique)
 
-> **Engenharia de SEO & Conversão (Padrão VidIQ + Alta Retenção):**
-> 1. **Parágrafo 1 (Above the fold - Primeiros 150 caracteres para SEO e Busca):** Comece com uma sentença afirmativa e direta de intenção de busca que contenha as principais palavras-chave de cauda longa (ex: *"Entenda a diferença entre [Termo A] e [Termo B] em inglês para parar de confundir ao se comunicar"*). Em seguida, exponha o erro comum de tradução literal ou constrangimento que o aluno vive.
+> **Engenharia de SEO & Conversão (Padrão VidIQ / TubeBuddy + Alta Retenção):**
+> 1. **Parágrafo 1 (Above the fold - Primeiros 200 caracteres com Keywords Densas):** Os primeiros 200 caracteres são a área mais crítica para o algoritmo de busca do YouTube e extensões de SEO (VidIQ/TubeBuddy). Eles aparecem no snippet dos resultados de pesquisa. **É OBRIGATÓRIO concentrar as palavras-chave principais e de cauda longa logo nas primeiras 1 a 2 frases** (ex: *"Aprenda a diferença entre LOSE e MISS em inglês, dicas de vocabulário e como falar inglês no dia a dia sem travar ou cometer erros comuns..."*), garantindo que termos como o tema central, *"inglês"*, *"diferença entre..."* e termos de busca estejam compactados antes da marca de 200 caracteres.
 > 2. **Parágrafo 2 (Autoridade & Cobertura Total do Conteúdo):** Apresente o episódio contextualizando a solução prática do professor Carlos de Alcântara. É **OBRIGATÓRIO cobrir TODOS os tópicos reais ensinados no áudio** (ex: se além da dica principal ele explicou expressões sensoriais como *look like*, cite textualmente para gerar relevância semântica e evitar alucinações).
 > 3. **CTA dos Comentários:** Chamada simples estimulando o espectador a fixar o aprendizado comentando um exemplo real.
 
 Seguir rigorosamente este template com quebras de linha limpas:
 ```text
-[Gancho de SEO direto: "Entenda a diferença entre X e Y em inglês para parar de..."] + [Breve resumo do erro comum e do mal-entendido na prática].
+[Primeiros 200 caracteres: Abertura ultra-otimizada com KEYWORDS PRINCIPAIS nos primeiros 200 caracteres: Tema exato + "em inglês" + "diferença entre..." + erro comum de tradução]. Complemento do gancho situacional.
 
 Neste episódio do Pill of the Day (Pod #<N>), o professor Carlos de Alcântara [explica o porquê do erro e detalha a regra prática, cobrindo TODOS os tópicos abordados no áudio com exemplos reais citados].
 
