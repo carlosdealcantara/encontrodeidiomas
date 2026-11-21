@@ -51,8 +51,13 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 7. **Velocidade e Compressão Inteligente:** Acelerado em **1.2x** por padrão (`--speed 1.2`), queimando a legenda primeiro e acelerando os frames e áudio em conjunto para retenção ideal no YouTube, Reels e TikTok.
    - **Renderização Otimizada (CRF 24 + Preset veryfast):** Usa `libx264` com `-crf 24`, `-preset veryfast` e `-x264-params threads=4:rc-lookahead=10` tanto para o horizontal quanto para o vertical. Isso reduz o tamanho final em ~70% sem perda perceptível de qualidade (Full HD 1080p nativo cristalino e áudio intacto a 128k), garantindo que mesmo episódios longos (>20 min) fiquem bem abaixo de 800 MB, compatíveis com os limites do Telegram e rápidos para upload.
    - O parâmetro `-t` do FFmpeg é ajustado para a duração final acelerada (`dur / speed`) para cortar no segundo exato onde termina o áudio.
-8. **Download do Vídeo de Fundo:** Baixa o vídeo YouTube em até 1080p (Creative Commons) via `yt-dlp`.
-9. **Renderização FFmpeg — dois outputs (Padrão de Nomenclatura):**
+8. **Download do Vídeo de Fundo (1080p Nativo):** Baixa o vídeo do YouTube em até 1080p nativo via `yt-dlp` mesclando streams de vídeo (MP4/AV1/VP9) e áudio com `--merge-output-format mp4`. **Atenção:** NUNCA usar `--extractor-args youtube:player_client=android` ou `ios`, pois o YouTube ativa o experimento restritivo SABR nesses clientes móveis, bloqueando streams DASH e forçando fallback para o formato 18 (360p embaçado). O cliente padrão (visionOS/web) baixa os fluxos 1080p cristalinos sem bloqueio.
+9. **Tratamento Acústico Anti-Engasgo e Anti-Chiado (Dois Passes):**
+   - **Reconstrução Acústica (`adeclip=threshold=95`):** Reconstrói matematicamente por interpolação de spline a crista das ondas achatadas/clipadas pelo microfone do WhatsApp (quando a voz sobe e passa de 0 dBFS), eliminando as ondas quadradas que geram estalos e chiados de rádio no acelerador.
+   - **Headroom de Proteção (`volume=-1.5dB`):** Margem de segurança pré-equalização.
+   - **Filtros de Frequência:** `highpass=f=80` (corta sub-graves de vento/puffs) e `lowpass=f=12000` (corta ruído estático de rádio/hiss).
+   - **Normalização Linear em 2 Passes:** O script faz uma pré-medição dos parâmetros reais (`measured_I`, `measured_TP`, `measured_LRA`, `measured_thresh`) e injeta no segundo passe com `loudnorm=...:linear=true`. Isso elimina o modo `Dynamic` do single-pass, impedindo que transientes de silêncio para voz alta sofram superganho errático.
+10. **Renderização FFmpeg — dois outputs (Padrão de Nomenclatura):**
    - **Horizontal 16:9** → `~/Downloads/pod<N>.mp4` (YouTube)
    - **Vertical 9:16** → `~/Downloads/pod<N>v.mp4` (Reels / Shorts / TikTok)
    - O vertical usa `crop=ih*9/16:ih,scale=1080:1920` para cortar o centro do vídeo de fundo.
