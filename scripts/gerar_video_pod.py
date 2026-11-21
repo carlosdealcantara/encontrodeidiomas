@@ -187,10 +187,16 @@ def measure_loudnorm(audio_path, speed=1.0):
     Nas transições silêncio → voz alta (comuns em áudios de celular), esse ganho
     sobe drasticamente e clipar/distorce exatamente como um "rádio saindo de sintonia".
     Com dois passes, o ganho é fixo e linear — zero distorção dinâmica.
+
+    Cadeia de restauração inicial:
+      - adeclip=threshold=95 → reconstrói topos cortados/achatados de ondas clipadas no microfone
+      - volume=-1.5dB        → cria margem de segurança contra novos inter-sample peaks
+      - highpass=f=80        → corta sub-graves de vento/puffs
+      - lowpass=f=12000      → elimina ruídos de ultra-alta frequência e chiados de rádio
+      - alimiter             → limitador suave analógico
     """
-    print("🔬 [2.5/5] Medindo loudness do áudio (pré-análise para normalização linear)...")
-    # Cadeia idêntica à renderização final, com speed se aplicável
-    base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
+    print("🔬 [2.5/5] Medindo loudness do áudio (pré-análise com adeclip para normalização linear)...")
+    base = "adeclip=threshold=95,volume=-1.5dB,highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
     if speed != 1.0:
         af_chain = f"{base},atempo={speed},loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json"
     else:
@@ -233,20 +239,21 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
     Ordem do filtro: queima a legenda com PTS original → depois acelera os frames.
     Assim a legenda já está gravada como pixel e acompanha automaticamente.
 
-    Cadeia de áudio (dois passes — zero chiado):
-      1. highpass=80Hz     → corta sub-graves de vento e proximidade de microfone
-      2. lowpass=f=12000Hz → corta chiado estático de alta frequência (hiss de rádio)
-      3. alimiter          → limita picos clipados do microfone do celular antes do atempo
-      4. atempo=N          → aceleração temporal limpa (pois o sinal já está limitado)
-      5. loudnorm LINEAR   → normaliza -16 LUFS com ganho FIXO (pré-medido),
-                             eliminando o modo Dynamic que causa chiados/engasgos.
+    Cadeia de áudio (reconstrução acústica + 2 passes lineares):
+      1. adeclip           → reconstrói curvas de onda clipadas no microfone do celular
+      2. volume=-1.5dB     → headroom de segurança para interpolação analógica
+      3. highpass=80Hz     → corta sub-graves de proximidade e vento
+      4. lowpass=12000Hz   → corta chiado de rádio e hiss estático
+      5. alimiter          → limita transientes residuais
+      6. atempo=N          → aceleração temporal limpa sobre sinal já restaurado
+      7. loudnorm LINEAR   → ganho estático pré-medido, sem flutuação dinâmica
     """
     print(f"🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     target_duration = duration_sec / speed
 
     ln = loudnorm_filter or "loudnorm=I=-16:TP=-1.5:LRA=11"
-    audio_base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
+    audio_base = "adeclip=threshold=95,volume=-1.5dB,highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
 
     if speed != 1.0:
         v_filter = f"[0:v]subtitles={ass_clean},setpts=PTS/{speed}[v]"
@@ -282,14 +289,14 @@ def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, sp
     Recorta o centro da faixa horizontal (crop=ih*9/16:ih) e escala para 1080x1920.
     speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
 
-    Cadeia de áudio (dois passes — zero chiado) — idêntica à versão horizontal.
+    Cadeia de áudio (reconstrução acústica + 2 passes lineares) — idêntica à horizontal.
     """
     print(f"📱 [4/5] Renderizando vídeo VERTICAL 9:16 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     target_duration = duration_sec / speed
 
     ln = loudnorm_filter or "loudnorm=I=-16:TP=-1.5:LRA=11"
-    audio_base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
+    audio_base = "adeclip=threshold=95,volume=-1.5dB,highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
 
     if speed != 1.0:
         v_filter = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean},setpts=PTS/{speed}[v]"
