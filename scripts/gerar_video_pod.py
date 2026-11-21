@@ -177,41 +177,86 @@ def download_background(youtube_url, temp_dir):
             )
     return bg_path
 
-def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0):
+def measure_loudnorm(audio_path, speed=1.0):
+    """
+    Passo 1 do loudnorm de dois passes: mede os parâmetros reais do áudio
+    (Integrated LUFS, True Peak, LRA) e retorna o filtro loudnorm parametrizado
+    para o passo 2, eliminando completamente o modo Dynamic que causa chiados.
+
+    O modo Dynamic do loudnorm de passe único aplica ganho variável frame a frame.
+    Nas transições silêncio → voz alta (comuns em áudios de celular), esse ganho
+    sobe drasticamente e clipar/distorce exatamente como um "rádio saindo de sintonia".
+    Com dois passes, o ganho é fixo e linear — zero distorção dinâmica.
+    """
+    print("🔬 [2.5/5] Medindo loudness do áudio (pré-análise para normalização linear)...")
+    # Cadeia idêntica à renderização final, com speed se aplicável
+    base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
+    if speed != 1.0:
+        af_chain = f"{base},atempo={speed},loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json"
+    else:
+        af_chain = f"{base},loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json"
+
+    res = subprocess.run(
+        ["ffmpeg", "-i", audio_path, "-af", af_chain, "-f", "null", "-"],
+        capture_output=True, text=True
+    )
+    # Extrai o bloco JSON do stderr
+    output = res.stderr
+    import json, re
+    match = re.search(r'\{[^{}]+\}', output, re.DOTALL)
+    if not match:
+        print("⚠️  Medição loudnorm falhou — usando modo single-pass como fallback.")
+        return f"loudnorm=I=-16:TP=-1.5:LRA=11"
+
+    stats = json.loads(match.group())
+    il  = stats.get("input_i",  "-17.0")
+    itp = stats.get("input_tp", "-1.0")
+    ilra = stats.get("input_lra", "4.5")
+    ith = stats.get("input_thresh", "-28.0")
+    offset = stats.get("target_offset", "0.0")
+
+    # Passo 2: loudnorm linear (measured) — ganho fixo, sem variação dinâmica = zero chiado
+    loudnorm_pass2 = (
+        f"loudnorm=I=-16:TP=-1.5:LRA=11:linear=true"
+        f":measured_I={il}:measured_TP={itp}"
+        f":measured_LRA={ilra}:measured_thresh={ith}"
+        f":offset={offset}:print_format=none"
+    )
+    print(f"   📊 Input: {il} LUFS | TP: {itp} dBTP | LRA: {ilra} LU → normalização LINEAR (zero chiado)")
+    return loudnorm_pass2
+
+
+def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0, loudnorm_filter=None):
     """
     Renderiza o vídeo horizontal 16:9 (1920x1080) para YouTube.
     speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
     Ordem do filtro: queima a legenda com PTS original → depois acelera os frames.
     Assim a legenda já está gravada como pixel e acompanha automaticamente.
 
-    Cadeia de áudio (prevenção de chiados/distorção digital):
+    Cadeia de áudio (dois passes — zero chiado):
       1. highpass=80Hz     → corta sub-graves de vento e proximidade de microfone
-      2. lowpass=12000Hz   → corta chiado estático de alta frequência (hiss de rádio)
-      3. alimiter          → limitador suave de pico: aparara transientes que cliparam
-                             no microfone do celular antes de entrar no atempo
-      4. atempo=N          → aceleração temporal (sem distorção extra pois o sinal já está limpo)
-      5. loudnorm EBU R128 → normaliza para -16 LUFS (padrão YouTube) com true peak ≤ -1.5 dBFS,
-                             eliminando qualquer pico remanescente e garantindo volume consistente
+      2. lowpass=f=12000Hz → corta chiado estático de alta frequência (hiss de rádio)
+      3. alimiter          → limita picos clipados do microfone do celular antes do atempo
+      4. atempo=N          → aceleração temporal limpa (pois o sinal já está limitado)
+      5. loudnorm LINEAR   → normaliza -16 LUFS com ganho FIXO (pré-medido),
+                             eliminando o modo Dynamic que causa chiados/engasgos.
     """
     print(f"🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     target_duration = duration_sec / speed
 
-    # Cadeia de áudio com tratamento anti-chiado (funciona com speed=1.0 também)
+    ln = loudnorm_filter or "loudnorm=I=-16:TP=-1.5:LRA=11"
     audio_base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
 
     if speed != 1.0:
-        # subtitles com PTS original → setpts acelera os frames já com legenda queimada
-        # Cadeia de áudio: limpeza → limitação de pico → aceleração → normalização broadcast
         v_filter = f"[0:v]subtitles={ass_clean},setpts=PTS/{speed}[v]"
-        a_filter = f"[1:a]{audio_base},atempo={speed},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
+        a_filter = f"[1:a]{audio_base},atempo={speed},{ln}[a]"
         filter_complex = f"{v_filter};{a_filter}"
         audio_map = "[a]"
     else:
-        filter_complex = f"[0:v]subtitles={ass_clean}[v];[1:a]{audio_base},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
+        filter_complex = f"[0:v]subtitles={ass_clean}[v];[1:a]{audio_base},{ln}[a]"
         audio_map = "[a]"
 
-    # veryfast + threads=4 + rc-lookahead=10 → excelente compressão (~4500k bitrate, ~70% menor em disco), seguro em RAM
     cmd = [
         "ffmpeg", "-y",
         "-i", bg_path,
@@ -231,29 +276,28 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
     subprocess.run(cmd, check=True)
     print(f"✅ Horizontal exportado: {output_file}")
 
-def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0):
+def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0, loudnorm_filter=None):
     """
     Renderiza o vídeo vertical 9:16 (1080x1920) para Reels / Shorts / TikTok.
     Recorta o centro da faixa horizontal (crop=ih*9/16:ih) e escala para 1080x1920.
     speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
 
-    Cadeia de áudio (prevenção de chiados/distorção digital) — idêntica à versão horizontal:
-      highpass=80Hz → lowpass=12000Hz → alimiter → atempo=N → loudnorm EBU R128 (-16 LUFS / TP≤-1.5)
+    Cadeia de áudio (dois passes — zero chiado) — idêntica à versão horizontal.
     """
     print(f"📱 [4/5] Renderizando vídeo VERTICAL 9:16 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     target_duration = duration_sec / speed
 
-    # Cadeia de áudio com tratamento anti-chiado (funciona com speed=1.0 também)
+    ln = loudnorm_filter or "loudnorm=I=-16:TP=-1.5:LRA=11"
     audio_base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
 
     if speed != 1.0:
         v_filter = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean},setpts=PTS/{speed}[v]"
-        a_filter = f"[1:a]{audio_base},atempo={speed},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
+        a_filter = f"[1:a]{audio_base},atempo={speed},{ln}[a]"
         filter_complex = f"{v_filter};{a_filter}"
         audio_map = "[a]"
     else:
-        filter_complex = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean}[v];[1:a]{audio_base},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
+        filter_complex = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean}[v];[1:a]{audio_base},{ln}[a]"
         audio_map = "[a]"
 
     cmd = [
@@ -322,9 +366,13 @@ if __name__ == "__main__":
     if speed != 1.0:
         print(f"⚡ Aceleração ativa: {speed}x (legenda queimada primeiro, depois frames acelerados)")
 
+    # Pré-análise de loudness: mede parâmetros reais do áudio para normalização LINEAR (2 passes)
+    # Isso elimina completamente os chiados/engasgos do modo Dynamic do loudnorm single-pass
+    ln_filter = measure_loudnorm(audio_file, speed=speed)
+
     # Renderiza ambos
-    render_horizontal(bg, audio_file, ass_h_path, dur, final_h, speed=speed)
-    render_vertical(bg, audio_file, ass_v_path, dur, final_v, speed=speed)
+    render_horizontal(bg, audio_file, ass_h_path, dur, final_h, speed=speed, loudnorm_filter=ln_filter)
+    render_vertical(bg, audio_file, ass_v_path, dur, final_v, speed=speed, loudnorm_filter=ln_filter)
 
     duration_final = dur / speed
     print()
