@@ -155,21 +155,33 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
     speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
     Ordem do filtro: queima a legenda com PTS original → depois acelera os frames.
     Assim a legenda já está gravada como pixel e acompanha automaticamente.
+
+    Cadeia de áudio (prevenção de chiados/distorção digital):
+      1. highpass=80Hz     → corta sub-graves de vento e proximidade de microfone
+      2. lowpass=12000Hz   → corta chiado estático de alta frequência (hiss de rádio)
+      3. alimiter          → limitador suave de pico: aparara transientes que cliparam
+                             no microfone do celular antes de entrar no atempo
+      4. atempo=N          → aceleração temporal (sem distorção extra pois o sinal já está limpo)
+      5. loudnorm EBU R128 → normaliza para -16 LUFS (padrão YouTube) com true peak ≤ -1.5 dBFS,
+                             eliminando qualquer pico remanescente e garantindo volume consistente
     """
     print(f"🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     target_duration = duration_sec / speed
 
+    # Cadeia de áudio com tratamento anti-chiado (funciona com speed=1.0 também)
+    audio_base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
+
     if speed != 1.0:
         # subtitles com PTS original → setpts acelera os frames já com legenda queimada
-        # atempo acelera o áudio no mesmo fator
+        # Cadeia de áudio: limpeza → limitação de pico → aceleração → normalização broadcast
         v_filter = f"[0:v]subtitles={ass_clean},setpts=PTS/{speed}[v]"
-        a_filter = f"[1:a]atempo={speed}[a]"
+        a_filter = f"[1:a]{audio_base},atempo={speed},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
         filter_complex = f"{v_filter};{a_filter}"
         audio_map = "[a]"
     else:
-        filter_complex = f"[0:v]subtitles={ass_clean}[v]"
-        audio_map = "1:a"
+        filter_complex = f"[0:v]subtitles={ass_clean}[v];[1:a]{audio_base},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
+        audio_map = "[a]"
 
     # veryfast + threads=4 + rc-lookahead=10 → excelente compressão (~4500k bitrate, ~70% menor em disco), seguro em RAM
     cmd = [
@@ -196,19 +208,25 @@ def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, sp
     Renderiza o vídeo vertical 9:16 (1080x1920) para Reels / Shorts / TikTok.
     Recorta o centro da faixa horizontal (crop=ih*9/16:ih) e escala para 1080x1920.
     speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
+
+    Cadeia de áudio (prevenção de chiados/distorção digital) — idêntica à versão horizontal:
+      highpass=80Hz → lowpass=12000Hz → alimiter → atempo=N → loudnorm EBU R128 (-16 LUFS / TP≤-1.5)
     """
     print(f"📱 [4/5] Renderizando vídeo VERTICAL 9:16 (velocidade: {speed}x)...")
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     target_duration = duration_sec / speed
 
+    # Cadeia de áudio com tratamento anti-chiado (funciona com speed=1.0 também)
+    audio_base = "highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
+
     if speed != 1.0:
         v_filter = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean},setpts=PTS/{speed}[v]"
-        a_filter = f"[1:a]atempo={speed}[a]"
+        a_filter = f"[1:a]{audio_base},atempo={speed},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
         filter_complex = f"{v_filter};{a_filter}"
         audio_map = "[a]"
     else:
-        filter_complex = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean}[v]"
-        audio_map = "1:a"
+        filter_complex = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean}[v];[1:a]{audio_base},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
+        audio_map = "[a]"
 
     cmd = [
         "ffmpeg", "-y",
