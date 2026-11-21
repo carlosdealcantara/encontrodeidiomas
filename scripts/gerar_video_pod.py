@@ -138,15 +138,43 @@ def write_ass(content, path):
 def download_background(youtube_url, temp_dir):
     print(f"📥 [2/5] Baixando vídeo de fundo ({youtube_url})...")
     bg_path = os.path.join(temp_dir, "bg_video.mp4")
+    # Usamos um template sem extensão fixa para que o yt-dlp possa baixar
+    # vídeo e áudio separadamente (formato DASH) e mesclá-los internamente via ffmpeg.
+    # IMPORTANTE: NÃO usar --extractor-args com cliente android/ios pois o YouTube
+    # ativa o experimento SABR nesses clientes, bloqueando formatos DASH e forçando
+    # fallback para o formato combinado 360p (formato 18). O cliente padrão (visionOS/web)
+    # tem acesso completo a todos os formatos DASH, incluindo 1080p+.
+    # Seletor de formato: prefere H.264 MP4 1080p (compatibilidade máxima) + áudio M4A.
+    bg_template = os.path.join(temp_dir, "bg_video.%(ext)s")
     cmd = [
         sys.executable, "-m", "yt_dlp",
-        "--extractor-args", "youtube:player_client=android,web",
-        "-f", "bestvideo[ext=mp4][height<=1080]/bestvideo[height<=1080]/best[height<=1080]",
-        "-o", bg_path,
+        "-f", (
+            "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]"
+            "/bestvideo[ext=mp4][height<=1080]+bestaudio"
+            "/bestvideo[height<=1080]+bestaudio"
+            "/best[height<=1080]"
+        ),
+        "--merge-output-format", "mp4",
+        "-o", bg_template,
         "--force-overwrites",
         youtube_url
     ]
     subprocess.run(cmd, check=True)
+
+    # Após o merge o arquivo final sempre termina em .mp4
+    if not os.path.exists(bg_path):
+        # Fallback: procura qualquer bg_video.* gerado
+        candidates = [
+            f for f in os.listdir(temp_dir)
+            if f.startswith("bg_video") and f.endswith(".mp4")
+        ]
+        if candidates:
+            os.replace(os.path.join(temp_dir, candidates[0]), bg_path)
+        else:
+            raise FileNotFoundError(
+                f"Vídeo de fundo não encontrado em {temp_dir} após o download. "
+                "Verifique se o yt-dlp tem o ffmpeg disponível para merge."
+            )
     return bg_path
 
 def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0):
