@@ -39,26 +39,36 @@ def get_audio_duration(audio_path):
     return float(res.stdout.strip())
 
 def transcribe_audio(audio_path):
-    """Roda o Faster-Whisper e retorna lista de segmentos."""
+    """Roda o Faster-Whisper e retorna lista de segmentos com fallback resiliente de modelos e beam_size."""
     print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (100% offline)...")
-    try:
-        model = WhisperModel("medium", device="cpu", compute_type="int8")
-    except (RuntimeError, MemoryError) as e:
-        print(f"⚠️ Memória insuficiente para modelo 'medium' ({e}). Alternando para modelo 'small'...")
+    model_configs = [
+        ("medium", 5),
+        ("small", 5),
+        ("base", 1),
+        ("tiny", 1)
+    ]
+    
+    last_err = None
+    for model_name, b_size in model_configs:
         try:
-            model = WhisperModel("small", device="cpu", compute_type="int8")
-        except (RuntimeError, MemoryError) as e2:
-            print(f"⚠️ Memória insuficiente para modelo 'small' ({e2}). Alternando para modelo 'base'...")
-            model = WhisperModel("base", device="cpu", compute_type="int8")
-    segments, _info = model.transcribe(
-        audio_path,
-        beam_size=5,
-        condition_on_previous_text=False,
-        vad_filter=True,
-        vad_parameters=dict(min_silence_duration_ms=500),
-        no_speech_threshold=0.6
-    )
-    return list(segments)  # materializa o generator aqui para reusar
+            print(f"Tentando carregar modelo '{model_name}'...")
+            model = WhisperModel(model_name, device="cpu", compute_type="int8")
+            segments, _info = model.transcribe(
+                audio_path,
+                beam_size=b_size,
+                condition_on_previous_text=False,
+                vad_filter=True,
+                vad_parameters=dict(min_silence_duration_ms=500),
+                no_speech_threshold=0.6
+            )
+            res = list(segments)
+            print(f"✅ Transcrição concluída com sucesso usando modelo '{model_name}' (beam_size={b_size})!")
+            return res
+        except (RuntimeError, MemoryError) as e:
+            print(f"⚠️ Erro ao transcrever com '{model_name}': {e}. Tentando próximo modelo de fallback...")
+            last_err = e
+
+    raise RuntimeError(f"Não foi possível transcrever com nenhum modelo: {last_err}")
 
 def build_ass_events(segments, duration_sec, pod_num, mode="horizontal"):
     """
@@ -354,17 +364,18 @@ if __name__ == "__main__":
 
     # --- Pipeline ---
     dur = get_audio_duration(audio_file)
-    segments = transcribe_audio(audio_file)
-
-    # Gera ASS horizontal
     ass_h_path = str(temp_dir / f"subtitles_pod{args.pod}_h.ass")
-    write_ass(build_ass_events(segments, dur, args.pod, mode="horizontal"), ass_h_path)
-
-    # Gera ASS vertical (PlayRes 1080x1920, Alignment central)
     ass_v_path = str(temp_dir / f"subtitles_pod{args.pod}_v.ass")
-    write_ass(build_ass_events(segments, dur, args.pod, mode="vertical"), ass_v_path)
 
-    print(f"✅ [2/5] Arquivos ASS gerados: horizontal + vertical")
+    if os.path.exists(ass_h_path) and os.path.exists(ass_v_path):
+        print(f"ℹ️ Arquivos ASS já encontrados em cache ({ass_h_path}, {ass_v_path}). Pulando transcrição...")
+    else:
+        segments = transcribe_audio(audio_file)
+        # Gera ASS horizontal
+        write_ass(build_ass_events(segments, dur, args.pod, mode="horizontal"), ass_h_path)
+        # Gera ASS vertical (PlayRes 1080x1920, Alignment central)
+        write_ass(build_ass_events(segments, dur, args.pod, mode="vertical"), ass_v_path)
+        print(f"✅ [2/5] Arquivos ASS gerados: horizontal + vertical")
 
     # Baixa o vídeo de fundo (compartilhado entre os dois renders)
     bg = download_background(args.url, str(temp_dir))
