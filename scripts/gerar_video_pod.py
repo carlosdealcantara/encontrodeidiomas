@@ -42,10 +42,10 @@ def transcribe_audio(audio_path):
     """Roda o Faster-Whisper e retorna lista de segmentos com fallback resiliente de modelos e beam_size."""
     print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (100% offline)...")
     model_configs = [
+        ("large-v3-turbo", 5),
+        ("large-v3", 5),
         ("medium", 5),
-        ("small", 5),
-        ("base", 1),
-        ("tiny", 1)
+        ("small", 5)
     ]
     
     last_err = None
