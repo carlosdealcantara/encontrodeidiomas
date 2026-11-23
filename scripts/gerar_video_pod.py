@@ -52,7 +52,7 @@ def transcribe_audio(audio_path):
     for model_name, b_size in model_configs:
         try:
             print(f"Tentando carregar modelo '{model_name}'...")
-            model = WhisperModel(model_name, device="cpu", compute_type="int8")
+            model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=4)
             segments, _info = model.transcribe(
                 audio_path,
                 beam_size=b_size,
@@ -64,7 +64,7 @@ def transcribe_audio(audio_path):
             res = list(segments)
             print(f"✅ Transcrição concluída com sucesso usando modelo '{model_name}' (beam_size={b_size})!")
             return res
-        except (RuntimeError, MemoryError) as e:
+        except (RuntimeError, MemoryError, Exception) as e:
             print(f"⚠️ Erro ao transcrever com '{model_name}': {e}. Tentando próximo modelo de fallback...")
             last_err = e
 
