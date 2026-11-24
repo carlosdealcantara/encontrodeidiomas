@@ -3,7 +3,10 @@
 <div class="header" style="margin-bottom: 20px;">
     <div class="header-title">
         <h2>Automação de Mensalidades</h2>
-        <p>Edite os textos das cobranças automatizadas (Agradecimento, Avisos Prévios e Vencimento).</p>
+        <p>Edite os textos das cobranças automatizadas (Avisos Prévios, Vencimento e Régua de Recuperação Pós-Vencimento).</p>
+        <p style="font-size: 0.85rem; color: var(--accent-blue); margin-top: 5px;">
+            Tags disponíveis: <code>{nome}</code>, <code>{valor}</code>, <code>{valor_antigo}</code>, <code>{valor_reajustado}</code>, <code>{multa_base}</code>, <code>{multa_total}</code>, <code>{dias_atraso}</code>, <code>{idioma}</code>, <code>{pix}</code>
+        </p>
     </div>
 </div>
 

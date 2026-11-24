@@ -37,7 +37,7 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 
 ### O que o script faz sozinho (DOIS vídeos por episódio):
 1. **Duração:** Mede o tempo exato do áudio via FFprobe e calcula o corte final correto com base no fator de aceleração (`target_duration = audio_duration / speed`). O vídeo NUNCA fica com sobras mudas no final.
-2. **Transcrição Offline Robusta (Zero custo de API):** Usa o modelo Faster-Whisper **`medium`** local (`device=cpu`, `compute_type=int8`) com `condition_on_previous_text=False`, `vad_filter=True` e `no_speech_threshold=0.6` para alta precisão bilíngue (inglês/português) e garantia total contra omissão de blocos falados.
+2. **Transcrição Offline Robusta (Zero custo de API e Zero Downloads):** Usa exclusivamente o modelo Faster-Whisper **`large-v3-turbo`** local fixo (`device=cpu`, `compute_type=int8`, `cpu_threads=2`, `beam_size=1`, `local_files_only=True`) com auto-detect bilíngue de alta precisão (inglês/português), `condition_on_previous_text=False`, `vad_filter=True` e `no_speech_threshold=0.6`. É proibido tentar baixar modelos extras ou utilizar fallbacks pesados que causem estouro de memória (`mkl_malloc`) ou lotem o disco SSD. O modelo `large-v3-turbo` já reside permanente no cache local do Windows e processa de imediato em poucos segundos.
 3. **Dois arquivos ASS gerados:**
    - `subtitles_pod<N>_h.ass` → horizontal 16:9 (PlayRes 1920x1080, branding top-left `Alignment=7`, legendas centro-tela `Alignment=5`)
    - `subtitles_pod<N>_v.ass` → vertical 9:16 (PlayRes 1080x1920, branding top-center `Alignment=8`, legendas centro-tela `Alignment=5`)
@@ -51,8 +51,13 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 7. **Velocidade e Compressão Inteligente:** Acelerado em **1.2x** por padrão (`--speed 1.2`), queimando a legenda primeiro e acelerando os frames e áudio em conjunto para retenção ideal no YouTube, Reels e TikTok.
    - **Renderização Otimizada (CRF 24 + Preset veryfast):** Usa `libx264` com `-crf 24`, `-preset veryfast` e `-x264-params threads=4:rc-lookahead=10` tanto para o horizontal quanto para o vertical. Isso reduz o tamanho final em ~70% sem perda perceptível de qualidade (Full HD 1080p nativo cristalino e áudio intacto a 128k), garantindo que mesmo episódios longos (>20 min) fiquem bem abaixo de 800 MB, compatíveis com os limites do Telegram e rápidos para upload.
    - O parâmetro `-t` do FFmpeg é ajustado para a duração final acelerada (`dur / speed`) para cortar no segundo exato onde termina o áudio.
-8. **Download do Vídeo de Fundo:** Baixa o vídeo YouTube em até 1080p (Creative Commons) via `yt-dlp`.
-9. **Renderização FFmpeg — dois outputs (Padrão de Nomenclatura):**
+8. **Download do Vídeo de Fundo (1080p Nativo):** Baixa o vídeo do YouTube em até 1080p nativo via `yt-dlp` mesclando streams de vídeo (MP4/AV1/VP9) e áudio com `--merge-output-format mp4`. **Atenção:** NUNCA usar `--extractor-args youtube:player_client=android` ou `ios`, pois o YouTube ativa o experimento restritivo SABR nesses clientes móveis, bloqueando streams DASH e forçando fallback para o formato 18 (360p embaçado). O cliente padrão (visionOS/web) baixa os fluxos 1080p cristalinos sem bloqueio.
+9. **Tratamento Acústico Anti-Engasgo e Anti-Chiado (Dois Passes):**
+   - **Reconstrução Acústica (`adeclip=threshold=95`):** Reconstrói matematicamente por interpolação de spline a crista das ondas achatadas/clipadas pelo microfone do WhatsApp (quando a voz sobe e passa de 0 dBFS), eliminando as ondas quadradas que geram estalos e chiados de rádio no acelerador.
+   - **Headroom de Proteção (`volume=-1.5dB`):** Margem de segurança pré-equalização.
+   - **Filtros de Frequência:** `highpass=f=80` (corta sub-graves de vento/puffs) e `lowpass=f=12000` (corta ruído estático de rádio/hiss).
+   - **Normalização Linear em 2 Passes:** O script faz uma pré-medição dos parâmetros reais (`measured_I`, `measured_TP`, `measured_LRA`, `measured_thresh`) e injeta no segundo passe com `loudnorm=...:linear=true`. Isso elimina o modo `Dynamic` do single-pass, impedindo que transientes de silêncio para voz alta sofram superganho errático.
+10. **Renderização FFmpeg — dois outputs (Padrão de Nomenclatura):**
    - **Horizontal 16:9** → `~/Downloads/pod<N>.mp4` (YouTube)
    - **Vertical 9:16** → `~/Downloads/pod<N>v.mp4` (Reels / Shorts / TikTok)
    - O vertical usa `crop=ih*9/16:ih,scale=1080:1920` para cortar o centro do vídeo de fundo.
@@ -84,7 +89,18 @@ Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoria
 
 > **Fundamento Psicológico (Empacotamento de Alta Conversão):**
 > O título não é legenda descritiva; é uma **ferramenta de vendas e interrupção de padrão**. No celular ou na TV de sala, o espectador decide clicar em menos de meio segundo por impulso emocional.
-> 
+>
+> **⚡ Regra de Ouro — Usar a Transcrição como Fonte de Clickbait:**
+> A IA **JÁ TEM A TRANSCRIÇÃO COMPLETA** do episódio antes de gerar o conteúdo. Use isso como ouro. **Minere na transcrição:**
+> - O momento mais surpreendente, chocante ou contraintuitivo do áudio.
+> - Uma frase do Carlos que soa provocativa ou filosófica fora de contexto.
+> - Um exemplo de vida real citado (história de aluno, situação de trabalho, constrangimento social).
+> - Uma sigla, expressão ou conceito que desperta curiosidade mesmo em quem não quer aprender inglês agora.
+> Esses elementos são o **gancho real do episódio** e rendem títulos que nenhuma fórmula genérica de SEO consegue superar em CTR.
+>
+> **⚡ Estratégia de Broad Appeal (Clickbait Emocional Legítimo):**
+> Títulos que funcionam como **cavalo de Troia** — começam com um tema humano universal (medo, perda, FOMO, constrangimento, desejo) e entregam o conteúdo de inglês dentro do vídeo. São válidos e altamente recomendados desde que a **promessa seja 100% cumprida no áudio**. Exemplo: se o Carlos mencionou FOMO e o medo de perder coisas na vida, um título como *"Perder ou Deixar Passar: a reflexão que você precisa ouvir hoje"* é legítimo e tem CTR massivo, pois o tema real foi abordado no Pod.
+>
 > **Regras Inegociáveis de Construção:**
 > 1. **Loop Aberto (Curiosity Gap):** O título deve instigar uma dúvida ou tensão que **SÓ o clique resolve**. É **PROIBIDO** entregar a resposta/solução no título (se já revelou a resposta, matou o motivo de clicar).
 > 2. **Front-Loaded (Impacto nos primeiros 45 a 55 caracteres):** O YouTube corta títulos longos no mobile e na TV após ~55 caracteres. O gancho emocional e a palavra-chave devem vir **no início**, nunca escondidos no final antes do corte por "...".
@@ -93,28 +109,39 @@ Ao concluir a geração do vídeo de qualquer episódio, a IA deve **obrigatoria
 >    - *Curiosidade Intensa:* Um segredo ou contraste oculto (`O detalhe que ninguém te contou...`, `Por que nativos nunca usam...`).
 >    - *Desejo de Recompensa:* Falar com naturalidade imediata (`O jeito simples de falar como nativo...`).
 >    - *Surpresa / Choque:* Quebra de crença comum (`Essa palavra NÃO significa o que você pensa...`).
->    - *FOMO:* Medo de ficar para trás ou cometer erro básico (`Todo brasileiro erra isso em inglês...`).
-> 4. **Promessa Verdadeira (Zero Clickbait Falso):** O YouTube cruza CTR com retenção inicial. A promessa deve ser forte e instigante, mas **100% cumprida e respondida** no áudio para reter a audiência e evitar punição algorítmica.
-> 5. **Complementaridade Absoluta com a Thumbnail:** O título foca no contexto e consequência; a capa ataca a emoção visual rápida. **Nunca repita as mesmas palavras da capa no título.**
-> 
+>    - *FOMO / Vida Real:* Conexão com emoção humana universal, não apenas erro de gramática (`Você tem medo de perder coisas na vida?`, `Todo brasileiro sente isso e não sabe nomear...`).
+> 4. **Palavra(s) em CAIXA ALTA (Visual Emphasis):** Todo título deve conter **1 ou 2 palavras em letras maiúsculas** para criar interrupção visual no feed. Regras:
+>    - Use em palavras de impacto máximo: verbos de alerta (`NÃO`, `NUNCA`, `CUIDADO`), conceitos centrais do episódio (`LOSE`, `MISS`, `FOMO`) ou adjetivos de choque (`ERRADO`, `ABSURDO`).
+>    - **Máximo 2 palavras** em caixa alta — mais do que isso soa spam e reduz credibilidade.
+>    - Posicione de preferência **no início ou no meio** do título, onde o olho cai primeiro no feed.
+>    - Exemplo correto: `Você usa LOSE quando deveria usar MISS | Pod #16` ou `NÃO cometa esse erro de prazo em inglês | Pod #16`.
+> 5. **Promessa Verdadeira (Zero Clickbait Falso):** O YouTube cruza CTR com retenção inicial. A promessa deve ser forte e instigante, mas **100% cumprida e respondida** no áudio para reter a audiência e evitar punição algorítmica.
+> 6. **Complementaridade Absoluta com a Thumbnail:** O título foca no contexto e consequência; a capa ataca a emoção visual rápida. **Nunca repita as mesmas palavras da capa no título.**
+>
 > **Formato Obrigatório de Entrega:**
 > Entregar **3 variações prontas para Teste A/B** no YouTube Studio (para medir CTR real e tempo de exibição):
-> - **Opção A (Anti-erro / Medo):** Foco na consequência social ou constrangimento.
-> - **Opção B (Curiosidade / Loop Aberto):** Foco no contraste ou na regra que ninguém ensina.
-> - **Opção C (Desejo / Naturalidade):** Foco no resultado prático e na fala fluida.
-> 
+> - **Opção A (Broad Appeal / Clickbait Emocional Legítimo):** Título de apelo humano universal, minerado da transcrição. Foco em tema de vida, psicologia ou situação social — sem mencionar "aula" ou "inglês" explicitamente. CTR máximo.
+> - **Opção B (Curiosidade Técnica / Loop Aberto):** Foco no contraste ou na regra de inglês que ninguém ensina. Para quem já sabe que quer aprender.
+> - **Opção C (Anti-erro / Consequência):** Foco na consequência social ou constrangimento de errar. Instiga medo de usar errado.
+>
 > ```text
-> [Opção A - Anti-erro / Consequência]: [Gancho curto de impacto] | Pod #<N>
-> [Opção B - Curiosidade / Loop Aberto]: [Gancho que insinua sem entregar] | Pod #<N>
-> [Opção C - Desejo / Fala Natural]: [Benefício prático direto] | Pod #<N>
+> [Opção A - Broad Appeal / Clickbait Emocional]: [Gancho humano universal minerado da transcrição] | Pod #<N>
+> [Opção B - Curiosidade / Loop Aberto]: [Gancho técnico que insinua sem entregar] | Pod #<N>
+> [Opção C - Anti-erro / Consequência]: [Gancho de consequência social ou constrangimento] | Pod #<N>
 > ```
 
 ### B. Descrição Completa do YouTube (Pronta para copiar e colar em 1 clique)
+
+> **Engenharia de SEO & Conversão (Padrão VidIQ / TubeBuddy + Alta Retenção):**
+> 1. **Parágrafo 1 (Above the fold - Primeiros 200 caracteres com Keywords Densas):** Os primeiros 200 caracteres são a área mais crítica para o algoritmo de busca do YouTube e extensões de SEO (VidIQ/TubeBuddy). Eles aparecem no snippet dos resultados de pesquisa. **É OBRIGATÓRIO concentrar as palavras-chave principais e de cauda longa logo nas primeiras 1 a 2 frases** (ex: *"Aprenda a diferença entre LOSE e MISS em inglês, dicas de vocabulário e como falar inglês no dia a dia sem travar ou cometer erros comuns..."*), garantindo que termos como o tema central, *"inglês"*, *"diferença entre..."* e termos de busca estejam compactados antes da marca de 200 caracteres.
+> 2. **Parágrafo 2 (Autoridade & Cobertura Total do Conteúdo):** Apresente o episódio contextualizando a solução prática do professor Carlos de Alcântara. É **OBRIGATÓRIO cobrir TODOS os tópicos reais ensinados no áudio** (ex: se além da dica principal ele explicou expressões sensoriais como *look like*, cite textualmente para gerar relevância semântica e evitar alucinações).
+> 3. **CTA dos Comentários:** Chamada simples estimulando o espectador a fixar o aprendizado comentando um exemplo real.
+
 Seguir rigorosamente este template com quebras de linha limpas:
 ```text
-[Breve resumo de 2 linhas do erro e da dica abordada no áudio].
+[Primeiros 200 caracteres: Abertura ultra-otimizada com KEYWORDS PRINCIPAIS nos primeiros 200 caracteres: Tema exato + "em inglês" + "diferença entre..." + erro comum de tradução]. Complemento do gancho situacional.
 
-Neste episódio do Pill of the Day (Pod #<N>), o professor Carlos de Alcântara mostra [benefício/solução da aula].
+Neste episódio do Pill of the Day (Pod #<N>), o professor Carlos de Alcântara [explica o porquê do erro e detalha a regra prática, cobrindo TODOS os tópicos abordados no áudio com exemplos reais citados].
 
 💬 Deixe seu exemplo nos comentários para praticar!
 
@@ -257,6 +284,7 @@ Gere uma thumbnail de alto impacto para o YouTube no formato 16:9 widescreen (12
 
 Instrução de Pessoa (Imagem de referência enviada junto com este prompt):
 - Utilize a pessoa da imagem enviada como referência exata de identidade facial, cabelo e aparência. Mantenha fidelidade absoluta ao rosto da foto.
+- **⚠️ PROIBIÇÃO ABSOLUTA:** É ESTRITAMENTE PROIBIDO inventar ou deduzir qualquer característica física da pessoa (idade, cor de cabelo, barba, óculos, roupa, altura, compleição). A IA NUNCA tem essas informações. A ÚNICA fonte de verdade é a foto de referência enviada pelo usuário. Se não houver foto, NÃO gere o prompt — solicite a foto antes.
 - Posicione-a no lado [DIREITO (Pod ímpar) ou ESQUERDO (Pod par) — Variável C] da cena, em plano médio, [DESCRIÇÃO EXATA DA EXPRESSÃO E POSE — Variável D calculada por N mod 5], de forma que não sobreponha os textos no lado oposto.
 - A iluminação e os reflexos do ambiente devem se integrar realisticamente à pessoa. Quando Carlos estiver à esquerda, posicione-o levemente voltado em direção ao texto à direita.
 

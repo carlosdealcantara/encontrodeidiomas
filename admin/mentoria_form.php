@@ -406,7 +406,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group full">
                         <label>Observações</label>
-                        <div class="obs-hint">Ex: "Paga apenas R$ 150 por acordo antigo", "Aluno do exterior", etc.</div>
+                        <div class="obs-hint">Ex: "Paga apenas R$ 150 por acordo antigo", "Aluno do exterior", etc. <strong>Dica de Teste:</strong> inclua a tag <code>[TESTE]</code> para simular a vigência de inadimplência (reajuste e multa de 2 vidas) imediatamente para este aluno.</div>
                         <textarea name="observacoes" rows="3"><?= htmlspecialchars($aluno['observacoes'] ?? '') ?></textarea>
                     </div>
 
