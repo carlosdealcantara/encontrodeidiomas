@@ -320,8 +320,15 @@ foreach ($langs as $lang) {
 
                     require_once __DIR__ . '/../includes/mentoria_pricing_helper.php';
 
+                    // Detecta se é aluno de teste (via flag no banco, observações ou parâmetro GET)
+                    $isAlunoTeste = (
+                        !empty($aluno['is_test']) ||
+                        (isset($aluno['observacoes']) && stripos($aluno['observacoes'], '[TESTE]') !== false) ||
+                        (isset($_GET['modo_teste']) && $_GET['modo_teste'] == '1')
+                    );
+
                     $valorMensalidadeAluno = !empty($aluno['valor_mensalidade']) ? (float)$aluno['valor_mensalidade'] : 0;
-                    $dadosCalculo = calcularCondicoesAtraso($valorMensalidadeAluno, $lang, 0);
+                    $dadosCalculo = calcularCondicoesAtraso($valorMensalidadeAluno, $lang, 0, $isAlunoTeste);
 
                     $valorAntigoFmt    = formatarMoedaMentoria($dadosCalculo['valor_antigo']);
                     $valorReajustadoFmt = formatarMoedaMentoria($dadosCalculo['valor_reajustado']);

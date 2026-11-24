@@ -124,7 +124,15 @@ foreach ($alunos as $aluno) {
 
             $valorMensalidadeAluno = !empty($aluno['valor_mensalidade']) ? (float)$aluno['valor_mensalidade'] : 0;
             $diasAtrasoAbs = abs(min(0, $diasFaltando));
-            $dadosCalculo = calcularCondicoesAtraso($valorMensalidadeAluno, $alunoLang, $diasAtrasoAbs);
+
+            // Detecta se é aluno de teste
+            $isAlunoTeste = (
+                !empty($aluno['is_test']) ||
+                (isset($aluno['observacoes']) && stripos($aluno['observacoes'], '[TESTE]') !== false) ||
+                (isset($_GET['modo_teste']) && $_GET['modo_teste'] == '1')
+            );
+
+            $dadosCalculo = calcularCondicoesAtraso($valorMensalidadeAluno, $alunoLang, $diasAtrasoAbs, $isAlunoTeste);
 
             $valorAntigoFmt     = formatarMoedaMentoria($dadosCalculo['valor_antigo']);
             $valorReajustadoFmt = formatarMoedaMentoria($dadosCalculo['valor_reajustado']);

@@ -38,25 +38,40 @@ function obterValorTabelaVigente($lang = 'en') {
  * Calcula as condições de reajuste e multa de atraso para o aluno.
  *
  * Regra:
- * - Se o aluno paga menos que o valor de tabela (tem benefício/gap):
- *     1) Reajuste (Opção Contratual): perde 50% da diferença (1ª vida):
- *        novo_valor = valor_aluno + (gap * 0.5)
- *     2) Multa de Manutenção (Opção Alternativa):
- *        multa_base = gap (a diferença total da mensalidade)
- *        multa_total = multa_base + (dias_atraso * 1.00)
- * - Se o aluno já paga o valor de tabela (sem gap promocional):
- *     1) Reajuste: valor_tabela atualizado com reajuste de 0.5% a.m.
- *     2) Multa: R$ 5.00 base + (dias_atraso * 0.50)
+ * - Vigência geral: a regra com 2 vidas e multa de regularização entra em vigor após 30/11/2026 23:59:59
+ *   (período de Black Friday / pré-lançamento a R$ 250).
+ * - Exceção / Modo de Teste: se $isTestMode for true, simula a vigência plena imediatamente para testar o fluxo.
  *
  * @param float $valorAluno
  * @param string $lang 'en' ou 'es'
  * @param int $diasAtraso Número de dias corridos desde o vencimento (>= 0)
+ * @param bool $isTestMode Se true, ignora a trava de 30/Nov e força o cálculo das 2 vidas e multa
  * @return array
  */
-function calcularCondicoesAtraso($valorAluno, $lang = 'en', $diasAtraso = 0) {
+function calcularCondicoesAtraso($valorAluno, $lang = 'en', $diasAtraso = 0, $isTestMode = false) {
     $valorAluno = (float)$valorAluno;
     $diasAtraso = max(0, (int)$diasAtraso);
     $valorTabela = obterValorTabelaVigente($lang);
+
+    $fimPromocao = new DateTime('2026-11-30 23:59:59', new DateTimeZone('America/Sao_Paulo'));
+    $agora = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
+    $emPeriodoPromocional = ($agora <= $fimPromocao);
+
+    // Se estiver em período de Black Friday e NÃO for modo de teste:
+    // Mantém a oferta promocional sem reajuste de perda de desconto e sem multa
+    if ($emPeriodoPromocional && !$isTestMode) {
+        return [
+            'valor_antigo'     => $valorAluno,
+            'valor_tabela'     => $valorTabela,
+            'gap'              => 0,
+            'valor_reajustado' => $valorAluno,
+            'multa_base'       => 0.00,
+            'multa_total'      => 0.00,
+            'dias_atraso'      => $diasAtraso,
+            'em_promocao'      => true,
+            'is_test_mode'     => false,
+        ];
+    }
 
     $gap = $valorTabela - $valorAluno;
 
@@ -80,6 +95,8 @@ function calcularCondicoesAtraso($valorAluno, $lang = 'en', $diasAtraso = 0) {
         'multa_base'       => round($multaBase, 2),
         'multa_total'      => round($multaTotal, 2),
         'dias_atraso'      => $diasAtraso,
+        'em_promocao'      => false,
+        'is_test_mode'     => $isTestMode,
     ];
 }
 
