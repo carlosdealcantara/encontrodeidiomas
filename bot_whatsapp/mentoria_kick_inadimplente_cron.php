@@ -277,9 +277,12 @@ foreach ($langs as $lang) {
             echo "      📡 Resposta API: HTTP {$httpCode} | success=" . ($success ? 'true' : 'false') . "\n";
 
             if ($success) {
-                // Atualiza status do aluno para 'Comunidade' (mantém acesso aos grupos abertos e comunidade, apenas perde Our Classes)
+                // Atualiza status do aluno para 'Comunidade' e status_pagamento para 'Suspenso'
+                // para alimentar a régua de recuperação pós-vencimento (dias -1, -2 e -5)
                 $conn->prepare("
-                    UPDATE mentoria_alunos SET status_aluno = 'Comunidade' WHERE id = ?
+                    UPDATE mentoria_alunos 
+                    SET status_aluno = 'Comunidade', status_pagamento = 'Suspenso' 
+                    WHERE id = ?
                 ")->execute([$alunoId]);
 
                 // Rastreamento de Churn / Periodos de Atividade
@@ -315,33 +318,47 @@ foreach ($langs as $lang) {
                     $pixKey = ($lang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $lang;
                     $pix_footer = getSetting($pixKey, $default_pix_footer);
 
-                    // Obtém valor vigente da mensalidade dinamicamente via pricing engine
-                    $valorAtual = ($lang === 'es') ? 'R$ 175' : 'R$ 275';
-                    $pricingPaths = [
-                        __DIR__ . '/../../mentoria/pricing.php',
-                        __DIR__ . '/../mentoria/pricing.php',
-                        dirname(__DIR__, 2) . '/mentoria/pricing.php',
-                    ];
-                    foreach ($pricingPaths as $pPath) {
-                        if (file_exists($pPath)) {
-                            require_once $pPath;
-                            if (function_exists('pricing_format')) {
-                                $valorAtual = ($lang === 'es')
-                                    ? pricing_format($pricing_espanhol_mensal ?? 175)
-                                    : pricing_format($pricing_mensal ?? 275);
-                            }
-                            break;
-                        }
-                    }
+                    require_once __DIR__ . '/../includes/mentoria_pricing_helper.php';
+
+                    $valorMensalidadeAluno = !empty($aluno['valor_mensalidade']) ? (float)$aluno['valor_mensalidade'] : 0;
+                    $dadosCalculo = calcularCondicoesAtraso($valorMensalidadeAluno, $lang, 0);
+
+                    $valorAntigoFmt    = formatarMoedaMentoria($dadosCalculo['valor_antigo']);
+                    $valorReajustadoFmt = formatarMoedaMentoria($dadosCalculo['valor_reajustado']);
+                    $multaBaseFmt       = formatarMoedaMentoria($dadosCalculo['multa_base']);
+                    $multaTotalFmt      = formatarMoedaMentoria($dadosCalculo['multa_total']);
+                    $valorTabelaFmt     = formatarMoedaMentoria($dadosCalculo['valor_tabela']);
 
                     $primeiroNome = trim(explode(' ', $alunoNome)[0]);
                     $idiomaNome = ($lang === 'es') ? 'Espanhol' : 'Inglês';
                     $urlSite = ($lang === 'es') ? 'https://viaei.com/mentoria/espanhol/' : 'https://viaei.com/mentoria/ingles/';
 
-                    // Substitui tags: {nome}, {valor}, {idioma}, {url_site}, {pix}
+                    // Substitui tags: {nome}, {valor}, {valor_antigo}, {valor_reajustado}, {multa_base}, {multa_total}, {dias_atraso}, {idioma}, {url_site}, {pix}
                     $textoSuspensao = str_replace(
-                        ['{nome}', '{valor}', '{idioma}', '{url_site}', '{pix}'],
-                        [$primeiroNome, $valorAtual, $idiomaNome, $urlSite, trim($pix_footer)],
+                        [
+                            '{nome}',
+                            '{valor}',
+                            '{valor_antigo}',
+                            '{valor_reajustado}',
+                            '{multa_base}',
+                            '{multa_total}',
+                            '{dias_atraso}',
+                            '{idioma}',
+                            '{url_site}',
+                            '{pix}'
+                        ],
+                        [
+                            $primeiroNome,
+                            $valorReajustadoFmt,
+                            $valorAntigoFmt,
+                            $valorReajustadoFmt,
+                            $multaBaseFmt,
+                            $multaTotalFmt,
+                            '0',
+                            $idiomaNome,
+                            $urlSite,
+                            trim($pix_footer)
+                        ],
                         $msgSuspensaoRow['texto']
                     );
 

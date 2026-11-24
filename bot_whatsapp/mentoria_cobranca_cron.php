@@ -17,6 +17,7 @@ if (!$is_cli && (!isset($_GET['token']) || $_GET['token'] !== $token_secreto)) {
     die("Acesso Negado.");
 }
 require_once __DIR__ . '/../includes/whatsapp_helper.php';
+require_once __DIR__ . '/../includes/mentoria_pricing_helper.php';
 
 $conn = connectDB();
 
@@ -73,8 +74,11 @@ foreach($mensagensAtivas as $m) {
 
 $stmtAlunos = $conn->query("
     SELECT * FROM mentoria_alunos 
-    WHERE status_aluno = 'Ativo' 
-    AND status_pagamento IN ('Pendente', 'Suspenso')
+    WHERE (
+        (status_aluno = 'Ativo' AND status_pagamento IN ('Pendente', 'Suspenso'))
+        OR
+        (status_aluno = 'Comunidade' AND status_pagamento = 'Suspenso')
+    )
 ");
 $alunos = $stmtAlunos->fetchAll();
 
@@ -118,8 +122,52 @@ foreach ($alunos as $aluno) {
             $pixKey = ($alunoLang === 'en') ? 'mentoria_pix_footer' : 'mentoria_pix_footer_' . $alunoLang;
             $pix_footer = getSetting($pixKey, $default_pix_footer);
 
-            $textoFinal = str_replace('{nome}', trim(explode(' ', $aluno['nome'])[0]), $msgConfig['texto']);
-            $textoFinal .= "\n\n" . trim($pix_footer);
+            $valorMensalidadeAluno = !empty($aluno['valor_mensalidade']) ? (float)$aluno['valor_mensalidade'] : 0;
+            $diasAtrasoAbs = abs(min(0, $diasFaltando));
+            $dadosCalculo = calcularCondicoesAtraso($valorMensalidadeAluno, $alunoLang, $diasAtrasoAbs);
+
+            $valorAntigoFmt     = formatarMoedaMentoria($dadosCalculo['valor_antigo']);
+            $valorReajustadoFmt = formatarMoedaMentoria($dadosCalculo['valor_reajustado']);
+            $multaBaseFmt       = formatarMoedaMentoria($dadosCalculo['multa_base']);
+            $multaTotalFmt      = formatarMoedaMentoria($dadosCalculo['multa_total']);
+            $valorTabelaFmt     = formatarMoedaMentoria($dadosCalculo['valor_tabela']);
+            $idiomaNome         = ($alunoLang === 'es') ? 'Espanhol' : 'Inglês';
+            $urlSite            = ($alunoLang === 'es') ? 'https://viaei.com/mentoria/espanhol/' : 'https://viaei.com/mentoria/ingles/';
+
+            $primeiroNome = trim(explode(' ', $aluno['nome'])[0]);
+
+            $textoFinal = str_replace(
+                [
+                    '{nome}',
+                    '{valor}',
+                    '{valor_antigo}',
+                    '{valor_reajustado}',
+                    '{multa_base}',
+                    '{multa_total}',
+                    '{dias_atraso}',
+                    '{idioma}',
+                    '{url_site}',
+                    '{pix}'
+                ],
+                [
+                    $primeiroNome,
+                    $valorReajustadoFmt,
+                    $valorAntigoFmt,
+                    $valorReajustadoFmt,
+                    $multaBaseFmt,
+                    $multaTotalFmt,
+                    (string)$diasAtrasoAbs,
+                    $idiomaNome,
+                    $urlSite,
+                    trim($pix_footer)
+                ],
+                $msgConfig['texto']
+            );
+
+            // Anexa rodapé PIX se não tiver a tag {pix}
+            if (strpos($msgConfig['texto'], '{pix}') === false) {
+                $textoFinal .= "\n\n" . trim($pix_footer);
+            }
             
             $telefoneLimpo = preg_replace('/\D/', '', $aluno['telefone']);
             if (strlen($telefoneLimpo) <= 11) {
