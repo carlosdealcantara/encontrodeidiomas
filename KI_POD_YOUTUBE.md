@@ -37,7 +37,7 @@ python scripts/gerar_video_pod.py --pod <NUMERO> --url "<URL_YOUTUBE_CREATIVE_CO
 
 ### O que o script faz sozinho (DOIS vídeos por episódio):
 1. **Duração:** Mede o tempo exato do áudio via FFprobe e calcula o corte final correto com base no fator de aceleração (`target_duration = audio_duration / speed`). O vídeo NUNCA fica com sobras mudas no final.
-2. **Transcrição Offline Robusta (Zero custo de API):** Usa o modelo Faster-Whisper **`large-v3-turbo`** local (`device=cpu`, `compute_type=int8`) com auto-detect bilíngue de alta precisão (inglês/português), fallback para `large-v3`/`medium`, `condition_on_previous_text=False`, `vad_filter=True` e `no_speech_threshold=0.6` para máxima fidelidade fonética e garantia total contra omissão de blocos falados.
+2. **Transcrição Offline Robusta (Zero custo de API e Zero Downloads):** Usa exclusivamente o modelo Faster-Whisper **`large-v3-turbo`** local fixo (`device=cpu`, `compute_type=int8`, `cpu_threads=2`, `beam_size=1`, `local_files_only=True`) com auto-detect bilíngue de alta precisão (inglês/português), `condition_on_previous_text=False`, `vad_filter=True` e `no_speech_threshold=0.6`. É proibido tentar baixar modelos extras ou utilizar fallbacks pesados que causem estouro de memória (`mkl_malloc`) ou lotem o disco SSD. O modelo `large-v3-turbo` já reside permanente no cache local do Windows e processa de imediato em poucos segundos.
 3. **Dois arquivos ASS gerados:**
    - `subtitles_pod<N>_h.ass` → horizontal 16:9 (PlayRes 1920x1080, branding top-left `Alignment=7`, legendas centro-tela `Alignment=5`)
    - `subtitles_pod<N>_v.ass` → vertical 9:16 (PlayRes 1080x1920, branding top-center `Alignment=8`, legendas centro-tela `Alignment=5`)

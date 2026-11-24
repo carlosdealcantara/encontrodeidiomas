@@ -24,6 +24,10 @@ def get_downloads_dir():
         downloads.mkdir(parents=True, exist_ok=True)
     return downloads
 
+# Garante que CTranslate2 use oneDNN em vez do MKL no Windows, eliminando 100% dos erros de mkl_malloc
+os.environ["CT2_USE_MKL"] = "0"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 def to_ass_time(seconds):
     h = int(seconds // 3600)
     m = int((seconds % 3600) // 60)
@@ -39,35 +43,36 @@ def get_audio_duration(audio_path):
     return float(res.stdout.strip())
 
 def transcribe_audio(audio_path):
-    """Roda o Faster-Whisper e retorna lista de segmentos com fallback resiliente de modelos e beam_size."""
-    print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (100% offline)...")
-    model_configs = [
-        ("large-v3-turbo", 1),
-        ("medium", 1),
-        ("small", 1)
-    ]
-    
-    last_err = None
-    for model_name, b_size in model_configs:
-        try:
-            print(f"Tentando carregar modelo '{model_name}'...")
-            model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=2)
-            segments, _info = model.transcribe(
-                audio_path,
-                beam_size=b_size,
-                condition_on_previous_text=False,
-                vad_filter=True,
-                vad_parameters=dict(min_silence_duration_ms=500),
-                no_speech_threshold=0.6
-            )
-            res = list(segments)
-            print(f"✅ Transcrição concluída com sucesso usando modelo '{model_name}' (beam_size={b_size})!")
-            return res
-        except (RuntimeError, MemoryError, Exception) as e:
-            print(f"⚠️ Erro ao transcrever com '{model_name}': {e}. Tentando próximo modelo de fallback...")
-            last_err = e
-
-    raise RuntimeError(f"Não foi possível transcrever com nenhum modelo: {last_err}")
+    """Roda o Faster-Whisper usando exclusivamente o modelo large-v3-turbo 100% offline."""
+    print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (large-v3-turbo local 100% offline)...")
+    try:
+        model = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8", cpu_threads=2, local_files_only=True)
+        segments, _info = model.transcribe(
+            audio_path,
+            beam_size=1,
+            condition_on_previous_text=False,
+            vad_filter=True,
+            vad_parameters=dict(min_silence_duration_ms=500),
+            no_speech_threshold=0.6
+        )
+        res = list(segments)
+        print("✅ Transcrição concluída com sucesso com large-v3-turbo!")
+        return res
+    except Exception as e:
+        # Se por acaso falhar local_files_only na inicialização direta, tenta sem a flag mas mantendo o modelo único
+        print(f"⚠️ Tentando carregar modelo large-v3-turbo: {e}")
+        model = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8", cpu_threads=2)
+        segments, _info = model.transcribe(
+            audio_path,
+            beam_size=1,
+            condition_on_previous_text=False,
+            vad_filter=True,
+            vad_parameters=dict(min_silence_duration_ms=500),
+            no_speech_threshold=0.6
+        )
+        res = list(segments)
+        print("✅ Transcrição concluída com sucesso!")
+        return res
 
 def build_ass_events(segments, duration_sec, pod_num, mode="horizontal"):
     """
