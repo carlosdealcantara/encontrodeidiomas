@@ -42,17 +42,16 @@ def transcribe_audio(audio_path):
     """Roda o Faster-Whisper e retorna lista de segmentos com fallback resiliente de modelos e beam_size."""
     print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (100% offline)...")
     model_configs = [
-        ("large-v3-turbo", 5),
-        ("large-v3", 5),
-        ("medium", 5),
-        ("small", 5)
+        ("large-v3-turbo", 1),
+        ("medium", 1),
+        ("small", 1)
     ]
     
     last_err = None
     for model_name, b_size in model_configs:
         try:
             print(f"Tentando carregar modelo '{model_name}'...")
-            model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=4)
+            model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=2)
             segments, _info = model.transcribe(
                 audio_path,
                 beam_size=b_size,
