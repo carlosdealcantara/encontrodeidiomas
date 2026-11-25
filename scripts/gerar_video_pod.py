@@ -11,11 +11,17 @@ Uso:
 
 import os
 import sys
+import json
 import argparse
 import subprocess
 import re
 from pathlib import Path
 from faster_whisper import WhisperModel
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 def get_downloads_dir():
     home = Path.home()
@@ -191,101 +197,195 @@ def download_background(youtube_url, temp_dir):
             )
     return bg_path
 
-def measure_loudnorm(audio_path, speed=1.0):
+def destutter_pcm(audio, sample_rate=48000):
     """
-    Passo 1 do loudnorm de dois passes: mede os parâmetros reais do áudio
-    (Integrated LUFS, True Peak, LRA) e retorna o filtro loudnorm parametrizado
-    para o passo 2, eliminando completamente o modo Dynamic que causa chiados.
-
-    O modo Dynamic do loudnorm de passe único aplica ganho variável frame a frame.
-    Nas transições silêncio → voz alta (comuns em áudios de celular), esse ganho
-    sobe drasticamente e clipar/distorce exatamente como um "rádio saindo de sintonia".
-    Com dois passes, o ganho é fixo e linear — zero distorção dinâmica.
-
-    Cadeia de restauração inicial:
-      - adeclip=threshold=95 → reconstrói topos cortados/achatados de ondas clipadas no microfone
-      - volume=-1.5dB        → cria margem de segurança contra novos inter-sample peaks
-      - highpass=f=80        → corta sub-graves de vento/puffs
-      - lowpass=f=12000      → elimina ruídos de ultra-alta frequência e chiados de rádio
-      - alimiter             → limitador suave analógico
+    Detecta e suaviza gaguejos de gravação (frames repetidos de 20 ms causados por
+    PLC/Opus DTX ou captura Bluetooth/Android nas retomadas de silêncio),
+    sem afetar vogais sustentadas na fala contínua.
     """
-    print("🔬 [2.5/5] Medindo loudness do áudio (pré-análise com adeclip para normalização linear)...")
-    base = "adeclip=threshold=95,volume=-1.5dB,highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
-    if speed != 1.0:
-        af_chain = f"{base},atempo={speed},loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json"
+    if np is None or len(audio) < sample_rate // 10:
+        return audio
+
+    step = int(sample_rate * 0.020)  # blocos de 20 ms (960 amostras @ 48 kHz)
+    n_blocks = len(audio) // step
+    if n_blocks < 3:
+        return audio
+
+    blocks = audio[:n_blocks * step].reshape(n_blocks, step)
+    norms = np.linalg.norm(blocks, axis=1)
+    rms_all = norms / np.sqrt(step)
+
+    out = audio.copy()
+    cleaned_runs = 0
+    i = 0
+    while i < n_blocks - 1:
+        if rms_all[i] > 0.02 and rms_all[i + 1] > 0.02:
+            sim = float(np.dot(blocks[i], blocks[i + 1]) / (norms[i] * norms[i + 1]))
+            if sim >= 0.985:
+                j = i + 1
+                while (
+                    j < n_blocks - 1
+                    and rms_all[j] > 0.02
+                    and rms_all[j + 1] > 0.02
+                    and float(np.dot(blocks[j], blocks[j + 1]) / (norms[j] * norms[j + 1])) >= 0.985
+                ):
+                    j += 1
+
+                prev_min = float(np.min(rms_all[max(0, i - 4):i])) if i > 0 else 0.0
+                next_min = float(np.min(rms_all[j + 1:min(n_blocks, j + 5)])) if j + 1 < n_blocks else 0.0
+                pk = float(np.max(np.abs(blocks[i:j + 1])))
+
+                # Só atua junto a pausas de silêncio (nunca no meio de vogais contínuas)
+                if prev_min < 0.015 or next_min < 0.015:
+                    isolated_burst = (prev_min < 0.015 and next_min < 0.015)
+                    severe_stutter = (pk >= 0.65 or sim >= 0.995)
+
+                    if isolated_burst or severe_stutter:
+                        s_idx = max(0, i * step - int(sample_rate * 0.010))
+                        e_idx = min(len(out), (j + 1) * step + int(sample_rate * 0.010))
+                        fade = min(int(sample_rate * 0.005), (e_idx - s_idx) // 3)
+                        env = np.full(e_idx - s_idx, 0.01, dtype=np.float32)
+                        if fade > 0:
+                            t_in = 0.5 * (1.0 + np.cos(np.linspace(0.0, np.pi, fade, dtype=np.float32)))
+                            t_out = 0.5 * (1.0 - np.cos(np.linspace(0.0, np.pi, fade, dtype=np.float32)))
+                            env[:fade] = 0.01 + 0.99 * t_in
+                            env[-fade:] = 0.01 + 0.99 * t_out
+                        out[s_idx:e_idx] *= env
+                        cleaned_runs += 1
+
+                i = j + 1
+                continue
+        i += 1
+
+    if cleaned_runs:
+        print(f"   🧹 De-stutter: {cleaned_runs} engasgo(s) de frame repetido suavizado(s) na origem")
+    return out
+
+
+def prepare_clean_audio(audio_path, clean_wav_path, speed=1.0):
+    """
+    Executa a restauração acústica completa em 1 passo (gerando WAV float32 limpo):
+      1. De-stutter Python (elimina gaguejos de 20 ms repetidos nas pausas)
+      2. adeclip=threshold=10 (limiar real para reconstruir topos clipados no celular)
+      3. adeclick=threshold=2:burst=2 (suaviza microcliques impulsivos)
+      4. highpass=85Hz / lowpass=12000Hz (corta batidas graves e chiado estático)
+      5. acompressor suave (nivela a voz antes do atempo)
+      6. atempo=speed (acelera sobre sinal restaurado)
+      7. alimiter=limit=0.40 (-7.96 dBFS) APÓS o atempo (absorve picos WSOLA e cria
+         headroom obrigatório para o loudnorm permanecer 100% em modo LINEAR)
+    """
+    print("🛠️  [2.2/5] Restaurando áudio (de-stutter + adeclip + adeclick + compressor + limiter)...")
+    raw_cmd = [
+        "ffmpeg", "-v", "error", "-i", audio_path,
+        "-f", "f32le", "-ac", "1", "-ar", "48000", "pipe:1"
+    ]
+    raw_bytes = subprocess.run(raw_cmd, capture_output=True, check=True).stdout
+
+    if np is not None:
+        pcm = np.frombuffer(raw_bytes, dtype=np.float32).copy()
+        pcm = destutter_pcm(pcm, sample_rate=48000)
+        input_bytes = pcm.tobytes()
     else:
-        af_chain = f"{base},loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json"
+        input_bytes = raw_bytes
+
+    chain = [
+        "adeclip=threshold=10",
+        "adeclick=threshold=2:burst=2",
+        "highpass=f=85",
+        "lowpass=f=12000",
+        "acompressor=threshold=0.125:ratio=3:attack=2:release=80:makeup=1.5",
+    ]
+    if speed != 1.0:
+        chain.append(f"atempo={speed}")
+    chain.append("alimiter=limit=0.40:attack=3:release=50:level=disabled")
+
+    ff_cmd = [
+        "ffmpeg", "-y", "-v", "error",
+        "-f", "f32le", "-ar", "48000", "-ac", "1", "-i", "pipe:0",
+        "-af", ",".join(chain),
+        "-c:a", "pcm_f32le",
+        str(clean_wav_path)
+    ]
+    res = subprocess.run(ff_cmd, input=input_bytes, capture_output=True)
+    if res.returncode != 0:
+        raise RuntimeError(f"Falha ao preparar áudio limpo: {res.stderr.decode(errors='ignore')}")
+    return str(clean_wav_path)
+
+
+def measure_loudnorm(clean_wav_path):
+    """
+    Passo 1 do loudnorm de dois passes sobre o áudio já restaurado e acelerado.
+    Verifica matematicamente se `measured_TP + (-16 - measured_I) <= -1.55` para
+    garantir que o Passo 2 execute estritamente em modo LINEAR (nunca Dynamic).
+    Se o áudio vier extremamente baixo (onde loudnorm forçaria modo dynamic),
+    usa ganho linear estático + alimiter transparente, garantindo 0% de pumping.
+    Sempre finaliza com `aresample=48000` para evitar exportação AAC em 96 kHz.
+    """
+    print("🔬 [2.5/5] Medindo loudness do áudio restaurado (verificação de linearidade)...")
+    af_chain = "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json"
 
     res = subprocess.run(
-        ["ffmpeg", "-i", audio_path, "-af", af_chain, "-f", "null", "-"],
+        ["ffmpeg", "-i", clean_wav_path, "-af", af_chain, "-f", "null", "-"],
         capture_output=True, text=True
     )
-    # Extrai o bloco JSON do stderr
     output = res.stderr
-    import json, re
     match = re.search(r'\{[^{}]+\}', output, re.DOTALL)
     if not match:
-        print("⚠️  Medição loudnorm falhou — usando modo single-pass como fallback.")
-        return f"loudnorm=I=-16:TP=-1.5:LRA=11"
+        print("⚠️  Medição loudnorm falhou — usando ganho estático seguro + limiter.")
+        return "volume=2.5dB,alimiter=limit=0.84:attack=3:release=50:level=disabled,aresample=48000"
 
     stats = json.loads(match.group())
-    il  = stats.get("input_i",  "-17.0")
-    itp = stats.get("input_tp", "-1.0")
-    ilra = stats.get("input_lra", "4.5")
-    ith = stats.get("input_thresh", "-28.0")
+    il = stats.get("input_i", "-20.0")
+    itp = stats.get("input_tp", "-7.5")
+    ilra = stats.get("input_lra", "3.5")
+    ith = stats.get("input_thresh", "-31.0")
     offset = stats.get("target_offset", "0.0")
 
-    # Passo 2: loudnorm linear (measured) — ganho fixo, sem variação dinâmica = zero chiado
-    loudnorm_pass2 = (
-        f"loudnorm=I=-16:TP=-1.5:LRA=11:linear=true"
-        f":measured_I={il}:measured_TP={itp}"
-        f":measured_LRA={ilra}:measured_thresh={ith}"
-        f":offset={offset}:print_format=none"
-    )
-    print(f"   📊 Input: {il} LUFS | TP: {itp} dBTP | LRA: {ilra} LU → normalização LINEAR (zero chiado)")
-    return loudnorm_pass2
+    needed_gain = -16.0 - float(il)
+    projected_tp = float(itp) + needed_gain
+
+    if projected_tp <= -1.55 and float(ilra) <= 11.0:
+        audio_filter = (
+            f"loudnorm=I=-16:TP=-1.5:LRA=11:linear=true"
+            f":measured_I={il}:measured_TP={itp}"
+            f":measured_LRA={ilra}:measured_thresh={ith}"
+            f":offset={offset}:print_format=none,aresample=48000"
+        )
+        print(
+            f"   📊 Input: {il} LUFS | TP: {itp} dBTP | LRA: {ilra} LU "
+            f"(proj TP: {projected_tp:+.2f} dBTP) → normalização LINEAR confirmada @ 48 kHz"
+        )
+    else:
+        audio_filter = (
+            f"volume={needed_gain:.2f}dB,"
+            f"alimiter=limit=0.84:attack=3:release=50:level=disabled,aresample=48000"
+        )
+        print(
+            f"   📊 Input baixo ({il} LUFS, proj TP: {projected_tp:+.2f} dBTP) → "
+            f"ganho estático linear (+{needed_gain:.2f} dB) + true-peak limiter @ 48 kHz (zero dynamic)"
+        )
+
+    return audio_filter
 
 
-def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0, loudnorm_filter=None):
-    """
-    Renderiza o vídeo horizontal 16:9 (1920x1080) para YouTube.
-    speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
-    Ordem do filtro: queima a legenda com PTS original → depois acelera os frames.
-    Assim a legenda já está gravada como pixel e acompanha automaticamente.
-
-    Cadeia de áudio (reconstrução acústica + 2 passes lineares):
-      1. adeclip           → reconstrói curvas de onda clipadas no microfone do celular
-      2. volume=-1.5dB     → headroom de segurança para interpolação analógica
-      3. highpass=80Hz     → corta sub-graves de proximidade e vento
-      4. lowpass=12000Hz   → corta chiado de rádio e hiss estático
-      5. alimiter          → limita transientes residuais
-      6. atempo=N          → aceleração temporal limpa sobre sinal já restaurado
-      7. loudnorm LINEAR   → ganho estático pré-medido, sem flutuação dinâmica
-    """
-    print(f"🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 (velocidade: {speed}x)...")
+def _render_video(bg_path, clean_audio_path, ass_path, duration_sec, output_file, speed=1.0, audio_filter=None, crop_vertical=False):
+    """Helper compartilhado de renderização FFmpeg para horizontal (16:9) e vertical (9:16)."""
     ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
     target_duration = duration_sec / speed
+    af = audio_filter or "loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000"
 
-    ln = loudnorm_filter or "loudnorm=I=-16:TP=-1.5:LRA=11"
-    audio_base = "adeclip=threshold=95,volume=-1.5dB,highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
-
-    if speed != 1.0:
-        v_filter = f"[0:v]subtitles={ass_clean},setpts=PTS/{speed}[v]"
-        a_filter = f"[1:a]{audio_base},atempo={speed},{ln}[a]"
-        filter_complex = f"{v_filter};{a_filter}"
-        audio_map = "[a]"
-    else:
-        filter_complex = f"[0:v]subtitles={ass_clean}[v];[1:a]{audio_base},{ln}[a]"
-        audio_map = "[a]"
+    v_prefix = "crop=ih*9/16:ih,scale=1080:1920," if crop_vertical else ""
+    pts_suffix = f",setpts=PTS/{speed}" if speed != 1.0 else ""
+    filter_complex = f"[0:v]{v_prefix}subtitles={ass_clean}{pts_suffix}[v];[1:a]{af}[a]"
 
     cmd = [
         "ffmpeg", "-y",
         "-i", bg_path,
-        "-i", audio_path,
+        "-i", clean_audio_path,
         "-t", str(target_duration),
         "-filter_complex", filter_complex,
         "-map", "[v]",
-        "-map", audio_map,
+        "-map", "[a]",
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-x264-params", "threads=4:rc-lookahead=10",
@@ -295,50 +395,21 @@ def render_horizontal(bg_path, audio_path, ass_path, duration_sec, output_file, 
         str(output_file)
     ]
     subprocess.run(cmd, check=True)
+
+
+def render_horizontal(bg_path, clean_audio_path, ass_path, duration_sec, output_file, speed=1.0, audio_filter=None):
+    """Renderiza o vídeo horizontal 16:9 (1920x1080) para YouTube."""
+    print(f"🎬 [3/5] Renderizando vídeo HORIZONTAL 16:9 (velocidade: {speed}x)...")
+    _render_video(bg_path, clean_audio_path, ass_path, duration_sec, output_file, speed=speed, audio_filter=audio_filter, crop_vertical=False)
     print(f"✅ Horizontal exportado: {output_file}")
 
-def render_vertical(bg_path, audio_path, ass_path, duration_sec, output_file, speed=1.0, loudnorm_filter=None):
-    """
-    Renderiza o vídeo vertical 9:16 (1080x1920) para Reels / Shorts / TikTok.
-    Recorta o centro da faixa horizontal (crop=ih*9/16:ih) e escala para 1080x1920.
-    speed: fator de aceleração (ex: 1.2 = 20% mais rápido). 1.0 = sem alteração.
 
-    Cadeia de áudio (reconstrução acústica + 2 passes lineares) — idêntica à horizontal.
-    """
+def render_vertical(bg_path, clean_audio_path, ass_path, duration_sec, output_file, speed=1.0, audio_filter=None):
+    """Renderiza o vídeo vertical 9:16 (1080x1920) para Reels / Shorts / TikTok."""
     print(f"📱 [4/5] Renderizando vídeo VERTICAL 9:16 (velocidade: {speed}x)...")
-    ass_clean = ass_path.replace("\\", "/").replace(":", "\\:")
-    target_duration = duration_sec / speed
-
-    ln = loudnorm_filter or "loudnorm=I=-16:TP=-1.5:LRA=11"
-    audio_base = "adeclip=threshold=95,volume=-1.5dB,highpass=f=80,lowpass=f=12000,alimiter=level_in=1:level_out=1:limit=0.9:attack=5:release=50:level=disabled"
-
-    if speed != 1.0:
-        v_filter = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean},setpts=PTS/{speed}[v]"
-        a_filter = f"[1:a]{audio_base},atempo={speed},{ln}[a]"
-        filter_complex = f"{v_filter};{a_filter}"
-        audio_map = "[a]"
-    else:
-        filter_complex = f"[0:v]crop=ih*9/16:ih,scale=1080:1920,subtitles={ass_clean}[v];[1:a]{audio_base},{ln}[a]"
-        audio_map = "[a]"
-
-    cmd = [
-        "ffmpeg", "-y",
-        "-i", bg_path,
-        "-i", audio_path,
-        "-t", str(target_duration),
-        "-filter_complex", filter_complex,
-        "-map", "[v]",
-        "-map", audio_map,
-        "-c:v", "libx264",
-        "-preset", "veryfast",
-        "-x264-params", "threads=4:rc-lookahead=10",
-        "-crf", "24",
-        "-c:a", "aac",
-        "-b:a", "128k",
-        str(output_file)
-    ]
-    subprocess.run(cmd, check=True)
+    _render_video(bg_path, clean_audio_path, ass_path, duration_sec, output_file, speed=speed, audio_filter=audio_filter, crop_vertical=True)
     print(f"✅ Vertical exportado: {output_file}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automação Pod -> Vídeo YouTube + Reels/Shorts")
@@ -375,9 +446,7 @@ if __name__ == "__main__":
         print(f"ℹ️ Arquivos ASS já encontrados em cache ({ass_h_path}, {ass_v_path}). Pulando transcrição...")
     else:
         segments = transcribe_audio(audio_file)
-        # Gera ASS horizontal
         write_ass(build_ass_events(segments, dur, args.pod, mode="horizontal"), ass_h_path)
-        # Gera ASS vertical (PlayRes 1080x1920, Alignment central)
         write_ass(build_ass_events(segments, dur, args.pod, mode="vertical"), ass_v_path)
         print(f"✅ [2/5] Arquivos ASS gerados: horizontal + vertical")
 
@@ -388,13 +457,20 @@ if __name__ == "__main__":
     if speed != 1.0:
         print(f"⚡ Aceleração ativa: {speed}x (legenda queimada primeiro, depois frames acelerados)")
 
-    # Pré-análise de loudness: mede parâmetros reais do áudio para normalização LINEAR (2 passes)
-    # Isso elimina completamente os chiados/engasgos do modo Dynamic do loudnorm single-pass
-    ln_filter = measure_loudnorm(audio_file, speed=speed)
+    clean_wav_path = str(temp_dir / f"pod_{args.pod}_clean.wav")
+    try:
+        # 1) De-stutter + restauração acústica + compressão + atempo + limiter pós-WSOLA
+        prepare_clean_audio(audio_file, clean_wav_path, speed=speed)
 
-    # Renderiza ambos
-    render_horizontal(bg, audio_file, ass_h_path, dur, final_h, speed=speed, loudnorm_filter=ln_filter)
-    render_vertical(bg, audio_file, ass_v_path, dur, final_v, speed=speed, loudnorm_filter=ln_filter)
+        # 2) Pré-análise de loudness com trava anti-dynamic + reamostragem 48 kHz
+        af_final = measure_loudnorm(clean_wav_path)
+
+        # 3) Renderiza ambos usando o áudio limpo já pré-acelerado
+        render_horizontal(bg, clean_wav_path, ass_h_path, dur, final_h, speed=speed, audio_filter=af_final)
+        render_vertical(bg, clean_wav_path, ass_v_path, dur, final_v, speed=speed, audio_filter=af_final)
+    finally:
+        if os.path.exists(clean_wav_path):
+            os.remove(clean_wav_path)
 
     duration_final = dur / speed
     print()
