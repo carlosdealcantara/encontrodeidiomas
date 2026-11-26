@@ -199,82 +199,104 @@ def download_background(youtube_url, temp_dir):
 
 def destutter_pcm(audio, sample_rate=48000):
     """
-    Detecta e suaviza gaguejos de gravação (frames repetidos de 20 ms causados por
-    PLC/Opus DTX ou captura Bluetooth/Android nas retomadas de silêncio),
-    sem afetar vogais sustentadas na fala contínua.
+    Detecta e suaviza cirurgicamente dois tipos de engasgos de origem presentes em
+    gravações do WhatsApp/Android/Bluetooth, preservando 100% da fala real:
+      1. Rajadas de alta frequência / wakeup AGC pós-silêncio (picos >= 0.85 ou
+         saltos amostra-a-amostra >= 0.42 com alta razão HF >= 0.35), que não
+         ocorrem em vogais ou fricativas naturais.
+      2. Frames congelados/repetidos de 20 ms em janela deslizante de 10 ms
+         (sim >= 0.985 junto a pausas de silêncio — artefato de Opus PLC/DTX).
     """
     if np is None or len(audio) < sample_rate // 10:
         return audio
 
-    step = int(sample_rate * 0.020)  # blocos de 20 ms (960 amostras @ 48 kHz)
-    n_blocks = len(audio) // step
-    if n_blocks < 3:
+    bin_sz = int(sample_rate * 0.010)  # janelas de 10 ms (480 amostras @ 48 kHz)
+    nb = len(audio) // bin_sz
+    if nb < 6:
         return audio
 
-    blocks = audio[:n_blocks * step].reshape(n_blocks, step)
-    norms = np.linalg.norm(blocks, axis=1)
-    rms_all = norms / np.sqrt(step)
+    bins = audio[:nb * bin_sz].reshape(nb, bin_sz)
+    b_rms = np.sqrt(np.mean(bins * bins, axis=1))
+    b_max = np.max(np.abs(bins), axis=1)
+    diffs = np.diff(bins, axis=1)
+    b_jmp = np.max(np.abs(diffs), axis=1)
+    b_hf = np.sqrt(np.mean(diffs * diffs, axis=1)) / (b_rms + 1e-6)
+
+    mask = np.zeros(nb, dtype=bool)
+
+    # 1) Rajadas HF / saltos bruscos de wakeup AGC (consoantes reais têm b_jmp < 0.35)
+    bad_hf = (b_jmp >= 0.42) & ((b_max >= 0.85) | (b_hf >= 0.35))
+    for idx in np.where(bad_hf)[0]:
+        prev_quiet = np.min(b_rms[max(0, idx - 12):idx]) < 0.025 if idx > 0 else True
+        next_quiet = np.min(b_rms[idx + 1:min(nb, idx + 12)]) < 0.025 if idx + 1 < nb else True
+        if prev_quiet or next_quiet or b_jmp[idx] >= 0.55 or b_hf[idx] >= 0.35:
+            l = idx
+            while l > 0 and b_rms[l - 1] > 0.004 and (b_hf[l - 1] >= 0.18 or b_jmp[l - 1] >= 0.30) and (idx - l) < 12:
+                l -= 1
+            r = idx
+            while r + 1 < nb and b_rms[r + 1] > 0.004 and (b_hf[r + 1] >= 0.18 or b_jmp[r + 1] >= 0.30) and (r - idx) < 12:
+                r += 1
+            mask[l:r + 1] = True
+
+    # 2) Frames repetidos de 20 ms em janela deslizante (passo de 10 ms)
+    step20 = bin_sz * 2
+    norm_thresh = 0.03 * np.sqrt(step20)
+    for k in range(0, nb - 3):
+        b1 = audio[k * bin_sz:k * bin_sz + step20]
+        b2 = audio[(k + 2) * bin_sz:(k + 2) * bin_sz + step20]
+        n1 = float(np.linalg.norm(b1))
+        n2 = float(np.linalg.norm(b2))
+        if n1 > norm_thresh and n2 > norm_thresh:
+            sim = float(np.dot(b1, b2) / (n1 * n2))
+            if sim >= 0.985:
+                prev_min = float(np.min(b_rms[max(0, k - 8):k])) if k > 0 else 0.0
+                next_min = float(np.min(b_rms[k + 4:min(nb, k + 12)])) if k + 4 < nb else 0.0
+                pk = float(max(np.max(np.abs(b1)), np.max(np.abs(b2))))
+                isolated = (prev_min < 0.015 and next_min < 0.015 and pk >= 0.15)
+                boundary_stutter = (prev_min < 0.015 or next_min < 0.015) and ((sim >= 0.992 and pk >= 0.25) or pk >= 0.60)
+                if isolated or boundary_stutter:
+                    mask[k:k + 4] = True
 
     out = audio.copy()
     cleaned_runs = 0
+    fade_len = int(sample_rate * 0.005)
     i = 0
-    while i < n_blocks - 1:
-        if rms_all[i] > 0.02 and rms_all[i + 1] > 0.02:
-            sim = float(np.dot(blocks[i], blocks[i + 1]) / (norms[i] * norms[i + 1]))
-            if sim >= 0.985:
-                j = i + 1
-                while (
-                    j < n_blocks - 1
-                    and rms_all[j] > 0.02
-                    and rms_all[j + 1] > 0.02
-                    and float(np.dot(blocks[j], blocks[j + 1]) / (norms[j] * norms[j + 1])) >= 0.985
-                ):
-                    j += 1
-
-                prev_min = float(np.min(rms_all[max(0, i - 4):i])) if i > 0 else 0.0
-                next_min = float(np.min(rms_all[j + 1:min(n_blocks, j + 5)])) if j + 1 < n_blocks else 0.0
-                pk = float(np.max(np.abs(blocks[i:j + 1])))
-
-                # Só atua junto a pausas de silêncio (nunca no meio de vogais contínuas)
-                if prev_min < 0.015 or next_min < 0.015:
-                    isolated_burst = (prev_min < 0.015 and next_min < 0.015)
-                    severe_stutter = (pk >= 0.65 or sim >= 0.995)
-
-                    if isolated_burst or severe_stutter:
-                        s_idx = max(0, i * step - int(sample_rate * 0.010))
-                        e_idx = min(len(out), (j + 1) * step + int(sample_rate * 0.010))
-                        fade = min(int(sample_rate * 0.005), (e_idx - s_idx) // 3)
-                        env = np.full(e_idx - s_idx, 0.01, dtype=np.float32)
-                        if fade > 0:
-                            t_in = 0.5 * (1.0 + np.cos(np.linspace(0.0, np.pi, fade, dtype=np.float32)))
-                            t_out = 0.5 * (1.0 - np.cos(np.linspace(0.0, np.pi, fade, dtype=np.float32)))
-                            env[:fade] = 0.01 + 0.99 * t_in
-                            env[-fade:] = 0.01 + 0.99 * t_out
-                        out[s_idx:e_idx] *= env
-                        cleaned_runs += 1
-
-                i = j + 1
-                continue
-        i += 1
+    while i < nb:
+        if mask[i]:
+            j = i
+            while j + 1 < nb and (mask[j + 1] or (j + 2 < nb and mask[j + 2])):
+                j += 1
+            s_idx = max(0, i * bin_sz - fade_len)
+            e_idx = min(len(out), (j + 1) * bin_sz + fade_len)
+            fade = min(fade_len, (e_idx - s_idx) // 3)
+            env = np.full(e_idx - s_idx, 0.01, dtype=np.float32)
+            if fade > 0:
+                t_in = 0.5 * (1.0 + np.cos(np.linspace(0.0, np.pi, fade, dtype=np.float32)))
+                t_out = 0.5 * (1.0 - np.cos(np.linspace(0.0, np.pi, fade, dtype=np.float32)))
+                env[:fade] = 0.01 + 0.99 * t_in
+                env[-fade:] = 0.01 + 0.99 * t_out
+            out[s_idx:e_idx] *= env
+            cleaned_runs += 1
+            i = j + 1
+        else:
+            i += 1
 
     if cleaned_runs:
-        print(f"   🧹 De-stutter: {cleaned_runs} engasgo(s) de frame repetido suavizado(s) na origem")
+        print(f"   🧹 De-stutter/de-burst: {cleaned_runs} engasgo(s) de origem suavizado(s)")
     return out
 
 
 def prepare_clean_audio(audio_path, clean_wav_path, speed=1.0):
     """
     Executa a restauração acústica completa em 1 passo (gerando WAV float32 limpo):
-      1. De-stutter Python (elimina gaguejos de 20 ms repetidos nas pausas)
-      2. adeclip=threshold=10 (limiar real para reconstruir topos clipados no celular)
-      3. adeclick=threshold=2:burst=2 (suaviza microcliques impulsivos)
-      4. highpass=85Hz / lowpass=12000Hz (corta batidas graves e chiado estático)
-      5. acompressor suave (nivela a voz antes do atempo)
-      6. atempo=speed (acelera sobre sinal restaurado)
-      7. alimiter=limit=0.40 (-7.96 dBFS) APÓS o atempo (absorve picos WSOLA e cria
-         headroom obrigatório para o loudnorm permanecer 100% em modo LINEAR)
+      1. De-stutter/de-burst cirúrgico Python (elimina rajadas HF de wakeup e frames 20 ms repetidos)
+      2. adeclip=threshold=10 (limiar real para reconstruir topos clipados sem adeclick agressivo)
+      3. highpass=85Hz / lowpass=12000Hz (corta batidas graves e chiado estático)
+      4. atempo=speed (acelera sobre sinal já limpo)
+      5. alimiter=limit=0.45:attack=5:release=80 (-6.94 dBFS) APÓS o atempo, sem
+         compressor prévio esmagando a voz, garantindo headroom natural para loudnorm LINEAR.
     """
-    print("🛠️  [2.2/5] Restaurando áudio (de-stutter + adeclip + adeclick + compressor + limiter)...")
+    print("🛠️  [2.2/5] Restaurando áudio (de-burst/de-stutter + adeclip + filtros + limiter suave)...")
     raw_cmd = [
         "ffmpeg", "-v", "error", "-i", audio_path,
         "-f", "f32le", "-ac", "1", "-ar", "48000", "pipe:1"
@@ -290,14 +312,12 @@ def prepare_clean_audio(audio_path, clean_wav_path, speed=1.0):
 
     chain = [
         "adeclip=threshold=10",
-        "adeclick=threshold=2:burst=2",
         "highpass=f=85",
         "lowpass=f=12000",
-        "acompressor=threshold=0.125:ratio=3:attack=2:release=80:makeup=1.5",
     ]
     if speed != 1.0:
         chain.append(f"atempo={speed}")
-    chain.append("alimiter=limit=0.40:attack=3:release=50:level=disabled")
+    chain.append("alimiter=limit=0.45:attack=5:release=80:level=disabled")
 
     ff_cmd = [
         "ffmpeg", "-y", "-v", "error",
