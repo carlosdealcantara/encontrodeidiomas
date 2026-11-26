@@ -40,6 +40,20 @@ def to_ass_time(seconds):
     s = seconds % 60
     return f"{h:01d}:{m:02d}:{s:05.2f}"
 
+def get_audio_codec(audio_path):
+    """Retorna o nome do codec do primeiro stream de áudio (ex: 'opus', 'aac', 'mp3')."""
+    try:
+        cmd = [
+            "ffprobe", "-v", "error", "-select_streams", "a:0",
+            "-show_entries", "stream=codec_name",
+            "-of", "default=noprint_wrappers=1:nokey=1", audio_path
+        ]
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        return res.stdout.strip().lower()
+    except Exception:
+        return ""
+
+
 def get_audio_duration(audio_path):
     cmd = [
         "ffprobe", "-v", "error", "-show_entries", "format=duration",
@@ -48,37 +62,53 @@ def get_audio_duration(audio_path):
     res = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(res.stdout.strip())
 
+
 def transcribe_audio(audio_path):
     """Roda o Faster-Whisper usando exclusivamente o modelo large-v3-turbo 100% offline."""
     print("🎧 [1/5] Transcrevendo áudio via Faster-Whisper (large-v3-turbo local 100% offline)...")
+    temp_whisper_wav = None
+    transcribe_input = audio_path
+    if get_audio_codec(audio_path) == "opus":
+        temp_whisper_wav = f"{audio_path}.libopus_tmp.wav"
+        subprocess.run(
+            ["ffmpeg", "-y", "-v", "error", "-c:a", "libopus", "-i", audio_path,
+             "-ar", "16000", "-ac", "1", temp_whisper_wav],
+            check=True
+        )
+        transcribe_input = temp_whisper_wav
+
     try:
-        model = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8", cpu_threads=2, local_files_only=True)
-        segments, _info = model.transcribe(
-            audio_path,
-            beam_size=1,
-            condition_on_previous_text=False,
-            vad_filter=True,
-            vad_parameters=dict(min_silence_duration_ms=500),
-            no_speech_threshold=0.6
-        )
-        res = list(segments)
-        print("✅ Transcrição concluída com sucesso com large-v3-turbo!")
-        return res
-    except Exception as e:
-        # Se por acaso falhar local_files_only na inicialização direta, tenta sem a flag mas mantendo o modelo único
-        print(f"⚠️ Tentando carregar modelo large-v3-turbo: {e}")
-        model = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8", cpu_threads=2)
-        segments, _info = model.transcribe(
-            audio_path,
-            beam_size=1,
-            condition_on_previous_text=False,
-            vad_filter=True,
-            vad_parameters=dict(min_silence_duration_ms=500),
-            no_speech_threshold=0.6
-        )
-        res = list(segments)
-        print("✅ Transcrição concluída com sucesso!")
-        return res
+        try:
+            model = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8", cpu_threads=2, local_files_only=True)
+            segments, _info = model.transcribe(
+                transcribe_input,
+                beam_size=1,
+                condition_on_previous_text=False,
+                vad_filter=True,
+                vad_parameters=dict(min_silence_duration_ms=500),
+                no_speech_threshold=0.6
+            )
+            res = list(segments)
+            print("✅ Transcrição concluída com sucesso com large-v3-turbo!")
+            return res
+        except Exception as e:
+            # Se por acaso falhar local_files_only na inicialização direta, tenta sem a flag mas mantendo o modelo único
+            print(f"⚠️ Tentando carregar modelo large-v3-turbo: {e}")
+            model = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8", cpu_threads=2)
+            segments, _info = model.transcribe(
+                transcribe_input,
+                beam_size=1,
+                condition_on_previous_text=False,
+                vad_filter=True,
+                vad_parameters=dict(min_silence_duration_ms=500),
+                no_speech_threshold=0.6
+            )
+            res = list(segments)
+            print("✅ Transcrição concluída com sucesso!")
+            return res
+    finally:
+        if temp_whisper_wav and os.path.exists(temp_whisper_wav):
+            os.remove(temp_whisper_wav)
 
 def build_ass_events(segments, duration_sec, pod_num, mode="horizontal"):
     """
@@ -289,18 +319,22 @@ def destutter_pcm(audio, sample_rate=48000):
 def prepare_clean_audio(audio_path, clean_wav_path, speed=1.0):
     """
     Executa a restauração acústica completa em 1 passo (gerando WAV float32 limpo):
-      1. De-stutter/de-burst cirúrgico Python (elimina rajadas HF de wakeup e frames 20 ms repetidos)
-      2. adeclip=threshold=10 (limiar real para reconstruir topos clipados sem adeclick agressivo)
-      3. highpass=85Hz / lowpass=12000Hz (corta batidas graves e chiado estático)
-      4. atempo=speed (acelera sobre sinal já limpo)
-      5. alimiter=limit=0.45:attack=5:release=80 (-6.94 dBFS) APÓS o atempo, sem
-         compressor prévio esmagando a voz, garantindo headroom natural para loudnorm LINEAR.
+      1. Decodificação obrigatória via `-c:a libopus` para arquivos Opus/WhatsApp
+         (o decoder `opus` nativo embutido do FFmpeg corrompe pacotes DTX/120 ms,
+         inventando picos >+4 dBFS e frames congelados que geravam os engasgos!)
+      2. De-stutter/de-burst cirúrgico Python (rede de proteção caso a gravação original traga falhas)
+      3. adeclip=threshold=10 (limiar real para reconstruir eventuais topos clipados)
+      4. highpass=85Hz / lowpass=12000Hz (corta batidas graves e chiado estático)
+      5. atempo=speed (acelera sobre sinal limpo)
+      6. alimiter=limit=0.50:attack=5:release=80 (-6.02 dBFS) APÓS o atempo, garantindo
+         headroom natural para o loudnorm operar estritamente em modo LINEAR.
     """
-    print("🛠️  [2.2/5] Restaurando áudio (de-burst/de-stutter + adeclip + filtros + limiter suave)...")
-    raw_cmd = [
-        "ffmpeg", "-v", "error", "-i", audio_path,
-        "-f", "f32le", "-ac", "1", "-ar", "48000", "pipe:1"
-    ]
+    print("🛠️  [2.2/5] Decodificando (libopus) e preparando áudio limpo...")
+    codec = get_audio_codec(audio_path)
+    raw_cmd = ["ffmpeg", "-v", "error"]
+    if codec == "opus":
+        raw_cmd += ["-c:a", "libopus"]
+    raw_cmd += ["-i", audio_path, "-f", "f32le", "-ac", "1", "-ar", "48000", "pipe:1"]
     raw_bytes = subprocess.run(raw_cmd, capture_output=True, check=True).stdout
 
     if np is not None:
@@ -317,7 +351,7 @@ def prepare_clean_audio(audio_path, clean_wav_path, speed=1.0):
     ]
     if speed != 1.0:
         chain.append(f"atempo={speed}")
-    chain.append("alimiter=limit=0.45:attack=5:release=80:level=disabled")
+    chain.append("alimiter=limit=0.50:attack=5:release=80:level=disabled")
 
     ff_cmd = [
         "ffmpeg", "-y", "-v", "error",
